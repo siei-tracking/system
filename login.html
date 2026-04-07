@@ -137,27 +137,28 @@
   </div>
 
   <script>
-    const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbyTaiMqHuYCn6bH0sgMRmJytithLxqNNww8O_XeMAKuUJskcj9CSiCs8PuTK70TYtZX/exec";
+    const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxtdvFycvRHSKeXh5Wqh3BZpBQ0Mzlr3pakPB86WrYabIUS9hbl9WeMyBolQrQCyvPl/exec";
 
     const PARAMS = new URLSearchParams(window.location.search);
     const requestedPage = String(PARAMS.get("p") || "main").trim().toLowerCase();
 
     const ALLOWED_PAGES = [
-  "main",
-  "admin",
-  "plan",
-  "finance",
-  "lab1",
-  "workshop",
-  "elev",
-  "testresults",
-  "official",
-  "barcode",
-  "email",
-  "results"
-];
+      "main",
+      "index",
+      "admin",
+      "plan",
+      "finance",
+      "lab1",
+      "workshop",
+      "elev",
+      "testresults",
+      "official",
+      "barcode",
+      "email",
+      "results"
+    ];
 
-const SAFE_PAGE = ALLOWED_PAGES.indexOf(requestedPage) !== -1 ? requestedPage : "main";
+    const SAFE_PAGE = ALLOWED_PAGES.indexOf(requestedPage) !== -1 ? requestedPage : "main";
 
     try{
       localStorage.removeItem("wo_auth_token");
@@ -193,17 +194,17 @@ const SAFE_PAGE = ALLOWED_PAGES.indexOf(requestedPage) !== -1 ? requestedPage : 
       }
     }
 
-    function goToApp(token, role, userName){
+    function goToApp(token, role, userName, page){
       try{
         localStorage.setItem("wo_auth_token", token || "");
         localStorage.setItem("wo_auth_role", String(role || "").trim().toLowerCase());
         localStorage.setItem("wo_auth_user", userName || "");
       }catch(e){}
 
-      var page = SAFE_PAGE || "main";
-      var url = page + ".html";
+      var targetPage = String(page || SAFE_PAGE || "main").trim().toLowerCase();
+      var url = targetPage + ".html";
 
-      if(page === "admin" && String(role || "").trim().toLowerCase() !== "admin"){
+      if(targetPage === "admin" && String(role || "").trim().toLowerCase() !== "admin"){
         url = "main.html";
       }
 
@@ -225,7 +226,8 @@ const SAFE_PAGE = ALLOWED_PAGES.indexOf(requestedPage) !== -1 ? requestedPage : 
       try{
         const res = await apiPost({
           action: "login",
-          pass: pass
+          pass: pass,
+          requestedPage: SAFE_PAGE
         });
 
         btn.disabled = false;
@@ -235,7 +237,7 @@ const SAFE_PAGE = ALLOWED_PAGES.indexOf(requestedPage) !== -1 ? requestedPage : 
           return;
         }
 
-        goToApp(res.token, res.role, res.userName || "");
+        goToApp(res.token, res.role, res.userName || "", res.requestedPage || SAFE_PAGE);
       }catch(err){
         btn.disabled = false;
         setMsg("❌ فشل الاتصال بالسيرفر", false);
