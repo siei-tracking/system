@@ -643,17 +643,21 @@ input::placeholder{
 <div id="toast" class="toast"></div>
 
 <script>
-const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxtdvFycvRHSKeXh5Wqh3BZpBQ0Mzlr3pakPB86WrYabIUS9hbl9WeMyBolQrQCyvPl/exec";
+const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxDhWzy7hfLEXceMaDyEIb8vxGE9ZZMhn9OqnE3_NQ-nUm2ZDcfrvBebMM4jujCvtGs/exec";
+const PAGE_NAME = "plan";
 const AUTH_TOKEN = localStorage.getItem("wo_auth_token") || "";
 const CURRENT_USER = localStorage.getItem("wo_auth_user") || "";
 
-window.addEventListener("load", function(){
+window.addEventListener("load", async function(){
   const w = document.getElementById("welcomeUser");
   if(CURRENT_USER && CURRENT_USER !== "مخول غير معروف"){
     w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: ' + escapeHtml(CURRENT_USER);
   } else {
     w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: مخول غير معروف';
   }
+
+  const allowed = await ensureCurrentPageAccess();
+  if(!allowed) return;
 
   document.getElementById("btnNew").addEventListener("click", saveNew);
   document.getElementById("btnPrice").addEventListener("click", savePrice);
@@ -693,6 +697,98 @@ function showToast(msg, type){
   window.toastTimer = setTimeout(function(){
     t.classList.remove("show");
   }, 3000);
+}
+
+async function apiGet(action, params){
+  const qs = new URLSearchParams({ action: action });
+
+  Object.keys(params || {}).forEach(function(key){
+    const val = params[key];
+    if(val !== undefined && val !== null && val !== ""){
+      qs.append(key, val);
+    }
+  });
+
+  const res = await fetch(GAS_WEBAPP_URL + "?" + qs.toString(), {
+    method: "GET",
+    mode: "cors"
+  });
+
+  const text = await res.text();
+
+  if(!res.ok){
+    throw new Error("HTTP " + res.status + " | " + text.slice(0, 300));
+  }
+
+  try{
+    return JSON.parse(text);
+  }catch(e){
+    throw new Error("JSON parse error | " + text.slice(0, 300));
+  }
+}
+
+async function apiPost(payload){
+  const res = await fetch(GAS_WEBAPP_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "text/plain;charset=utf-8"
+    },
+    body: JSON.stringify(payload || {})
+  });
+
+  const text = await res.text();
+
+  if(!res.ok){
+    throw new Error("HTTP " + res.status + " | " + text.slice(0, 300));
+  }
+
+  try{
+    return JSON.parse(text);
+  }catch(e){
+    throw new Error("JSON parse error | " + text.slice(0, 300));
+  }
+}
+
+async function ensureCurrentPageAccess(){
+  const token = localStorage.getItem("wo_auth_token") || "";
+
+  if(!token){
+    window.location.href = "login.html?p=" + PAGE_NAME;
+    return false;
+  }
+
+  try{
+    const data = await apiGet("checkAccess", {
+      token: token,
+      page: PAGE_NAME
+    });
+
+    if(!data || !data.ok){
+      showToast((data && data.error) ? data.error : "❌ غير مخول", "error");
+      setTimeout(function(){
+        window.location.href = "main.html";
+      }, 1200);
+      return false;
+    }
+
+    return true;
+  }catch(err){
+    const msg = safeErr(err);
+
+    if(msg.includes("انتهت الجلسة") || msg.includes("تسجيل الدخول غير صالح")){
+      showToast("❌ انتهت الجلسة", "error");
+      setTimeout(function(){
+        window.location.href = "login.html?p=" + PAGE_NAME;
+      }, 1200);
+      return false;
+    }
+
+    showToast("❌ تعذر التحقق من صلاحية الصفحة", "error");
+    setTimeout(function(){
+      window.location.href = "main.html";
+    }, 1200);
+    return false;
+  }
 }
 
 function switchTab(which){
@@ -748,28 +844,6 @@ function resetAll(){
   btnPrice.innerHTML = "اعتماد وحفظ البيانات";
 }
 
-async function apiPost(payload){
-  const res = await fetch(GAS_WEBAPP_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "text/plain;charset=utf-8"
-    },
-    body: JSON.stringify(payload || {})
-  });
-
-  const text = await res.text();
-
-  if(!res.ok){
-    throw new Error("HTTP " + res.status + " | " + text.slice(0, 200));
-  }
-
-  try{
-    return JSON.parse(text);
-  }catch(e){
-    throw new Error("JSON parse error | " + text.slice(0, 200));
-  }
-}
-
 async function saveNew(){
   const id = document.getElementById("nID").value.trim();
   const cl = document.getElementById("nClient").value.trim();
@@ -801,7 +875,25 @@ async function saveNew(){
       btn.innerHTML = "اعتماد وحفظ البيانات";
     }
   }catch(err){
-    showToast("خطأ: " + safeErr(err), "error");
+    const msg = safeErr(err);
+
+    if(msg.includes("غير مصرح")){
+      showToast("❌ غير مصرح لك بالدخول إلى صفحة التخطيط", "error");
+      setTimeout(function(){
+        window.location.href = "main.html";
+      }, 1200);
+      return;
+    }
+
+    if(msg.includes("انتهت الجلسة") || msg.includes("تسجيل الدخول غير صالح")){
+      showToast("❌ انتهت الجلسة", "error");
+      setTimeout(function(){
+        window.location.href = "login.html?p=" + PAGE_NAME;
+      }, 1200);
+      return;
+    }
+
+    showToast("خطأ: " + msg, "error");
     btn.disabled = false;
     btn.innerHTML = "اعتماد وحفظ البيانات";
   }
@@ -842,7 +934,25 @@ async function savePrice(){
       btn.innerHTML = "اعتماد وحفظ البيانات";
     }
   }catch(err){
-    showToast("خطأ: " + safeErr(err), "error");
+    const msg = safeErr(err);
+
+    if(msg.includes("غير مصرح")){
+      showToast("❌ غير مصرح لك بالدخول إلى صفحة التخطيط", "error");
+      setTimeout(function(){
+        window.location.href = "main.html";
+      }, 1200);
+      return;
+    }
+
+    if(msg.includes("انتهت الجلسة") || msg.includes("تسجيل الدخول غير صالح")){
+      showToast("❌ انتهت الجلسة", "error");
+      setTimeout(function(){
+        window.location.href = "login.html?p=" + PAGE_NAME;
+      }, 1200);
+      return;
+    }
+
+    showToast("خطأ: " + msg, "error");
     btn.disabled = false;
     btn.innerHTML = "اعتماد وحفظ البيانات";
   }

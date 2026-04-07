@@ -137,7 +137,7 @@
   </div>
 
   <script>
-    const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxtdvFycvRHSKeXh5Wqh3BZpBQ0Mzlr3pakPB86WrYabIUS9hbl9WeMyBolQrQCyvPl/exec";
+    const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxDhWzy7hfLEXceMaDyEIb8vxGE9ZZMhn9OqnE3_NQ-nUm2ZDcfrvBebMM4jujCvtGs/exec";
 
     const PARAMS = new URLSearchParams(window.location.search);
     const requestedPage = String(PARAMS.get("p") || "main").trim().toLowerCase();
@@ -202,13 +202,12 @@
       }catch(e){}
 
       var targetPage = String(page || SAFE_PAGE || "main").trim().toLowerCase();
-      var url = targetPage + ".html";
 
       if(targetPage === "admin" && String(role || "").trim().toLowerCase() !== "admin"){
-        url = "main.html";
+        targetPage = "main";
       }
 
-      window.location.href = url;
+      window.location.href = targetPage + ".html";
     }
 
     async function login(){
@@ -237,7 +236,12 @@
           return;
         }
 
-        goToApp(res.token, res.role, res.userName || "", res.requestedPage || SAFE_PAGE);
+        goToApp(
+          res.token,
+          res.role,
+          res.userName || "",
+          res.requestedPage || SAFE_PAGE
+        );
       }catch(err){
         btn.disabled = false;
         setMsg("❌ فشل الاتصال بالسيرفر", false);

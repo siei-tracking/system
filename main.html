@@ -765,12 +765,12 @@
 <div id="toast"></div>
 
 <script>
-  const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxtdvFycvRHSKeXh5Wqh3BZpBQ0Mzlr3pakPB86WrYabIUS9hbl9WeMyBolQrQCyvPl/exec";
+  const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxDhWzy7hfLEXceMaDyEIb8vxGE9ZZMhn9OqnE3_NQ-nUm2ZDcfrvBebMM4jujCvtGs/exec";
+  const PAGE_NAME = "main";
 
-  const PARAMS = new URLSearchParams(window.location.search);
-  const AUTH_TOKEN = PARAMS.get("token") || localStorage.getItem("wo_auth_token") || "";
-  const CURRENT_USER_ROLE = PARAMS.get("role") || localStorage.getItem("wo_auth_role") || "";
-  const APP_URL = window.location.origin + window.location.pathname.replace(/[^/]+$/, "");
+  const AUTH_TOKEN = localStorage.getItem("wo_auth_token") || "";
+  const CURRENT_USER_ROLE = localStorage.getItem("wo_auth_role") || "";
+  const CURRENT_USER_NAME = localStorage.getItem("wo_auth_user") || "";
 
   let CURRENT_MODE = "open";
   let CURRENT_ITEMS = [];
@@ -847,6 +847,8 @@
       }
     });
 
+    qs.append("token", AUTH_TOKEN);
+
     const res = await fetch(GAS_WEBAPP_URL + "?" + qs.toString(), {
       method: "GET",
       mode: "cors"
@@ -862,6 +864,63 @@
       return JSON.parse(text);
     }catch(e){
       throw new Error("JSON parse error | " + text.slice(0, 200));
+    }
+  }
+
+  function showAdminButton(){
+    var btnAdmin = document.getElementById("btnAdmin");
+    var btnSheet = document.getElementById("btnOpenArchive");
+    var isAdmin = String(CURRENT_USER_ROLE || "").trim().toLowerCase() === "admin";
+
+    if(btnAdmin){
+      btnAdmin.style.display = isAdmin ? "inline-flex" : "none";
+      btnAdmin.disabled = !isAdmin;
+    }
+
+    if(btnSheet){
+      btnSheet.style.display = isAdmin ? "inline-flex" : "none";
+      btnSheet.disabled = !isAdmin;
+    }
+  }
+
+  async function ensureCurrentPageAccess(){
+    const token = localStorage.getItem("wo_auth_token") || "";
+
+    if(!token){
+      window.location.href = "login.html?p=" + PAGE_NAME;
+      return false;
+    }
+
+    try{
+      const data = await apiGet("checkAccess", {
+        page: PAGE_NAME
+      });
+
+      if(!data || !data.ok){
+        showMsg((data && data.error) ? data.error : "❌ غير مخول", "err");
+        setTimeout(function(){
+          window.location.href = "login.html?p=" + PAGE_NAME;
+        }, 1200);
+        return false;
+      }
+
+      return true;
+    }catch(err){
+      const msg = safeErr(err);
+
+      if(msg.includes("انتهت الجلسة") || msg.includes("تسجيل الدخول غير صالح")){
+        showMsg("❌ انتهت الجلسة", "err");
+        setTimeout(function(){
+          window.location.href = "login.html?p=" + PAGE_NAME;
+        }, 1200);
+        return false;
+      }
+
+      showMsg("❌ تعذر التحقق من صلاحية الصفحة", "err");
+      setTimeout(function(){
+        window.location.href = "login.html?p=" + PAGE_NAME;
+      }, 1200);
+      return false;
     }
   }
 
@@ -900,22 +959,6 @@
     }
   }
 
-  function showAdminButton(){
-    var btnAdmin = document.getElementById("btnAdmin");
-    var btnSheet = document.getElementById("btnOpenArchive");
-    var isAdmin = String(CURRENT_USER_ROLE || "").trim().toLowerCase() === "admin";
-
-    if(btnAdmin){
-      btnAdmin.style.display = isAdmin ? "inline-flex" : "none";
-      btnAdmin.disabled = !isAdmin;
-    }
-
-    if(btnSheet){
-      btnSheet.style.display = isAdmin ? "inline-flex" : "none";
-      btnSheet.disabled = !isAdmin;
-    }
-  }
-
   function openAdminPage(){
     if(!AUTH_TOKEN){
       setStatus("❌ رمز الجلسة غير متوفر", false);
@@ -924,8 +967,7 @@
       return;
     }
 
-    var url = "admin.html?token=" + encodeURIComponent(AUTH_TOKEN) + "&role=" + encodeURIComponent(CURRENT_USER_ROLE || "admin");
-    window.location.href = url;
+    window.location.href = "admin.html";
   }
 
   function isDoneAny(v){
@@ -1061,7 +1103,7 @@
       labPath !== "مختبرات فقط";
 
     var pathPill = showPathPill
-      ? '<span class="pill"><i class="fas fa-route"></i> ' + labPath + '</span>'
+      ? '<span class="pill"><i class="fas fa-route"></i> ' + escapeHtml(labPath) + '</span>'
       : "";
 
     return typePill + (pathPill ? " " + pathPill : "");
@@ -1276,7 +1318,17 @@
       renderList(res, "open");
     }catch(err){
       setLoading(false);
-      setStatus("❌ فشل تحميل غير المنجز: " + safeErr(err), false);
+      const msg = safeErr(err);
+
+      if(msg.includes("انتهت الجلسة") || msg.includes("تسجيل الدخول غير صالح")){
+        showMsg("❌ انتهت الجلسة", "err");
+        setTimeout(function(){
+          window.location.href = "login.html?p=" + PAGE_NAME;
+        }, 1200);
+        return;
+      }
+
+      setStatus("❌ فشل تحميل غير المنجز: " + msg, false);
       showMsg("❌ فشل تحميل غير المنجز", "err");
     }
   }
@@ -1289,7 +1341,17 @@
       renderList(res, "delayed");
     }catch(err){
       setLoading(false);
-      setStatus("❌ فشل تحميل المتأخر: " + safeErr(err), false);
+      const msg = safeErr(err);
+
+      if(msg.includes("انتهت الجلسة") || msg.includes("تسجيل الدخول غير صالح")){
+        showMsg("❌ انتهت الجلسة", "err");
+        setTimeout(function(){
+          window.location.href = "login.html?p=" + PAGE_NAME;
+        }, 1200);
+        return;
+      }
+
+      setStatus("❌ فشل تحميل المتأخر: " + msg, false);
       showMsg("❌ فشل تحميل المتأخر", "err");
     }
   }
@@ -1300,12 +1362,32 @@
       var to   = String(document.getElementById("dateTo").value || "").trim();
 
       setLoading(true);
-      const res = await apiGet("completedOrders", { from: from, to: to });
+
+      let res;
+      if(from && to){
+        res = await apiGet("completedOrdersByDate", {
+          fromDate: from,
+          toDate: to
+        });
+      }else{
+        res = await apiGet("completedOrders", {});
+      }
+
       setLoading(false);
       renderList(res, "done");
     }catch(err){
       setLoading(false);
-      setStatus("❌ فشل تحميل الإنجاز: " + safeErr(err), false);
+      const msg = safeErr(err);
+
+      if(msg.includes("انتهت الجلسة") || msg.includes("تسجيل الدخول غير صالح")){
+        showMsg("❌ انتهت الجلسة", "err");
+        setTimeout(function(){
+          window.location.href = "login.html?p=" + PAGE_NAME;
+        }, 1200);
+        return;
+      }
+
+      setStatus("❌ فشل تحميل الإنجاز: " + msg, false);
       showMsg("❌ فشل تحميل الإنجاز", "err");
     }
   }
@@ -1314,8 +1396,6 @@
     try{
       var q = String(document.getElementById("qDone").value || "").trim();
       var sheet = String(document.getElementById("sheetSelect").value || "").trim();
-      var from = String(document.getElementById("dateFrom").value || "").trim();
-      var to   = String(document.getElementById("dateTo").value || "").trim();
 
       if(!q){
         setStatus("⚠️ أدخل رقم أمر العمل للبحث", false);
@@ -1324,17 +1404,38 @@
       }
 
       setLoading(true);
-      const res = await apiGet("mainSearch", {
-        q: q,
-        sheet: sheet,
-        from: from,
-        to: to
+      const res = await apiGet("searchAnywhere", {
+        order: q,
+        sheetName: sheet
       });
       setLoading(false);
-      renderList(res, "search");
+
+      if(res && res.found && res.item){
+        renderList({
+          items: [res.item],
+          at: res.at || "—"
+        }, "search");
+      }else{
+        renderList({
+          items: [],
+          at: res && res.at ? res.at : "—"
+        }, "search");
+        setStatus("لا توجد نتيجة مطابقة", false);
+        showMsg("⚠️ لا توجد نتيجة مطابقة", "warn");
+      }
     }catch(err){
       setLoading(false);
-      setStatus("❌ فشل البحث: " + safeErr(err), false);
+      const msg = safeErr(err);
+
+      if(msg.includes("انتهت الجلسة") || msg.includes("تسجيل الدخول غير صالح")){
+        showMsg("❌ انتهت الجلسة", "err");
+        setTimeout(function(){
+          window.location.href = "login.html?p=" + PAGE_NAME;
+        }, 1200);
+        return;
+      }
+
+      setStatus("❌ فشل البحث: " + msg, false);
       showMsg("❌ فشل البحث", "err");
     }
   }
@@ -1347,7 +1448,7 @@
     }
 
     try{
-      const res = await apiGet("openArchiveSheet", { token: AUTH_TOKEN });
+      const res = await apiGet("archiveSheetUrl", {});
       if(!res || !res.ok){
         setStatus("❌ " + (res && res.error ? res.error : "لا يمكن فتح الشيت"), false);
         showMsg("❌ لا يمكن فتح الشيت", "err");
@@ -1355,14 +1456,15 @@
       }
       window.open(res.url, "_blank");
     }catch(err){
-      setStatus("❌ خطأ: " + safeErr(err), false);
+      const msg = safeErr(err);
+      setStatus("❌ خطأ: " + msg, false);
       showMsg("❌ خطأ في فتح الشيت", "err");
     }
   }
 
-  window.addEventListener("load", function(){
-    var openSheetBtn = document.getElementById("btnOpenArchive");
-    var adminBtn = document.getElementById("btnAdmin");
+  window.addEventListener("load", async function(){
+    const allowed = await ensureCurrentPageAccess();
+    if(!allowed) return;
 
     (function setDefaultDates(){
       const today = new Date();
@@ -1381,13 +1483,16 @@
     })();
 
     showAdminButton();
-    loadSheetOptions();
+    await loadSheetOptions();
 
     document.getElementById("btnOpen").addEventListener("click", loadOpen);
     document.getElementById("btnDelayed").addEventListener("click", loadDelayed);
     document.getElementById("btnDone").addEventListener("click", loadDone);
     document.getElementById("btnSearchDone").addEventListener("click", searchAny);
     document.getElementById("btnExport").addEventListener("click", exportCurrentTable);
+
+    var openSheetBtn = document.getElementById("btnOpenArchive");
+    var adminBtn = document.getElementById("btnAdmin");
 
     if(openSheetBtn){
       openSheetBtn.addEventListener("click", openArchiveSheet);

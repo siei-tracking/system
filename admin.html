@@ -24,7 +24,7 @@
       const finalUser  = userFromUrl || userFromStorage;
 
       if (!finalToken) {
-        window.location.replace("login.html?p=main");
+        window.location.replace("login.html?p=admin");
         return;
       }
 
@@ -33,11 +33,6 @@
         if (finalRole) localStorage.setItem("wo_auth_role", finalRole);
         if (finalUser) localStorage.setItem("wo_auth_user", finalUser);
       } catch (e) {}
-
-      if (finalRole !== "admin") {
-        window.location.replace("main.html");
-        return;
-      }
 
       if (tokenFromUrl || roleFromUrl || userFromUrl) {
         const cleanUrl = window.location.origin + window.location.pathname;
@@ -651,11 +646,12 @@
 </div>
 
 <script>
-  const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxtdvFycvRHSKeXh5Wqh3BZpBQ0Mzlr3pakPB86WrYabIUS9hbl9WeMyBolQrQCyvPl/exec";
+  const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxDhWzy7hfLEXceMaDyEIb8vxGE9ZZMhn9OqnE3_NQ-nUm2ZDcfrvBebMM4jujCvtGs/exec";
+  const PAGE_NAME = "admin";
 
-  const PARAMS = new URLSearchParams(window.location.search);
-  const AUTH_TOKEN = PARAMS.get("token") || localStorage.getItem("wo_auth_token") || "";
-  const CURRENT_USER_ROLE = PARAMS.get("role") || localStorage.getItem("wo_auth_role") || "";
+  const AUTH_TOKEN = localStorage.getItem("wo_auth_token") || "";
+  const CURRENT_USER_ROLE = localStorage.getItem("wo_auth_role") || "";
+  const CURRENT_USER_NAME = localStorage.getItem("wo_auth_user") || "";
 
   let ALL_PAGES_CACHE = [];
   let USERS_CACHE = [];
@@ -769,10 +765,6 @@
       .replace(/'/g, "&#039;");
   }
 
-  function normalizeName(name){
-    return String(name || "").trim().replace(/\s+/g, " ").toLowerCase();
-  }
-
   function getCheckedPages(){
     const checks = document.querySelectorAll('#pagesBox input[type="checkbox"]:checked');
     const arr = [];
@@ -862,6 +854,56 @@
     }).join("");
   }
 
+  async function ensureCurrentPageAccess(){
+    const token = localStorage.getItem("wo_auth_token") || "";
+
+    if(!token){
+      window.location.href = "login.html?p=" + PAGE_NAME;
+      return false;
+    }
+
+    try{
+      const data = await apiGet("checkAccess", {
+        token: token,
+        page: PAGE_NAME
+      });
+
+      if(!data || !data.ok){
+        showMsg((data && data.error) ? data.error : "❌ غير مخول", "err");
+        setTimeout(function(){
+          window.location.href = "main.html";
+        }, 1200);
+        return false;
+      }
+
+      if(String((data.role || CURRENT_USER_ROLE || "")).toLowerCase() !== "admin"){
+        showMsg("❌ هذه الصفحة للمشرف فقط", "err");
+        setTimeout(function(){
+          window.location.href = "main.html";
+        }, 1200);
+        return false;
+      }
+
+      return true;
+    }catch(err){
+      const msg = safeErr(err);
+
+      if(msg.includes("انتهت الجلسة") || msg.includes("تسجيل الدخول غير صالح")){
+        showMsg("❌ انتهت الجلسة", "err");
+        setTimeout(function(){
+          window.location.href = "login.html?p=" + PAGE_NAME;
+        }, 1200);
+        return false;
+      }
+
+      showMsg("❌ تعذر التحقق من صلاحية الصفحة", "err");
+      setTimeout(function(){
+        window.location.href = "main.html";
+      }, 1200);
+      return false;
+    }
+  }
+
   async function loadAllPages(){
     try{
       const res = await apiGet("allPages", { token: AUTH_TOKEN });
@@ -939,7 +981,7 @@
 
       if(!res || !res.ok){
         setStatus("❌ " + (res && (res.error || res.msg) ? (res.error || res.msg) : "فشل إضافة المستخدم"), false);
-        showMsg("❌ فشل إضافة المستخدم", "err");
+        showMsg((res && (res.error || res.msg)) || "❌ فشل إضافة المستخدم", "err");
         return;
       }
 
@@ -971,7 +1013,7 @@
 
       if(!res || !res.ok){
         setStatus("❌ " + (res && (res.error || res.msg) ? (res.error || res.msg) : "فشل تحديث المستخدم"), false);
-        showMsg("❌ فشل تحديث المستخدم", "err");
+        showMsg((res && (res.error || res.msg)) || "❌ فشل تحديث المستخدم", "err");
         return;
       }
 
@@ -1016,7 +1058,7 @@
 
         if(!res || !res.ok){
           setStatus("❌ " + (res && (res.error || res.msg) ? (res.error || res.msg) : "فشل حذف المستخدم"), false);
-          showMsg("❌ فشل حذف المستخدم", "err");
+          showMsg((res && (res.error || res.msg)) || "❌ فشل حذف المستخدم", "err");
           return;
         }
 
@@ -1054,19 +1096,7 @@
   }
 
   function goToMain(){
-    const token = String(AUTH_TOKEN || "").trim();
-    const role = String(CURRENT_USER_ROLE || "").trim();
-
-    let url = "main.html";
-    const params = new URLSearchParams();
-
-    if(token) params.set("token", token);
-    if(role) params.set("role", role);
-
-    const qs = params.toString();
-    if(qs) url += "?" + qs;
-
-    window.location.href = url;
+    window.location.href = "main.html";
   }
 
   function bindTableActions(){
@@ -1087,14 +1117,12 @@
     });
   }
 
-  window.addEventListener("load", function(){
-    if(String(CURRENT_USER_ROLE || "").toLowerCase() !== "admin"){
-      window.location.replace("main.html");
-      return;
-    }
+  window.addEventListener("load", async function(){
+    const allowed = await ensureCurrentPageAccess();
+    if(!allowed) return;
 
-    loadAllPages();
-    loadUsers();
+    await loadAllPages();
+    await loadUsers();
     bindTableActions();
 
     document.getElementById("btnAdd").addEventListener("click", addUser);
