@@ -7,6 +7,38 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+  <script>
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+      const tokenFromUrl = params.get("token") || "";
+      const tokenFromStorage = localStorage.getItem("wo_auth_token") || "";
+      const roleFromUrl = params.get("role") || "";
+      const roleFromStorage = localStorage.getItem("wo_auth_role") || "";
+      const userFromUrl = params.get("user") || "";
+      const userFromStorage = localStorage.getItem("wo_auth_user") || "";
+
+      const finalToken = tokenFromUrl || tokenFromStorage;
+      const finalRole  = roleFromUrl || roleFromStorage;
+      const finalUser  = userFromUrl || userFromStorage;
+
+      if (!finalToken) {
+        window.location.replace("login.html?p=main");
+        return;
+      }
+
+      try {
+        localStorage.setItem("wo_auth_token", finalToken);
+        if (finalRole) localStorage.setItem("wo_auth_role", finalRole);
+        if (finalUser) localStorage.setItem("wo_auth_user", finalUser);
+      } catch (e) {}
+
+      if (tokenFromUrl || roleFromUrl || userFromUrl) {
+        const cleanUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+      }
+    })();
+  </script>
+
   <style>
     :root{
       --primary:#223243;
@@ -888,6 +920,7 @@
     if(!AUTH_TOKEN){
       setStatus("❌ رمز الجلسة غير متوفر", false);
       showMsg("❌ لا يمكن فتح صفحة الإدارة", "err");
+      window.location.href = "login.html?p=main";
       return;
     }
 
@@ -1243,7 +1276,7 @@
       renderList(res, "open");
     }catch(err){
       setLoading(false);
-      setStatus("❌ open error: " + safeErr(err), false);
+      setStatus("❌ فشل تحميل غير المنجز: " + safeErr(err), false);
       showMsg("❌ فشل تحميل غير المنجز", "err");
     }
   }
@@ -1251,118 +1284,70 @@
   async function loadDelayed(){
     try{
       setLoading(true);
-      const res = await apiGet("lateOrders", {});
+      const res = await apiGet("delayedOrders", {});
       setLoading(false);
       renderList(res, "delayed");
     }catch(err){
       setLoading(false);
-      setStatus("❌ delayed error: " + safeErr(err), false);
+      setStatus("❌ فشل تحميل المتأخر: " + safeErr(err), false);
       showMsg("❌ فشل تحميل المتأخر", "err");
     }
   }
 
   async function loadDone(){
-    var from = String(document.getElementById("dateFrom").value || "").trim();
-    var to   = String(document.getElementById("dateTo").value || "").trim();
-
     try{
+      var from = String(document.getElementById("dateFrom").value || "").trim();
+      var to   = String(document.getElementById("dateTo").value || "").trim();
+
       setLoading(true);
-
-      if(from && to){
-        const res = await apiGet("doneOrdersByDate", {
-          fromDate: from,
-          toDate: to,
-          limit: 5000
-        });
-        setLoading(false);
-        renderList(res, "done");
-        setStatus("✅ تم تحميل الإنجاز ضمن التاريخ المحدد", true);
-        showMsg("✅ تم تحميل النتائج حسب التاريخ", "ok");
-        return;
-      }
-
-      const res = await apiGet("doneOrders", { limit: 5000 });
+      const res = await apiGet("completedOrders", { from: from, to: to });
       setLoading(false);
       renderList(res, "done");
     }catch(err){
       setLoading(false);
-      setStatus("❌ done error: " + safeErr(err), false);
+      setStatus("❌ فشل تحميل الإنجاز: " + safeErr(err), false);
       showMsg("❌ فشل تحميل الإنجاز", "err");
     }
   }
 
   async function searchAny(){
-    var id = String(document.getElementById("qDone").value || "").trim();
-    var sheetName = String(document.getElementById("sheetSelect").value || "").trim();
-
-    if(!id){
-      setStatus("⚠️ أدخل رقم أمر العمل", false);
-      showMsg("⚠️ أدخل رقم أمر العمل", "warn");
-      return;
-    }
-
-    if(!sheetName){
-      setStatus("⚠️ لا توجد سنة محددة للبحث", false);
-      showMsg("⚠️ لا توجد سنة محددة", "warn");
-      return;
-    }
-
     try{
+      var q = String(document.getElementById("qDone").value || "").trim();
+      var sheet = String(document.getElementById("sheetSelect").value || "").trim();
+      var from = String(document.getElementById("dateFrom").value || "").trim();
+      var to   = String(document.getElementById("dateTo").value || "").trim();
+
+      if(!q){
+        setStatus("⚠️ أدخل رقم أمر العمل للبحث", false);
+        showMsg("⚠️ أدخل رقم أمر العمل", "warn");
+        return;
+      }
+
       setLoading(true);
-
-      const res = await apiGet("searchAnywhere", {
-        order: id,
-        sheetName: sheetName
+      const res = await apiGet("mainSearch", {
+        q: q,
+        sheet: sheet,
+        from: from,
+        to: to
       });
-
       setLoading(false);
-
-      if(res && res.error){
-        setStatus("❌ خطأ: " + res.error, false);
-        showMsg("❌ خطأ من السيرفر", "err");
-        return;
-      }
-
-      if(!res || !res.found){
-        CURRENT_MODE = "search";
-        CURRENT_ITEMS = [];
-        document.getElementById("count").textContent = "0";
-        document.getElementById("at").textContent = "—";
-        document.getElementById("list").innerHTML =
-          '<div class="empty"><i class="fas fa-circle-xmark"></i> لا توجد معاملة بهذا الرقم داخل السنة المحددة</div>';
-        setStatus("❌ لم يتم العثور على أمر العمل " + id + " داخل السنة المحددة", false);
-        showMsg("⚠️ غير موجود", "warn");
-        return;
-      }
-
-      var item = res.item ? res.item : res;
-      item = Object.assign({}, item, {
-        orderNo: item.orderNo || id
-      });
-
-      renderList({
-        at: (res.at || "—"),
-        items: [item]
-      }, "search");
-
-      setStatus("✅ تم العثور على أمر العمل " + id + " داخل " + (item.sourceSheet || sheetName), true);
-      showMsg("✅ تم العثور على المعاملة", "ok");
+      renderList(res, "search");
     }catch(err){
       setLoading(false);
-      setStatus("❌ search error: " + safeErr(err), false);
+      setStatus("❌ فشل البحث: " + safeErr(err), false);
       showMsg("❌ فشل البحث", "err");
     }
   }
 
   async function openArchiveSheet(){
-    if(!AUTH_TOKEN){
-      setStatus("❌ رمز الجلسة غير متوفر", false);
-      showMsg("❌ لا يمكن فتح الشيت بدون token", "err");
+    if(String(CURRENT_USER_ROLE || "").trim().toLowerCase() !== "admin"){
+      setStatus("❌ هذه العملية متاحة للمشرف فقط", false);
+      showMsg("❌ غير مصرح", "err");
       return;
     }
 
     try{
-      const res = await apiGet("archiveSheetUrl", { token: AUTH_TOKEN });
+      const res = await apiGet("openArchiveSheet", { token: AUTH_TOKEN });
       if(!res || !res.ok){
         setStatus("❌ " + (res && res.error ? res.error : "لا يمكن فتح الشيت"), false);
         showMsg("❌ لا يمكن فتح الشيت", "err");
