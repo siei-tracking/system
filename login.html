@@ -142,8 +142,22 @@
     const PARAMS = new URLSearchParams(window.location.search);
     const requestedPage = String(PARAMS.get("p") || "main").trim().toLowerCase();
 
-    const ALLOWED_PAGES = ["main", "index", "admin"];
-    const SAFE_PAGE = ALLOWED_PAGES.indexOf(requestedPage) !== -1 ? requestedPage : "main";
+    const ALLOWED_PAGES = [
+  "main",
+  "admin",
+  "plan",
+  "finance",
+  "lab1",
+  "workshop",
+  "elev",
+  "testresults",
+  "official",
+  "barcode",
+  "email",
+  "results"
+];
+
+const SAFE_PAGE = ALLOWED_PAGES.indexOf(requestedPage) !== -1 ? requestedPage : "main";
 
     try{
       localStorage.removeItem("wo_auth_token");
