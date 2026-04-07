@@ -1,0 +1,246 @@
+﻿<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تسجيل الدخول</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+
+  <style>
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      font-family:'Cairo',sans-serif;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+      background:
+        linear-gradient(rgba(34,50,67,.3), rgba(34,50,67,.3)),
+        url('https://drive.google.com/thumbnail?id=1kGABjKDT_tHkUbce1CWMVVFfrbfJ1_P7&sz=w1400');
+      background-size:cover;
+      background-position:center;
+      background-repeat:no-repeat;
+    }
+
+    .box{
+      width:100%;
+      max-width:380px;
+      background:rgba(255,255,255,.95);
+      border-radius:20px;
+      padding:30px 24px;
+      text-align:center;
+      box-shadow:0 20px 60px rgba(0,0,0,.28);
+      backdrop-filter: blur(6px);
+    }
+
+    .logo{
+      width:92px;
+      height:92px;
+      object-fit:cover;
+      border-radius:50%;
+      border:3px solid #fff;
+      box-shadow:0 8px 24px rgba(0,0,0,.22);
+      margin:0 auto 14px;
+      display:block;
+      background:#fff;
+    }
+
+    h2{
+      margin:0 0 6px;
+      color:#223243;
+      font-size:24px;
+      font-weight:900;
+    }
+
+    .sub{
+      margin:0 0 18px;
+      color:#6b7785;
+      font-size:14px;
+      font-weight:700;
+      line-height:1.7;
+    }
+
+    input{
+      width:100%;
+      padding:13px 14px;
+      border-radius:12px;
+      border:1px solid #ccd5dd;
+      margin-bottom:14px;
+      font-size:16px;
+      font-family:'Cairo',sans-serif;
+      outline:none;
+      text-align:center;
+      background:#fff;
+    }
+
+    input:focus{
+      border-color:#223243;
+      box-shadow:0 0 0 4px rgba(34,50,67,.08);
+    }
+
+    button{
+      width:100%;
+      padding:13px;
+      border:none;
+      background:linear-gradient(135deg,#223243,#2f4356);
+      color:#fff;
+      border-radius:12px;
+      font-size:16px;
+      font-family:'Cairo',sans-serif;
+      font-weight:900;
+      cursor:pointer;
+      transition:.2s;
+    }
+
+    button:hover{
+      transform:translateY(-1px);
+      box-shadow:0 10px 20px rgba(0,0,0,.18);
+    }
+
+    button:disabled{
+      opacity:.6;
+      cursor:not-allowed;
+      transform:none;
+      box-shadow:none;
+    }
+
+    #msg{
+      margin-top:12px;
+      min-height:24px;
+      font-size:14px;
+      font-weight:800;
+      color:#c0392b;
+    }
+
+    .ok{
+      color:#1e8449 !important;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="box">
+    <img src="https://drive.google.com/thumbnail?id=1NN7G2zhk7nhgXuPWGW4qE_pdGC-Ptjkt&sz=w500" class="logo" alt="Logo">
+
+    <h2>تسجيل الدخول</h2>
+    <div class="sub">منصة تتبع اوامر العمل<br>الشركة العامة للفحص والتأهيل الهندسي</div>
+
+    <input type="password" id="pass" placeholder="أدخل كلمة المرور" autocomplete="off">
+    <button id="btnLogin" type="button">دخول</button>
+
+    <div id="msg"></div>
+  </div>
+
+  <script>
+    const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycby_G6EVnLOX0cdZ9XR29xXbJeOAOYtOsWQaE1MijG3H_an3eqa4egZ4I-k4dUzczd-e/exec";
+
+    const PARAMS = new URLSearchParams(window.location.search);
+    const requestedPage = PARAMS.get("p") || "main";
+
+    try{
+      localStorage.removeItem("wo_auth_token");
+      localStorage.removeItem("wo_auth_role");
+      localStorage.removeItem("wo_auth_user");
+    }catch(e){}
+
+    function setMsg(text, isOk){
+      var el = document.getElementById("msg");
+      el.textContent = text || "";
+      el.className = isOk ? "ok" : "";
+    }
+
+    async function apiPost(payload){
+      const res = await fetch(GAS_WEBAPP_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8"
+        },
+        body: JSON.stringify(payload || {})
+      });
+
+      const text = await res.text();
+
+      if(!res.ok){
+        throw new Error("HTTP " + res.status + " | " + text.slice(0, 200));
+      }
+
+      try{
+        return JSON.parse(text);
+      }catch(e){
+        throw new Error("JSON parse error | " + text.slice(0, 200));
+      }
+    }
+
+    function goToApp(token, role, userName){
+      try{
+        localStorage.setItem("wo_auth_token", token || "");
+        localStorage.setItem("wo_auth_role", role || "");
+        localStorage.setItem("wo_auth_user", userName || "");
+      }catch(e){}
+
+      var page = requestedPage || "main";
+      var url = page + ".html?token=" + encodeURIComponent(token || "");
+
+      if(role){
+        url += "&role=" + encodeURIComponent(role);
+      }
+
+      if(userName){
+        url += "&user=" + encodeURIComponent(userName);
+      }
+
+      window.location.href = url;
+    }
+
+    async function login(){
+      var pass = String(document.getElementById("pass").value || "").trim();
+      var btn = document.getElementById("btnLogin");
+
+      if(!pass){
+        setMsg("⚠️ أدخل كلمة المرور", false);
+        return;
+      }
+
+      btn.disabled = true;
+      setMsg("جاري التحقق...", true);
+
+      try{
+        const res = await apiPost({
+          action: "login",
+          pass: pass
+        });
+
+        btn.disabled = false;
+
+        if(!res || !res.ok){
+          setMsg((res && (res.error || res.msg)) ? (res.error || res.msg) : "❌ كلمة المرور غير صحيحة", false);
+          return;
+        }
+
+        goToApp(res.token, res.role, res.userName || "");
+      }catch(err){
+        btn.disabled = false;
+        setMsg("❌ فشل الاتصال بالسيرفر", false);
+      }
+    }
+
+    document.getElementById("btnLogin").addEventListener("click", login);
+
+    document.getElementById("pass").addEventListener("keypress", function(e){
+      if(e.key === "Enter"){
+        login();
+      }
+    });
+
+    document.getElementById("pass").addEventListener("input", function(){
+      setMsg("", false);
+    });
+  </script>
+
+</body>
+</html>
