@@ -7,6 +7,45 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+  <script>
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+
+      const tokenFromUrl = params.get("token") || "";
+      const roleFromUrl  = params.get("role") || "";
+      const userFromUrl  = params.get("user") || "";
+
+      const tokenFromStorage = localStorage.getItem("wo_auth_token") || "";
+      const roleFromStorage  = localStorage.getItem("wo_auth_role") || "";
+      const userFromStorage  = localStorage.getItem("wo_auth_user") || "";
+
+      const finalToken = tokenFromUrl || tokenFromStorage;
+      const finalRole  = (roleFromUrl || roleFromStorage || "").trim().toLowerCase();
+      const finalUser  = userFromUrl || userFromStorage;
+
+      if (!finalToken) {
+        window.location.replace("login.html?p=main");
+        return;
+      }
+
+      try {
+        localStorage.setItem("wo_auth_token", finalToken);
+        if (finalRole) localStorage.setItem("wo_auth_role", finalRole);
+        if (finalUser) localStorage.setItem("wo_auth_user", finalUser);
+      } catch (e) {}
+
+      if (finalRole !== "admin") {
+        window.location.replace("main.html");
+        return;
+      }
+
+      if (tokenFromUrl || roleFromUrl || userFromUrl) {
+        const cleanUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+      }
+    })();
+  </script>
+
   <style>
     :root{
       --primary:#223243;
@@ -771,70 +810,185 @@
 
   function renderPages(pages){
     ALL_PAGES_CACHE = Array.isArray(pages) ? pages.slice() : [];
-
     const box = document.getElementById("pagesBox");
-    box.innerHTML = "";
 
     if(!ALL_PAGES_CACHE.length){
-      box.innerHTML = '<div class="empty">لا توجد صفحات</div>';
+      box.innerHTML = '<div class="empty">لا توجد صفحات متاحة</div>';
       return;
     }
 
-    ALL_PAGES_CACHE.forEach(function(p){
-      const page = String(p || "").trim();
-      const lower = page.toLowerCase();
-
-      if(lower === "index") return;
-
-      const item = document.createElement("label");
-      item.className = "page-item";
-      item.innerHTML =
-        '<input type="checkbox" value="' + escapeHtml(page) + '">' +
-        '<span>' + escapeHtml(page) + '</span>';
-      box.appendChild(item);
-    });
+    box.innerHTML = ALL_PAGES_CACHE.map(function(page){
+      const p = String(page || "").trim();
+      return ''
+        + '<label class="page-item">'
+        +   '<input type="checkbox" value="' + escapeHtml(p) + '">'
+        +   '<span>' + escapeHtml(p) + '</span>'
+        + '</label>';
+    }).join("");
   }
 
-  function renderUsersTable(list){
-    USERS_CACHE = Array.isArray(list) ? list.slice() : [];
-
+  function renderUsers(users){
+    USERS_CACHE = Array.isArray(users) ? users.slice() : [];
     const body = document.getElementById("usersBody");
 
     if(!USERS_CACHE.length){
-      body.innerHTML = '<tr><td colspan="4" class="empty">لا توجد بيانات</td></tr>';
+      body.innerHTML = '<tr><td colspan="4" class="empty">لا يوجد مستخدمون</td></tr>';
       return;
     }
 
-    let html = "";
+    body.innerHTML = USERS_CACHE.map(function(user){
+      const pass = String(user.password || "").trim();
+      const name = String(user.name || "").trim();
+      const pages = Array.isArray(user.pages)
+        ? user.pages.join(", ")
+        : String(user.pages || "").trim();
 
-    USERS_CACHE.forEach(function(u){
-      const pass = String(u.password || "").trim();
-      const name = String(u.name || "").trim();
-      const pages = Array.isArray(u.pages) ? u.pages.join(", ") : String(u.pages || "").trim();
-
-      html += '<tr>';
-      html +=   '<td>' + escapeHtml(pass) + '</td>';
-      html +=   '<td>' + escapeHtml(name) + '</td>';
-      html +=   '<td class="pages-cell">' + escapeHtml(pages || "—") + '</td>';
-      html +=   '<td class="action-cell">';
-      html +=     '<div class="action-box">';
-      html +=       '<button class="btn btn-primary btn-fill-user" type="button" data-pass="' + escapeHtml(pass) + '"><i class="fas fa-pen"></i> تعبئة</button>';
-      html +=       '<button class="btn btn-danger btn-remove-user" type="button" data-pass="' + escapeHtml(pass) + '"><i class="fas fa-trash"></i> حذف</button>';
-      html +=     '</div>';
-      html +=   '</td>';
-      html += '</tr>';
-    });
-
-    body.innerHTML = html;
+      return ''
+        + '<tr>'
+        +   '<td>' + escapeHtml(pass) + '</td>'
+        +   '<td>' + escapeHtml(name) + '</td>'
+        +   '<td class="pages-cell">' + escapeHtml(pages || "—") + '</td>'
+        +   '<td class="action-cell">'
+        +     '<div class="action-box">'
+        +       '<button class="btn btn-primary btn-fill-user" type="button" data-pass="' + escapeHtml(pass) + '">'
+        +         '<i class="fas fa-pen"></i> تعبئة'
+        +       '</button>'
+        +       '<button class="btn btn-danger btn-remove-user" type="button" data-pass="' + escapeHtml(pass) + '">'
+        +         '<i class="fas fa-trash"></i> حذف'
+        +       '</button>'
+        +     '</div>'
+        +   '</td>'
+        + '</tr>';
+    }).join("");
   }
 
-  function showConfirmBox(message, onConfirm){
-    const overlay = document.getElementById("confirmOverlay");
-    const msg = document.getElementById("confirmMessage");
+  async function loadAllPages(){
+    try{
+      const res = await apiGet("allPages", { token: AUTH_TOKEN });
+      if(!res || !res.ok){
+        renderPages([]);
+        setStatus("⚠️ تعذر تحميل الصفحات", false);
+        return;
+      }
+      renderPages(res.pages || []);
+    }catch(err){
+      renderPages([]);
+      setStatus("❌ فشل تحميل الصفحات: " + safeErr(err), false);
+    }
+  }
 
-    msg.textContent = message || "هل أنت متأكد؟";
-    confirmCallback = onConfirm || null;
-    overlay.style.display = "flex";
+  async function loadUsers(){
+    try{
+      setLoading(true);
+      const res = await apiGet("users", { token: AUTH_TOKEN });
+      setLoading(false);
+
+      if(!res || !res.ok){
+        renderUsers([]);
+        setStatus("⚠️ تعذر تحميل المستخدمين", false);
+        return;
+      }
+
+      renderUsers(res.items || []);
+      setStatus("تم تحميل المستخدمين بنجاح", true);
+    }catch(err){
+      setLoading(false);
+      renderUsers([]);
+      setStatus("❌ فشل تحميل المستخدمين: " + safeErr(err), false);
+      showMsg("❌ فشل تحميل المستخدمين", "err");
+    }
+  }
+
+  function validateForm(requirePages){
+    const pass = String(document.getElementById("pass").value || "").trim();
+    const name = String(document.getElementById("name").value || "").trim();
+    const pages = getCheckedPages();
+
+    if(!pass){
+      showMsg("⚠️ أدخل كلمة المرور", "warn");
+      return null;
+    }
+
+    if(!name){
+      showMsg("⚠️ أدخل الاسم", "warn");
+      return null;
+    }
+
+    if(requirePages && !pages.length){
+      showMsg("⚠️ اختر صفحة واحدة على الأقل", "warn");
+      return null;
+    }
+
+    return { pass: pass, name: name, pages: pages };
+  }
+
+  async function addUser(){
+    const form = validateForm(true);
+    if(!form) return;
+
+    try{
+      setLoading(true);
+      const res = await apiPost({
+        action: "addUser",
+        token: AUTH_TOKEN,
+        pass: form.pass,
+        name: form.name,
+        pages: form.pages
+      });
+      setLoading(false);
+
+      if(!res || !res.ok){
+        setStatus("❌ " + (res && (res.error || res.msg) ? (res.error || res.msg) : "فشل إضافة المستخدم"), false);
+        showMsg("❌ فشل إضافة المستخدم", "err");
+        return;
+      }
+
+      clearForm(true);
+      await loadUsers();
+      setStatus("✅ تم إضافة المستخدم بنجاح", true);
+      showMsg("✅ تمت إضافة المستخدم", "ok");
+    }catch(err){
+      setLoading(false);
+      setStatus("❌ فشل إضافة المستخدم: " + safeErr(err), false);
+      showMsg("❌ فشل إضافة المستخدم", "err");
+    }
+  }
+
+  async function updateUser(){
+    const form = validateForm(true);
+    if(!form) return;
+
+    try{
+      setLoading(true);
+      const res = await apiPost({
+        action: "updateUser",
+        token: AUTH_TOKEN,
+        pass: form.pass,
+        name: form.name,
+        pages: form.pages
+      });
+      setLoading(false);
+
+      if(!res || !res.ok){
+        setStatus("❌ " + (res && (res.error || res.msg) ? (res.error || res.msg) : "فشل تحديث المستخدم"), false);
+        showMsg("❌ فشل تحديث المستخدم", "err");
+        return;
+      }
+
+      await loadUsers();
+      setStatus("✅ تم تحديث المستخدم بنجاح", true);
+      showMsg("✅ تم تحديث المستخدم", "ok");
+    }catch(err){
+      setLoading(false);
+      setStatus("❌ فشل تحديث المستخدم: " + safeErr(err), false);
+      showMsg("❌ فشل تحديث المستخدم", "err");
+    }
+  }
+
+  function openConfirmBox(message, callback){
+    document.getElementById("confirmMessage").textContent = message || "هل أنت متأكد؟";
+    confirmCallback = callback;
+    document.getElementById("confirmOverlay").style.display = "flex";
   }
 
   function closeConfirmBox(){
@@ -842,206 +996,38 @@
     confirmCallback = null;
   }
 
-  async function loadAllPages(){
-    try{
-      const res = await apiGet("pages", {});
-      let pages = [];
+  async function removeUser(passArg){
+    const pass = String(passArg || document.getElementById("pass").value || "").trim();
 
-      if(Array.isArray(res)){
-        pages = res;
-      }else if(res && Array.isArray(res.pages)){
-        pages = res.pages;
-      }else{
-        pages = [
-          "index","plan","finance","lab1","workshop","elev",
-          "testresults","official","barcode","email","results","main","admin"
-        ];
-      }
-
-      renderPages(pages);
-    }catch(err){
-      renderPages([
-        "index","plan","finance","lab1","workshop","elev",
-        "testresults","official","barcode","email","results","main","admin"
-      ]);
-      console.log("pages load fallback:", safeErr(err));
-    }
-  }
-
-  async function loadUsers(){
-    try{
-      setLoading(true);
-
-      const res = await apiGet("users", { token: AUTH_TOKEN });
-      setLoading(false);
-
-      if(res && res.ok === false && (res.error || res.msg)){
-        setStatus("❌ " + (res.error || res.msg), false);
-        renderUsersTable([]);
-        return;
-      }
-
-      const list = Array.isArray(res) ? res : (res && res.items ? res.items : []);
-      renderUsersTable(list || []);
-      setStatus("✅ تم تحميل المستخدمين", true);
-    }catch(err){
-      setLoading(false);
-      setStatus("❌ فشل تحميل المستخدمين: " + safeErr(err), false);
-      showMsg("❌ فشل تحميل المستخدمين", "err");
-    }
-  }
-
-  function isDuplicateName(name, currentPass){
-    const target = normalizeName(name);
-    const current = String(currentPass || "").trim();
-
-    return USERS_CACHE.some(function(u){
-      const sameName = normalizeName(u.name) === target;
-      const samePass = String(u.password || "").trim() === current;
-      return sameName && !samePass;
-    });
-  }
-
-  async function addUser(){
-    const pass = String(document.getElementById("pass").value || "").trim();
-    const name = String(document.getElementById("name").value || "").trim();
-    const pages = getCheckedPages();
-
-    if(!pass || !name){
-      setStatus("⚠️ أكمل الحقول المطلوبة", false);
-      showMsg("⚠️ أكمل الحقول", "warn");
+    if(!pass){
+      showMsg("⚠️ أدخل كلمة المرور أو اختر مستخدماً من الجدول", "warn");
       return;
     }
 
-    if(!pages.length){
-      setStatus("⚠️ اختر صفحة واحدة على الأقل", false);
-      showMsg("⚠️ اختر صفحة واحدة على الأقل", "warn");
-      return;
-    }
-
-    if(isDuplicateName(name, "")){
-      setStatus("❌ الاسم موجود مسبقاً", false);
-      showMsg("❌ لا يسمح بتكرار الاسم", "err");
-      return;
-    }
-
-    try{
-      setLoading(true);
-
-      const res = await apiPost({
-        action: "addUser",
-        token: AUTH_TOKEN,
-        pass: pass,
-        name: name,
-        pages: pages
-      });
-
-      setLoading(false);
-
-      const msg = res && (res.msg || res.message || res.error || "");
-      if(res && res.ok){
-        showMsg(msg || "✅ تم إضافة المستخدم", "ok");
-        clearForm(true);
-        loadUsers();
-        setStatus(msg || "✅ تم إضافة المستخدم", true);
-      }else{
-        showMsg(msg || "تعذر الإضافة", "warn");
-        setStatus(msg || "تعذر الإضافة", false);
-      }
-    }catch(err){
-      setLoading(false);
-      setStatus("❌ خطأ: " + safeErr(err), false);
-      showMsg("❌ فشل الإضافة", "err");
-    }
-  }
-
-  async function updateUser(){
-    const pass = String(document.getElementById("pass").value || "").trim();
-    const name = String(document.getElementById("name").value || "").trim();
-    const pages = getCheckedPages();
-
-    if(!pass || !name){
-      setStatus("⚠️ أكمل الحقول المطلوبة", false);
-      showMsg("⚠️ أكمل الحقول", "warn");
-      return;
-    }
-
-    if(!pages.length){
-      setStatus("⚠️ اختر صفحة واحدة على الأقل", false);
-      showMsg("⚠️ اختر صفحة واحدة على الأقل", "warn");
-      return;
-    }
-
-    if(isDuplicateName(name, pass)){
-      setStatus("❌ الاسم موجود مسبقاً", false);
-      showMsg("❌ لا يسمح بتكرار الاسم", "err");
-      return;
-    }
-
-    try{
-      setLoading(true);
-
-      const res = await apiPost({
-        action: "updateUser",
-        token: AUTH_TOKEN,
-        pass: pass,
-        name: name,
-        pages: pages
-      });
-
-      setLoading(false);
-
-      const msg = res && (res.msg || res.message || res.error || "");
-      if(res && res.ok){
-        showMsg(msg || "✅ تم التحديث", "ok");
-        clearForm(true);
-        loadUsers();
-        setStatus(msg || "✅ تم التحديث", true);
-      }else{
-        showMsg(msg || "تعذر التحديث", "warn");
-        setStatus(msg || "تعذر التحديث", false);
-      }
-    }catch(err){
-      setLoading(false);
-      setStatus("❌ خطأ: " + safeErr(err), false);
-      showMsg("❌ فشل التحديث", "err");
-    }
-  }
-
-  function removeUser(pass){
-    const p = String(pass || document.getElementById("pass").value || "").trim();
-    if(!p){
-      setStatus("⚠️ أدخل كلمة المرور أو اختر مستخدمًا", false);
-      showMsg("⚠️ لا توجد كلمة مرور", "warn");
-      return;
-    }
-
-    showConfirmBox("هل أنت متأكد من حذف المستخدم ذو الباسورد " + p + " ؟", async function(){
+    openConfirmBox("هل أنت متأكد من حذف المستخدم؟", async function(){
       try{
         setLoading(true);
-
         const res = await apiPost({
           action: "deleteUser",
           token: AUTH_TOKEN,
-          pass: p
+          pass: pass
         });
-
         setLoading(false);
 
-        const msg = res && (res.msg || res.message || res.error || "");
-        if(res && res.ok){
-          showMsg(msg || "✅ تم الحذف", "ok");
-          clearForm(true);
-          loadUsers();
-          setStatus(msg || "✅ تم الحذف", true);
-        }else{
-          showMsg(msg || "تعذر الحذف", "warn");
-          setStatus(msg || "تعذر الحذف", false);
+        if(!res || !res.ok){
+          setStatus("❌ " + (res && (res.error || res.msg) ? (res.error || res.msg) : "فشل حذف المستخدم"), false);
+          showMsg("❌ فشل حذف المستخدم", "err");
+          return;
         }
+
+        clearForm(true);
+        await loadUsers();
+        setStatus("✅ تم حذف المستخدم بنجاح", true);
+        showMsg("✅ تم حذف المستخدم", "ok");
       }catch(err){
         setLoading(false);
-        setStatus("❌ خطأ: " + safeErr(err), false);
-        showMsg("❌ فشل الحذف", "err");
+        setStatus("❌ فشل حذف المستخدم: " + safeErr(err), false);
+        showMsg("❌ فشل حذف المستخدم", "err");
       }
     });
   }
@@ -1103,10 +1089,7 @@
 
   window.addEventListener("load", function(){
     if(String(CURRENT_USER_ROLE || "").toLowerCase() !== "admin"){
-      setStatus("❌ هذه الصفحة متاحة لمدير النظام فقط", false);
-      showMsg("❌ غير مصرح", "err");
-      document.querySelector(".panel").style.pointerEvents = "none";
-      document.querySelector(".panel").style.opacity = "0.6";
+      window.location.replace("main.html");
       return;
     }
 

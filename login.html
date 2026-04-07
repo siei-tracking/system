@@ -140,7 +140,10 @@
     const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycby_G6EVnLOX0cdZ9XR29xXbJeOAOYtOsWQaE1MijG3H_an3eqa4egZ4I-k4dUzczd-e/exec";
 
     const PARAMS = new URLSearchParams(window.location.search);
-    const requestedPage = PARAMS.get("p") || "main";
+    const requestedPage = String(PARAMS.get("p") || "main").trim().toLowerCase();
+
+    const ALLOWED_PAGES = ["main", "index", "admin"];
+    const SAFE_PAGE = ALLOWED_PAGES.indexOf(requestedPage) !== -1 ? requestedPage : "main";
 
     try{
       localStorage.removeItem("wo_auth_token");
@@ -179,19 +182,15 @@
     function goToApp(token, role, userName){
       try{
         localStorage.setItem("wo_auth_token", token || "");
-        localStorage.setItem("wo_auth_role", role || "");
+        localStorage.setItem("wo_auth_role", String(role || "").trim().toLowerCase());
         localStorage.setItem("wo_auth_user", userName || "");
       }catch(e){}
 
-      var page = requestedPage || "main";
-      var url = page + ".html?token=" + encodeURIComponent(token || "");
+      var page = SAFE_PAGE || "main";
+      var url = page + ".html";
 
-      if(role){
-        url += "&role=" + encodeURIComponent(role);
-      }
-
-      if(userName){
-        url += "&user=" + encodeURIComponent(userName);
+      if(page === "admin" && String(role || "").trim().toLowerCase() !== "admin"){
+        url = "main.html";
       }
 
       window.location.href = url;
