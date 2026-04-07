@@ -1,0 +1,689 @@
+﻿<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script>
+    (function () {
+      const params = new URLSearchParams(window.location.search);
+      const tokenFromUrl = params.get("token") || "";
+      const roleFromUrl  = params.get("role") || "";
+      const userFromUrl  = params.get("user") || "";
+
+      const tokenFromStorage = localStorage.getItem("wo_auth_token") || "";
+      const roleFromStorage  = localStorage.getItem("wo_auth_role") || "";
+      const userFromStorage  = localStorage.getItem("wo_auth_user") || "";
+
+      const finalToken = tokenFromUrl || tokenFromStorage;
+      const finalRole  = roleFromUrl || roleFromStorage;
+      const finalUser  = userFromUrl || userFromStorage;
+
+      if (!finalToken) {
+        window.location.replace("login.html?p=plan");
+        return;
+      }
+
+      try {
+        localStorage.setItem("wo_auth_token", finalToken);
+        if (finalRole) localStorage.setItem("wo_auth_role", finalRole);
+        if (finalUser) localStorage.setItem("wo_auth_user", finalUser);
+      } catch (e) {}
+
+      if (tokenFromUrl || roleFromUrl || userFromUrl) {
+        const cleanUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+      }
+    })();
+  </script>
+
+  <style>
+    :root{
+      --primary:#223243;
+      --accent:#f5a623;
+      --accent-dark:#e59712;
+      --bg:#eef2f6;
+      --card:rgba(255,255,255,0.92);
+      --line:#e5ebf1;
+      --muted:#758292;
+      --ok:#27ae60;
+      --danger:#e74c3c;
+      --warn:#f39c12;
+      --soft:#f8fafc;
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      font-family:'Cairo',sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(245,166,35,.08), transparent 24%),
+        radial-gradient(circle at top left, rgba(34,50,67,.05), transparent 30%),
+        var(--bg);
+      color:#111;
+    }
+
+    .company-header{
+      background-image:
+        linear-gradient(rgba(34,50,67,.3), rgba(34,50,67,.3)),
+        url('https://drive.google.com/thumbnail?id=1kGABjKDT_tHkUbce1CWMVVFfrbfJ1_P7&sz=w1400');
+      background-size:cover;
+      background-position:center;
+      padding:64px 5% 60px;
+      display:flex;
+      align-items:center;
+      gap:16px;
+      color:#fff;
+      flex-wrap:wrap;
+      justify-content:center;
+      text-align:center;
+      box-shadow:0 12px 28px rgba(0,0,0,.18);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .company-logo{
+      width:100px;
+      height:100px;
+      background:#fff;
+      border-radius:50%;
+      padding:5px;
+      object-fit:contain;
+      display:block;
+      flex-shrink:0;
+      box-shadow:
+        -1px -1px 0 rgba(0,0,0,0.1),
+         1px -1px 0 rgba(0,0,0,0.1),
+        -1px  1px 0 rgba(0,0,0,0.1),
+         1px  1px 0 rgba(0,0,0,0.1),
+         0 1px 4px rgba(0,0,0,0.1) !important;
+    }
+
+    .header-text{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:6px;
+    }
+
+    .header-text h1{
+      color:#fff !important;
+      margin:0;
+      font-size:30px !important;
+      font-weight:900 !important;
+      text-shadow:
+        -1px -1px 0 rgba(0,0,0,0.9),
+         1px -1px 0 rgba(0,0,0,0.9),
+        -1px  1px 0 rgba(0,0,0,0.9),
+         1px  1px 0 rgba(0,0,0,0.9),
+         0 4px 10px rgba(0,0,0,0.8) !important;
+    }
+
+    .header-text p{
+      color:#fff !important;
+      margin:0;
+      font-size:18px !important;
+      font-weight:900 !important;
+      text-shadow:
+        -1px -1px 0 rgba(0,0,0,0.9),
+         1px -1px 0 rgba(0,0,0,0.9),
+        -1px  1px 0 rgba(0,0,0,0.9),
+         1px  1px 0 rgba(0,0,0,0.9),
+         0 4px 10px rgba(0,0,0,0.8) !important;
+    }
+
+    .wrap{
+      padding:0 5% 30px;
+      display:flex;
+      justify-content:center;
+      position:relative;
+      margin-top:-40px;
+    }
+
+    .panel{
+      width:100%;
+      max-width:950px;
+      margin-top:13px;
+      background:rgba(255,255,255,0.92);
+      border-radius:22px;
+      padding:0;
+      box-shadow:
+        0 20px 50px rgba(0,0,0,.12),
+        0 6px 18px rgba(0,0,0,.06);
+      position:relative;
+      z-index:2;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border:1px solid rgba(255,255,255,.65);
+      overflow:hidden;
+    }
+
+    .panel-head{
+      padding:18px 20px;
+      border-bottom:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(243,156,18,0.08), transparent);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+    }
+
+    .title{
+      font-weight:900;
+      color:var(--primary);
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-size:20px;
+    }
+
+    .user-badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      background:#f8fafc;
+      border:1px solid #eef1f4;
+      border-radius:999px;
+      padding:8px 12px;
+      font-weight:900;
+      color:#223243;
+    }
+
+    .section{
+      padding:20px;
+      border-bottom:1px solid var(--line);
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:14px;
+    }
+
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .field label{
+      font-weight:900;
+      color:#223243;
+      font-size:15px;
+    }
+
+    input, select{
+      width:100%;
+      padding:13px 14px;
+      border-radius:12px;
+      border:1.5px solid var(--line);
+      font-family:'Cairo',sans-serif;
+      font-weight:900;
+      outline:none;
+      text-align:center;
+      background:#fff;
+      color:#1f2d3a;
+      min-height:48px;
+    }
+
+    input:focus, select:focus{
+      border-color:#d8b15d;
+      box-shadow:0 0 0 4px rgba(245,166,35,.10);
+    }
+
+    select:disabled, input:disabled{
+      background:#f3f5f7;
+      color:#7b8794;
+      cursor:not-allowed;
+    }
+
+    .btn-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:16px;
+    }
+
+    .btn{
+      padding:12px 16px;
+      border:none;
+      border-radius:12px;
+      font-family:'Cairo',sans-serif;
+      font-weight:900;
+      font-size:16px;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      transition:.2s;
+      white-space:nowrap;
+    }
+
+    .btn:hover{ transform:translateY(-1px); opacity:.96; }
+    .btn:disabled{ opacity:.6; cursor:not-allowed; transform:none; }
+
+    .btn-primary{
+      background:linear-gradient(180deg,#1e3c72,#162c52);
+      color:#fff;
+    }
+
+    .btn-ok{
+      background:linear-gradient(180deg,#2ebf68,#26a65b);
+      color:#fff;
+    }
+
+    .btn-ghost{
+      background:#eef2f6;
+      color:#1f2d3a;
+    }
+
+    #status{
+      padding:12px 20px;
+      border-bottom:1px solid var(--line);
+      font-weight:900;
+    }
+
+    #status.ok{ color:#1d5e3b; }
+    #status.bad{ color:var(--danger); }
+
+    .info-box{
+      background:#fafbfc;
+      border:1px solid #eef1f4;
+      border-radius:16px;
+      padding:16px;
+      line-height:1.9;
+      font-weight:900;
+      color:#223243;
+    }
+
+    .info-row{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+      margin-bottom:8px;
+    }
+
+    .info-row:last-child{
+      margin-bottom:0;
+    }
+
+    .muted{
+      color:var(--muted);
+    }
+
+    #toast{
+      position:fixed;
+      bottom:22px;
+      left:50%;
+      transform:translateX(-50%);
+      min-width:240px;
+      max-width:90%;
+      background:#223243;
+      color:#fff;
+      padding:12px 18px;
+      border-radius:12px;
+      font-weight:900;
+      font-family:'Cairo',sans-serif;
+      font-size:14px;
+      display:none;
+      z-index:99999;
+      text-align:center;
+      box-shadow:0 10px 25px rgba(0,0,0,.22);
+    }
+
+    #toast.ok{ background:#27ae60; }
+    #toast.warn{ background:#f39c12; }
+    #toast.err{ background:#e74c3c; }
+
+    @media (max-width:700px){
+      .grid{ grid-template-columns:1fr; }
+      .btn-row{ flex-direction:column; }
+      .btn{ width:100%; }
+      .header-text h1{ font-size:24px !important; }
+      .header-text p{ font-size:15px !important; }
+    }
+  </style>
+</head>
+<body>
+
+<header class="company-header">
+  <img src="https://drive.google.com/thumbnail?id=1NN7G2zhk7nhgXuPWGW4qE_pdGC-Ptjkt&sz=w500" class="company-logo" alt="logo">
+  <div class="header-text">
+    <h1>الشركة العامة للفحص والتأهيل الهندسي</h1>
+    <p><i class="fas fa-sitemap"></i> صفحة التخطيط</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="panel">
+
+    <div class="panel-head">
+      <div class="title"><i class="fas fa-clipboard-list"></i> إدخال بيانات التخطيط</div>
+      <div class="user-badge">
+        <i class="fas fa-user"></i>
+        <span id="userNameBadge">—</span>
+      </div>
+    </div>
+
+    <div id="status" class="ok">جاهز...</div>
+
+    <div class="section">
+      <div class="grid">
+        <div class="field">
+          <label for="orderNo">رقم أمر العمل</label>
+          <input id="orderNo" type="text" placeholder="أدخل رقم أمر العمل">
+        </div>
+
+        <div class="field">
+          <label for="testType">نوع الفحص</label>
+          <select id="testType">
+            <option value="">اختر نوع الفحص</option>
+            <option value="مختبرات">مختبرات</option>
+            <option value="مصاعد">مصاعد</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="labPath">التوجيه</label>
+          <select id="labPath">
+            <option value="">اختر التوجيه</option>
+            <option value="ورشة">ورشة</option>
+            <option value="مختبرات فقط">مختبرات فقط</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label for="userName">اسم المستخدم</label>
+          <input id="userName" type="text" readonly>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-primary" id="btnLoad" type="button">
+          <i class="fas fa-magnifying-glass"></i> جلب البيانات
+        </button>
+
+        <button class="btn btn-ok" id="btnSave" type="button">
+          <i class="fas fa-floppy-disk"></i> حفظ التخطيط
+        </button>
+
+        <button class="btn btn-ghost" id="btnClear" type="button">
+          <i class="fas fa-eraser"></i> مسح
+        </button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="info-box" id="resultBox">
+        <div class="info-row"><span class="muted">رقم أمر العمل:</span> <span id="infoOrderNo">—</span></div>
+        <div class="info-row"><span class="muted">الجهة المستفيدة:</span> <span id="clientName">—</span></div>
+        <div class="info-row"><span class="muted">الاستلام:</span> <span id="inspectionInfo">—</span></div>
+        <div class="info-row"><span class="muted">حالة التخطيط الحالية:</span> <span id="currentPlan">—</span></div>
+        <div class="info-row"><span class="muted">الشيت:</span> <span id="sheetName">—</span></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+  const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycby_G6EVnLOX0cdZ9XR29xXbJeOAOYtOsWQaE1MijG3H_an3eqa4egZ4I-k4dUzczd-e/exec";
+  const AUTH_TOKEN = localStorage.getItem("wo_auth_token") || "";
+  const CURRENT_USER = localStorage.getItem("wo_auth_user") || "";
+
+  document.getElementById("userName").value = CURRENT_USER || "";
+  document.getElementById("userNameBadge").textContent = CURRENT_USER || "غير معروف";
+
+  function safeErr(err){
+    try{
+      if(!err) return "Unknown error";
+      if(typeof err === "string") return err;
+      if(err.message) return err.message;
+      return JSON.stringify(err);
+    }catch(e){
+      return String(err);
+    }
+  }
+
+  function showMsg(text, type){
+    const t = document.getElementById("toast");
+    t.className = "";
+
+    if(type === "ok") t.classList.add("ok");
+    else if(type === "warn") t.classList.add("warn");
+    else if(type === "err") t.classList.add("err");
+
+    t.textContent = text || "";
+    t.style.display = "block";
+
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(function(){
+      t.style.display = "none";
+    }, 2500);
+  }
+
+  function setStatus(msg, ok){
+    const el = document.getElementById("status");
+    el.className = ok ? "ok" : "bad";
+    el.textContent = msg;
+  }
+
+  function normalizeVal(v){
+    v = String(v || "").trim();
+    return (v === "" || v === "—") ? "" : v;
+  }
+
+  function updateLabPathState(){
+    const testType = String(document.getElementById("testType").value || "").trim();
+    const labPathEl = document.getElementById("labPath");
+
+    if(testType === "مصاعد"){
+      labPathEl.value = "";
+      labPathEl.disabled = true;
+    }else{
+      labPathEl.disabled = false;
+    }
+  }
+
+  async function apiGet(action, params){
+    const qs = new URLSearchParams({ action: action });
+
+    Object.keys(params || {}).forEach(function(key){
+      const val = params[key];
+      if(val !== undefined && val !== null && val !== ""){
+        qs.append(key, val);
+      }
+    });
+
+    const res = await fetch(GAS_WEBAPP_URL + "?" + qs.toString(), {
+      method: "GET",
+      mode: "cors"
+    });
+
+    const text = await res.text();
+
+    if(!res.ok){
+      throw new Error("HTTP " + res.status + " | " + text.slice(0, 200));
+    }
+
+    try{
+      return JSON.parse(text);
+    }catch(e){
+      throw new Error("JSON parse error | " + text.slice(0, 200));
+    }
+  }
+
+  async function apiPost(payload){
+    const res = await fetch(GAS_WEBAPP_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify(payload || {})
+    });
+
+    const text = await res.text();
+
+    if(!res.ok){
+      throw new Error("HTTP " + res.status + " | " + text.slice(0, 200));
+    }
+
+    try{
+      return JSON.parse(text);
+    }catch(e){
+      throw new Error("JSON parse error | " + text.slice(0, 200));
+    }
+  }
+
+  function buildPlanningText(testType, labPath){
+    if(!testType) return "—";
+    if(testType === "مصاعد") return "نوع الفحص: مصاعد";
+    return "نوع الفحص: مختبرات | توجيه: " + (labPath || "—");
+  }
+
+  function fillPlanningFields(data){
+    const planning = normalizeVal(data.planning);
+    const testType = normalizeVal(data.testType);
+    const labPath = normalizeVal(data.labPath);
+
+    document.getElementById("infoOrderNo").textContent = data.orderNo || "—";
+    document.getElementById("clientName").textContent = data.clientName || "—";
+    document.getElementById("inspectionInfo").textContent = data.inspection || "—";
+    document.getElementById("sheetName").textContent = data.sourceSheet || "—";
+    document.getElementById("currentPlan").textContent =
+      planning || buildPlanningText(testType, labPath);
+
+    document.getElementById("testType").value = testType || "";
+    document.getElementById("labPath").value = labPath || "";
+
+    updateLabPathState();
+  }
+
+  async function loadPlanData(){
+    const orderNo = String(document.getElementById("orderNo").value || "").trim();
+
+    if(!orderNo){
+      setStatus("⚠️ أدخل رقم أمر العمل", false);
+      showMsg("⚠️ أدخل رقم أمر العمل", "warn");
+      return;
+    }
+
+    try{
+      setStatus("جاري جلب البيانات...", true);
+
+      const res = await apiGet("getTrackingData", {
+        order: orderNo,
+        token: AUTH_TOKEN
+      });
+
+      const data = res && (res.item || res);
+
+      if(!data || !data.orderNo){
+        setStatus("❌ لم يتم العثور على المعاملة", false);
+        showMsg("❌ لم يتم العثور على المعاملة", "err");
+        return;
+      }
+
+      fillPlanningFields(data);
+
+      setStatus("✅ تم جلب البيانات بنجاح", true);
+      showMsg("✅ تم جلب البيانات", "ok");
+    }catch(err){
+      setStatus("❌ فشل جلب البيانات: " + safeErr(err), false);
+      showMsg("❌ فشل جلب البيانات", "err");
+    }
+  }
+
+  async function savePlan(){
+    const orderNo = String(document.getElementById("orderNo").value || "").trim();
+    const testType = String(document.getElementById("testType").value || "").trim();
+    const labPath = String(document.getElementById("labPath").value || "").trim();
+    const userName = String(document.getElementById("userName").value || "").trim();
+
+    if(!orderNo){
+      setStatus("⚠️ أدخل رقم أمر العمل", false);
+      showMsg("⚠️ أدخل رقم أمر العمل", "warn");
+      return;
+    }
+
+    if(!testType){
+      setStatus("⚠️ اختر نوع الفحص", false);
+      showMsg("⚠️ اختر نوع الفحص", "warn");
+      return;
+    }
+
+    if(testType === "مختبرات" && !labPath){
+      setStatus("⚠️ اختر التوجيه", false);
+      showMsg("⚠️ اختر التوجيه", "warn");
+      return;
+    }
+
+    try{
+      setStatus("جاري حفظ التخطيط...", true);
+
+      const res = await apiPost({
+        action: "savePlanning",
+        token: AUTH_TOKEN,
+        orderNo: orderNo,
+        testType: testType,
+        labPath: testType === "مختبرات" ? labPath : "",
+        userName: userName
+      });
+
+      if(!res || !res.ok){
+        setStatus("❌ " + ((res && (res.error || res.msg)) || "فشل حفظ التخطيط"), false);
+        showMsg("❌ فشل حفظ التخطيط", "err");
+        return;
+      }
+
+      document.getElementById("currentPlan").textContent =
+        buildPlanningText(testType, testType === "مختبرات" ? labPath : "");
+
+      setStatus("✅ تم حفظ التخطيط بنجاح", true);
+      showMsg("✅ تم حفظ التخطيط", "ok");
+    }catch(err){
+      setStatus("❌ فشل حفظ التخطيط: " + safeErr(err), false);
+      showMsg("❌ فشل حفظ التخطيط", "err");
+    }
+  }
+
+  function clearForm(){
+    document.getElementById("orderNo").value = "";
+    document.getElementById("testType").value = "";
+    document.getElementById("labPath").value = "";
+    document.getElementById("labPath").disabled = false;
+
+    document.getElementById("infoOrderNo").textContent = "—";
+    document.getElementById("clientName").textContent = "—";
+    document.getElementById("inspectionInfo").textContent = "—";
+    document.getElementById("currentPlan").textContent = "—";
+    document.getElementById("sheetName").textContent = "—";
+
+    setStatus("تم مسح الحقول", true);
+  }
+
+  document.getElementById("btnLoad").addEventListener("click", loadPlanData);
+  document.getElementById("btnSave").addEventListener("click", savePlan);
+  document.getElementById("btnClear").addEventListener("click", clearForm);
+
+  document.getElementById("orderNo").addEventListener("keypress", function(e){
+    if(e.key === "Enter"){
+      e.preventDefault();
+      loadPlanData();
+    }
+  });
+
+  document.getElementById("testType").addEventListener("change", updateLabPathState);
+</script>
+
+</body>
+</html>
