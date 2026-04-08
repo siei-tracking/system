@@ -1,265 +1,320 @@
 ﻿<!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>تسجيل الدخول</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>نظام تتبع أوامر العمل</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
 
   <style>
+    :root{
+      --primary:#223243;
+      --primary-dark:#17232e;
+      --accent:#f5a623;
+      --accent-dark:#e59712;
+      --bg:#eef2f6;
+      --card:rgba(255,255,255,0.95);
+      --line:#e5ebf1;
+      --text:#223243;
+      --muted:#758292;
+      --shadow:0 20px 50px rgba(34,50,67,.18);
+    }
+
     *{ box-sizing:border-box; }
 
     body{
       margin:0;
-      font-family:'Cairo',sans-serif;
       min-height:100vh;
+      font-family:'Cairo',sans-serif;
+      color:var(--text);
+      background:
+        linear-gradient(rgba(34,50,67,.72), rgba(34,50,67,.72)),
+        url('https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1400&q=80') center/cover no-repeat fixed;
       display:flex;
       align-items:center;
       justify-content:center;
-      padding:16px;
-      background:
-        linear-gradient(rgba(34,50,67,.3), rgba(34,50,67,.3)),
-        url('https://drive.google.com/thumbnail?id=1kGABjKDT_tHkUbce1CWMVVFfrbfJ1_P7&sz=w1400');
-      background-size:cover;
-      background-position:center;
-      background-repeat:no-repeat;
+      padding:20px;
     }
 
-    .box{
+    .wrap{
       width:100%;
-      max-width:380px;
-      background:rgba(255,255,255,.95);
-      border-radius:20px;
-      padding:30px 24px;
-      text-align:center;
-      box-shadow:0 20px 60px rgba(0,0,0,.28);
-      backdrop-filter: blur(6px);
+      max-width:1000px;
     }
 
-    .logo{
-      width:92px;
-      height:92px;
-      object-fit:cover;
-      border-radius:50%;
-      border:3px solid #fff;
-      box-shadow:0 8px 24px rgba(0,0,0,.22);
-      margin:0 auto 14px;
-      display:block;
-      background:#fff;
+    .hero{
+      background:var(--card);
+      border:1px solid rgba(255,255,255,.45);
+      border-radius:28px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+      display:grid;
+      grid-template-columns:1.15fr .85fr;
+      backdrop-filter:blur(8px);
     }
 
-    h2{
-      margin:0 0 6px;
-      color:#223243;
-      font-size:24px;
-      font-weight:900;
+    .hero-left{
+      padding:46px 42px;
     }
 
-    .sub{
-      margin:0 0 18px;
-      color:#6b7785;
-      font-size:14px;
-      font-weight:700;
-      line-height:1.7;
-    }
-
-    input{
-      width:100%;
-      padding:13px 14px;
-      border-radius:12px;
-      border:1px solid #ccd5dd;
-      margin-bottom:14px;
-      font-size:16px;
-      font-family:'Cairo',sans-serif;
-      outline:none;
-      text-align:center;
-      background:#fff;
-    }
-
-    input:focus{
-      border-color:#223243;
-      box-shadow:0 0 0 4px rgba(34,50,67,.08);
-    }
-
-    button{
-      width:100%;
-      padding:13px;
-      border:none;
-      background:linear-gradient(135deg,#223243,#2f4356);
-      color:#fff;
-      border-radius:12px;
-      font-size:16px;
-      font-family:'Cairo',sans-serif;
-      font-weight:900;
-      cursor:pointer;
-      transition:.2s;
-    }
-
-    button:hover{
-      transform:translateY(-1px);
-      box-shadow:0 10px 20px rgba(0,0,0,.18);
-    }
-
-    button:disabled{
-      opacity:.6;
-      cursor:not-allowed;
-      transform:none;
-      box-shadow:none;
-    }
-
-    #msg{
-      margin-top:12px;
-      min-height:24px;
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 16px;
+      border-radius:999px;
+      background:#fff7e8;
+      color:#8a5b00;
       font-size:14px;
       font-weight:800;
-      color:#c0392b;
+      margin-bottom:18px;
+      border:1px solid #fde2aa;
     }
 
-    .ok{
-      color:#1e8449 !important;
+    .title{
+      margin:0 0 14px;
+      font-size:42px;
+      line-height:1.25;
+      color:var(--primary);
+      font-weight:900;
+    }
+
+    .desc{
+      margin:0 0 26px;
+      font-size:17px;
+      line-height:1.95;
+      color:#4d5c6c;
+      max-width:650px;
+    }
+
+    .actions{
+      display:flex;
+      flex-wrap:wrap;
+      gap:14px;
+      margin-bottom:28px;
+    }
+
+    .btn{
+      border:none;
+      border-radius:14px;
+      padding:15px 24px;
+      font-family:'Cairo',sans-serif;
+      font-size:16px;
+      font-weight:800;
+      cursor:pointer;
+      transition:.2s ease;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width:180px;
+    }
+
+    .btn-primary{
+      background:linear-gradient(180deg, var(--accent), var(--accent-dark));
+      color:#fff;
+      box-shadow:0 10px 24px rgba(245,166,35,.32);
+    }
+
+    .btn-primary:hover{
+      transform:translateY(-2px);
+    }
+
+    .btn-secondary{
+      background:#fff;
+      color:var(--primary);
+      border:1px solid var(--line);
+    }
+
+    .btn-secondary:hover{
+      transform:translateY(-2px);
+      background:#f8fafc;
+    }
+
+    .features{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:14px;
+      margin-top:14px;
+    }
+
+    .feature{
+      background:#fff;
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:18px 16px;
+    }
+
+    .feature h3{
+      margin:0 0 8px;
+      font-size:16px;
+      color:var(--primary);
+    }
+
+    .feature p{
+      margin:0;
+      font-size:13px;
+      line-height:1.8;
+      color:var(--muted);
+    }
+
+    .hero-right{
+      background:linear-gradient(180deg, #223243, #17232e);
+      color:#fff;
+      padding:36px 28px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .hero-right::before,
+    .hero-right::after{
+      content:"";
+      position:absolute;
+      border-radius:50%;
+      background:rgba(255,255,255,.06);
+    }
+
+    .hero-right::before{
+      width:240px;
+      height:240px;
+      top:-60px;
+      left:-60px;
+    }
+
+    .hero-right::after{
+      width:180px;
+      height:180px;
+      bottom:-50px;
+      right:-30px;
+    }
+
+    .side-title{
+      margin:0 0 14px;
+      font-size:28px;
+      font-weight:900;
+      position:relative;
+      z-index:1;
+    }
+
+    .side-text{
+      margin:0 0 22px;
+      line-height:2;
+      color:rgba(255,255,255,.88);
+      position:relative;
+      z-index:1;
+    }
+
+    .stats{
+      display:grid;
+      gap:12px;
+      position:relative;
+      z-index:1;
+    }
+
+    .stat{
+      background:rgba(255,255,255,.08);
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:18px;
+      padding:14px 16px;
+    }
+
+    .stat strong{
+      display:block;
+      font-size:15px;
+      margin-bottom:4px;
+    }
+
+    .stat span{
+      font-size:13px;
+      color:rgba(255,255,255,.78);
+    }
+
+    .footer-note{
+      text-align:center;
+      color:#eaf0f5;
+      margin-top:18px;
+      font-size:13px;
+    }
+
+    @media (max-width: 900px){
+      .hero{
+        grid-template-columns:1fr;
+      }
+      .title{
+        font-size:32px;
+      }
+      .features{
+        grid-template-columns:1fr;
+      }
     }
   </style>
 </head>
-
 <body>
 
-  <div class="box">
-    <img src="https://drive.google.com/thumbnail?id=1NN7G2zhk7nhgXuPWGW4qE_pdGC-Ptjkt&sz=w500" class="logo" alt="Logo">
+  <div class="wrap">
+    <div class="hero">
+      <div class="hero-left">
+        <div class="badge">نظام إلكتروني لإدارة وتتبع المعاملات</div>
 
-    <h2>تسجيل الدخول</h2>
-    <div class="sub">منصة تتبع اوامر العمل<br>الشركة العامة للفحص والتأهيل الهندسي</div>
+        <h1 class="title">نظام تتبع أوامر العمل</h1>
 
-    <input type="password" id="pass" placeholder="أدخل كلمة المرور" autocomplete="off">
-    <button id="btnLogin" type="button">دخول</button>
+        <p class="desc">
+          منصة مخصصة لمتابعة أوامر العمل والمعاملات بين الأقسام بصورة منظمة وواضحة،
+          مع إمكانية تسجيل الدخول والوصول إلى لوحة النظام الخاصة بالمستخدمين.
+        </p>
 
-    <div id="msg"></div>
+        <div class="actions">
+          <a class="btn btn-primary" href="login.html">تسجيل الدخول</a>
+          <a class="btn btn-secondary" href="main.html">الدخول إلى اللوحة</a>
+        </div>
+
+        <div class="features">
+          <div class="feature">
+            <h3>متابعة سهلة</h3>
+            <p>الوصول السريع إلى الصفحات والبحث عن المعاملات وعرض حالتها بشكل واضح.</p>
+          </div>
+          <div class="feature">
+            <h3>واجهة عربية</h3>
+            <p>تصميم متجاوب وواضح مناسب للاستخدام من الهاتف أو الحاسبة.</p>
+          </div>
+          <div class="feature">
+            <h3>جاهز للربط</h3>
+            <p>يعمل كواجهة Frontend على GitHub Pages ومربوط لاحقاً مع Apps Script.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-right">
+        <h2 class="side-title">الشركة العامة للفحص والتأهيل الهندسي</h2>
+        <p class="side-text">
+          صفحة رئيسية عامة مفتوحة للجميع. يمكن الانتقال منها إلى صفحة تسجيل الدخول
+          أو تجربة الوصول إلى لوحة النظام، والتي تتحقق من الجلسة تلقائياً.
+        </p>
+
+        <div class="stats">
+          <div class="stat">
+            <strong>Frontend على GitHub Pages</strong>
+            <span>واجهة ثابتة وسريعة وسهلة النشر والتحديث</span>
+          </div>
+          <div class="stat">
+            <strong>حماية صفحة اللوحة</strong>
+            <span>إذا لم توجد جلسة، يتم التحويل تلقائياً إلى login.html</span>
+          </div>
+          <div class="stat">
+            <strong>تكامل مع Google Apps Script</strong>
+            <span>تنفيذ تسجيل الدخول وجلب البيانات من Google Sheets</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      للدخول المباشر استخدم: <b>login.html</b> — وعلى GitHub يجب استخدام اسم الملف كاملاً.
+    </div>
   </div>
-
-  <script>
-    const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxDhWzy7hfLEXceMaDyEIb8vxGE9ZZMhn9OqnE3_NQ-nUm2ZDcfrvBebMM4jujCvtGs/exec";
-
-    const PARAMS = new URLSearchParams(window.location.search);
-    const requestedPage = String(PARAMS.get("p") || "main").trim().toLowerCase();
-
-    const ALLOWED_PAGES = [
-      "main",
-      "index",
-      "admin",
-      "plan",
-      "finance",
-      "lab1",
-      "workshop",
-      "elev",
-      "testresults",
-      "official",
-      "barcode",
-      "email",
-      "results"
-    ];
-
-    const SAFE_PAGE = ALLOWED_PAGES.indexOf(requestedPage) !== -1 ? requestedPage : "main";
-
-    try{
-      localStorage.removeItem("wo_auth_token");
-      localStorage.removeItem("wo_auth_role");
-      localStorage.removeItem("wo_auth_user");
-    }catch(e){}
-
-    function setMsg(text, isOk){
-      var el = document.getElementById("msg");
-      el.textContent = text || "";
-      el.className = isOk ? "ok" : "";
-    }
-
-    async function apiPost(payload){
-      const res = await fetch(GAS_WEBAPP_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "text/plain;charset=utf-8"
-        },
-        body: JSON.stringify(payload || {})
-      });
-
-      const text = await res.text();
-
-      if(!res.ok){
-        throw new Error("HTTP " + res.status + " | " + text.slice(0, 200));
-      }
-
-      try{
-        return JSON.parse(text);
-      }catch(e){
-        throw new Error("JSON parse error | " + text.slice(0, 200));
-      }
-    }
-
-    function goToApp(token, role, userName, page){
-      try{
-        localStorage.setItem("wo_auth_token", token || "");
-        localStorage.setItem("wo_auth_role", String(role || "").trim().toLowerCase());
-        localStorage.setItem("wo_auth_user", userName || "");
-      }catch(e){}
-
-      var targetPage = String(page || SAFE_PAGE || "main").trim().toLowerCase();
-
-      if(targetPage === "admin" && String(role || "").trim().toLowerCase() !== "admin"){
-        targetPage = "main";
-      }
-
-      window.location.href = targetPage + ".html";
-    }
-
-    async function login(){
-      var pass = String(document.getElementById("pass").value || "").trim();
-      var btn = document.getElementById("btnLogin");
-
-      if(!pass){
-        setMsg("⚠️ أدخل كلمة المرور", false);
-        return;
-      }
-
-      btn.disabled = true;
-      setMsg("جاري التحقق...", true);
-
-      try{
-        const res = await apiPost({
-          action: "login",
-          pass: pass,
-          requestedPage: SAFE_PAGE
-        });
-
-        btn.disabled = false;
-
-        if(!res || !res.ok){
-          setMsg((res && (res.error || res.msg)) ? (res.error || res.msg) : "❌ كلمة المرور غير صحيحة", false);
-          return;
-        }
-
-        goToApp(
-          res.token,
-          res.role,
-          res.userName || "",
-          res.requestedPage || SAFE_PAGE
-        );
-      }catch(err){
-        btn.disabled = false;
-        setMsg("❌ فشل الاتصال بالسيرفر", false);
-      }
-    }
-
-    document.getElementById("btnLogin").addEventListener("click", login);
-
-    document.getElementById("pass").addEventListener("keypress", function(e){
-      if(e.key === "Enter"){
-        login();
-      }
-    });
-
-    document.getElementById("pass").addEventListener("input", function(){
-      setMsg("", false);
-    });
-  </script>
 
 </body>
 </html>
