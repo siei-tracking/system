@@ -446,7 +446,7 @@
   </div>
 
   <script>
-    const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbzISknwW4oIriRDExb3LWMBmwHN7ec1oIyOpKOi5neNUkBMU4wWegGZ5er3zn98RCa5/exec";
+    const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxew6ap-sGzNI6fDWYMIdIkZDKhhhYzq3WeV4Fh6wNBS5ofAEorrB0DiLulMJIGoMz3/exec";
 
     function showError(msg){
       alert(msg);
@@ -592,12 +592,22 @@
       const orderID = document.getElementById("orderID");
       const btn = document.getElementById("btnTrack");
 
-      const id = (orderID.value || "").trim();
+      let id = (orderID.value || "").trim();
       if(!id) return showError("ادخل رقم المعاملة");
 
+      const ar = "٠١٢٣٤٥٦٧٨٩";
+      const en = "0123456789";
+      id = id.replace(/[٠-٩]/g, d => en[ar.indexOf(d)]);
+
+      const ar2 = "۰۱۲۳۴۵۶۷۸۹";
+      id = id.replace(/[۰-۹]/g, d => String(ar2.indexOf(d)));
+
+      id = id.replace(/\s+/g, " ").trim();
+      orderID.value = id;
+
       if(!GAS_WEBAPP_URL || !GAS_WEBAPP_URL.includes("/exec")){
-  return showError("⚠️ رابط Web App غير صحيح");
-}
+        return showError("⚠️ رابط Web App غير صحيح");
+      }
 
       btn.disabled = true;
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري...';
@@ -606,9 +616,9 @@
         const url = `${GAS_WEBAPP_URL}?action=trackingDataTrackingOnly&order=${encodeURIComponent(id)}&_t=${Date.now()}`;
 
         const response = await fetch(url, {
-  method: "GET",
-  mode: "cors"
-});
+          method: "GET",
+          mode: "cors"
+        });
 
         if(!response.ok){
           throw new Error("HTTP " + response.status);
@@ -618,6 +628,13 @@
 
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-magnifying-glass"></i> تتبع';
+
+        if (data && data.ok === false) {
+          document.getElementById("infoBar").style.display = 'none';
+          document.getElementById("stepperArea").innerHTML =
+            `<div class="empty"><i class="fas fa-circle-exclamation"></i> ${data.msg || "حدث خطأ في الطلب"}</div>`;
+          return;
+        }
 
         if(!data || !data.found){
           document.getElementById("infoBar").style.display = 'none';
