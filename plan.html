@@ -7,39 +7,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-<script>
-(function () {
-  const params = new URLSearchParams(window.location.search);
-  const tokenFromUrl = params.get("token") || "";
-  const roleFromUrl  = params.get("role") || "";
-  const userFromUrl  = params.get("user") || "";
-
-  const tokenFromStorage = localStorage.getItem("wo_auth_token") || "";
-  const roleFromStorage  = localStorage.getItem("wo_auth_role") || "";
-  const userFromStorage  = localStorage.getItem("wo_auth_user") || "";
-
-  const finalToken = tokenFromUrl || tokenFromStorage;
-  const finalRole  = roleFromUrl || roleFromStorage;
-  const finalUser  = userFromUrl || userFromStorage;
-
-  if (!finalToken) {
-    window.location.replace("login.html?p=plan");
-    return;
-  }
-
-  try {
-    localStorage.setItem("wo_auth_token", finalToken);
-    if (finalRole) localStorage.setItem("wo_auth_role", finalRole);
-    if (finalUser) localStorage.setItem("wo_auth_user", finalUser);
-  } catch (e) {}
-
-  if (tokenFromUrl || roleFromUrl || userFromUrl) {
-    const cleanUrl = window.location.origin + window.location.pathname;
-    window.history.replaceState({}, document.title, cleanUrl);
-  }
-})();
-</script>
-
 <style>
 :root{
   --primary:#223243;
@@ -148,11 +115,32 @@ body{
   font-size:13px;
   box-shadow:0 4px 12px rgba(231,76,60,.25);
   text-shadow:
-    -1px -1px 0 rgba(0,0,0,0.9),
-     1px -1px 0 rgba(0,0,0,0.9),
-    -1px  1px 0 rgba(0,0,0,0.9),
-     1px  1px 0 rgba(0,0,0,0.9),
-     0 4px 10px rgba(0,0,0,0.8) !important;
+  -1px -1px 0 rgba(0,0,0,0.9),
+   1px -1px 0 rgba(0,0,0,0.9),
+  -1px  1px 0 rgba(0,0,0,0.9),
+   1px  1px 0 rgba(0,0,0,0.9),
+   0 4px 10px rgba(0,0,0,0.8) !important;
+}
+
+.top-actions{
+  width:100%;
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  margin-top:10px;
+  flex-wrap:wrap;
+}
+
+.top-btn{
+  border:none;
+  border-radius:12px;
+  padding:10px 16px;
+  background:rgba(255,255,255,.18);
+  color:#fff;
+  font-family:'Cairo';
+  font-weight:900;
+  cursor:pointer;
+  border:1px solid rgba(255,255,255,.25);
 }
 
 .main-content{
@@ -267,18 +255,9 @@ body{
   transition:.65s;
 }
 
-.again:hover::before{
-  right:120%;
-}
-
-.again:hover{
-  transform:translateY(-2px);
-  opacity:.95;
-}
-
-.again i{
-  font-size:18px;
-}
+.again:hover::before{ right:120%; }
+.again:hover{ transform:translateY(-2px); opacity:.95; }
+.again i{ font-size:18px; }
 
 .tabs{
   display:flex;
@@ -414,10 +393,7 @@ input::placeholder{
   transition:.65s;
 }
 
-.main-action:hover::before{
-  right:120%;
-}
-
+.main-action:hover::before{ right:120%; }
 .main-action:hover{
   transform:translateY(-1px);
   filter:brightness(1.02);
@@ -474,7 +450,8 @@ input::placeholder{
   .again{ width:100%; }
 }
 
-#nID , #pID {
+/* توحيد حجم رقم أمر العمل */
+#nID, #pID{
   font-size:20px;
   font-weight:600;
   color:#000;
@@ -483,7 +460,7 @@ input::placeholder{
   width:100%;
 }
 
-#nID::placeholder , #pID::placeholder {
+#nID::placeholder, #pID::placeholder{
   height:40px;
   width:100%;
   font-size:16px;
@@ -539,11 +516,23 @@ input::placeholder{
 
   <div class="header-text">
     <h1>الشركة العامة للفحص والتأهيل الهندسي</h1>
+
     <p>
       <i class="fas fa-clipboard-list"></i>
       منصة تتبع اوامر العمل - اصدار امر العمل والتسعيرة
     </p>
+
     <div id="welcomeUser" class="user-pill"></div>
+
+    <div class="top-actions">
+      <button class="top-btn" type="button" onclick="goIndex()">
+        <i class="fas fa-house"></i> الصفحة الرئيسية
+      </button>
+
+      <button class="top-btn" type="button" onclick="logout()">
+        <i class="fas fa-right-from-bracket"></i> تسجيل الخروج
+      </button>
+    </div>
   </div>
 </header>
 
@@ -551,6 +540,7 @@ input::placeholder{
 <main class="main-content">
 
   <div class="card" id="cardForm">
+
     <div class="tabs">
       <button class="tab-btn primary" id="tabNew" type="button" onclick="switchTab('new')">
         <i class="fas fa-plus-circle"></i>
@@ -576,7 +566,7 @@ input::placeholder{
         </div>
       </div>
 
-      <button class="main-action" id="btnNew" type="button">
+      <button class="main-action" id="btnNew" type="button" onclick="saveNew()">
         اعتماد وحفظ البيانات
       </button>
     </div>
@@ -601,7 +591,7 @@ input::placeholder{
 
       <div class="field">
         <label>نوع الفحص</label>
-        <select id="pType">
+        <select id="pType" onchange="toggleLab(this.value)">
           <option value="">اختر النوع</option>
           <option value="مختبرات">الفحص المختبري</option>
           <option value="مصاعد">فحص المصاعد</option>
@@ -618,7 +608,7 @@ input::placeholder{
         </div>
       </div>
 
-      <button class="main-action" id="btnPrice" type="button">
+      <button class="main-action" id="btnPrice" type="button" onclick="savePrice()">
         اعتماد وحفظ البيانات
       </button>
     </div>
@@ -629,7 +619,7 @@ input::placeholder{
     <h2>تم الحفظ بنجاح</h2>
     <p id="successText">تم توثيق العملية في السجل الموحد.</p>
 
-    <button class="again" type="button" id="btnAgain">
+    <button class="again" type="button" onclick="resetAll()">
       <i class="fas fa-plus"></i>
       معاملة جديدة
     </button>
@@ -637,54 +627,71 @@ input::placeholder{
 
 </main>
 </div>
-
 </div>
 
 <div id="toast" class="toast"></div>
 
 <script>
-const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbx3dhMys8Cw0NZY2RlizWyCFkHcwOOvvnSR5Q2A4NIizHMqZ6fm2WmklwCSNaEeVCk0/exec";
-const PAGE_NAME = "plan";
-const AUTH_TOKEN = localStorage.getItem("wo_auth_token") || "";
-const CURRENT_USER = localStorage.getItem("wo_auth_user") || "";
+const API_BASE = "https://script.google.com/macros/s/AKfycbxDNDaXEN1011Y1Q_088C1yRsHqDir1dEY2-rYxmjYmbMOXOL_HpADnHH193FnhITWp/exec";
+const TOKEN_KEY = "app_token";
+const USER_KEY = "app_userName";
+const ROLE_KEY = "app_role";
 
-window.addEventListener("load", async function(){
-  const w = document.getElementById("welcomeUser");
-  if(CURRENT_USER && CURRENT_USER !== "مخول غير معروف"){
-    w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: ' + escapeHtml(CURRENT_USER);
-  } else {
-    w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: مخول غير معروف';
-  }
-
-  const allowed = await ensureCurrentPageAccess();
-  if(!allowed) return;
-
-  document.getElementById("btnNew").addEventListener("click", saveNew);
-  document.getElementById("btnPrice").addEventListener("click", savePrice);
-  document.getElementById("btnAgain").addEventListener("click", resetAll);
-  document.getElementById("pType").addEventListener("change", function(){
-    toggleLab(this.value);
-  });
-});
-
-function escapeHtml(text){
-  return String(text || "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+function normalizeOrderNo(value){
+  return String(value || "")
+    .replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d))
+    .replace(/[۰-۹]/g, d => "۰۱۲۳۴۵۶۷۸۹".indexOf(d))
+    .replace(/\s+/g, "")
+    .trim();
 }
 
-function safeErr(err){
-  try{
-    if(!err) return "Unknown error";
-    if(typeof err === "string") return err;
-    if(err.message) return err.message;
-    return JSON.stringify(err);
-  }catch(e){
-    return String(err);
+function getToken(){
+  return localStorage.getItem(TOKEN_KEY) || "";
+}
+
+function getUserName(){
+  return localStorage.getItem(USER_KEY) || "";
+}
+
+function clearSession(){
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(USER_KEY);
+  localStorage.removeItem(ROLE_KEY);
+}
+
+async function apiGet(params){
+  const url = new URL(API_BASE);
+  Object.keys(params || {}).forEach(function(k){
+    url.searchParams.set(k, params[k]);
+  });
+  url.searchParams.set("_t", Date.now());
+
+  const res = await fetch(url.toString(), {
+    method: "GET",
+    cache: "no-store"
+  });
+
+  if(!res.ok){
+    throw new Error("فشل الاتصال بالسيرفر");
   }
+
+  return await res.json();
+}
+
+async function apiPost(data){
+  const res = await fetch(API_BASE, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(data || {})
+  });
+
+  if(!res.ok){
+    throw new Error("فشل الاتصال بالسيرفر");
+  }
+
+  return await res.json();
 }
 
 function showToast(msg, type){
@@ -699,98 +706,6 @@ function showToast(msg, type){
   }, 3000);
 }
 
-async function apiGet(action, params){
-  const qs = new URLSearchParams({ action: action });
-
-  Object.keys(params || {}).forEach(function(key){
-    const val = params[key];
-    if(val !== undefined && val !== null && val !== ""){
-      qs.append(key, val);
-    }
-  });
-
-  const res = await fetch(GAS_WEBAPP_URL + "?" + qs.toString(), {
-    method: "GET",
-    mode: "cors"
-  });
-
-  const text = await res.text();
-
-  if(!res.ok){
-    throw new Error("HTTP " + res.status + " | " + text.slice(0, 300));
-  }
-
-  try{
-    return JSON.parse(text);
-  }catch(e){
-    throw new Error("JSON parse error | " + text.slice(0, 300));
-  }
-}
-
-async function apiPost(payload){
-  const res = await fetch(GAS_WEBAPP_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "text/plain;charset=utf-8"
-    },
-    body: JSON.stringify(payload || {})
-  });
-
-  const text = await res.text();
-
-  if(!res.ok){
-    throw new Error("HTTP " + res.status + " | " + text.slice(0, 300));
-  }
-
-  try{
-    return JSON.parse(text);
-  }catch(e){
-    throw new Error("JSON parse error | " + text.slice(0, 300));
-  }
-}
-
-async function ensureCurrentPageAccess(){
-  const token = localStorage.getItem("wo_auth_token") || "";
-
-  if(!token){
-    window.location.href = "login.html?p=" + PAGE_NAME;
-    return false;
-  }
-
-  try{
-    const data = await apiGet("checkAccess", {
-      token: token,
-      page: PAGE_NAME
-    });
-
-    if(!data || !data.ok){
-      showToast((data && data.error) ? data.error : "❌ غير مخول", "error");
-      setTimeout(function(){
-        window.location.href = "main.html";
-      }, 1200);
-      return false;
-    }
-
-    return true;
-  }catch(err){
-    const msg = safeErr(err);
-
-    if(msg.includes("انتهت الجلسة") || msg.includes("تسجيل الدخول غير صالح")){
-      showToast("❌ انتهت الجلسة", "error");
-      setTimeout(function(){
-        window.location.href = "login.html?p=" + PAGE_NAME;
-      }, 1200);
-      return false;
-    }
-
-    showToast("❌ تعذر التحقق من صلاحية الصفحة", "error");
-    setTimeout(function(){
-      window.location.href = "main.html";
-    }, 1200);
-    return false;
-  }
-}
-
 function switchTab(which){
   const tabNew = document.getElementById("tabNew");
   const tabPrice = document.getElementById("tabPrice");
@@ -800,15 +715,19 @@ function switchTab(which){
   if(which === "new"){
     secNew.classList.add("active");
     secPrice.classList.remove("active");
+
     tabNew.classList.add("primary");
     tabNew.classList.remove("ghost");
+
     tabPrice.classList.add("ghost");
     tabPrice.classList.remove("primary");
   }else{
     secPrice.classList.add("active");
     secNew.classList.remove("active");
+
     tabPrice.classList.add("primary");
     tabPrice.classList.remove("ghost");
+
     tabNew.classList.add("ghost");
     tabNew.classList.remove("primary");
   }
@@ -834,19 +753,70 @@ function resetAll(){
   toggleLab("");
   switchTab("new");
 
-  const btnNew = document.getElementById("btnNew");
-  const btnPrice = document.getElementById("btnPrice");
+  document.getElementById("btnNew").disabled = false;
+  document.getElementById("btnNew").innerHTML = "اعتماد وحفظ البيانات";
 
-  btnNew.disabled = false;
-  btnNew.innerHTML = "اعتماد وحفظ البيانات";
+  document.getElementById("btnPrice").disabled = false;
+  document.getElementById("btnPrice").innerHTML = "اعتماد وحفظ البيانات";
+}
 
-  btnPrice.disabled = false;
-  btnPrice.innerHTML = "اعتماد وحفظ البيانات";
+function goIndex(){
+  window.location.href = "index.html";
+}
+
+async function logout(){
+  const token = getToken();
+
+  try{
+    if(token){
+      await apiPost({
+        action: "logout",
+        token: token
+      });
+    }
+  }catch(_){}
+
+  clearSession();
+  window.location.href = "login.html?page=plan";
+}
+
+async function requireAuth(){
+  const token = getToken();
+
+  if(!token){
+    window.location.href = "login.html?page=plan";
+    return false;
+  }
+
+  try{
+    const res = await apiGet({
+      action: "checkSession",
+      token: token,
+      page: "plan"
+    });
+
+    if(!res || !res.ok || !res.valid || !res.allowed){
+      clearSession();
+      window.location.href = "login.html?page=plan";
+      return false;
+    }
+
+    const userName = res.userName || getUserName() || "مخول غير معروف";
+    const w = document.getElementById("welcomeUser");
+    w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: ' + userName;
+    return true;
+
+  }catch(_){
+    clearSession();
+    window.location.href = "login.html?page=plan";
+    return false;
+  }
 }
 
 async function saveNew(){
-  const id = document.getElementById("nID").value.trim();
-  const cl = document.getElementById("nClient").value.trim();
+  const id = normalizeOrderNo(document.getElementById("nID").value);
+  const cl = String(document.getElementById("nClient").value || "").trim();
+  const userName = getUserName() || "مخول غير معروف";
 
   if(!id || !cl){
     showToast("اكمل البيانات", "warn");
@@ -858,42 +828,25 @@ async function saveNew(){
   btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
 
   try{
-    const res = await apiPost({
+    const r = await apiPost({
       action: "addNewOrder",
-      token: AUTH_TOKEN,
       orderNo: id,
       clientName: cl,
-      userName: CURRENT_USER
+      userName: userName
     });
 
-    if(res && (res.ok || String(res.msg || "").includes("✅") || String(res.message || "").includes("✅"))){
+    const msg = String((r && (r.message || r.error)) || "");
+
+    if(r && r.ok && msg.includes("✅")){
       showSuccess("تم إضافة أمر العمل وتوثيقة");
       showToast("تم الحفظ بنجاح", "success");
     }else{
-      showToast((res && (res.error || res.msg || res.message)) || "تعذر حفظ البيانات", "error");
+      showToast(msg || "تعذر حفظ البيانات", "error");
       btn.disabled = false;
       btn.innerHTML = "اعتماد وحفظ البيانات";
     }
   }catch(err){
-    const msg = safeErr(err);
-
-    if(msg.includes("غير مصرح")){
-      showToast("❌ غير مصرح لك بالدخول إلى صفحة التخطيط", "error");
-      setTimeout(function(){
-        window.location.href = "main.html";
-      }, 1200);
-      return;
-    }
-
-    if(msg.includes("انتهت الجلسة") || msg.includes("تسجيل الدخول غير صالح")){
-      showToast("❌ انتهت الجلسة", "error");
-      setTimeout(function(){
-        window.location.href = "login.html?p=" + PAGE_NAME;
-      }, 1200);
-      return;
-    }
-
-    showToast("خطأ: " + msg, "error");
+    showToast("خطأ: " + (err && err.message ? err.message : err), "error");
     btn.disabled = false;
     btn.innerHTML = "اعتماد وحفظ البيانات";
   }
@@ -901,16 +854,16 @@ async function saveNew(){
 
 async function savePrice(){
   const type = document.getElementById("pType").value;
+  const userName = getUserName() || "مخول غير معروف";
 
   const d = {
     action: "processPlanning",
-    token: AUTH_TOKEN,
-    orderNo: document.getElementById("pID").value.trim(),
-    price: document.getElementById("pVal").value.trim(),
-    days: document.getElementById("pDays").value.trim(),
+    orderNo: normalizeOrderNo(document.getElementById("pID").value),
+    price: String(document.getElementById("pVal").value || "").trim(),
+    days: String(document.getElementById("pDays").value || "").trim(),
     testType: type,
     labPath: (type === "مختبرات") ? document.getElementById("pLabVal").value : "",
-    userName: CURRENT_USER
+    userName: userName
   };
 
   if(!d.orderNo || !d.testType){
@@ -923,40 +876,28 @@ async function savePrice(){
   btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
 
   try{
-    const res = await apiPost(d);
+    const r = await apiPost(d);
+    const msg = String((r && (r.message || r.error)) || "");
 
-    if(res && (res.ok || String(res.msg || "").includes("✅") || String(res.message || "").includes("✅"))){
+    if(r && r.ok && msg.includes("✅")){
       showSuccess("تم تثبيت التسعيرة وعدد الايام وتوثيقة");
       showToast("تم تثبيت التسعيرة بنجاح", "success");
     }else{
-      showToast((res && (res.error || res.msg || res.message)) || "تعذر حفظ البيانات", "error");
+      showToast(msg || "تعذر حفظ البيانات", "error");
       btn.disabled = false;
       btn.innerHTML = "اعتماد وحفظ البيانات";
     }
   }catch(err){
-    const msg = safeErr(err);
-
-    if(msg.includes("غير مصرح")){
-      showToast("❌ غير مصرح لك بالدخول إلى صفحة التخطيط", "error");
-      setTimeout(function(){
-        window.location.href = "main.html";
-      }, 1200);
-      return;
-    }
-
-    if(msg.includes("انتهت الجلسة") || msg.includes("تسجيل الدخول غير صالح")){
-      showToast("❌ انتهت الجلسة", "error");
-      setTimeout(function(){
-        window.location.href = "login.html?p=" + PAGE_NAME;
-      }, 1200);
-      return;
-    }
-
-    showToast("خطأ: " + msg, "error");
+    showToast("خطأ: " + (err && err.message ? err.message : err), "error");
     btn.disabled = false;
     btn.innerHTML = "اعتماد وحفظ البيانات";
   }
 }
+
+window.addEventListener("load", async function(){
+  toggleLab("");
+  await requireAuth();
+});
 </script>
 
 </body>
