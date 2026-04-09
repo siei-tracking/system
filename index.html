@@ -433,229 +433,244 @@
 
   </div>
 
-  <script>
-    /* ضع هنا رابط Google Apps Script Web App /exec */
-    const API_BASE = "https://script.google.com/macros/s/AKfycbxDNDaXEN1011Y1Q_088C1yRsHqDir1dEY2-rYxmjYmbMOXOL_HpADnHH193FnhITWp/exec";
+ <script>
+  const API_BASE = "https://script.google.com/macros/s/AKfycbwlfQBNdbqiomWXBF6SPvGURgOklgeAbJTBK18NUS_wx30MJWdSF0EhPSKkw5WCiuM/exec";
 
-    function showError(msg){
-      alert(msg);
-      console.error(msg);
+  function showError(msg){
+    alert(msg);
+    console.error(msg);
+  }
+
+  function clearOrder(){
+    document.getElementById('orderID').value = '';
+    document.getElementById('stepperArea').innerHTML = '';
+    document.getElementById('infoBar').style.display = 'none';
+  }
+
+  function normalizeOrderNo(value){
+    return String(value || "")
+      .replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d))
+      .replace(/[۰-۹]/g, d => "۰۱۲۳۴۵۶۷۸۹".indexOf(d))
+      .replace(/\s+/g, "")
+      .trim();
+  }
+
+  function isReceiveDone(v){
+    v = String(v || "");
+    return v.includes("✅") && v.includes("استلام");
+  }
+
+  function isOkDone(v){
+    v = String(v || "");
+    return v.includes("✅");
+  }
+
+  function formatSub(val, done, cls){
+    if(!done){
+      return (cls.indexOf("next") !== -1)
+        ? '<div class="sub-date">الخطوة الحالية</div>'
+        : '<div class="sub-date">بانتظار</div>';
     }
 
-    function clearOrder(){
-      document.getElementById('orderID').value = '';
-      document.getElementById('stepperArea').innerHTML = '';
-      document.getElementById('infoBar').style.display = 'none';
+    val = String(val || "");
+    val = val.replace("✅","")
+             .replace("استلام -","")
+             .replace("استلام","")
+             .trim();
+
+    val = val.replace(/\(.*?\)/g, "").trim();
+
+    var m = val.match(/\d{4}-\d{2}-\d{2}\s*\|\s*\d{2}:\d{2}/);
+
+    if(m && m[0]){
+      return '<div class="sub-date">' + m[0].trim() + '</div>';
     }
 
-    function isReceiveDone(v){
-      v = String(v || "");
-      return v.includes("✅") && v.includes("استلام");
-    }
+    return '<div class="sub-date">' + val + '</div>';
+  }
 
-    function isOkDone(v){
-      v = String(v || "");
-      return v.includes("✅");
-    }
+  function buildStepper(data){
+    const pricingDone = isOkDone(data.pricing);
+    const testType = String(data.testType || "").trim();
+    const labPath = String(data.labPath || "").trim();
 
-    function formatSub(val, done, cls){
-      if(!done){
-        return (cls.indexOf("next") !== -1)
-          ? '<div class="sub-date">الخطوة الحالية</div>'
-          : '<div class="sub-date">بانتظار</div>';
-      }
+    const workflowReady = pricingDone && !!testType;
 
-      val = String(val || "");
-      val = val.replace("✅","")
-               .replace("استلام -","")
-               .replace("استلام","")
-               .trim();
+    let steps = [
+      {key:"inspection", label:"استلام المعاملة", icon:"fa-handshake", doneFn:isReceiveDone},
+      {key:"pricing",    label:"التسعيرة",        icon:"fa-receipt", doneFn:isOkDone}
+    ];
 
-      val = val.replace(/.*?/, "").trim();
+    if(workflowReady){
+      steps.push({key:"payment", label:"التسديد", icon:"fa-sack-dollar", doneFn:isOkDone});
 
-      var m = val.match(/\d{4}-\d{2}-\d{2}\s*\|\s*\d{2}:\d{2}/);
-
-      if(m && m[0]){
-        return '<div class="sub-date">' + m[0].trim() + '</div>';
-      }
-
-      return '<div class="sub-date">' + val + '</div>';
-    }
-
-    function buildStepper(data){
-      const pricingDone = isOkDone(data.pricing);
-      const testType = String(data.testType || "").trim();
-      const labPath = String(data.labPath || "").trim();
-
-      const workflowReady = pricingDone && !!testType;
-
-      let steps = [
-        {key:"inspection", label:"استلام المعاملة", icon:"fa-handshake", doneFn:isReceiveDone},
-        {key:"pricing",    label:"التسعيرة",        icon:"fa-receipt", doneFn:isOkDone}
-      ];
-
-      if(workflowReady){
-        steps.push({key:"payment", label:"التسديد", icon:"fa-sack-dollar", doneFn:isOkDone});
-
-        if(testType === "مصاعد"){
-          steps.push({key:"elev", label:"المصاعد", icon:"fa-elevator", doneFn:isReceiveDone});
-        }else{
-          steps.push({key:"lab1", label:"المختبرات", icon:"fa-microscope", doneFn:isReceiveDone});
-          if(labPath !== "مختبرات فقط"){
-            steps.push({key:"workshop", label:"الورشة", icon:"fa-screwdriver-wrench", doneFn:isReceiveDone});
-            steps.push({key:"lab2", label:"المختبرات", icon:"fa-flask-vial", doneFn:isReceiveDone});
-          }
-        }
-
-        steps.push({key:"testResults", label:"نتائج الفحص", icon:"fa-clipboard-check", doneFn:isReceiveDone});
-        steps.push({key:"official",    label:"الكتاب",      icon:"fa-file-signature", doneFn:isReceiveDone});
-        steps.push({key:"barcode",     label:"الباركود",    icon:"fa-qrcode", doneFn:isReceiveDone});
-        steps.push({key:"email",       label:"الايميل",     icon:"fa-paper-plane", doneFn:isReceiveDone});
-        steps.push({key:"final",       label:"استلام النتائج", icon:"fa-flag-checkered", doneFn:isReceiveDone});
-      }
-
-      let firstPending = false;
-      let html = '<div class="stepper-scroll"><div class="stepper">';
-
-      steps.forEach(s => {
-        const val = String((data && data[s.key]) || "");
-        const done = s.doneFn(val);
-
-        let cls = "node";
-        if(done){
-          cls += " done";
-        }else if(!firstPending){
-          cls += " next";
-          firstPending = true;
-        }else{
-          cls += " locked";
-        }
-
-        const subHtml = formatSub(val, done, cls);
-
-        html += `
-          <div class="${cls}">
-            <div class="circle"><i class="fas ${s.icon}"></i></div>
-            <div class="label">${s.label}</div>
-            <div class="sub">${subHtml}</div>
-          </div>
-        `;
-      });
-
-      html += '</div></div>';
-
-      if(!workflowReady){
-        html += `
-          <div class="workflow-note" id="workflowNote">
-            <i class="fas fa-circle-info"></i>
-            تظهر بقية المراحل بعد تثبيت التسعيرة ونوع الفحص
-          </div>
-        `;
-      }
-
-      document.getElementById("stepperArea").innerHTML = html;
-
-      const next = document.querySelector('.node.next');
-      if(next){
-        next.scrollIntoView({
-          behavior:'smooth',
-          inline:'center',
-          block:'nearest'
-        });
+      if(testType === "مصاعد"){
+        steps.push({key:"elev", label:"المصاعد", icon:"fa-elevator", doneFn:isReceiveDone});
       }else{
-        const nodes = document.querySelectorAll('.node');
-        const last = nodes[nodes.length - 1];
-        if(last){
-          last.scrollIntoView({
-            behavior:'smooth',
-            inline:'end',
-            block:'nearest'
-          });
+        steps.push({key:"lab1", label:"المختبرات", icon:"fa-microscope", doneFn:isReceiveDone});
+        if(labPath !== "مختبرات فقط"){
+          steps.push({key:"workshop", label:"الورشة", icon:"fa-screwdriver-wrench", doneFn:isReceiveDone});
+          steps.push({key:"lab2", label:"المختبرات", icon:"fa-flask-vial", doneFn:isReceiveDone});
         }
       }
+
+      steps.push({key:"testResults", label:"نتائج الفحص", icon:"fa-clipboard-check", doneFn:isReceiveDone});
+      steps.push({key:"official",    label:"الكتاب",      icon:"fa-file-signature", doneFn:isReceiveDone});
+      steps.push({key:"barcode",     label:"الباركود",    icon:"fa-qrcode", doneFn:isReceiveDone});
+      steps.push({key:"email",       label:"الايميل",     icon:"fa-paper-plane", doneFn:isReceiveDone});
+      steps.push({key:"final",       label:"استلام النتائج", icon:"fa-flag-checkered", doneFn:isReceiveDone});
     }
 
-    async function fetchTrackingData(orderId){
-      if(!API_BASE || API_BASE.includes("PUT_YOUR_WEB_APP_EXEC_URL_HERE")){
-        throw new Error("لم يتم وضع رابط Web App داخل المتغير API_BASE");
+    let firstPending = false;
+    let html = '<div class="stepper-scroll"><div class="stepper">';
+
+    steps.forEach(s => {
+      const val = String((data && data[s.key]) || "");
+      const done = s.doneFn(val);
+
+      let cls = "node";
+      if(done){
+        cls += " done";
+      }else if(!firstPending){
+        cls += " next";
+        firstPending = true;
+      }else{
+        cls += " locked";
       }
 
-      const url = new URL(API_BASE);
-      url.searchParams.set("action", "tracking");
-      url.searchParams.set("order", orderId);
+      const subHtml = formatSub(val, done, cls);
 
-      const res = await fetch(url.toString(), {
-        method: "GET"
-      });
-
-      if(!res.ok){
-        throw new Error("فشل الاتصال بالسيرفر");
-      }
-
-      return await res.json();
-    }
-
-    async function loadTracking(){
-      const orderID = document.getElementById("orderID");
-      const btn = document.getElementById("btnTrack");
-      const id = (orderID.value || "").trim();
-
-      if(!id) return showError("ادخل رقم المعاملة");
-
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري...';
-
-      try{
-        const data = await fetchTrackingData(id);
-
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-magnifying-glass"></i> تتبع';
-
-        if(!data || !data.found){
-          document.getElementById("infoBar").style.display = 'none';
-          document.getElementById("stepperArea").innerHTML =
-            '<div class="empty"><i class="fas fa-circle-exclamation"></i> المعاملة غير موجودة</div>';
-          return;
-        }
-
-        document.getElementById("infoBar").style.display = 'flex';
-        document.getElementById("clientName").innerText = data.clientName || "—";
-
-        const type = String(data.testType || "").trim();
-        const pricingDone = isOkDone(data.pricing);
-        const badge = document.getElementById("typeBadge");
-
-        if(!pricingDone || !type){
-          badge.innerHTML = '<i class="fas fa-hourglass-half"></i> <span id="testTypeText">بانتظار التسعيرة وتحديد الفحص</span>';
-        }else if(type === "مصاعد"){
-          badge.innerHTML = '<i class="fas fa-elevator"></i> <span id="testTypeText">مصاعد</span>';
-        }else if(type === "مختبرات"){
-          badge.innerHTML = '<i class="fas fa-microscope"></i> <span id="testTypeText">مختبرات</span>';
-        }else{
-          badge.innerHTML = '<i class="fas fa-triangle-exclamation"></i> <span id="testTypeText">نوع الفحص غير محدد</span>';
-        }
-
-        buildStepper(data);
-      }catch(err){
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-magnifying-glass"></i> تتبع';
-        const msg = (err && err.message) ? err.message : String(err || "Unknown error");
-        showError("❌ خطأ:\n" + msg);
-      }
-    }
-
-    window.addEventListener("load", () => {
-      const inp = document.getElementById("orderID");
-      if(inp){
-        inp.addEventListener("keydown", (e) => {
-          if(e.key === "Enter") loadTracking();
-        });
-      }
+      html += `
+        <div class="${cls}">
+          <div class="circle"><i class="fas ${s.icon}"></i></div>
+          <div class="label">${s.label}</div>
+          <div class="sub">${subHtml}</div>
+        </div>
+      `;
     });
 
-    window.loadTracking = loadTracking;
-    window.clearOrder = clearOrder;
-  </script>
+    html += '</div></div>';
+
+    if(!workflowReady){
+      html += `
+        <div class="workflow-note" id="workflowNote">
+          <i class="fas fa-circle-info"></i>
+          تظهر بقية المراحل بعد تثبيت التسعيرة ونوع الفحص
+        </div>
+      `;
+    }
+
+    document.getElementById("stepperArea").innerHTML = html;
+
+    const next = document.querySelector('.node.next');
+    if(next){
+      next.scrollIntoView({
+        behavior:'smooth',
+        inline:'center',
+        block:'nearest'
+      });
+    }else{
+      const nodes = document.querySelectorAll('.node');
+      const last = nodes[nodes.length - 1];
+      if(last){
+        last.scrollIntoView({
+          behavior:'smooth',
+          inline:'end',
+          block:'nearest'
+        });
+      }
+    }
+  }
+
+  async function fetchTrackingData(orderId){
+    if(!API_BASE || API_BASE.includes("PUT_YOUR_WEB_APP_EXEC_URL_HERE")){
+      throw new Error("لم يتم وضع رابط Web App داخل المتغير API_BASE");
+    }
+
+    const url = new URL(API_BASE);
+    url.searchParams.set("action", "trackingDataFromTrackingOnly");
+    url.searchParams.set("order", orderId);
+    url.searchParams.set("_t", Date.now());
+
+    const res = await fetch(url.toString(), {
+      method: "GET",
+      cache: "no-store"
+    });
+
+    if(!res.ok){
+      throw new Error("فشل الاتصال بالسيرفر");
+    }
+
+    const data = await res.json();
+
+    if(data && data.ok === false && data.error){
+      throw new Error(data.error);
+    }
+
+    return data;
+  }
+
+  async function loadTracking(){
+    const orderID = document.getElementById("orderID");
+    const btn = document.getElementById("btnTrack");
+    const id = normalizeOrderNo(orderID.value || "");
+
+    if(!id) return showError("ادخل رقم المعاملة");
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري...';
+
+    try{
+      const data = await fetchTrackingData(id);
+
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-magnifying-glass"></i> تتبع';
+
+      if(!data || data.ok === false || data.found === false){
+        document.getElementById("infoBar").style.display = 'none';
+        document.getElementById("stepperArea").innerHTML =
+          '<div class="empty"><i class="fas fa-circle-exclamation"></i> المعاملة غير موجودة</div>';
+        return;
+      }
+
+      document.getElementById("infoBar").style.display = 'flex';
+      document.getElementById("clientName").innerText = data.clientName || "—";
+
+      const type = String(data.testType || "").trim();
+      const pricingDone = isOkDone(data.pricing);
+      const badge = document.getElementById("typeBadge");
+
+      if(!pricingDone || !type){
+        badge.innerHTML = '<i class="fas fa-hourglass-half"></i> <span id="testTypeText">بانتظار التسعيرة وتحديد الفحص</span>';
+      }else if(type === "مصاعد"){
+        badge.innerHTML = '<i class="fas fa-elevator"></i> <span id="testTypeText">مصاعد</span>';
+      }else if(type === "مختبرات"){
+        badge.innerHTML = '<i class="fas fa-microscope"></i> <span id="testTypeText">مختبرات</span>';
+      }else{
+        badge.innerHTML = '<i class="fas fa-triangle-exclamation"></i> <span id="testTypeText">نوع الفحص غير محدد</span>';
+      }
+
+      buildStepper(data);
+    }catch(err){
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-magnifying-glass"></i> تتبع';
+      const msg = (err && err.message) ? err.message : String(err || "Unknown error");
+      showError("❌ خطأ:\n" + msg);
+    }
+  }
+
+  window.addEventListener("load", () => {
+    const inp = document.getElementById("orderID");
+    if(inp){
+      inp.addEventListener("keydown", (e) => {
+        if(e.key === "Enter") loadTracking();
+      });
+    }
+  });
+
+  window.loadTracking = loadTracking;
+  window.clearOrder = clearOrder;
+</script>
 
 </body>
 </html>
