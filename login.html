@@ -1,223 +1,111 @@
 ﻿<!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>تسجيل الدخول</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
-  <style>
-    *{ box-sizing:border-box; }
-    body{
-      margin:0;
-      font-family:'Cairo',sans-serif;
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:16px;
-      background:
-        linear-gradient(rgba(34,50,67,.3), rgba(34,50,67,.3)),
-        url('https://drive.google.com/thumbnail?id=1kGABjKDT_tHkUbce1CWMVVFfrbfJ1_P7&sz=w1400');
-      background-size:cover;
-      background-position:center;
-      background-repeat:no-repeat;
-    }
-    .box{
-      width:100%;
-      max-width:380px;
-      background:rgba(255,255,255,.95);
-      border-radius:20px;
-      padding:30px 24px;
-      text-align:center;
-      box-shadow:0 20px 60px rgba(0,0,0,.28);
-      backdrop-filter: blur(6px);
-    }
-    .logo{
-      width:92px;
-      height:92px;
-      object-fit:cover;
-      border-radius:50%;
-      border:3px solid #fff;
-      box-shadow:0 8px 24px rgba(0,0,0,.22);
-      margin:0 auto 14px;
-      display:block;
-      background:#fff;
-    }
-    h2{
-      margin:0 0 6px;
-      color:#223243;
-      font-size:24px;
-      font-weight:900;
-    }
-    .sub{
-      margin:0 0 18px;
-      color:#6b7785;
-      font-size:14px;
-      font-weight:700;
-      line-height:1.7;
-    }
-    input{
-      width:100%;
-      padding:13px 14px;
-      border-radius:12px;
-      border:1px solid #ccd5dd;
-      margin-bottom:14px;
-      font-size:16px;
-      font-family:'Cairo',sans-serif;
-      outline:none;
-      text-align:center;
-      background:#fff;
-    }
-    input:focus{
-      border-color:#223243;
-      box-shadow:0 0 0 4px rgba(34,50,67,.08);
-    }
-    button{
-      width:100%;
-      padding:13px;
-      border:none;
-      background:linear-gradient(135deg,#223243,#2f4356);
-      color:#fff;
-      border-radius:12px;
-      font-size:16px;
-      font-family:'Cairo',sans-serif;
-      font-weight:900;
-      cursor:pointer;
-      transition:.2s;
-    }
-    button:disabled{ opacity:.6; cursor:not-allowed; }
-    #msg{
-      margin-top:12px;
-      min-height:24px;
-      font-size:14px;
-      font-weight:800;
-      color:#c0392b;
-      word-break:break-word;
-    }
-    .ok{ color:#1e8449 !important; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تسجيل الدخول</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+
+<style>
+
+body{
+margin:0;
+font-family:'Cairo',sans-serif;
+background:#eef2f6;
+height:100vh;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+.card{
+width:100%;
+max-width:400px;
+background:white;
+padding:30px;
+border-radius:20px;
+box-shadow:0 10px 30px rgba(0,0,0,.15);
+text-align:center;
+}
+
+h1{
+margin-bottom:20px;
+color:#223243;
+}
+
+input{
+width:100%;
+padding:12px;
+border-radius:10px;
+border:1px solid #ccc;
+margin-bottom:15px;
+font-family:'Cairo';
+}
+
+button{
+width:100%;
+padding:12px;
+border:none;
+background:#223243;
+color:white;
+border-radius:10px;
+font-weight:bold;
+cursor:pointer;
+}
+
+.error{
+color:red;
+margin-top:10px;
+display:none;
+}
+
+</style>
 </head>
+
 <body>
-  <div class="box">
-    <img src="https://drive.google.com/thumbnail?id=1NN7G2zhk7nhgXuPWGW4qE_pdGC-Ptjkt&sz=w500" class="logo" alt="Logo">
-    <h2>تسجيل الدخول</h2>
-    <div class="sub">منصة تتبع اوامر العمل<br>الشركة العامة للفحص والتأهيل الهندسي</div>
-    <input type="password" id="pass" placeholder="أدخل كلمة المرور" autocomplete="off">
-    <button id="btnLogin" type="button" onclick="login()">دخول</button>
-    <div id="msg"></div>
-  </div>
 
-  <script>
-    const API_BASE = "https://script.google.com/macros/s/AKfycbwlfQBNdbqiomWXBF6SPvGURgOklgeAbJTBK18NUS_wx30MJWdSF0EhPSKkw5WCiuM/exec";
-    const TOKEN_KEY = "app_token";
-    const USER_KEY = "app_userName";
-    const ROLE_KEY = "app_role";
+<div class="card">
 
-    function getRequestedPage(){
-      const params = new URLSearchParams(window.location.search);
-      return (params.get("page") || "plan-app.html").trim();
-    }
+<h1>تسجيل الدخول</h1>
 
-    function setMsg(text, isOk){
-      const el = document.getElementById("msg");
-      el.textContent = text || "";
-      el.className = isOk ? "ok" : "";
-    }
+<input type="password" id="password" placeholder="كلمة المرور">
 
-    function saveSession(res){
-      localStorage.setItem(TOKEN_KEY, res.token || "");
-      localStorage.setItem(USER_KEY, res.userName || "");
-      localStorage.setItem(ROLE_KEY, res.role || "");
-    }
+<button onclick="login()">دخول</button>
 
-    function clearSession(){
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(USER_KEY);
-      localStorage.removeItem(ROLE_KEY);
-    }
+<div class="error" id="error">كلمة المرور غير صحيحة</div>
 
-    async function apiGet(params){
-      const url = new URL(API_BASE);
-      Object.keys(params || {}).forEach(k => url.searchParams.set(k, params[k]));
-      url.searchParams.set("_t", Date.now());
+</div>
 
-      const res = await fetch(url.toString(), { method:"GET", cache:"no-store" });
-      const text = await res.text();
+<script>
 
-      if(!res.ok){
-        throw new Error("HTTP " + res.status + " : " + text);
-      }
+const PASSWORD="1234";   // غير كلمة المرور هنا
+const SESSION_HOURS=12;
 
-      try{
-        return JSON.parse(text);
-      }catch(e){
-        throw new Error("الاستجابة ليست JSON: " + text);
-      }
-    }
+function login(){
 
-    async function login(){
-      const pass = String(document.getElementById("pass").value || "").trim();
-      const btn = document.getElementById("btnLogin");
-      const requestedPage = getRequestedPage();
+const pass=document.getElementById("password").value;
 
-      if(!pass){
-        setMsg("⚠️ أدخل كلمة المرور", false);
-        return;
-      }
+if(pass!==PASSWORD){
 
-      btn.disabled = true;
-      btn.textContent = "جاري التحقق...";
-      setMsg("", false);
+document.getElementById("error").style.display="block";
+return;
 
-      try{
-        const res = await apiGet({
-          action: "login",
-          pass: pass
-        });
+}
 
-        if(!res || !res.ok || !res.token){
-          btn.disabled = false;
-          btn.textContent = "دخول";
-          setMsg((res && res.error) ? res.error : "❌ كلمة المرور غير صحيحة", false);
-          return;
-        }
+const expire=Date.now()+SESSION_HOURS*60*60*1000;
 
-        const access = await apiGet({
-          action: "checkSession",
-          token: res.token,
-          page: "plan"
-        });
+localStorage.setItem("session","ok");
+localStorage.setItem("expire",expire);
 
-        if(!access || !access.ok || !access.valid || !access.allowed){
-          clearSession();
-          btn.disabled = false;
-          btn.textContent = "دخول";
-          setMsg("❌ ليس لديك صلاحية لفتح هذه الصفحة", false);
-          return;
-        }
+const params=new URLSearchParams(window.location.search);
+const redirect=params.get("redirect") || "main.html";
 
-        saveSession(res);
-        window.location.href = requestedPage;
+window.location.href=redirect;
 
-      }catch(err){
-        btn.disabled = false;
-        btn.textContent = "دخول";
-        setMsg("❌ " + (err && err.message ? err.message : "فشل الاتصال بالسيرفر"), false);
-        console.error(err);
-      }
-    }
+}
 
-    document.getElementById("pass").addEventListener("keypress", function(e){
-      if(e.key === "Enter") login();
-    });
+</script>
 
-    document.getElementById("pass").addEventListener("input", function(){
-      setMsg("", false);
-    });
-
-    window.addEventListener("load", function(){
-      clearSession();
-    });
-  </script>
 </body>
 </html>

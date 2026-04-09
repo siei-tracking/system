@@ -1,104 +1,146 @@
 ﻿<!DOCTYPE html>
 <html dir="rtl" lang="ar">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>جاري التحقق...</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
-  <style>
-    body{
-      margin:0;
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      font-family:'Cairo',sans-serif;
-      background:#eef2f6;
-      color:#223243;
-      text-align:center;
-      padding:20px;
-    }
-    .box{
-      background:#fff;
-      border-radius:18px;
-      padding:28px 24px;
-      box-shadow:0 18px 40px rgba(0,0,0,.10);
-      max-width:360px;
-      width:100%;
-    }
-    .spinner{
-      width:48px;
-      height:48px;
-      border:5px solid #dfe6ec;
-      border-top-color:#223243;
-      border-radius:50%;
-      margin:0 auto 16px;
-      animation:spin 1s linear infinite;
-    }
-    @keyframes spin{ to{ transform:rotate(360deg); } }
-    h2{ margin:0 0 10px; font-size:22px; font-weight:900; }
-    p{ margin:0; font-size:15px; font-weight:700; color:#6b7785; }
-  </style>
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>صفحة التخطيط</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+
+<style>
+
+body{
+margin:0;
+font-family:'Cairo',sans-serif;
+background:#eef2f6;
+}
+
+header{
+background:#223243;
+color:white;
+padding:18px;
+text-align:center;
+font-size:22px;
+font-weight:bold;
+}
+
+.container{
+max-width:1000px;
+margin:auto;
+padding:30px;
+}
+
+.card{
+background:white;
+padding:25px;
+border-radius:15px;
+box-shadow:0 6px 20px rgba(0,0,0,.1);
+}
+
+button{
+padding:12px 18px;
+border:none;
+border-radius:10px;
+background:#223243;
+color:white;
+font-weight:bold;
+cursor:pointer;
+}
+
+.logout{
+background:#e74c3c;
+margin-top:20px;
+}
+
+</style>
+
+
+<script>
+
+/* فحص الجلسة */
+
+(function(){
+
+const session=localStorage.getItem("session");
+const expire=localStorage.getItem("expire");
+
+if(!session || Date.now()>expire){
+
+localStorage.removeItem("session");
+localStorage.removeItem("expire");
+
+const page=encodeURIComponent(
+window.location.pathname.split("/").pop()
+);
+
+window.location.href="login.html?redirect="+page;
+
+}
+
+})();
+
+</script>
+
 </head>
+
+
 <body>
-  <div class="box">
-    <div class="spinner"></div>
-    <h2>جاري التحقق</h2>
-    <p>يرجى الانتظار...</p>
-  </div>
 
-  <script>
-    const API_BASE = "https://script.google.com/macros/s/AKfycbwlfQBNdbqiomWXBF6SPvGURgOklgeAbJTBK18NUS_wx30MJWdSF0EhPSKkw5WCiuM/exec";
-    const TOKEN_KEY = "app_token";
-    const USER_KEY = "app_userName";
-    const ROLE_KEY = "app_role";
+<header>
 
-    function getToken(){ return localStorage.getItem(TOKEN_KEY) || ""; }
+نظام تتبع أوامر العمل  
+صفحة التخطيط
 
-    function clearSession(){
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(USER_KEY);
-      localStorage.removeItem(ROLE_KEY);
-    }
+</header>
 
-    async function apiGet(params){
-      const url = new URL(API_BASE);
-      Object.keys(params || {}).forEach(k => url.searchParams.set(k, params[k]));
-      url.searchParams.set("_t", Date.now());
 
-      const res = await fetch(url.toString(), { method:"GET", cache:"no-store" });
-      if(!res.ok) throw new Error("فشل الاتصال بالسيرفر");
-      return await res.json();
-    }
+<div class="container">
 
-    async function checkAndRedirect(){
-      const token = getToken();
+<div class="card">
 
-      if(!token){
-        window.location.replace("login.html?page=plan-app.html");
-        return;
-      }
+<h2>مرحبا بك في صفحة التخطيط</h2>
 
-      try{
-        const res = await apiGet({
-          action: "checkSession",
-          token: token,
-          page: "plan"
-        });
+<p>
 
-        if(res && res.ok && res.valid && res.allowed){
-          window.location.replace("plan-app.html");
-        }else{
-          clearSession();
-          window.location.replace("login.html?page=plan-app.html");
-        }
-      }catch(_){
-        clearSession();
-        window.location.replace("login.html?page=plan-app.html");
-      }
-    }
+هذه الصفحة مخصصة لإدارة التخطيط للمعاملات.
 
-    checkAndRedirect();
-  </script>
+</p>
+
+<button onclick="goMain()">العودة الى الصفحة الرئيسية</button>
+
+<br><br>
+
+<button class="logout" onclick="logout()">تسجيل خروج</button>
+
+</div>
+
+</div>
+
+
+<script>
+
+function logout(){
+
+localStorage.removeItem("session");
+localStorage.removeItem("expire");
+
+window.location.href="login.html";
+
+}
+
+
+function goMain(){
+
+window.location.href="main.html";
+
+}
+
+</script>
+
+
 </body>
+
 </html>
