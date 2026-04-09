@@ -10,12 +10,13 @@
 
 <script>
 (function () {
-  var APP_LOGIN_URL = "https://script.google.com/macros/s/AKfycbys_i_llXno8dVp4aE6w9GUVFyS5OV3UJTVcQv0UUFk9MWA9UXE9RDinY9TeKIgMdKB/exec?page=login";
-  var currentPage = "plan";
+  const APP_BASE_URL = "https://script.google.com/macros/s/AKfycbys_i_llXno8dVp4aE6w9GUVFyS5OV3UJTVcQv0UUFk9MWA9UXE9RDinY9TeKIgMdKB/exec";
+  const APP_LOGIN_URL = APP_BASE_URL + "?page=login";
+  const currentPage = "plan";
 
-  var token = localStorage.getItem("app_token");
-  var expiry = Number(localStorage.getItem("app_expiry") || 0);
-  var pages = [];
+  const token = localStorage.getItem("app_token");
+  const expiry = Number(localStorage.getItem("app_expiry") || 0);
+  let pages = [];
 
   try {
     pages = JSON.parse(localStorage.getItem("app_pages") || "[]");
@@ -23,8 +24,8 @@
     pages = [];
   }
 
-  var sessionValid = !!token && expiry > Date.now();
-  var hasPageAccess = pages.indexOf(currentPage) !== -1;
+  const sessionValid = !!token && expiry > Date.now();
+  const hasPageAccess = pages.indexOf(currentPage) !== -1;
 
   if (!sessionValid || !hasPageAccess) {
     localStorage.removeItem("app_token");
@@ -654,8 +655,9 @@ input::placeholder{
 <div id="toast" class="toast"></div>
 
 <script>
-const APP_API_URL = "https://script.google.com/macros/s/AKfycbys_i_llXno8dVp4aE6w9GUVFyS5OV3UJTVcQv0UUFk9MWA9UXE9RDinY9TeKIgMdKB/exec";
-const APP_LOGIN_URL = "https://script.google.com/macros/s/AKfycbys_i_llXno8dVp4aE6w9GUVFyS5OV3UJTVcQv0UUFk9MWA9UXE9RDinY9TeKIgMdKB/exec?page=login";
+const APP_BASE_URL = "https://script.google.com/macros/s/AKfycbys_i_llXno8dVp4aE6w9GUVFyS5OV3UJTVcQv0UUFk9MWA9UXE9RDinY9TeKIgMdKB/exec";
+const APP_API_URL = APP_BASE_URL;
+const APP_LOGIN_URL = APP_BASE_URL + "?page=login";
 
 const userName = localStorage.getItem("app_user") || "مخول غير معروف";
 const appToken = localStorage.getItem("app_token") || "";
