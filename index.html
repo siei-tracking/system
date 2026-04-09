@@ -3,318 +3,659 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>نظام تتبع أوامر العمل</title>
+
+  <title>تتبع أوامر العمل</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
     :root{
       --primary:#223243;
-      --primary-dark:#17232e;
       --accent:#f5a623;
       --accent-dark:#e59712;
       --bg:#eef2f6;
-      --card:rgba(255,255,255,0.95);
+      --card:rgba(255,255,255,0.88);
       --line:#e5ebf1;
-      --text:#223243;
       --muted:#758292;
-      --shadow:0 20px 50px rgba(34,50,67,.18);
+      --ok:#27ae60;
+      --danger:#e74c3c;
+      --disabled:#bdc3c7;
+      --soft:#f8fafc;
     }
 
     *{ box-sizing:border-box; }
 
     body{
       margin:0;
-      min-height:100vh;
       font-family:'Cairo',sans-serif;
-      color:var(--text);
       background:
-        linear-gradient(rgba(34,50,67,.72), rgba(34,50,67,.72)),
-        url('https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1400&q=80') center/cover no-repeat fixed;
+        radial-gradient(circle at top right, rgba(245,166,35,.08), transparent 24%),
+        radial-gradient(circle at top left, rgba(34,50,67,.05), transparent 30%),
+        var(--bg);
+      color:#111;
+    }
+
+    .company-header{
+      background-image:
+        linear-gradient(rgba(34,50,67,.3), rgba(34,50,67,.3)),
+        url('https://drive.google.com/thumbnail?id=1kGABjKDT_tHkUbce1CWMVVFfrbfJ1_P7&sz=w1400');
+      background-size:cover;
+      background-position:center;
+      padding:62px 5%;
       display:flex;
       align-items:center;
+      gap:22px;
+      color:#fff;
+      flex-wrap:wrap;
       justify-content:center;
-      padding:20px;
+      text-align:center;
+      box-shadow:0 10px 30px rgba(0,0,0,0.25);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .company-logo{
+      width:100px;
+      height:100px;
+      background:#fff;
+      border-radius:50%;
+      padding:5px;
+      object-fit:contain;
+      display:block;
+      flex-shrink:0;
+      box-shadow:
+        -1px -1px 0 rgba(0,0,0,0.1),
+         1px -1px 0 rgba(0,0,0,0.1),
+        -1px  1px 0 rgba(0,0,0,0.1),
+         1px  1px 0 rgba(0,0,0,0.1),
+         0 1px 4px rgba(0,0,0,0.1) !important;
+    }
+
+    .header-text{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:6px;
+    }
+
+    .header-text h1{
+      color:#fff !important;
+      margin:0;
+      font-size:30px !important;
+      font-weight:900 !important;
+      text-shadow:
+        -1px -1px 0 rgba(0,0,0,0.9),
+         1px -1px 0 rgba(0,0,0,0.9),
+        -1px  1px 0 rgba(0,0,0,0.9),
+         1px  1px 0 rgba(0,0,0,0.9),
+         0 4px 10px rgba(0,0,0,0.8) !important;
+    }
+
+    .header-text p{
+      color:#fff !important;
+      margin:0;
+      font-size:18px !important;
+      font-weight:900 !important;
+      text-shadow:
+        -1px -1px 0 rgba(0,0,0,0.9),
+         1px -1px 0 rgba(0,0,0,0.9),
+        -1px  1px 0 rgba(0,0,0,0.9),
+         1px  1px 0 rgba(0,0,0,0.9),
+         0 4px 10px rgba(0,0,0,0.8) !important;
+    }
+
+    .page-content{
+      position:relative;
+      z-index:2;
     }
 
     .wrap{
+      padding:22px 5% 45px;
+      display:flex;
+      justify-content:center;
+      position:relative;
+      z-index:2;
+    }
+
+    .panel{
       width:100%;
-      max-width:1000px;
-    }
-
-    .hero{
-      background:var(--card);
-      border:1px solid rgba(255,255,255,.45);
-      border-radius:28px;
-      box-shadow:var(--shadow);
+      max-width:1275px;
+      background:rgba(255,255,255,0.88);
+      border-radius:22px;
+      box-shadow:0 18px 45px rgba(0,0,0,0.10);
+      margin-top:-48px;
       overflow:hidden;
-      display:grid;
-      grid-template-columns:1.15fr .85fr;
-      backdrop-filter:blur(8px);
+      border:1px solid rgba(255,255,255,0.55);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      position:relative;
+      z-index:2;
     }
 
-    .hero-left{
-      padding:46px 42px;
+    .panel-head{
+      padding:18px 18px 14px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+      border-bottom:1px solid var(--line);
+      background:linear-gradient(180deg, rgba(243,156,18,0.08), transparent);
     }
 
-    .badge{
+    .panel-title{
+      font-weight:900;
+      font-size:16px;
+      color:#111;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .hint{
+      color:#111;
+      font-weight:900;
+      font-size:13px;
+      margin-top:6px;
+    }
+
+    .search{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+      position:relative;
+      z-index:10;
+    }
+
+    #orderID{
+      font-size:24px;
+      font-weight:600;
+      text-align:center;
+      height:50px;
+      line-height:50px;
+    }
+
+    #orderID::placeholder{
+      font-size:15px;
+      font-weight:900;
+      text-align:center;
+    }
+
+    input{
+      padding:12px 14px;
+      border-radius:12px;
+      border:2px solid #e7eaee;
+      font-family:'Cairo';
+      font-weight:900;
+      text-align:center;
+      min-width:260px;
+      outline:none;
+      transition:.2s;
+      background:#fff;
+    }
+
+    input:focus{ border-color:var(--accent); }
+
+    .btn{
+      height:50px;
+      padding:0 12px;
+      font-size:18px;
+      font-weight:900;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border:none;
+      border-radius:12px;
+      font-family:'Cairo';
+      cursor:pointer;
+      gap:8px;
+      transition:.2s;
+      white-space:nowrap;
+    }
+
+    .btn:hover{ transform:translateY(-1px); opacity:.96; }
+    .btn:disabled{ opacity:.6; cursor:not-allowed; transform:none; }
+
+    .btn-primary{ background:var(--primary); color:#fff; }
+    .btn-ghost{ background:#f3f5f7; color:#333; }
+
+    .info{
+      padding:16px 18px;
+      display:none;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+      border-bottom:1px solid var(--line);
+      background:#fff;
+    }
+
+    .chip{
       display:inline-flex;
       align-items:center;
       gap:10px;
-      padding:10px 16px;
-      border-radius:999px;
-      background:#fff7e8;
-      color:#8a5b00;
-      font-size:14px;
-      font-weight:800;
-      margin-bottom:18px;
-      border:1px solid #fde2aa;
-    }
-
-    .title{
-      margin:0 0 14px;
-      font-size:42px;
-      line-height:1.25;
-      color:var(--primary);
-      font-weight:900;
-    }
-
-    .desc{
-      margin:0 0 26px;
-      font-size:17px;
-      line-height:1.95;
-      color:#4d5c6c;
-      max-width:650px;
-    }
-
-    .actions{
-      display:flex;
-      flex-wrap:wrap;
-      gap:14px;
-      margin-bottom:28px;
-    }
-
-    .btn{
-      border:none;
+      padding:10px 12px;
       border-radius:14px;
-      padding:15px 24px;
-      font-family:'Cairo',sans-serif;
-      font-size:16px;
-      font-weight:800;
-      cursor:pointer;
-      transition:.2s ease;
-      text-decoration:none;
+      font-weight:900;
+      background:#f6f8fa;
+      border:1px solid #eef1f4;
+      color:#111;
+    }
+
+    .chip .muted{ color:var(--muted); font-weight:900; }
+
+    .status-badge{
+      padding:10px 12px;
+      border-radius:14px;
+      font-weight:900;
+      border:1px solid #eef1f4;
+      background:#f6f8fa;
+      color:#111;
       display:inline-flex;
       align-items:center;
-      justify-content:center;
-      min-width:180px;
+      gap:10px;
     }
 
-    .btn-primary{
-      background:linear-gradient(180deg, var(--accent), var(--accent-dark));
-      color:#fff;
-      box-shadow:0 10px 24px rgba(245,166,35,.32);
+    .stepper-scroll{
+      padding:0px 2px;
+      overflow-x:auto;
+      overflow-y:hidden;
+      background:linear-gradient(180deg, rgba(44,62,80,0.03), transparent);
     }
 
-    .btn-primary:hover{
-      transform:translateY(-2px);
+    .stepper-scroll::-webkit-scrollbar{ height:10px; }
+    .stepper-scroll::-webkit-scrollbar-thumb{ background:#d9e1ea; border-radius:999px; }
+
+    .stepper{
+      display:flex;
+      flex-wrap:nowrap;
+      gap:10px;
+      width:max-content;
+      direction:rtl;
+      align-items:flex-start;
+      padding:6px 6px 10px;
     }
 
-    .btn-secondary{
-      background:#fff;
-      color:var(--primary);
-      border:1px solid var(--line);
-    }
-
-    .btn-secondary:hover{
-      transform:translateY(-2px);
-      background:#f8fafc;
-    }
-
-    .features{
-      display:grid;
-      grid-template-columns:repeat(3,1fr);
-      gap:14px;
-      margin-top:14px;
-    }
-
-    .feature{
-      background:#fff;
-      border:1px solid var(--line);
-      border-radius:18px;
-      padding:18px 16px;
-    }
-
-    .feature h3{
-      margin:0 0 8px;
-      font-size:16px;
-      color:var(--primary);
-    }
-
-    .feature p{
-      margin:0;
-      font-size:13px;
-      line-height:1.8;
-      color:var(--muted);
-    }
-
-    .hero-right{
-      background:linear-gradient(180deg, #223243, #17232e);
-      color:#fff;
-      padding:36px 28px;
+    .node{
+      flex:0 0 auto;
+      width:150px;
+      min-width:150px;
       display:flex;
       flex-direction:column;
-      justify-content:center;
+      align-items:center;
+      gap:10px;
       position:relative;
-      overflow:hidden;
+      padding:6px 4px 4px;
+      user-select:none;
     }
 
-    .hero-right::before,
-    .hero-right::after{
+    .node:not(:first-child)::before{
       content:"";
       position:absolute;
+      top:35px;
+      right:-13px;
+      width:16px;
+      height:4px;
+      background:#dfe5ec;
+      z-index:0;
+      border-radius:999px;
+    }
+
+    .circle{
+      width:70px;
+      height:70px;
       border-radius:50%;
-      background:rgba(255,255,255,.06);
-    }
-
-    .hero-right::before{
-      width:240px;
-      height:240px;
-      top:-60px;
-      left:-60px;
-    }
-
-    .hero-right::after{
-      width:180px;
-      height:180px;
-      bottom:-50px;
-      right:-30px;
-    }
-
-    .side-title{
-      margin:0 0 14px;
-      font-size:28px;
-      font-weight:900;
-      position:relative;
+      background:var(--disabled);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:30px;
+      box-shadow:0 10px 22px rgba(0,0,0,0.10);
       z-index:1;
+      transition:.2s;
     }
 
-    .side-text{
-      margin:0 0 22px;
-      line-height:2;
-      color:rgba(255,255,255,.88);
-      position:relative;
-      z-index:1;
-    }
-
-    .stats{
-      display:grid;
-      gap:12px;
-      position:relative;
-      z-index:1;
-    }
-
-    .stat{
-      background:rgba(255,255,255,.08);
-      border:1px solid rgba(255,255,255,.1);
-      border-radius:18px;
-      padding:14px 16px;
-    }
-
-    .stat strong{
-      display:block;
-      font-size:15px;
-      margin-bottom:4px;
-    }
-
-    .stat span{
-      font-size:13px;
-      color:rgba(255,255,255,.78);
-    }
-
-    .footer-note{
+    .label{
       text-align:center;
-      color:#eaf0f5;
-      margin-top:18px;
-      font-size:13px;
+      font-weight:900;
+      font-size:16px;
+      color:#111;
+      line-height:1.35;
     }
 
-    @media (max-width: 900px){
-      .hero{
-        grid-template-columns:1fr;
-      }
-      .title{
-        font-size:32px;
-      }
-      .features{
-        grid-template-columns:1fr;
-      }
+    .sub{
+      text-align:center;
+      font-weight:900;
+      margin-top:-6px;
+      min-height:40px;
+      line-height:1.25;
+      max-width:150px;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .sub-date{
+      font-size:15px;
+      font-weight:900;
+      color:#111;
+      direction:ltr;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      max-width:150px;
+    }
+
+    .node.locked{ opacity:.85; }
+    .node.done .circle{ background:var(--ok); }
+    .node.next .circle{ background:var(--accent); transform:scale(1.06); }
+    .node.done:not(:first-child)::before{ background:var(--ok); }
+    .node.next:not(:first-child)::before{ background:var(--accent); }
+
+    .empty{
+      padding:26px 18px;
+      text-align:center;
+      color:var(--muted);
+      font-weight:900;
+    }
+
+    .workflow-note{
+      margin:10px 16px 16px;
+      padding:12px 14px;
+      border-radius:14px;
+      background:rgba(245,166,35,.12);
+      border:1px solid rgba(245,166,35,.28);
+      color:#7a5610;
+      font-weight:900;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      text-align:center;
+      position:relative;
+      z-index:2;
+    }
+
+    @media (max-width:820px){
+      .header-text h1{ font-size:22px; }
+      .header-text p{ font-size:16px; }
+      input{ min-width:220px; width:100%; }
+      .search{ width:100%; justify-content:stretch; }
+      .btn{ width:100%; justify-content:center; }
+      .panel-head{ align-items:stretch; }
     }
   </style>
 </head>
+
 <body>
+  <div class="page-shell">
 
-  <div class="wrap">
-    <div class="hero">
-      <div class="hero-left">
-        <div class="badge">نظام إلكتروني لإدارة وتتبع المعاملات</div>
-
-        <h1 class="title">نظام تتبع أوامر العمل</h1>
-
-        <p class="desc">
-          منصة مخصصة لمتابعة أوامر العمل والمعاملات بين الأقسام بصورة منظمة وواضحة،
-          مع إمكانية تسجيل الدخول والوصول إلى لوحة النظام الخاصة بالمستخدمين.
-        </p>
-
-        <div class="actions">
-          <a class="btn btn-primary" href="login.html">تسجيل الدخول</a>
-          <a class="btn btn-secondary" href="main.html">الدخول إلى اللوحة</a>
-        </div>
-
-        <div class="features">
-          <div class="feature">
-            <h3>متابعة سهلة</h3>
-            <p>الوصول السريع إلى الصفحات والبحث عن المعاملات وعرض حالتها بشكل واضح.</p>
-          </div>
-          <div class="feature">
-            <h3>واجهة عربية</h3>
-            <p>تصميم متجاوب وواضح مناسب للاستخدام من الهاتف أو الحاسبة.</p>
-          </div>
-          <div class="feature">
-            <h3>جاهز للربط</h3>
-            <p>يعمل كواجهة Frontend على GitHub Pages ومربوط لاحقاً مع Apps Script.</p>
-          </div>
-        </div>
+    <header class="company-header">
+      <img class="company-logo" src="https://drive.google.com/thumbnail?id=1NN7G2zhk7nhgXuPWGW4qE_pdGC-Ptjkt&sz=w500" alt="logo">
+      <div class="header-text">
+        <h1>الشركة العامة للفحص والتأهيل الهندسي</h1>
+        <p><i class="fas fa-route"></i> منصة تتبع اوامر العمل</p>
       </div>
+    </header>
 
-      <div class="hero-right">
-        <h2 class="side-title">الشركة العامة للفحص والتأهيل الهندسي</h2>
-        <p class="side-text">
-          صفحة رئيسية عامة مفتوحة للجميع. يمكن الانتقال منها إلى صفحة تسجيل الدخول
-          أو تجربة الوصول إلى لوحة النظام، والتي تتحقق من الجلسة تلقائياً.
-        </p>
+    <div class="page-content">
+      <div class="wrap">
+        <div class="panel">
 
-        <div class="stats">
-          <div class="stat">
-            <strong>Frontend على GitHub Pages</strong>
-            <span>واجهة ثابتة وسريعة وسهلة النشر والتحديث</span>
+          <div class="panel-head">
+            <div>
+              <div class="panel-title"><i class="fas fa-diagram-project"></i> تتبع حسب التسلسل</div>
+              <div class="hint">أدخل رقم أمر العمل ثم اضغط (تتبع)</div>
+            </div>
+
+            <div class="search">
+              <input id="orderID" type="text" placeholder="رقم أمر العمل" inputmode="numeric" />
+              <button type="button" class="btn btn-ghost" onclick="clearOrder()"><i class="fas fa-eraser"></i> مسح</button>
+              <button type="button" class="btn btn-primary" id="btnTrack" onclick="loadTracking()">
+                <i class="fas fa-magnifying-glass"></i> تتبع
+              </button>
+            </div>
           </div>
-          <div class="stat">
-            <strong>حماية صفحة اللوحة</strong>
-            <span>إذا لم توجد جلسة، يتم التحويل تلقائياً إلى login.html</span>
+
+          <div class="info" id="infoBar">
+            <div class="chip"><i class="fas fa-building"></i> <span class="muted">الجهة:</span> <span id="clientName">—</span></div>
+            <div class="status-badge" id="typeBadge"><i class="fas fa-flask"></i> <span id="testTypeText">—</span></div>
           </div>
-          <div class="stat">
-            <strong>تكامل مع Google Apps Script</strong>
-            <span>تنفيذ تسجيل الدخول وجلب البيانات من Google Sheets</span>
-          </div>
+
+          <div id="stepperArea"></div>
+
         </div>
       </div>
     </div>
 
-    <div class="footer-note">
-      للدخول المباشر استخدم: <b>login.html</b> — وعلى GitHub يجب استخدام اسم الملف كاملاً.
-    </div>
   </div>
+
+  <script>
+    /* ضع هنا رابط Google Apps Script Web App /exec */
+    const API_BASE = "https://script.google.com/macros/s/AKfycbxDNDaXEN1011Y1Q_088C1yRsHqDir1dEY2-rYxmjYmbMOXOL_HpADnHH193FnhITWp/exec";
+
+    function showError(msg){
+      alert(msg);
+      console.error(msg);
+    }
+
+    function clearOrder(){
+      document.getElementById('orderID').value = '';
+      document.getElementById('stepperArea').innerHTML = '';
+      document.getElementById('infoBar').style.display = 'none';
+    }
+
+    function isReceiveDone(v){
+      v = String(v || "");
+      return v.includes("✅") && v.includes("استلام");
+    }
+
+    function isOkDone(v){
+      v = String(v || "");
+      return v.includes("✅");
+    }
+
+    function formatSub(val, done, cls){
+      if(!done){
+        return (cls.indexOf("next") !== -1)
+          ? '<div class="sub-date">الخطوة الحالية</div>'
+          : '<div class="sub-date">بانتظار</div>';
+      }
+
+      val = String(val || "");
+      val = val.replace("✅","")
+               .replace("استلام -","")
+               .replace("استلام","")
+               .trim();
+
+      val = val.replace(/\(.*?\)/, "").trim();
+
+      var m = val.match(/\d{4}-\d{2}-\d{2}\s*\|\s*\d{2}:\d{2}/);
+
+      if(m && m[0]){
+        return '<div class="sub-date">' + m[0].trim() + '</div>';
+      }
+
+      return '<div class="sub-date">' + val + '</div>';
+    }
+
+    function buildStepper(data){
+      const pricingDone = isOkDone(data.pricing);
+      const testType = String(data.testType || "").trim();
+      const labPath = String(data.labPath || "").trim();
+
+      const workflowReady = pricingDone && !!testType;
+
+      let steps = [
+        {key:"inspection", label:"استلام المعاملة", icon:"fa-handshake", doneFn:isReceiveDone},
+        {key:"pricing",    label:"التسعيرة",        icon:"fa-receipt", doneFn:isOkDone}
+      ];
+
+      if(workflowReady){
+        steps.push({key:"payment", label:"التسديد", icon:"fa-sack-dollar", doneFn:isOkDone});
+
+        if(testType === "مصاعد"){
+          steps.push({key:"elev", label:"المصاعد", icon:"fa-elevator", doneFn:isReceiveDone});
+        }else{
+          steps.push({key:"lab1", label:"المختبرات", icon:"fa-microscope", doneFn:isReceiveDone});
+          if(labPath !== "مختبرات فقط"){
+            steps.push({key:"workshop", label:"الورشة", icon:"fa-screwdriver-wrench", doneFn:isReceiveDone});
+            steps.push({key:"lab2", label:"المختبرات", icon:"fa-flask-vial", doneFn:isReceiveDone});
+          }
+        }
+
+        steps.push({key:"testResults", label:"نتائج الفحص", icon:"fa-clipboard-check", doneFn:isReceiveDone});
+        steps.push({key:"official",    label:"الكتاب",      icon:"fa-file-signature", doneFn:isReceiveDone});
+        steps.push({key:"barcode",     label:"الباركود",    icon:"fa-qrcode", doneFn:isReceiveDone});
+        steps.push({key:"email",       label:"الايميل",     icon:"fa-paper-plane", doneFn:isReceiveDone});
+        steps.push({key:"final",       label:"استلام النتائج", icon:"fa-flag-checkered", doneFn:isReceiveDone});
+      }
+
+      let firstPending = false;
+      let html = '<div class="stepper-scroll"><div class="stepper">';
+
+      steps.forEach(s => {
+        const val = String((data && data[s.key]) || "");
+        const done = s.doneFn(val);
+
+        let cls = "node";
+        if(done){
+          cls += " done";
+        }else if(!firstPending){
+          cls += " next";
+          firstPending = true;
+        }else{
+          cls += " locked";
+        }
+
+        const subHtml = formatSub(val, done, cls);
+
+        html += `
+          <div class="${cls}">
+            <div class="circle"><i class="fas ${s.icon}"></i></div>
+            <div class="label">${s.label}</div>
+            <div class="sub">${subHtml}</div>
+          </div>
+        `;
+      });
+
+      html += '</div></div>';
+
+      if(!workflowReady){
+        html += `
+          <div class="workflow-note" id="workflowNote">
+            <i class="fas fa-circle-info"></i>
+            تظهر بقية المراحل بعد تثبيت التسعيرة ونوع الفحص
+          </div>
+        `;
+      }
+
+      document.getElementById("stepperArea").innerHTML = html;
+
+      const next = document.querySelector('.node.next');
+      if(next){
+        next.scrollIntoView({
+          behavior:'smooth',
+          inline:'center',
+          block:'nearest'
+        });
+      }else{
+        const nodes = document.querySelectorAll('.node');
+        const last = nodes[nodes.length - 1];
+        if(last){
+          last.scrollIntoView({
+            behavior:'smooth',
+            inline:'end',
+            block:'nearest'
+          });
+        }
+      }
+    }
+
+    async function fetchTrackingData(orderId){
+      if(!API_BASE || API_BASE.includes("PUT_YOUR_WEB_APP_EXEC_URL_HERE")){
+        throw new Error("لم يتم وضع رابط Web App داخل المتغير API_BASE");
+      }
+
+      const url = new URL(API_BASE);
+      url.searchParams.set("action", "tracking");
+      url.searchParams.set("order", orderId);
+
+      const res = await fetch(url.toString(), {
+        method: "GET"
+      });
+
+      if(!res.ok){
+        throw new Error("فشل الاتصال بالسيرفر");
+      }
+
+      return await res.json();
+    }
+
+    async function loadTracking(){
+      const orderID = document.getElementById("orderID");
+      const btn = document.getElementById("btnTrack");
+      const id = (orderID.value || "").trim();
+
+      if(!id) return showError("ادخل رقم المعاملة");
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري...';
+
+      try{
+        const data = await fetchTrackingData(id);
+
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-magnifying-glass"></i> تتبع';
+
+        if(!data || !data.found){
+          document.getElementById("infoBar").style.display = 'none';
+          document.getElementById("stepperArea").innerHTML =
+            '<div class="empty"><i class="fas fa-circle-exclamation"></i> المعاملة غير موجودة</div>';
+          return;
+        }
+
+        document.getElementById("infoBar").style.display = 'flex';
+        document.getElementById("clientName").innerText = data.clientName || "—";
+
+        const type = String(data.testType || "").trim();
+        const pricingDone = isOkDone(data.pricing);
+        const badge = document.getElementById("typeBadge");
+
+        if(!pricingDone || !type){
+          badge.innerHTML = '<i class="fas fa-hourglass-half"></i> <span id="testTypeText">بانتظار التسعيرة وتحديد الفحص</span>';
+        }else if(type === "مصاعد"){
+          badge.innerHTML = '<i class="fas fa-elevator"></i> <span id="testTypeText">مصاعد</span>';
+        }else if(type === "مختبرات"){
+          badge.innerHTML = '<i class="fas fa-microscope"></i> <span id="testTypeText">مختبرات</span>';
+        }else{
+          badge.innerHTML = '<i class="fas fa-triangle-exclamation"></i> <span id="testTypeText">نوع الفحص غير محدد</span>';
+        }
+
+        buildStepper(data);
+      }catch(err){
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-magnifying-glass"></i> تتبع';
+        const msg = (err && err.message) ? err.message : String(err || "Unknown error");
+        showError("❌ خطأ:\n" + msg);
+      }
+    }
+
+    window.addEventListener("load", () => {
+      const inp = document.getElementById("orderID");
+      if(inp){
+        inp.addEventListener("keydown", (e) => {
+          if(e.key === "Enter") loadTracking();
+        });
+      }
+    });
+
+    window.loadTracking = loadTracking;
+    window.clearOrder = clearOrder;
+  </script>
 
 </body>
 </html>
