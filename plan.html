@@ -632,18 +632,10 @@ input::placeholder{
 <div id="toast" class="toast"></div>
 
 <script>
-const API_BASE = "https://script.google.com/macros/s/AKfycbwlfQBNdbqiomWXBF6SPvGURgOklgeAbJTBK18NUS_wx30MJWdSF0EhPSKkw5WCiuM/exec";
+const API_BASE = "https://script.google.com/macros/s/AKfycbxDNDaXEN1011Y1Q_088C1yRsHqDir1dEY2-rYxmjYmbMOXOL_HpADnHH193FnhITWp/exec";
 const TOKEN_KEY = "app_token";
 const USER_KEY = "app_userName";
 const ROLE_KEY = "app_role";
-
-function normalizeOrderNo(value){
-  return String(value || "")
-    .replace(/[٠-٩]/g, d => "٠١٢٣٤٥٦٧٨٩".indexOf(d))
-    .replace(/[۰-۹]/g, d => "۰۱۲۳۴۵۶۷۸۹".indexOf(d))
-    .replace(/\s+/g, "")
-    .trim();
-}
 
 function getToken(){
   return localStorage.getItem(TOKEN_KEY) || "";
@@ -678,108 +670,6 @@ async function apiGet(params){
   return await res.json();
 }
 
-async function apiPost(data){
-  const res = await fetch(API_BASE, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(data || {})
-  });
-
-  if(!res.ok){
-    throw new Error("فشل الاتصال بالسيرفر");
-  }
-
-  return await res.json();
-}
-
-function showToast(msg, type){
-  const t = document.getElementById("toast");
-  t.className = "toast " + (type || "success");
-  t.innerText = msg || "";
-  t.classList.add("show");
-
-  clearTimeout(window.toastTimer);
-  window.toastTimer = setTimeout(function(){
-    t.classList.remove("show");
-  }, 3000);
-}
-
-function switchTab(which){
-  const tabNew = document.getElementById("tabNew");
-  const tabPrice = document.getElementById("tabPrice");
-  const secNew = document.getElementById("secNew");
-  const secPrice = document.getElementById("secPrice");
-
-  if(which === "new"){
-    secNew.classList.add("active");
-    secPrice.classList.remove("active");
-
-    tabNew.classList.add("primary");
-    tabNew.classList.remove("ghost");
-
-    tabPrice.classList.add("ghost");
-    tabPrice.classList.remove("primary");
-  }else{
-    secPrice.classList.add("active");
-    secNew.classList.remove("active");
-
-    tabPrice.classList.add("primary");
-    tabPrice.classList.remove("ghost");
-
-    tabNew.classList.add("ghost");
-    tabNew.classList.remove("primary");
-  }
-}
-
-function toggleLab(v){
-  document.getElementById("labBox").style.display = (v === "مختبرات") ? "block" : "none";
-}
-
-function showSuccess(text){
-  document.getElementById("successText").innerText = text || "تم توثيق العملية في السجل الموحد.";
-  document.getElementById("cardForm").style.display = "none";
-  document.getElementById("cardSuccess").style.display = "block";
-}
-
-function resetAll(){
-  document.getElementById("cardSuccess").style.display = "none";
-  document.getElementById("cardForm").style.display = "block";
-
-  document.querySelectorAll("input").forEach(function(i){ i.value = ""; });
-  document.querySelectorAll("select").forEach(function(s){ s.selectedIndex = 0; });
-
-  toggleLab("");
-  switchTab("new");
-
-  document.getElementById("btnNew").disabled = false;
-  document.getElementById("btnNew").innerHTML = "اعتماد وحفظ البيانات";
-
-  document.getElementById("btnPrice").disabled = false;
-  document.getElementById("btnPrice").innerHTML = "اعتماد وحفظ البيانات";
-}
-
-function goIndex(){
-  window.location.href = "index.html";
-}
-
-async function logout(){
-  const token = getToken();
-
-  try{
-    if(token){
-      await apiPost({
-        action: "logout",
-        token: token
-      });
-    }
-  }catch(_){}
-
-  clearSession();
-  window.location.href = "login.html?page=plan";
-}
-
 async function requireAuth(){
   const token = getToken();
 
@@ -803,100 +693,24 @@ async function requireAuth(){
 
     const userName = res.userName || getUserName() || "مخول غير معروف";
     const w = document.getElementById("welcomeUser");
-    w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: ' + userName;
+    if(w){
+      w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: ' + userName;
+    }
+
     return true;
 
-  }catch(_){
+  }catch(err){
     clearSession();
     window.location.href = "login.html?page=plan";
     return false;
   }
 }
 
-async function saveNew(){
-  const id = normalizeOrderNo(document.getElementById("nID").value);
-  const cl = String(document.getElementById("nClient").value || "").trim();
-  const userName = getUserName() || "مخول غير معروف";
-
-  if(!id || !cl){
-    showToast("اكمل البيانات", "warn");
-    return;
-  }
-
-  const btn = document.getElementById("btnNew");
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
-
-  try{
-    const r = await apiPost({
-      action: "addNewOrder",
-      orderNo: id,
-      clientName: cl,
-      userName: userName
-    });
-
-    const msg = String((r && (r.message || r.error)) || "");
-
-    if(r && r.ok && msg.includes("✅")){
-      showSuccess("تم إضافة أمر العمل وتوثيقة");
-      showToast("تم الحفظ بنجاح", "success");
-    }else{
-      showToast(msg || "تعذر حفظ البيانات", "error");
-      btn.disabled = false;
-      btn.innerHTML = "اعتماد وحفظ البيانات";
-    }
-  }catch(err){
-    showToast("خطأ: " + (err && err.message ? err.message : err), "error");
-    btn.disabled = false;
-    btn.innerHTML = "اعتماد وحفظ البيانات";
-  }
-}
-
-async function savePrice(){
-  const type = document.getElementById("pType").value;
-  const userName = getUserName() || "مخول غير معروف";
-
-  const d = {
-    action: "processPlanning",
-    orderNo: normalizeOrderNo(document.getElementById("pID").value),
-    price: String(document.getElementById("pVal").value || "").trim(),
-    days: String(document.getElementById("pDays").value || "").trim(),
-    testType: type,
-    labPath: (type === "مختبرات") ? document.getElementById("pLabVal").value : "",
-    userName: userName
-  };
-
-  if(!d.orderNo || !d.testType){
-    showToast("اكمل الحقول", "warn");
-    return;
-  }
-
-  const btn = document.getElementById("btnPrice");
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
-
-  try{
-    const r = await apiPost(d);
-    const msg = String((r && (r.message || r.error)) || "");
-
-    if(r && r.ok && msg.includes("✅")){
-      showSuccess("تم تثبيت التسعيرة وعدد الايام وتوثيقة");
-      showToast("تم تثبيت التسعيرة بنجاح", "success");
-    }else{
-      showToast(msg || "تعذر حفظ البيانات", "error");
-      btn.disabled = false;
-      btn.innerHTML = "اعتماد وحفظ البيانات";
-    }
-  }catch(err){
-    showToast("خطأ: " + (err && err.message ? err.message : err), "error");
-    btn.disabled = false;
-    btn.innerHTML = "اعتماد وحفظ البيانات";
-  }
-}
-
 window.addEventListener("load", async function(){
+  const ok = await requireAuth();
+  if(!ok) return;
+
   toggleLab("");
-  await requireAuth();
 });
 </script>
 
