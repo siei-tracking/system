@@ -4,28 +4,23 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>تسجيل الدخول</title>
-
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
-
   <style>
-    *{ box-sizing:border-box; }
-
+    *{box-sizing:border-box}
     body{
       margin:0;
-      font-family:'Cairo',sans-serif;
       min-height:100vh;
       display:flex;
       align-items:center;
       justify-content:center;
       padding:16px;
+      font-family:'Cairo',sans-serif;
       background:
         linear-gradient(rgba(34,50,67,.3), rgba(34,50,67,.3)),
         url('https://drive.google.com/thumbnail?id=1kGABjKDT_tHkUbce1CWMVVFfrbfJ1_P7&sz=w1400');
       background-size:cover;
       background-position:center;
-      background-repeat:no-repeat;
     }
-
     .box{
       width:100%;
       max-width:380px;
@@ -34,9 +29,7 @@
       padding:30px 24px;
       text-align:center;
       box-shadow:0 20px 60px rgba(0,0,0,.28);
-      backdrop-filter: blur(6px);
     }
-
     .logo{
       width:92px;
       height:92px;
@@ -48,14 +41,12 @@
       display:block;
       background:#fff;
     }
-
     h2{
       margin:0 0 6px;
       color:#223243;
       font-size:24px;
       font-weight:900;
     }
-
     .sub{
       margin:0 0 18px;
       color:#6b7785;
@@ -63,7 +54,6 @@
       font-weight:700;
       line-height:1.7;
     }
-
     input{
       width:100%;
       padding:13px 14px;
@@ -76,12 +66,6 @@
       text-align:center;
       background:#fff;
     }
-
-    input:focus{
-      border-color:#223243;
-      box-shadow:0 0 0 4px rgba(34,50,67,.08);
-    }
-
     button{
       width:100%;
       padding:13px;
@@ -93,165 +77,141 @@
       font-family:'Cairo',sans-serif;
       font-weight:900;
       cursor:pointer;
-      transition:.2s;
     }
-
-    button:hover{
-      transform:translateY(-1px);
-      box-shadow:0 10px 20px rgba(0,0,0,.18);
-    }
-
-    button:disabled{
-      opacity:.6;
-      cursor:not-allowed;
-      transform:none;
-      box-shadow:none;
-    }
-
     #msg{
       margin-top:12px;
       min-height:24px;
       font-size:14px;
       font-weight:800;
       color:#c0392b;
+      word-break:break-word;
     }
-
-    .ok{
-      color:#1e8449 !important;
-    }
+    .ok{color:#1e8449!important}
   </style>
 </head>
-
 <body>
   <div class="box">
     <img src="https://drive.google.com/thumbnail?id=1NN7G2zhk7nhgXuPWGW4qE_pdGC-Ptjkt&sz=w500" class="logo" alt="Logo">
-
     <h2>تسجيل الدخول</h2>
     <div class="sub">منصة تتبع اوامر العمل<br>الشركة العامة للفحص والتأهيل الهندسي</div>
-
     <input type="password" id="pass" placeholder="أدخل كلمة المرور" autocomplete="off">
     <button id="btnLogin" type="button" onclick="login()">دخول</button>
-
     <div id="msg"></div>
   </div>
 
   <script>
-const API_BASE = "https://script.google.com/macros/s/AKfycbxDNDaXEN1011Y1Q_088C1yRsHqDir1dEY2-rYxmjYmbMOXOL_HpADnHH193FnhITWp/exec";
-const TOKEN_KEY = "app_token";
-const USER_KEY = "app_userName";
-const ROLE_KEY = "app_role";
+    const API_BASE = "https://script.google.com/macros/s/AKfycbxDNDaXEN1011Y1Q_088C1yRsHqDir1dEY2-rYxmjYmbMOXOL_HpADnHH193FnhITWp/exec";
+    const TOKEN_KEY = "app_token";
+    const USER_KEY = "app_userName";
+    const ROLE_KEY = "app_role";
 
-function getRequestedPage(){
-  const params = new URLSearchParams(window.location.search);
-  return (params.get("page") || "plan-app.html").trim();
-}
+    function getRequestedPage(){
+      const params = new URLSearchParams(window.location.search);
+      return (params.get("page") || "plan-app.html").trim();
+    }
 
-function setMsg(text, isOk){
-  var el = document.getElementById("msg");
-  el.textContent = text || "";
-  el.className = isOk ? "ok" : "";
-}
+    function setMsg(text, isOk){
+      const el = document.getElementById("msg");
+      el.textContent = text || "";
+      el.className = isOk ? "ok" : "";
+    }
 
-function saveSession(res){
-  localStorage.setItem(TOKEN_KEY, res.token || "");
-  localStorage.setItem(USER_KEY, res.userName || "");
-  localStorage.setItem(ROLE_KEY, res.role || "");
-}
+    function saveSession(res){
+      localStorage.setItem(TOKEN_KEY, res.token || "");
+      localStorage.setItem(USER_KEY, res.userName || "");
+      localStorage.setItem(ROLE_KEY, res.role || "");
+    }
 
-function clearSession(){
-  localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(USER_KEY);
-  localStorage.removeItem(ROLE_KEY);
-}
+    function clearSession(){
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(USER_KEY);
+      localStorage.removeItem(ROLE_KEY);
+    }
 
-async function apiGet(params){
-  const url = new URL(API_BASE);
-  Object.keys(params || {}).forEach(function(k){
-    url.searchParams.set(k, params[k]);
-  });
-  url.searchParams.set("_t", Date.now());
+    async function apiGet(params){
+      const url = new URL(API_BASE);
+      Object.keys(params || {}).forEach(function(k){
+        url.searchParams.set(k, params[k]);
+      });
+      url.searchParams.set("_t", Date.now());
 
-  const res = await fetch(url.toString(), {
-    method: "GET",
-    cache: "no-store"
-  });
+      const res = await fetch(url.toString(), {
+        method: "GET",
+        cache: "no-store"
+      });
 
-  if(!res.ok){
-    throw new Error("فشل الاتصال بالسيرفر");
-  }
+      const text = await res.text();
 
-  return await res.json();
-}
+      if(!res.ok){
+        throw new Error("HTTP " + res.status + " : " + text);
+      }
 
-async function checkPageAccess(token, pageNameForPermission){
-  return await apiGet({
-    action: "checkSession",
-    token: token,
-    page: pageNameForPermission
-  });
-}
+      try{
+        return JSON.parse(text);
+      }catch(e){
+        throw new Error("الاستجابة ليست JSON: " + text);
+      }
+    }
 
-async function login(){
-  var pass = String(document.getElementById("pass").value || "").trim();
-  var btn = document.getElementById("btnLogin");
-  var requestedPage = getRequestedPage();
+    async function login(){
+      const pass = String(document.getElementById("pass").value || "").trim();
+      const btn = document.getElementById("btnLogin");
+      const requestedPage = getRequestedPage();
 
-  if(!pass){
-    setMsg("⚠️ أدخل كلمة المرور", false);
-    return;
-  }
+      if(!pass){
+        setMsg("⚠️ أدخل كلمة المرور", false);
+        return;
+      }
 
-  btn.disabled = true;
-  btn.innerHTML = "جاري التحقق...";
-  setMsg("", false);
+      btn.disabled = true;
+      btn.textContent = "جاري التحقق...";
+      setMsg("", false);
 
-  try{
-    const res = await apiGet({
-      action: "login",
-      pass: pass
+      try{
+        const res = await apiGet({
+          action: "login",
+          pass: pass
+        });
+
+        if(!res || !res.ok || !res.token){
+          btn.disabled = false;
+          btn.textContent = "دخول";
+          setMsg((res && res.error) ? res.error : "❌ كلمة المرور غير صحيحة", false);
+          return;
+        }
+
+        const access = await apiGet({
+          action: "checkSession",
+          token: res.token,
+          page: "plan"
+        });
+
+        if(!access || !access.ok || !access.valid || !access.allowed){
+          clearSession();
+          btn.disabled = false;
+          btn.textContent = "دخول";
+          setMsg("❌ ليس لديك صلاحية لفتح هذه الصفحة", false);
+          return;
+        }
+
+        saveSession(res);
+        window.location.href = requestedPage;
+
+      }catch(err){
+        btn.disabled = false;
+        btn.textContent = "دخول";
+        setMsg("❌ " + (err && err.message ? err.message : "فشل الاتصال بالسيرفر"), false);
+        console.error(err);
+      }
+    }
+
+    document.getElementById("pass").addEventListener("keypress", function(e){
+      if(e.key === "Enter") login();
     });
 
-    if(!res || !res.ok || !res.token){
-      btn.disabled = false;
-      btn.innerHTML = "دخول";
-      setMsg((res && res.error) ? res.error : "❌ كلمة المرور غير صحيحة", false);
-      return;
-    }
-
-    const access = await checkPageAccess(res.token, "plan");
-
-    if(!access || !access.ok || !access.valid || !access.allowed){
+    window.addEventListener("load", function(){
       clearSession();
-      btn.disabled = false;
-      btn.innerHTML = "دخول";
-      setMsg("❌ ليس لديك صلاحية لفتح هذه الصفحة", false);
-      return;
-    }
-
-    saveSession(res);
-    window.location.href = requestedPage;
-
-  }catch(err){
-    btn.disabled = false;
-    btn.innerHTML = "دخول";
-    setMsg("❌ فشل الاتصال بالسيرفر", false);
-    console.error(err);
-  }
-}
-
-document.getElementById("pass").addEventListener("keypress", function(e){
-  if(e.key === "Enter"){
-    login();
-  }
-});
-
-document.getElementById("pass").addEventListener("input", function(){
-  setMsg("", false);
-});
-
-window.addEventListener("load", function(){
-  clearSession();
-});
-</script>
+    });
+  </script>
 </body>
 </html>
