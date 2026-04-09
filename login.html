@@ -136,138 +136,122 @@
   </div>
 
   <script>
-    const API_BASE = "https://script.google.com/macros/s/AKfycbwlfQBNdbqiomWXBF6SPvGURgOklgeAbJTBK18NUS_wx30MJWdSF0EhPSKkw5WCiuM/exec";
-    const TOKEN_KEY = "app_token";
-    const USER_KEY = "app_userName";
-    const ROLE_KEY = "app_role";
+const API_BASE = "https://script.google.com/macros/s/AKfycbxDNDaXEN1011Y1Q_088C1yRsHqDir1dEY2-rYxmjYmbMOXOL_HpADnHH193FnhITWp/exec";
+const TOKEN_KEY = "app_token";
+const USER_KEY = "app_userName";
+const ROLE_KEY = "app_role";
 
-    function getRequestedPage(){
-      const params = new URLSearchParams(window.location.search);
-      return (params.get("page") || "plan-app.html").trim();
-    }
+function getRequestedPage(){
+  const params = new URLSearchParams(window.location.search);
+  return (params.get("page") || "plan-app.html").trim();
+}
 
-    function setMsg(text, isOk){
-      var el = document.getElementById("msg");
-      el.textContent = text || "";
-      el.className = isOk ? "ok" : "";
-    }
+function setMsg(text, isOk){
+  var el = document.getElementById("msg");
+  el.textContent = text || "";
+  el.className = isOk ? "ok" : "";
+}
 
-    function saveSession(res){
-      localStorage.setItem(TOKEN_KEY, res.token || "");
-      localStorage.setItem(USER_KEY, res.userName || "");
-      localStorage.setItem(ROLE_KEY, res.role || "");
-    }
+function saveSession(res){
+  localStorage.setItem(TOKEN_KEY, res.token || "");
+  localStorage.setItem(USER_KEY, res.userName || "");
+  localStorage.setItem(ROLE_KEY, res.role || "");
+}
 
-    function clearSession(){
-      localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem(USER_KEY);
-      localStorage.removeItem(ROLE_KEY);
-    }
+function clearSession(){
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(USER_KEY);
+  localStorage.removeItem(ROLE_KEY);
+}
 
-    async function apiGet(params){
-      const url = new URL(API_BASE);
-      Object.keys(params || {}).forEach(function(k){
-        url.searchParams.set(k, params[k]);
-      });
-      url.searchParams.set("_t", Date.now());
+async function apiGet(params){
+  const url = new URL(API_BASE);
+  Object.keys(params || {}).forEach(function(k){
+    url.searchParams.set(k, params[k]);
+  });
+  url.searchParams.set("_t", Date.now());
 
-      const res = await fetch(url.toString(), {
-        method: "GET",
-        cache: "no-store"
-      });
+  const res = await fetch(url.toString(), {
+    method: "GET",
+    cache: "no-store"
+  });
 
-      if(!res.ok){
-        throw new Error("فشل الاتصال بالسيرفر");
-      }
+  if(!res.ok){
+    throw new Error("فشل الاتصال بالسيرفر");
+  }
 
-      return await res.json();
-    }
+  return await res.json();
+}
 
-    async function apiPost(data){
-      const res = await fetch(API_BASE, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(data || {})
-      });
+async function checkPageAccess(token, pageNameForPermission){
+  return await apiGet({
+    action: "checkSession",
+    token: token,
+    page: pageNameForPermission
+  });
+}
 
-      if(!res.ok){
-        throw new Error("فشل الاتصال بالسيرفر");
-      }
+async function login(){
+  var pass = String(document.getElementById("pass").value || "").trim();
+  var btn = document.getElementById("btnLogin");
+  var requestedPage = getRequestedPage();
 
-      return await res.json();
-    }
+  if(!pass){
+    setMsg("⚠️ أدخل كلمة المرور", false);
+    return;
+  }
 
-    async function checkPageAccess(token, pageNameForPermission){
-      return await apiGet({
-        action: "checkSession",
-        token: token,
-        page: pageNameForPermission
-      });
-    }
+  btn.disabled = true;
+  btn.innerHTML = "جاري التحقق...";
+  setMsg("", false);
 
-    async function login(){
-      var pass = String(document.getElementById("pass").value || "").trim();
-      var btn = document.getElementById("btnLogin");
-      var requestedPage = getRequestedPage();
-
-      if(!pass){
-        setMsg("⚠️ أدخل كلمة المرور", false);
-        return;
-      }
-
-      btn.disabled = true;
-      btn.innerHTML = "جاري التحقق...";
-      setMsg("", false);
-
-      try{
-        const res = await apiPost({
-          action: "login",
-          pass: pass
-        });
-
-        if(!res || !res.ok || !res.token){
-          btn.disabled = false;
-          btn.innerHTML = "دخول";
-          setMsg((res && res.error) ? res.error : "❌ كلمة المرور غير صحيحة", false);
-          return;
-        }
-
-        const access = await checkPageAccess(res.token, "plan");
-
-        if(!access || !access.ok || !access.valid || !access.allowed){
-          clearSession();
-          btn.disabled = false;
-          btn.innerHTML = "دخول";
-          setMsg("❌ ليس لديك صلاحية لفتح هذه الصفحة", false);
-          return;
-        }
-
-        saveSession(res);
-        window.location.href = requestedPage;
-
-      }catch(err){
-        btn.disabled = false;
-        btn.innerHTML = "دخول";
-        setMsg("❌ فشل الاتصال بالسيرفر", false);
-        console.error(err);
-      }
-    }
-
-    document.getElementById("pass").addEventListener("keypress", function(e){
-      if(e.key === "Enter"){
-        login();
-      }
+  try{
+    const res = await apiGet({
+      action: "login",
+      pass: pass
     });
 
-    document.getElementById("pass").addEventListener("input", function(){
-      setMsg("", false);
-    });
+    if(!res || !res.ok || !res.token){
+      btn.disabled = false;
+      btn.innerHTML = "دخول";
+      setMsg((res && res.error) ? res.error : "❌ كلمة المرور غير صحيحة", false);
+      return;
+    }
 
-    window.addEventListener("load", function(){
+    const access = await checkPageAccess(res.token, "plan");
+
+    if(!access || !access.ok || !access.valid || !access.allowed){
       clearSession();
-    });
-  </script>
+      btn.disabled = false;
+      btn.innerHTML = "دخول";
+      setMsg("❌ ليس لديك صلاحية لفتح هذه الصفحة", false);
+      return;
+    }
+
+    saveSession(res);
+    window.location.href = requestedPage;
+
+  }catch(err){
+    btn.disabled = false;
+    btn.innerHTML = "دخول";
+    setMsg("❌ فشل الاتصال بالسيرفر", false);
+    console.error(err);
+  }
+}
+
+document.getElementById("pass").addEventListener("keypress", function(e){
+  if(e.key === "Enter"){
+    login();
+  }
+});
+
+document.getElementById("pass").addEventListener("input", function(){
+  setMsg("", false);
+});
+
+window.addEventListener("load", function(){
+  clearSession();
+});
+</script>
 </body>
 </html>
