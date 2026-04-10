@@ -627,239 +627,242 @@
   <div id="toast" class="toast"></div>
 
   <script>
-    const API_BASE = "https://script.google.com/macros/s/AKfycby3aO0nS6Sji9AV8JivU6uncxvMiIpvSMh97ImBXZSEmgHzSa48BZSdhaeiU2zh_nKm/exec";
-    const STORAGE_KEY = "tracking_session_plan";
-    const PAGE_NAME = "plan";
+  const API_BASE = "https://script.google.com/macros/s/AKfycby3aO0nS6Sji9AV8JivU6uncxvMiIpvSMh97ImBXZSEmgHzSa48BZSdhaeiU2zh_nKm/exec";
+  const STORAGE_KEY = "tracking_session_token_plan";
+  const PAGE_NAME = "plan";
 
-    let currentUserName = "";
+  let currentUserName = "";
 
-    function getLocalSession(){
-      try{
-        return JSON.parse(sessionStorage.getItem(STORAGE_KEY) || "null");
-      }catch(e){
-        return null;
-      }
+  function getSessionToken(){
+    return sessionStorage.getItem(STORAGE_KEY) || "";
+  }
+
+  function clearSessionToken(){
+    sessionStorage.removeItem(STORAGE_KEY);
+  }
+
+  async function apiPost(payload){
+    const response = await fetch(API_BASE, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const text = await response.text();
+
+    try{
+      return JSON.parse(text);
+    }catch(err){
+      throw new Error(text);
+    }
+  }
+
+  async function ensurePageSession(){
+    const token = getSessionToken();
+
+    if(!token){
+      window.location.href = "login.html?p=plan";
+      return;
     }
 
-    function clearLocalSession(){
-      sessionStorage.removeItem(STORAGE_KEY);
-    }
-
-    async function apiPost(payload){
-      const response = await fetch(API_BASE, {
-        method: "POST",
-        headers: {
-          "Content-Type": "text/plain;charset=utf-8"
-        },
-        body: JSON.stringify(payload)
+    try{
+      const result = await apiPost({
+        action: "checkSession",
+        token: token,
+        page: PAGE_NAME
       });
 
-      const text = await response.text();
+      if(result && result.ok){
+        currentUserName = result.user || "مخول غير معروف";
 
-      try{
-        return JSON.parse(text);
-      }catch(err){
-        throw new Error(text);
-      }
-    }
-
-    function ensurePageSession(){
-      const session = getLocalSession();
-
-      if(!session || !session.token || !session.user || !session.expire){
-        clearLocalSession();
-        window.location.href = "login.html?p=plan";
-        return;
-      }
-
-      if(Date.now() > Number(session.expire)){
-        clearLocalSession();
-        window.location.href = "login.html";
-        return;
-      }
-
-      currentUserName = String(session.user || "مخول غير معروف");
-
-      const w = document.getElementById("welcomeUser");
-      if(currentUserName && currentUserName !== "مخول غير معروف"){
-        w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: ' + currentUserName;
-      }else{
-        w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: مخول غير معروف';
-      }
-
-      document.getElementById("pageWrap").classList.add("show");
-    }
-
-    function showToast(msg, type){
-      const t = document.getElementById("toast");
-      t.className = "toast " + (type || "success");
-      t.innerText = msg || "";
-      t.classList.add("show");
-
-      clearTimeout(window.toastTimer);
-      window.toastTimer = setTimeout(function(){
-        t.classList.remove("show");
-      }, 3000);
-    }
-
-    function switchTab(which){
-      const tabNew = document.getElementById("tabNew");
-      const tabPrice = document.getElementById("tabPrice");
-      const secNew = document.getElementById("secNew");
-      const secPrice = document.getElementById("secPrice");
-
-      if(which === "new"){
-        secNew.classList.add("active");
-        secPrice.classList.remove("active");
-
-        tabNew.classList.add("primary");
-        tabNew.classList.remove("ghost");
-
-        tabPrice.classList.add("ghost");
-        tabPrice.classList.remove("primary");
-      }else{
-        secPrice.classList.add("active");
-        secNew.classList.remove("active");
-
-        tabPrice.classList.add("primary");
-        tabPrice.classList.remove("ghost");
-
-        tabNew.classList.add("ghost");
-        tabNew.classList.remove("primary");
-      }
-    }
-
-    function toggleLab(v){
-      document.getElementById("labBox").style.display = (v === "مختبرات") ? "block" : "none";
-    }
-
-    function showSuccess(text){
-      document.getElementById("successText").innerText = text || "تم توثيق العملية في السجل الموحد.";
-      document.getElementById("cardForm").style.display = "none";
-      document.getElementById("cardSuccess").style.display = "block";
-    }
-
-    function resetAll(){
-      document.getElementById("cardSuccess").style.display = "none";
-      document.getElementById("cardForm").style.display = "block";
-
-      document.querySelectorAll("input").forEach(function(i){ i.value = ""; });
-      document.querySelectorAll("select").forEach(function(s){ s.selectedIndex = 0; });
-
-      toggleLab("");
-      switchTab("new");
-
-      document.getElementById("btnNew").disabled = false;
-      document.getElementById("btnNew").innerHTML = "اعتماد وحفظ البيانات";
-
-      document.getElementById("btnPrice").disabled = false;
-      document.getElementById("btnPrice").innerHTML = "اعتماد وحفظ البيانات";
-    }
-
-    async function saveNew(){
-      const id = document.getElementById("nID").value.trim();
-      const cl = document.getElementById("nClient").value.trim();
-
-      if(!id || !cl){
-        showToast("اكمل البيانات", "warn");
-        return;
-      }
-
-      const session = getLocalSession();
-      if(!session || !session.token){
-        clearLocalSession();
-        window.location.href = "login.html";
-        return;
-      }
-
-      const btn = document.getElementById("btnNew");
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
-
-      try{
-        const r = await apiPost({
-          action: "addNewOrder",
-          token: session.token,
-          page: PAGE_NAME,
-          orderNo: id,
-          clientName: cl,
-          userName: currentUserName
-        });
-
-        const msg = String((r && (r.message || r.result)) || "");
-
-        if(r && r.ok){
-          showSuccess("تم إضافة أمر العمل وتوثيقه");
-          showToast(msg || "تم الحفظ بنجاح", "success");
+        const w = document.getElementById("welcomeUser");
+        if(currentUserName && currentUserName !== "مخول غير معروف"){
+          w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: ' + currentUserName;
         }else{
-          showToast(msg || "تعذر حفظ البيانات", "error");
-          btn.disabled = false;
-          btn.innerHTML = "اعتماد وحفظ البيانات";
+          w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: مخول غير معروف';
         }
 
-      }catch(err){
-        showToast("خطأ في الاتصال", "error");
-        btn.disabled = false;
-        btn.innerHTML = "اعتماد وحفظ البيانات";
+        document.getElementById("pageWrap").classList.add("show");
+      }else{
+        clearSessionToken();
+        window.location.href = "login.html?p=plan";
       }
+    }catch(error){
+      clearSessionToken();
+      window.location.href = "login.html?p=plan";
+    }
+  }
+
+  function showToast(msg, type){
+    const t = document.getElementById("toast");
+    t.className = "toast " + (type || "success");
+    t.innerText = msg || "";
+    t.classList.add("show");
+
+    clearTimeout(window.toastTimer);
+    window.toastTimer = setTimeout(function(){
+      t.classList.remove("show");
+    }, 3000);
+  }
+
+  function switchTab(which){
+    const tabNew = document.getElementById("tabNew");
+    const tabPrice = document.getElementById("tabPrice");
+    const secNew = document.getElementById("secNew");
+    const secPrice = document.getElementById("secPrice");
+
+    if(which === "new"){
+      secNew.classList.add("active");
+      secPrice.classList.remove("active");
+
+      tabNew.classList.add("primary");
+      tabNew.classList.remove("ghost");
+
+      tabPrice.classList.add("ghost");
+      tabPrice.classList.remove("primary");
+    }else{
+      secPrice.classList.add("active");
+      secNew.classList.remove("active");
+
+      tabPrice.classList.add("primary");
+      tabPrice.classList.remove("ghost");
+
+      tabNew.classList.add("ghost");
+      tabNew.classList.remove("primary");
+    }
+  }
+
+  function toggleLab(v){
+    document.getElementById("labBox").style.display = (v === "مختبرات") ? "block" : "none";
+  }
+
+  function showSuccess(text){
+    document.getElementById("successText").innerText = text || "تم توثيق العملية في السجل الموحد.";
+    document.getElementById("cardForm").style.display = "none";
+    document.getElementById("cardSuccess").style.display = "block";
+  }
+
+  function resetAll(){
+    document.getElementById("cardSuccess").style.display = "none";
+    document.getElementById("cardForm").style.display = "block";
+
+    document.querySelectorAll("input").forEach(function(i){ i.value = ""; });
+    document.querySelectorAll("select").forEach(function(s){ s.selectedIndex = 0; });
+
+    toggleLab("");
+    switchTab("new");
+
+    document.getElementById("btnNew").disabled = false;
+    document.getElementById("btnNew").innerHTML = "اعتماد وحفظ البيانات";
+
+    document.getElementById("btnPrice").disabled = false;
+    document.getElementById("btnPrice").innerHTML = "اعتماد وحفظ البيانات";
+  }
+
+  async function saveNew(){
+    const id = document.getElementById("nID").value.trim();
+    const cl = document.getElementById("nClient").value.trim();
+
+    if(!id || !cl){
+      showToast("اكمل البيانات", "warn");
+      return;
     }
 
-    async function savePrice(){
-      const type = document.getElementById("pType").value;
+    const token = getSessionToken();
+    if(!token){
+      window.location.href = "login.html?p=plan";
+      return;
+    }
 
-      const d = {
-        orderNo: document.getElementById("pID").value.trim(),
-        price: document.getElementById("pVal").value.trim(),
-        days: document.getElementById("pDays").value.trim(),
-        testType: type,
-        labPath: (type === "مختبرات") ? document.getElementById("pLabVal").value : "",
+    const btn = document.getElementById("btnNew");
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+
+    try{
+      const r = await apiPost({
+        action: "addNewOrder",
+        token: token,
+        page: PAGE_NAME,
+        orderNo: id,
+        clientName: cl,
         userName: currentUserName
-      };
+      });
 
-      if(!d.orderNo || !d.testType){
-        showToast("اكمل الحقول", "warn");
-        return;
-      }
+      const msg = String((r && (r.message || r.result)) || "");
 
-      const session = getLocalSession();
-      if(!session || !session.token){
-        clearLocalSession();
-        window.location.href = "login.html?p=plan";
-        return;
-      }
-
-      const btn = document.getElementById("btnPrice");
-      btn.disabled = true;
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
-
-      try{
-        const r = await apiPost({
-          action: "processPlanning",
-          token: session.token,
-          page: PAGE_NAME,
-          data: d
-        });
-
-        const msg = String((r && (r.message || r.result)) || "");
-
-        if(r && r.ok){
-          showSuccess("تم تثبيت التسعيرة وعدد الأيام وتوثيقها");
-          showToast(msg || "تم تثبيت التسعيرة بنجاح", "success");
-        }else{
-          showToast(msg || "تعذر حفظ البيانات", "error");
-          btn.disabled = false;
-          btn.innerHTML = "اعتماد وحفظ البيانات";
-        }
-
-      }catch(err){
-        showToast("خطأ في الاتصال", "error");
+      if(r && r.ok){
+        showSuccess("تم إضافة أمر العمل وتوثيقه");
+        showToast(msg || "تم الحفظ بنجاح", "success");
+      }else{
+        showToast(msg || "تعذر حفظ البيانات", "error");
         btn.disabled = false;
         btn.innerHTML = "اعتماد وحفظ البيانات";
       }
+
+    }catch(err){
+      showToast("خطأ في الاتصال", "error");
+      btn.disabled = false;
+      btn.innerHTML = "اعتماد وحفظ البيانات";
+    }
+  }
+
+  async function savePrice(){
+    const type = document.getElementById("pType").value;
+
+    const d = {
+      orderNo: document.getElementById("pID").value.trim(),
+      price: document.getElementById("pVal").value.trim(),
+      days: document.getElementById("pDays").value.trim(),
+      testType: type,
+      labPath: (type === "مختبرات") ? document.getElementById("pLabVal").value : "",
+      userName: currentUserName
+    };
+
+    if(!d.orderNo || !d.testType){
+      showToast("اكمل الحقول", "warn");
+      return;
     }
 
-    ensurePageSession();
-  </script>
+    const token = getSessionToken();
+    if(!token){
+      window.location.href = "login.html?p=plan";
+      return;
+    }
+
+    const btn = document.getElementById("btnPrice");
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+
+    try{
+      const r = await apiPost({
+        action: "processPlanning",
+        token: token,
+        page: PAGE_NAME,
+        data: d
+      });
+
+      const msg = String((r && (r.message || r.result)) || "");
+
+      if(r && r.ok){
+        showSuccess("تم تثبيت التسعيرة وعدد الأيام وتوثيقها");
+        showToast(msg || "تم تثبيت التسعيرة بنجاح", "success");
+      }else{
+        showToast(msg || "تعذر حفظ البيانات", "error");
+        btn.disabled = false;
+        btn.innerHTML = "اعتماد وحفظ البيانات";
+      }
+
+    }catch(err){
+      showToast("خطأ في الاتصال", "error");
+      btn.disabled = false;
+      btn.innerHTML = "اعتماد وحفظ البيانات";
+    }
+  }
+
+  ensurePageSession();
+</script>
 
 </body>
 </html>
