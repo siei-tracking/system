@@ -533,7 +533,7 @@ async function ensurePageSession(){
   const token = getSessionToken();
 
   if(!token){
-    window.location.href = "login.html";
+    window.location.href = "login.html?p=finance";
     return;
   }
 
