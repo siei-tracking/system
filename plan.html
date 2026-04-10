@@ -547,11 +547,7 @@ input::placeholder{
 
       <div class="user-row">
         <div id="welcomeUser" class="user-pill"></div>
-        <button id="logoutBtn" class="logout-btn" type="button">
-          <i class="fas fa-sign-out-alt"></i>
-          تسجيل الخروج
-        </button>
-      </div>
+        </div>
     </div>
   </header>
 
@@ -650,7 +646,7 @@ input::placeholder{
 <div id="toast" class="toast"></div>
 
 <script>
-const API_BASE = "https://script.google.com/macros/s/AKfycbwMFyHqIDeI34OUNU3XSfBzu5KLk15Ez81_i_sB-biKIJ7GWy9u12lptrKgdOUMl7Oi/exec";
+const API_BASE = "https://script.google.com/macros/s/AKfycbySdIkQ65GRTBAExiIuhm59HvX6n3f9XspLciadftEz6hwC_PWAmnONeFWvkR1qHzXQ/exec";
 const STORAGE_KEY = "tracking_session_token_plan";
 const PAGE_NAME = "plan";
 
@@ -807,6 +803,7 @@ async function saveNew(){
     const r = await apiPost({
       action: "addNewOrder",
       token: token,
+      page: PAGE_NAME,
       orderNo: id,
       clientName: cl,
       userName: currentUserName
@@ -861,6 +858,7 @@ async function savePrice(){
     const r = await apiPost({
       action: "processPlanning",
       token: token,
+      page: PAGE_NAME,
       data: d
     });
 
@@ -882,10 +880,6 @@ async function savePrice(){
   }
 }
 
-document.getElementById("logoutBtn").addEventListener("click", function(){
-  clearSessionToken();
-  window.location.href = "login.html";
-});
 
 ensurePageSession();
 </script>
