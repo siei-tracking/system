@@ -7,39 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-  <script>
-    (function () {
-      const params = new URLSearchParams(window.location.search);
-
-      const tokenFromUrl = params.get("token") || "";
-      const roleFromUrl  = params.get("role") || "";
-      const userFromUrl  = params.get("user") || "";
-
-      const tokenFromStorage = localStorage.getItem("wo_auth_token") || "";
-      const roleFromStorage  = localStorage.getItem("wo_auth_role") || "";
-      const userFromStorage  = localStorage.getItem("wo_auth_user") || "";
-
-      const finalToken = tokenFromUrl || tokenFromStorage;
-      const finalRole  = (roleFromUrl || roleFromStorage || "").trim().toLowerCase();
-      const finalUser  = userFromUrl || userFromStorage;
-
-      if (!finalToken) {
-        window.location.replace("login.html?p=admin");
-        return;
-      }
-
-      try {
-        localStorage.setItem("wo_auth_token", finalToken);
-        if (finalRole) localStorage.setItem("wo_auth_role", finalRole);
-        if (finalUser) localStorage.setItem("wo_auth_user", finalUser);
-      } catch (e) {}
-
-      if (tokenFromUrl || roleFromUrl || userFromUrl) {
-        const cleanUrl = window.location.origin + window.location.pathname;
-        window.history.replaceState({}, document.title, cleanUrl);
-      }
-    })();
-  </script>
+  <title>إدارة المستخدمين والصلاحيات</title>
 
   <style>
     :root{
@@ -65,6 +33,13 @@
         radial-gradient(circle at top left, rgba(34,50,67,.05), transparent 30%),
         var(--bg);
       color:#111;
+    }
+
+    #pageWrap{
+      display:none;
+    }
+    #pageWrap.show{
+      display:block;
     }
 
     .company-header{
@@ -164,6 +139,27 @@
       margin:0;
       font-size:18px !important;
       font-weight:900 !important;
+      text-shadow:
+        -1px -1px 0 rgba(0,0,0,0.9),
+         1px -1px 0 rgba(0,0,0,0.9),
+        -1px  1px 0 rgba(0,0,0,0.9),
+         1px  1px 0 rgba(0,0,0,0.9),
+         0 4px 10px rgba(0,0,0,0.8) !important;
+    }
+
+    .user-pill{
+      margin-top:6px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:2px 14px;
+      border-radius:999px;
+      background:rgba(128,0,32,0.4);
+      border:1px solid rgba(231,76,60,0.45);
+      color:#fff;
+      font-weight:900;
+      font-size:13px;
+      box-shadow:0 4px 12px rgba(231,76,60,.25);
       text-shadow:
         -1px -1px 0 rgba(0,0,0,0.9),
          1px -1px 0 rgba(0,0,0,0.9),
@@ -538,88 +534,91 @@
 
 <body>
 
-<header class="company-header">
-  <img src="https://drive.google.com/thumbnail?id=1NN7G2zhk7nhgXuPWGW4qE_pdGC-Ptjkt&sz=w500" class="company-logo" alt="logo">
-  <div class="header-text">
-    <h1>الشركة العامة للفحص والتأهيل الهندسي</h1>
-    <p><i class="fas fa-user-shield"></i> إدارة المستخدمين والصلاحيات</p>
-  </div>
-</header>
-
-<div class="wrap">
-  <div class="panel">
-
-    <div class="panel-head">
-      <div class="title"><i class="fas fa-users-cog"></i> لوحة إدارة المخولين</div>
-
-      <div class="head-actions">
-        <button class="btn btn-primary" id="btnBackMain" type="button">
-          <i class="fas fa-arrow-right"></i> العودة إلى main
-        </button>
-      </div>
+<div id="pageWrap">
+  <header class="company-header">
+    <img src="https://drive.google.com/thumbnail?id=1NN7G2zhk7nhgXuPWGW4qE_pdGC-Ptjkt&sz=w500" class="company-logo" alt="logo">
+    <div class="header-text">
+      <h1>الشركة العامة للفحص والتأهيل الهندسي</h1>
+      <p><i class="fas fa-user-shield"></i> إدارة المستخدمين والصلاحيات</p>
+      <div id="welcomeUser" class="user-pill"></div>
     </div>
+  </header>
 
-    <div id="status" class="ok">جاهز...</div>
+  <div class="wrap">
+    <div class="panel">
 
-    <div class="section">
-      <h3 class="section-title"><i class="fas fa-user-plus"></i> إضافة / تعديل مستخدم</h3>
+      <div class="panel-head">
+        <div class="title"><i class="fas fa-users-cog"></i> لوحة إدارة المخولين</div>
 
-      <div class="grid">
-        <div class="field">
-          <label for="pass">كلمة المرور</label>
-          <input id="pass" type="text" placeholder="مثال: 1234">
-        </div>
-
-        <div class="field">
-          <label for="name">الاسم</label>
-          <input id="name" type="text" placeholder="اسم المستخدم">
+        <div class="head-actions">
+          <button class="btn btn-primary" id="btnBackMain" type="button">
+            <i class="fas fa-arrow-right"></i> العودة إلى main
+          </button>
         </div>
       </div>
 
-      <div style="margin-top:14px;">
-        <label style="font-weight:900;color:#1f2d3a;font-size:15px;">صلاحيات الصفحات</label>
-        <div id="pagesBox" class="pages-box"></div>
+      <div id="status" class="ok">جاهز...</div>
+
+      <div class="section">
+        <h3 class="section-title"><i class="fas fa-user-plus"></i> إضافة / تعديل مستخدم</h3>
+
+        <div class="grid">
+          <div class="field">
+            <label for="pass">كلمة المرور</label>
+            <input id="pass" type="text" placeholder="مثال: 1234">
+          </div>
+
+          <div class="field">
+            <label for="name">الاسم</label>
+            <input id="name" type="text" placeholder="اسم المستخدم">
+          </div>
+        </div>
+
+        <div style="margin-top:14px;">
+          <label style="font-weight:900;color:#1f2d3a;font-size:15px;">صلاحيات الصفحات</label>
+          <div id="pagesBox" class="pages-box"></div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-ok" id="btnAdd" type="button">
+            <i class="fas fa-user-plus"></i> إضافة مستخدم
+          </button>
+
+          <button class="btn btn-primary" id="btnUpdate" type="button">
+            <i class="fas fa-pen-to-square"></i> تحديث مستخدم
+          </button>
+
+          <button class="btn btn-danger" id="btnDelete" type="button">
+            <i class="fas fa-trash"></i> حذف مستخدم
+          </button>
+
+          <button class="btn btn-warn" id="btnClear" type="button">
+            <i class="fas fa-broom"></i> مسح الحقول
+          </button>
+        </div>
       </div>
 
-      <div class="btn-row">
-        <button class="btn btn-ok" id="btnAdd" type="button">
-          <i class="fas fa-user-plus"></i> إضافة مستخدم
-        </button>
+      <div class="section">
+        <h3 class="section-title"><i class="fas fa-table-list"></i> قائمة المستخدمين</h3>
 
-        <button class="btn btn-primary" id="btnUpdate" type="button">
-          <i class="fas fa-pen-to-square"></i> تحديث مستخدم
-        </button>
-
-        <button class="btn btn-danger" id="btnDelete" type="button">
-          <i class="fas fa-trash"></i> حذف مستخدم
-        </button>
-
-        <button class="btn btn-warn" id="btnClear" type="button">
-          <i class="fas fa-broom"></i> مسح الحقول
-        </button>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>كلمة المرور</th>
+                <th>الاسم</th>
+                <th>الصفحات</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="usersBody">
+              <tr><td colspan="4" class="empty">جاري التحميل...</td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
+
     </div>
-
-    <div class="section">
-      <h3 class="section-title"><i class="fas fa-table-list"></i> قائمة المستخدمين</h3>
-
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>كلمة المرور</th>
-              <th>الاسم</th>
-              <th>الصفحات</th>
-              <th>إجراءات</th>
-            </tr>
-          </thead>
-          <tbody id="usersBody">
-            <tr><td colspan="4" class="empty">جاري التحميل...</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
   </div>
 </div>
 
@@ -646,16 +645,89 @@
 </div>
 
 <script>
-  const GAS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxDhWzy7hfLEXceMaDyEIb8vxGE9ZZMhn9OqnE3_NQ-nUm2ZDcfrvBebMM4jujCvtGs/exec";
+  const API_BASE = "https://script.google.com/macros/s/AKfycbzCX9UCZ6h1RT-wZcif86_uvO_pwi4k2V1INq2BdjovImm1I-iLEV3_pbegyYJO_UtF/exec";
+  const STORAGE_KEY = "tracking_session_token_plan";
   const PAGE_NAME = "admin";
-
-  const AUTH_TOKEN = localStorage.getItem("wo_auth_token") || "";
-  const CURRENT_USER_ROLE = localStorage.getItem("wo_auth_role") || "";
-  const CURRENT_USER_NAME = localStorage.getItem("wo_auth_user") || "";
 
   let ALL_PAGES_CACHE = [];
   let USERS_CACHE = [];
   let confirmCallback = null;
+  let CURRENT_USER_ROLE = "";
+  let CURRENT_USER_NAME = "";
+
+  function getSessionToken(){
+    return sessionStorage.getItem(STORAGE_KEY) || "";
+  }
+
+  function clearSessionToken(){
+    sessionStorage.removeItem(STORAGE_KEY);
+  }
+
+  async function apiPost(payload){
+    const response = await fetch(API_BASE, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const text = await response.text();
+
+    try{
+      return JSON.parse(text);
+    }catch(err){
+      throw new Error(text);
+    }
+  }
+
+  async function ensurePageSession(){
+    const token = getSessionToken();
+
+    if(!token){
+      window.location.href = "login.html?p=admin";
+      return;
+    }
+
+    try{
+      const result = await apiPost({
+        action: "checkSession",
+        token: token,
+        page: PAGE_NAME
+      });
+
+      if(result && result.ok){
+        CURRENT_USER_NAME = result.user || "مخول غير معروف";
+        CURRENT_USER_ROLE = result.role || "user";
+
+        const w = document.getElementById("welcomeUser");
+        if(CURRENT_USER_NAME && CURRENT_USER_NAME !== "مخول غير معروف"){
+          w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: ' + CURRENT_USER_NAME;
+        }else{
+          w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: مخول غير معروف';
+        }
+
+        if(String(CURRENT_USER_ROLE).toLowerCase() !== "admin"){
+          document.getElementById("pageWrap").classList.add("show");
+          setStatus("❌ هذه الصفحة متاحة لمدير النظام فقط", false);
+          showMsg("❌ غير مصرح", "err");
+          document.querySelector(".panel").style.pointerEvents = "none";
+          document.querySelector(".panel").style.opacity = "0.6";
+          return;
+        }
+
+        document.getElementById("pageWrap").classList.add("show");
+        loadAllPages();
+        loadUsers();
+      }else{
+        clearSessionToken();
+        window.location.href = "login.html?p=admin";
+      }
+    }catch(error){
+      clearSessionToken();
+      window.location.href = "login.html?p=admin";
+    }
+  }
 
   function safeErr(err){
     try{
@@ -706,56 +778,6 @@
     if(on) setStatus("جاري التنفيذ...", true);
   }
 
-  async function apiGet(action, params){
-    const qs = new URLSearchParams({ action: action });
-
-    Object.keys(params || {}).forEach(function(key){
-      const val = params[key];
-      if(val !== undefined && val !== null && val !== ""){
-        qs.append(key, val);
-      }
-    });
-
-    const res = await fetch(GAS_WEBAPP_URL + "?" + qs.toString(), {
-      method: "GET",
-      mode: "cors"
-    });
-
-    const text = await res.text();
-
-    if(!res.ok){
-      throw new Error("HTTP " + res.status + " | " + text.slice(0, 200));
-    }
-
-    try{
-      return JSON.parse(text);
-    }catch(e){
-      throw new Error("JSON parse error | " + text.slice(0, 200));
-    }
-  }
-
-  async function apiPost(payload){
-    const res = await fetch(GAS_WEBAPP_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8"
-      },
-      body: JSON.stringify(payload || {})
-    });
-
-    const text = await res.text();
-
-    if(!res.ok){
-      throw new Error("HTTP " + res.status + " | " + text.slice(0, 200));
-    }
-
-    try{
-      return JSON.parse(text);
-    }catch(e){
-      throw new Error("JSON parse error | " + text.slice(0, 200));
-    }
-  }
-
   function escapeHtml(text){
     return String(text || "")
       .replace(/&/g, "&amp;")
@@ -763,6 +785,10 @@
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
+  }
+
+  function normalizeName(name){
+    return String(name || "").trim().replace(/\s+/g, " ").toLowerCase();
   }
 
   function getCheckedPages(){
@@ -802,235 +828,70 @@
 
   function renderPages(pages){
     ALL_PAGES_CACHE = Array.isArray(pages) ? pages.slice() : [];
+
     const box = document.getElementById("pagesBox");
+    box.innerHTML = "";
 
     if(!ALL_PAGES_CACHE.length){
-      box.innerHTML = '<div class="empty">لا توجد صفحات متاحة</div>';
+      box.innerHTML = '<div class="empty">لا توجد صفحات</div>';
       return;
     }
 
-    box.innerHTML = ALL_PAGES_CACHE.map(function(page){
-      const p = String(page || "").trim();
-      return ''
-        + '<label class="page-item">'
-        +   '<input type="checkbox" value="' + escapeHtml(p) + '">'
-        +   '<span>' + escapeHtml(p) + '</span>'
-        + '</label>';
-    }).join("");
+    ALL_PAGES_CACHE.forEach(function(p){
+      const page = String(p || "").trim();
+      const lower = page.toLowerCase();
+
+      if(lower === "index") return;
+
+      const item = document.createElement("label");
+      item.className = "page-item";
+      item.innerHTML =
+        '<input type="checkbox" value="' + escapeHtml(page) + '">' +
+        '<span>' + escapeHtml(page) + '</span>';
+      box.appendChild(item);
+    });
   }
 
-  function renderUsers(users){
-    USERS_CACHE = Array.isArray(users) ? users.slice() : [];
+  function renderUsersTable(list){
+    USERS_CACHE = Array.isArray(list) ? list.slice() : [];
+
     const body = document.getElementById("usersBody");
 
     if(!USERS_CACHE.length){
-      body.innerHTML = '<tr><td colspan="4" class="empty">لا يوجد مستخدمون</td></tr>';
+      body.innerHTML = '<tr><td colspan="4" class="empty">لا توجد بيانات</td></tr>';
       return;
     }
 
-    body.innerHTML = USERS_CACHE.map(function(user){
-      const pass = String(user.password || "").trim();
-      const name = String(user.name || "").trim();
-      const pages = Array.isArray(user.pages)
-        ? user.pages.join(", ")
-        : String(user.pages || "").trim();
+    let html = "";
 
-      return ''
-        + '<tr>'
-        +   '<td>' + escapeHtml(pass) + '</td>'
-        +   '<td>' + escapeHtml(name) + '</td>'
-        +   '<td class="pages-cell">' + escapeHtml(pages || "—") + '</td>'
-        +   '<td class="action-cell">'
-        +     '<div class="action-box">'
-        +       '<button class="btn btn-primary btn-fill-user" type="button" data-pass="' + escapeHtml(pass) + '">'
-        +         '<i class="fas fa-pen"></i> تعبئة'
-        +       '</button>'
-        +       '<button class="btn btn-danger btn-remove-user" type="button" data-pass="' + escapeHtml(pass) + '">'
-        +         '<i class="fas fa-trash"></i> حذف'
-        +       '</button>'
-        +     '</div>'
-        +   '</td>'
-        + '</tr>';
-    }).join("");
+    USERS_CACHE.forEach(function(u){
+      const pass = String(u.password || "").trim();
+      const name = String(u.name || "").trim();
+      const pages = Array.isArray(u.pages) ? u.pages.join(", ") : String(u.pages || "").trim();
+
+      html += '<tr>';
+      html +=   '<td>' + escapeHtml(pass) + '</td>';
+      html +=   '<td>' + escapeHtml(name) + '</td>';
+      html +=   '<td class="pages-cell">' + escapeHtml(pages || "—") + '</td>';
+      html +=   '<td class="action-cell">';
+      html +=     '<div class="action-box">';
+      html +=       '<button class="btn btn-primary btn-fill-user" type="button" data-pass="' + escapeHtml(pass) + '"><i class="fas fa-pen"></i> تعبئة</button>';
+      html +=       '<button class="btn btn-danger btn-remove-user" type="button" data-pass="' + escapeHtml(pass) + '"><i class="fas fa-trash"></i> حذف</button>';
+      html +=     '</div>';
+      html +=   '</td>';
+      html += '</tr>';
+    });
+
+    body.innerHTML = html;
   }
 
-  async function ensureCurrentPageAccess(){
-    const token = localStorage.getItem("wo_auth_token") || "";
+  function showConfirmBox(message, onConfirm){
+    const overlay = document.getElementById("confirmOverlay");
+    const msg = document.getElementById("confirmMessage");
 
-    if(!token){
-      window.location.href = "login.html?p=" + PAGE_NAME;
-      return false;
-    }
-
-    try{
-      const data = await apiGet("checkAccess", {
-        token: token,
-        page: PAGE_NAME
-      });
-
-      if(!data || !data.ok){
-        showMsg((data && data.error) ? data.error : "❌ غير مخول", "err");
-        setTimeout(function(){
-          window.location.href = "main.html";
-        }, 1200);
-        return false;
-      }
-
-      if(String((data.role || CURRENT_USER_ROLE || "")).toLowerCase() !== "admin"){
-        showMsg("❌ هذه الصفحة للمشرف فقط", "err");
-        setTimeout(function(){
-          window.location.href = "main.html";
-        }, 1200);
-        return false;
-      }
-
-      return true;
-    }catch(err){
-      const msg = safeErr(err);
-
-      if(msg.includes("انتهت الجلسة") || msg.includes("تسجيل الدخول غير صالح")){
-        showMsg("❌ انتهت الجلسة", "err");
-        setTimeout(function(){
-          window.location.href = "login.html?p=" + PAGE_NAME;
-        }, 1200);
-        return false;
-      }
-
-      showMsg("❌ تعذر التحقق من صلاحية الصفحة", "err");
-      setTimeout(function(){
-        window.location.href = "main.html";
-      }, 1200);
-      return false;
-    }
-  }
-
-  async function loadAllPages(){
-    try{
-      const res = await apiGet("allPages", { token: AUTH_TOKEN });
-      if(!res || !res.ok){
-        renderPages([]);
-        setStatus("⚠️ تعذر تحميل الصفحات", false);
-        return;
-      }
-      renderPages(res.pages || []);
-    }catch(err){
-      renderPages([]);
-      setStatus("❌ فشل تحميل الصفحات: " + safeErr(err), false);
-    }
-  }
-
-  async function loadUsers(){
-    try{
-      setLoading(true);
-      const res = await apiGet("users", { token: AUTH_TOKEN });
-      setLoading(false);
-
-      if(!res || !res.ok){
-        renderUsers([]);
-        setStatus("⚠️ تعذر تحميل المستخدمين", false);
-        return;
-      }
-
-      renderUsers(res.items || []);
-      setStatus("تم تحميل المستخدمين بنجاح", true);
-    }catch(err){
-      setLoading(false);
-      renderUsers([]);
-      setStatus("❌ فشل تحميل المستخدمين: " + safeErr(err), false);
-      showMsg("❌ فشل تحميل المستخدمين", "err");
-    }
-  }
-
-  function validateForm(requirePages){
-    const pass = String(document.getElementById("pass").value || "").trim();
-    const name = String(document.getElementById("name").value || "").trim();
-    const pages = getCheckedPages();
-
-    if(!pass){
-      showMsg("⚠️ أدخل كلمة المرور", "warn");
-      return null;
-    }
-
-    if(!name){
-      showMsg("⚠️ أدخل الاسم", "warn");
-      return null;
-    }
-
-    if(requirePages && !pages.length){
-      showMsg("⚠️ اختر صفحة واحدة على الأقل", "warn");
-      return null;
-    }
-
-    return { pass: pass, name: name, pages: pages };
-  }
-
-  async function addUser(){
-    const form = validateForm(true);
-    if(!form) return;
-
-    try{
-      setLoading(true);
-      const res = await apiPost({
-        action: "addUser",
-        token: AUTH_TOKEN,
-        pass: form.pass,
-        name: form.name,
-        pages: form.pages
-      });
-      setLoading(false);
-
-      if(!res || !res.ok){
-        setStatus("❌ " + (res && (res.error || res.msg) ? (res.error || res.msg) : "فشل إضافة المستخدم"), false);
-        showMsg((res && (res.error || res.msg)) || "❌ فشل إضافة المستخدم", "err");
-        return;
-      }
-
-      clearForm(true);
-      await loadUsers();
-      setStatus("✅ تم إضافة المستخدم بنجاح", true);
-      showMsg("✅ تمت إضافة المستخدم", "ok");
-    }catch(err){
-      setLoading(false);
-      setStatus("❌ فشل إضافة المستخدم: " + safeErr(err), false);
-      showMsg("❌ فشل إضافة المستخدم", "err");
-    }
-  }
-
-  async function updateUser(){
-    const form = validateForm(true);
-    if(!form) return;
-
-    try{
-      setLoading(true);
-      const res = await apiPost({
-        action: "updateUser",
-        token: AUTH_TOKEN,
-        pass: form.pass,
-        name: form.name,
-        pages: form.pages
-      });
-      setLoading(false);
-
-      if(!res || !res.ok){
-        setStatus("❌ " + (res && (res.error || res.msg) ? (res.error || res.msg) : "فشل تحديث المستخدم"), false);
-        showMsg((res && (res.error || res.msg)) || "❌ فشل تحديث المستخدم", "err");
-        return;
-      }
-
-      await loadUsers();
-      setStatus("✅ تم تحديث المستخدم بنجاح", true);
-      showMsg("✅ تم تحديث المستخدم", "ok");
-    }catch(err){
-      setLoading(false);
-      setStatus("❌ فشل تحديث المستخدم: " + safeErr(err), false);
-      showMsg("❌ فشل تحديث المستخدم", "err");
-    }
-  }
-
-  function openConfirmBox(message, callback){
-    document.getElementById("confirmMessage").textContent = message || "هل أنت متأكد؟";
-    confirmCallback = callback;
-    document.getElementById("confirmOverlay").style.display = "flex";
+    msg.textContent = message || "هل أنت متأكد؟";
+    confirmCallback = onConfirm || null;
+    overlay.style.display = "flex";
   }
 
   function closeConfirmBox(){
@@ -1038,38 +899,234 @@
     confirmCallback = null;
   }
 
-  async function removeUser(passArg){
-    const pass = String(passArg || document.getElementById("pass").value || "").trim();
+  async function loadAllPages(){
+    const token = getSessionToken();
+    if(!token) return;
 
-    if(!pass){
-      showMsg("⚠️ أدخل كلمة المرور أو اختر مستخدماً من الجدول", "warn");
+    try{
+      const res = await apiPost({
+        action: "getAllPages",
+        token: token,
+        page: PAGE_NAME
+      });
+
+      let pages = [];
+      if(Array.isArray(res)) pages = res;
+      else if(Array.isArray(res && res.items)) pages = res.items;
+      else if(Array.isArray(res && res.pages)) pages = res.pages;
+
+      renderPages(pages || []);
+    }catch(err){
+      setStatus("❌ فشل تحميل الصفحات: " + safeErr(err), false);
+      showMsg("❌ فشل تحميل الصفحات", "err");
+    }
+  }
+
+  async function loadUsers(){
+    const token = getSessionToken();
+    if(!token){
+      window.location.href = "login.html?p=admin";
       return;
     }
 
-    openConfirmBox("هل أنت متأكد من حذف المستخدم؟", async function(){
+    setLoading(true);
+
+    try{
+      const list = await apiPost({
+        action: "getUsersList",
+        token: token,
+        page: PAGE_NAME
+      });
+
+      setLoading(false);
+      renderUsersTable(list || []);
+      setStatus("✅ تم تحميل المستخدمين", true);
+    }catch(err){
+      setLoading(false);
+      setStatus("❌ فشل تحميل المستخدمين: " + safeErr(err), false);
+      showMsg("❌ فشل تحميل المستخدمين", "err");
+    }
+  }
+
+  function isDuplicateName(name, currentPass){
+    const target = normalizeName(name);
+    const current = String(currentPass || "").trim();
+
+    return USERS_CACHE.some(function(u){
+      const sameName = normalizeName(u.name) === target;
+      const samePass = String(u.password || "").trim() === current;
+      return sameName && !samePass;
+    });
+  }
+
+  async function addUser(){
+    const token = getSessionToken();
+    if(!token){
+      window.location.href = "login.html?p=admin";
+      return;
+    }
+
+    const pass = String(document.getElementById("pass").value || "").trim();
+    const name = String(document.getElementById("name").value || "").trim();
+    const pages = getCheckedPages();
+
+    if(!pass || !name){
+      setStatus("⚠️ أكمل الحقول المطلوبة", false);
+      showMsg("⚠️ أكمل الحقول", "warn");
+      return;
+    }
+
+    if(!pages.length){
+      setStatus("⚠️ اختر صفحة واحدة على الأقل", false);
+      showMsg("⚠️ اختر صفحة واحدة على الأقل", "warn");
+      return;
+    }
+
+    if(isDuplicateName(name, "")){
+      setStatus("❌ الاسم موجود مسبقاً", false);
+      showMsg("❌ لا يسمح بتكرار الاسم", "err");
+      return;
+    }
+
+    setLoading(true);
+
+    try{
+      const msg = await apiPost({
+        action: "saveUserToSheet",
+        token: token,
+        page: PAGE_NAME,
+        data: {
+          pass: pass,
+          name: name,
+          pages: pages
+        }
+      });
+
+      const text = typeof msg === "string" ? msg : String((msg && (msg.message || msg.result)) || "");
+
+      setLoading(false);
+
+      if(text.indexOf("✅") !== -1){
+        showMsg(text, "ok");
+        clearForm(true);
+        loadUsers();
+        setStatus(text, true);
+      }else{
+        showMsg(text || "تعذر الإضافة", "warn");
+        setStatus(text || "تعذر الإضافة", false);
+      }
+    }catch(err){
+      setLoading(false);
+      setStatus("❌ خطأ: " + safeErr(err), false);
+      showMsg("❌ فشل الإضافة", "err");
+    }
+  }
+
+  async function updateUser(){
+    const token = getSessionToken();
+    if(!token){
+      window.location.href = "login.html?p=admin";
+      return;
+    }
+
+    const pass = String(document.getElementById("pass").value || "").trim();
+    const name = String(document.getElementById("name").value || "").trim();
+    const pages = getCheckedPages();
+
+    if(!pass || !name){
+      setStatus("⚠️ أكمل الحقول المطلوبة", false);
+      showMsg("⚠️ أكمل الحقول", "warn");
+      return;
+    }
+
+    if(!pages.length){
+      setStatus("⚠️ اختر صفحة واحدة على الأقل", false);
+      showMsg("⚠️ اختر صفحة واحدة على الأقل", "warn");
+      return;
+    }
+
+    if(isDuplicateName(name, pass)){
+      setStatus("❌ الاسم موجود مسبقاً", false);
+      showMsg("❌ لا يسمح بتكرار الاسم", "err");
+      return;
+    }
+
+    setLoading(true);
+
+    try{
+      const msg = await apiPost({
+        action: "updateUserInSheet",
+        token: token,
+        page: PAGE_NAME,
+        data: {
+          pass: pass,
+          name: name,
+          pages: pages
+        }
+      });
+
+      const text = typeof msg === "string" ? msg : String((msg && (msg.message || msg.result)) || "");
+
+      setLoading(false);
+
+      if(text.indexOf("✅") !== -1){
+        showMsg(text, "ok");
+        clearForm(true);
+        loadUsers();
+        setStatus(text, true);
+      }else{
+        showMsg(text || "تعذر التحديث", "warn");
+        setStatus(text || "تعذر التحديث", false);
+      }
+    }catch(err){
+      setLoading(false);
+      setStatus("❌ خطأ: " + safeErr(err), false);
+      showMsg("❌ فشل التحديث", "err");
+    }
+  }
+
+  function removeUser(pass){
+    const p = String(pass || document.getElementById("pass").value || "").trim();
+    if(!p){
+      setStatus("⚠️ أدخل كلمة المرور أو اختر مستخدمًا", false);
+      showMsg("⚠️ لا توجد كلمة مرور", "warn");
+      return;
+    }
+
+    showConfirmBox("هل أنت متأكد من حذف المستخدم ذو الباسورد " + p + " ؟", async function(){
+      const token = getSessionToken();
+      if(!token){
+        window.location.href = "login.html?p=admin";
+        return;
+      }
+
+      setLoading(true);
+
       try{
-        setLoading(true);
-        const res = await apiPost({
-          action: "deleteUser",
-          token: AUTH_TOKEN,
-          pass: pass
+        const msg = await apiPost({
+          action: "deleteUserFromSheet",
+          token: token,
+          page: PAGE_NAME,
+          pass: p
         });
+
+        const text = typeof msg === "string" ? msg : String((msg && (msg.message || msg.result)) || "");
+
         setLoading(false);
 
-        if(!res || !res.ok){
-          setStatus("❌ " + (res && (res.error || res.msg) ? (res.error || res.msg) : "فشل حذف المستخدم"), false);
-          showMsg((res && (res.error || res.msg)) || "❌ فشل حذف المستخدم", "err");
-          return;
+        if(text.includes("تم الحذف")){
+          showMsg(text, "ok");
+          clearForm(true);
+          loadUsers();
+          setStatus(text, true);
+        }else{
+          showMsg(text || "تعذر الحذف", "warn");
+          setStatus(text || "تعذر الحذف", false);
         }
-
-        clearForm(true);
-        await loadUsers();
-        setStatus("✅ تم حذف المستخدم بنجاح", true);
-        showMsg("✅ تم حذف المستخدم", "ok");
       }catch(err){
         setLoading(false);
-        setStatus("❌ فشل حذف المستخدم: " + safeErr(err), false);
-        showMsg("❌ فشل حذف المستخدم", "err");
+        setStatus("❌ خطأ: " + safeErr(err), false);
+        showMsg("❌ فشل الحذف", "err");
       }
     });
   }
@@ -1117,12 +1174,7 @@
     });
   }
 
-  window.addEventListener("load", async function(){
-    const allowed = await ensureCurrentPageAccess();
-    if(!allowed) return;
-
-    await loadAllPages();
-    await loadUsers();
+  window.addEventListener("load", function(){
     bindTableActions();
 
     document.getElementById("btnAdd").addEventListener("click", addUser);
@@ -1142,6 +1194,8 @@
     document.getElementById("confirmOverlay").addEventListener("click", function(e){
       if(e.target === this) closeConfirmBox();
     });
+
+    ensurePageSession();
   });
 </script>
 
