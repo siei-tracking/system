@@ -128,7 +128,10 @@
     <img src="https://drive.google.com/thumbnail?id=1NN7G2zhk7nhgXuPWGW4qE_pdGC-Ptjkt&sz=w500" class="logo" alt="Logo">
 
     <h2>تسجيل الدخول</h2>
-    <div class="sub">منصة تتبع اوامر العمل<br>الشركة العامة للفحص والتأهيل الهندسي</div>
+    <div class="sub">
+      منصة تتبع اوامر العمل<br>
+      الشركة العامة للفحص والتأهيل الهندسي
+    </div>
 
     <input type="password" id="pass" placeholder="أدخل كلمة المرور" autocomplete="off">
     <button id="btnLogin" type="button">دخول</button>
@@ -137,9 +140,10 @@
   </div>
 
   <script>
-    const API_BASE = "https://script.google.com/macros/s/AKfycbySdIkQ65GRTBAExiIuhm59HvX6n3f9XspLciadftEz6hwC_PWAmnONeFWvkR1qHzXQ/exec";
-    const STORAGE_KEY = "tracking_session_token_plan";
+    const API_BASE = "https://script.google.com/macros/s/AKfycbzVQAX7DZwOh2pNP-8wOHkyI4mkxnYTjJ5x0M_iSB6TuBQyNmKitSfbAdwinU-cRkiB/exec";
+    const STORAGE_KEY = "tracking_session_plan";
     const REQUESTED_PAGE = "plan.html";
+    const SESSION_HOURS = 12;
 
     function setMsg(text, isOk){
       const el = document.getElementById("msg");
@@ -147,9 +151,20 @@
       el.className = isOk ? "ok" : "";
     }
 
+    function clearLocalSession(){
+      sessionStorage.removeItem(STORAGE_KEY);
+    }
+
     function saveSessionAndGo(res){
       try{
-        sessionStorage.setItem(STORAGE_KEY, String(res.token || ""));
+        const sessionData = {
+          token: String(res.token || ""),
+          user: String(res.userName || "مخول غير معروف"),
+          role: String(res.role || "user"),
+          expire: Date.now() + (SESSION_HOURS * 60 * 60 * 1000)
+        };
+
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(sessionData));
       }catch(e){}
 
       window.location.href = REQUESTED_PAGE;
@@ -175,7 +190,7 @@
 
     async function login(){
       const pass = String(document.getElementById("pass").value || "").trim();
-      const btn  = document.getElementById("btnLogin");
+      const btn = document.getElementById("btnLogin");
 
       if(!pass){
         setMsg("⚠️ أدخل كلمة المرور", false);
@@ -195,7 +210,8 @@
         btn.disabled = false;
 
         if(!res || !res.ok){
-          setMsg((res && res.message) ? res.message : "❌ كلمة المرور أو الصفحة غير صحيحة", false);
+          clearLocalSession();
+          setMsg((res && (res.message || res.error)) ? (res.message || res.error) : "❌ كلمة المرور أو الصفحة غير صحيحة", false);
           return;
         }
 
@@ -204,6 +220,7 @@
 
       }catch(error){
         btn.disabled = false;
+        clearLocalSession();
         setMsg("❌ فشل الاتصال بالسيرفر", false);
       }
     }
