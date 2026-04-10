@@ -1,239 +1,229 @@
 ﻿<!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تسجيل الدخول</title>
 
-<title>تسجيل الدخول</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
 
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    *{ box-sizing:border-box; }
 
-<style>
-*{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:'Cairo',sans-serif;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+      background:
+        linear-gradient(rgba(34,50,67,.3), rgba(34,50,67,.3)),
+        url('https://drive.google.com/thumbnail?id=1kGABjKDT_tHkUbce1CWMVVFfrbfJ1_P7&sz=w1400');
+      background-size:cover;
+      background-position:center;
+      background-repeat:no-repeat;
+    }
 
-body{
-  margin:0;
-  font-family:'Cairo',sans-serif;
-  min-height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:16px;
-  background:
-  linear-gradient(rgba(34,50,67,.3),rgba(34,50,67,.3)),
-  url('https://drive.google.com/thumbnail?id=1kGABjKDT_tHkUbce1CWMVVFfrbfJ1_P7&sz=w1400');
-  background-size:cover;
-  background-position:center;
-}
+    .box{
+      width:100%;
+      max-width:380px;
+      background:rgba(255,255,255,.95);
+      border-radius:20px;
+      padding:30px 24px;
+      text-align:center;
+      box-shadow:0 20px 60px rgba(0,0,0,.28);
+      backdrop-filter: blur(6px);
+    }
 
-.box{
-  width:100%;
-  max-width:380px;
-  background:rgba(255,255,255,.95);
-  border-radius:20px;
-  padding:30px 24px;
-  text-align:center;
-  box-shadow:0 20px 60px rgba(0,0,0,.28);
-}
+    .logo{
+      width:92px;
+      height:92px;
+      object-fit:cover;
+      border-radius:50%;
+      border:3px solid #fff;
+      box-shadow:0 8px 24px rgba(0,0,0,.22);
+      margin:0 auto 14px;
+      display:block;
+      background:#fff;
+    }
 
-.logo{
-  width:92px;
-  height:92px;
-  object-fit:cover;
-  border-radius:50%;
-  border:3px solid #fff;
-  box-shadow:0 8px 24px rgba(0,0,0,.22);
-  margin:0 auto 14px;
-  display:block;
-  background:#fff;
-}
+    h2{
+      margin:0 0 6px;
+      color:#223243;
+      font-size:24px;
+      font-weight:900;
+    }
 
-h2{
-  margin:0 0 6px;
-  color:#223243;
-  font-size:24px;
-  font-weight:900;
-}
+    .sub{
+      margin:0 0 18px;
+      color:#6b7785;
+      font-size:14px;
+      font-weight:700;
+      line-height:1.7;
+    }
 
-.sub{
-  margin:0 0 18px;
-  color:#6b7785;
-  font-size:14px;
-  font-weight:700;
-  line-height:1.7;
-}
+    input{
+      width:100%;
+      padding:13px 14px;
+      border-radius:12px;
+      border:1px solid #ccd5dd;
+      margin-bottom:14px;
+      font-size:16px;
+      font-family:'Cairo',sans-serif;
+      outline:none;
+      text-align:center;
+      background:#fff;
+    }
 
-input{
-  width:100%;
-  padding:13px 14px;
-  border-radius:12px;
-  border:1px solid #ccd5dd;
-  margin-bottom:14px;
-  font-size:16px;
-  font-family:'Cairo',sans-serif;
-  outline:none;
-  text-align:center;
-}
+    input:focus{
+      border-color:#223243;
+      box-shadow:0 0 0 4px rgba(34,50,67,.08);
+    }
 
-input:focus{
-  border-color:#223243;
-  box-shadow:0 0 0 4px rgba(34,50,67,.08);
-}
+    button{
+      width:100%;
+      padding:13px;
+      border:none;
+      background:linear-gradient(135deg,#223243,#2f4356);
+      color:#fff;
+      border-radius:12px;
+      font-size:16px;
+      font-family:'Cairo',sans-serif;
+      font-weight:900;
+      cursor:pointer;
+      transition:.2s;
+    }
 
-button{
-  width:100%;
-  padding:13px;
-  border:none;
-  background:linear-gradient(135deg,#223243,#2f4356);
-  color:#fff;
-  border-radius:12px;
-  font-size:16px;
-  font-family:'Cairo',sans-serif;
-  font-weight:900;
-  cursor:pointer;
-}
+    button:hover{
+      transform:translateY(-1px);
+      box-shadow:0 10px 20px rgba(0,0,0,.18);
+    }
 
-button:hover{
-  transform:translateY(-1px);
-  box-shadow:0 10px 20px rgba(0,0,0,.18);
-}
+    button:disabled{
+      opacity:.6;
+      cursor:not-allowed;
+      transform:none;
+      box-shadow:none;
+    }
 
-button:disabled{
-  opacity:.6;
-  cursor:not-allowed;
-}
+    #msg{
+      margin-top:12px;
+      min-height:24px;
+      font-size:14px;
+      font-weight:800;
+      color:#c0392b;
+    }
 
-#msg{
-  margin-top:12px;
-  min-height:24px;
-  font-size:14px;
-  font-weight:800;
-  color:#c0392b;
-}
-
-.ok{color:#1e8449 !important}
-</style>
+    .ok{
+      color:#1e8449 !important;
+    }
+  </style>
 </head>
 
 <body>
 
-<div class="box">
+  <div class="box">
+    <img src="https://drive.google.com/thumbnail?id=1NN7G2zhk7nhgXuPWGW4qE_pdGC-Ptjkt&sz=w500" class="logo" alt="Logo">
 
-<img src="https://drive.google.com/thumbnail?id=1NN7G2zhk7nhgXuPWGW4qE_pdGC-Ptjkt&sz=w500" class="logo">
+    <h2>تسجيل الدخول</h2>
 
-<h2>تسجيل الدخول</h2>
+    <div class="sub">
+      منصة تتبع اوامر العمل<br>
+      الشركة العامة للفحص والتأهيل الهندسي
+    </div>
 
-<div class="sub">
-منصة تتبع اوامر العمل<br>
-الشركة العامة للفحص والتأهيل الهندسي
-</div>
+    <input type="password" id="pass" placeholder="أدخل كلمة المرور" autocomplete="off">
+    <button id="btnLogin" type="button">دخول</button>
 
-<input type="password" id="pass" placeholder="أدخل كلمة المرور">
+    <div id="msg"></div>
+  </div>
 
-<button id="btnLogin">دخول</button>
+  <script>
+    const API_BASE = "https://script.google.com/macros/s/AKfycby3aO0nS6Sji9AV8JivU6uncxvMiIpvSMh97ImBXZSEmgHzSa48BZSdhaeiU2zh_nKm/exec";
+    const STORAGE_KEY = "tracking_session_token_plan";
 
-<div id="msg"></div>
+    const params = new URLSearchParams(window.location.search);
+    const PAGE = String(params.get("p") || "main").trim().toLowerCase();
 
-</div>
+    function setMsg(text, isOk){
+      const el = document.getElementById("msg");
+      el.textContent = text || "";
+      el.className = isOk ? "ok" : "";
+    }
 
-<script>
+    function saveSessionAndGo(res){
+      try{
+        sessionStorage.setItem(STORAGE_KEY, String(res.token || ""));
+      }catch(e){}
 
-const API_BASE="https://script.google.com/macros/s/AKfycby3aO0nS6Sji9AV8JivU6uncxvMiIpvSMh97ImBXZSEmgHzSa48BZSdhaeiU2zh_nKm/exec";
-const STORAGE_KEY="tracking_session_token_plan";
-const SESSION_HOURS=12;
+      window.location.href = PAGE + ".html";
+    }
 
-/* قراءة الصفحة المطلوبة من الرابط */
-const params=new URLSearchParams(window.location.search);
-const PAGE=(params.get("p")||"main").toLowerCase();
+    async function apiPost(payload){
+      const response = await fetch(API_BASE, {
+        method: "POST",
+        headers: {
+          "Content-Type": "text/plain;charset=utf-8"
+        },
+        body: JSON.stringify(payload)
+      });
 
-function setMsg(text,isOk){
- const el=document.getElementById("msg");
- el.textContent=text||"";
- el.className=isOk?"ok":"";
-}
+      const text = await response.text();
 
-/* حفظ الجلسة */
-function saveSession(res){
+      try{
+        return JSON.parse(text);
+      }catch(err){
+        throw new Error(text);
+      }
+    }
 
- const session={
-  token:String(res.token||""),
-  user:String(res.userName||"مخول غير معروف"),
-  expire:Date.now()+SESSION_HOURS*60*60*1000
- };
+    async function login(){
+      const pass = String(document.getElementById("pass").value || "").trim();
+      const btn  = document.getElementById("btnLogin");
 
- sessionStorage.setItem(STORAGE_KEY,JSON.stringify(session));
+      if(!pass){
+        setMsg("⚠️ أدخل كلمة المرور", false);
+        return;
+      }
 
-}
+      btn.disabled = true;
+      setMsg("جاري التحقق...", true);
 
-/* استدعاء API */
-async function apiPost(payload){
+      try{
+        const res = await apiPost({
+          action: "login",
+          password: pass,
+          page: PAGE
+        });
 
- const response=await fetch(API_BASE,{
-  method:"POST",
-  headers:{ "Content-Type":"text/plain;charset=utf-8"},
-  body:JSON.stringify(payload)
- });
+        btn.disabled = false;
 
- const text=await response.text();
+        if(!res || !res.ok){
+          setMsg((res && (res.message || res.error)) ? (res.message || res.error) : "❌ كلمة المرور أو الصفحة غير صحيحة", false);
+          return;
+        }
 
- try{
-  return JSON.parse(text);
- }catch(err){
-  throw new Error(text);
- }
+        setMsg("✅ تم تسجيل الدخول بنجاح", true);
+        saveSessionAndGo(res);
 
-}
+      }catch(error){
+        btn.disabled = false;
+        setMsg("❌ فشل الاتصال بالسيرفر", false);
+      }
+    }
 
-async function login(){
+    document.getElementById("btnLogin").addEventListener("click", login);
 
- const pass=document.getElementById("pass").value.trim();
- const btn=document.getElementById("btnLogin");
+    document.getElementById("pass").addEventListener("keypress", function(e){
+      if(e.key === "Enter") login();
+    });
 
- if(!pass){
-  setMsg("⚠️ أدخل كلمة المرور",false);
-  return;
- }
-
- btn.disabled=true;
- setMsg("جاري التحقق...",true);
-
- try{
-
- const res=await apiPost({
-  action:"login",
-  password:pass,
-  page:PAGE
- });
-
- btn.disabled=false;
-
- if(!res||!res.ok){
-  setMsg(res.message||"❌ كلمة المرور غير صحيحة",false);
-  return;
- }
-
- setMsg("✅ تم تسجيل الدخول بنجاح",true);
-
- saveSession(res);
-
- window.location.href=PAGE+".html";
-
- }catch(err){
-
- btn.disabled=false;
- setMsg("❌ فشل الاتصال بالسيرفر",false);
-
- }
-
-}
-
-document.getElementById("btnLogin").addEventListener("click",login);
-
-document.getElementById("pass").addEventListener("keypress",function(e){
- if(e.key==="Enter") login();
-});
-
-</script>
+    document.getElementById("pass").addEventListener("input", function(){
+      setMsg("", false);
+    });
+  </script>
 
 </body>
 </html>
