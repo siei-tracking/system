@@ -36,57 +36,14 @@
       color:var(--text);
     }
 
-    body.loading #app,
-    body.loading #loginScreen{
-      visibility:hidden;
-    }
-
-    .boot-screen{
-      position:fixed;
-      inset:0;
-      z-index:9999;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:
-        linear-gradient(rgba(34,50,67,.85), rgba(34,50,67,.88)),
-        url('https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1400&q=80') center/cover no-repeat;
-      color:#fff;
-      transition:.25s ease;
-    }
-
-    .boot-screen.hidden{
-      opacity:0;
-      pointer-events:none;
-    }
-
-    .boot-box{
-      min-width:250px;
-      text-align:center;
-      padding:28px 24px;
-      border-radius:22px;
-      background:rgba(255,255,255,.10);
-      backdrop-filter:blur(10px);
-      box-shadow:var(--shadow);
-    }
-
-    .spinner{
-      width:54px;
-      height:54px;
-      margin:0 auto 16px;
-      border-radius:50%;
-      border:4px solid rgba(255,255,255,.20);
-      border-top-color:#fff;
-      animation:spin 1s linear infinite;
-    }
-
-    @keyframes spin{
-      to{ transform:rotate(360deg); }
+    /* لا تظهر الصفحة ولا login قبل الحسم */
+    #app,
+    #loginScreen{
+      display:none;
     }
 
     #loginScreen{
       min-height:100vh;
-      display:none;
       align-items:center;
       justify-content:center;
       padding:18px;
@@ -246,13 +203,9 @@
       color:#1f8b4d;
     }
 
-    #app{
-      display:none;
-      min-height:100vh;
-    }
-
     #app.show{
       display:block;
+      min-height:100vh;
     }
 
     .topbar{
@@ -383,16 +336,9 @@
     }
   </style>
 </head>
-<body class="loading">
+<body>
 
-  <div class="boot-screen" id="bootScreen">
-    <div class="boot-box">
-      <div class="spinner"></div>
-      <div style="font-weight:900;font-size:18px;margin-bottom:6px;">جاري التحقق من الجلسة</div>
-      <div style="font-size:14px;opacity:.9;">يرجى الانتظار...</div>
-    </div>
-  </div>
-
+  <!-- شاشة تسجيل الدخول -->
   <section id="loginScreen">
     <div class="login-card">
       <div class="logo-badge">
@@ -428,6 +374,7 @@
     </div>
   </section>
 
+  <!-- الصفحة المحمية -->
   <div id="app">
     <header class="topbar">
       <div class="topbar-inner">
@@ -451,13 +398,12 @@
         <div>
           <h2>مرحبًا بك في صفحة التخطيط</h2>
           <p>
-            تم التحقق من الجلسة والصلاحية بنجاح. هذه الصفحة تعمل من GitHub Pages،
-            بينما يتم التحقق من كلمة المرور والصلاحيات من Google Sheet عبر Google Apps Script
-            بدون تحويل المستخدم إلى صفحة Apps Script.
+            هذه الصفحة تعمل من GitHub Pages، ويتم التحقق من كلمة المرور والصلاحية
+            من Google Sheet عبر Google Apps Script، بدون صفحة تحميل، وبدون localStorage.
           </p>
 
           <div class="note">
-            ضع هنا محتوى صفحة التخطيط الحقيقي الخاصة بك، وسيظل مخفيًا حتى ينجح التحقق من الجلسة.
+            ضع هنا محتوى صفحة التخطيط الحقيقي الخاصة بك. لن يظهر هذا المحتوى إلا بعد نجاح التحقق من الجلسة.
           </div>
         </div>
 
@@ -466,7 +412,7 @@
             <i class="fa-solid fa-clipboard-list"></i>
             <div style="font-weight:900;font-size:20px;color:var(--primary);margin-bottom:6px;">واجهة التخطيط</div>
             <div style="color:#5f7080;font-size:14px;line-height:1.9;">
-              الصفحة لن تظهر قبل التحقق من كلمة المرور والصلاحية
+              التحقق يتم أولاً، ثم تظهر الصفحة مباشرة
             </div>
           </div>
         </div>
@@ -476,11 +422,13 @@
 
   <script>
     const PAGE_NAME = "plan";
-    const API_BASE = "https://script.google.com/macros/s/AKfycbwNqlq0Y4Ayk8rFsmyj9FWo0K2Df6p1Lolu2w3h9UHEu1-bPm0etqYE4Mq85RmLzbB5/exec";
-    const STORAGE_KEY = "tracking_auth_session_plan";
 
-    const body = document.body;
-    const bootScreen = document.getElementById("bootScreen");
+    // ضع هنا رابط Apps Script /exec
+    const API_BASE = "https://script.google.com/macros/s/AKfycbwNqlq0Y4Ayk8rFsmyj9FWo0K2Df6p1Lolu2w3h9UHEu1-bPm0etqYE4Mq85RmLzbB5/exec";
+
+    // نخزن الجلسة في sessionStorage فقط
+    const STORAGE_KEY = "tracking_session_token_plan";
+
     const loginScreen = document.getElementById("loginScreen");
     const app = document.getElementById("app");
 
@@ -492,14 +440,6 @@
     const userBadge = document.getElementById("userBadge");
     const logoutBtn = document.getElementById("logoutBtn");
     const togglePass = document.getElementById("togglePass");
-
-    function showBoot(show){
-      if(show){
-        bootScreen.classList.remove("hidden");
-      }else{
-        bootScreen.classList.add("hidden");
-      }
-    }
 
     function clearMessages(){
       errorBox.className = "msg error";
@@ -523,43 +463,29 @@
     function showLogin(){
       app.classList.remove("show");
       loginScreen.classList.add("show");
-      body.classList.remove("loading");
-      showBoot(false);
     }
 
     function showApp(userName){
       userBadge.textContent = "المستخدم: " + (userName || "-");
       loginScreen.classList.remove("show");
       app.classList.add("show");
-      body.classList.remove("loading");
-      showBoot(false);
     }
 
-    function saveSession(data){
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({
-        token: data.token || "",
-        user: data.user || "",
-        page: PAGE_NAME,
-        ts: Date.now()
-      }));
+    function saveSessionToken(token){
+      sessionStorage.setItem(STORAGE_KEY, token || "");
     }
 
-    function getSession(){
-      try{
-        return JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
-      }catch(e){
-        return null;
-      }
+    function getSessionToken(){
+      return sessionStorage.getItem(STORAGE_KEY) || "";
     }
 
-    function clearSession(){
-      localStorage.removeItem(STORAGE_KEY);
+    function clearSessionToken(){
+      sessionStorage.removeItem(STORAGE_KEY);
     }
 
     async function apiPost(payload){
       const response = await fetch(API_BASE, {
         method: "POST",
-        redirect: "follow",
         headers: {
           "Content-Type": "text/plain;charset=utf-8"
         },
@@ -575,12 +501,10 @@
       }
     }
 
-    async function verifySessionOnLoad(){
-      showBoot(true);
+    async function checkSessionOnOpen(){
+      const token = getSessionToken();
 
-      const session = getSession();
-
-      if(!session || !session.token || session.page !== PAGE_NAME){
+      if(!token){
         showLogin();
         return;
       }
@@ -588,18 +512,18 @@
       try{
         const result = await apiPost({
           action: "checkSession",
-          token: session.token,
+          token: token,
           page: PAGE_NAME
         });
 
         if(result && result.ok){
-          showApp(result.user || session.user || "");
+          showApp(result.user || "");
         }else{
-          clearSession();
+          clearSessionToken();
           showLogin();
         }
       }catch(error){
-        clearSession();
+        clearSessionToken();
         showLogin();
       }
     }
@@ -626,19 +550,12 @@
         });
 
         if(result && result.ok){
-          saveSession({
-            token: result.token,
-            user: result.user || ""
-          });
-
+          saveSessionToken(result.token || "");
           showSuccess("تم تسجيل الدخول بنجاح");
-          setTimeout(function(){
-            showApp(result.user || "");
-          }, 350);
+          showApp(result.user || "");
         }else{
           showError((result && result.message) ? result.message : "فشل تسجيل الدخول");
         }
-
       }catch(error){
         showError("تعذر الاتصال بالخادم. تأكد من رابط Apps Script والنشر والصلاحيات.");
       }finally{
@@ -648,7 +565,7 @@
     });
 
     logoutBtn.addEventListener("click", function(){
-      clearSession();
+      clearSessionToken();
       passwordInput.value = "";
       clearMessages();
       showLogin();
@@ -662,7 +579,7 @@
         : '<i class="fa-solid fa-eye"></i>';
     });
 
-    verifySessionOnLoad();
+    checkSessionOnOpen();
   </script>
 </body>
 </html>
