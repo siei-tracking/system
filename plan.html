@@ -668,7 +668,7 @@
 
       if(!session || !session.token || !session.user || !session.expire){
         clearLocalSession();
-        window.location.href = "login.html";
+        window.location.href = "login.html?p=plan";
         return;
       }
 
