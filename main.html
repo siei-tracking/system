@@ -3,326 +3,1625 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>تسجيل الدخول</title>
 
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <title>المعاملات - منصة تتبع أوامر العمل</title>
 
   <style>
     :root{
       --primary:#223243;
-      --primary-dark:#17232e;
       --accent:#f5a623;
       --accent-dark:#e59712;
       --bg:#eef2f6;
-      --card:rgba(255,255,255,0.95);
+      --card:rgba(255,255,255,0.88);
       --line:#e5ebf1;
-      --text:#223243;
       --muted:#758292;
-      --danger:#e74c3c;
       --ok:#27ae60;
-      --shadow:0 20px 50px rgba(34,50,67,.18);
+      --danger:#e74c3c;
+      --disabled:#bdc3c7;
+      --soft:#f8fafc;
+      --warn:#f39c12;
+      --admin:#6f42c1;
     }
 
     *{ box-sizing:border-box; }
 
     body{
       margin:0;
-      min-height:100vh;
       font-family:'Cairo',sans-serif;
-      color:var(--text);
       background:
-        linear-gradient(rgba(34,50,67,.68), rgba(34,50,67,.68)),
-        url('https://images.unsplash.com/photo-1497366412874-3415097a27e7?auto=format&fit=crop&w=1400&q=80') center/cover no-repeat fixed;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:20px;
+        radial-gradient(circle at top right, rgba(245,166,35,.08), transparent 24%),
+        radial-gradient(circle at top left, rgba(34,50,67,.05), transparent 30%),
+        var(--bg);
+      color:#111;
     }
 
-    .login-box{
-      width:100%;
-      max-width:440px;
-      background:var(--card);
-      border:1px solid rgba(255,255,255,.5);
-      border-radius:28px;
-      box-shadow:var(--shadow);
-      padding:34px 28px 26px;
-      backdrop-filter:blur(8px);
+    #pageWrap{
+      display:none;
+    }
+    #pageWrap.show{
+      display:block;
     }
 
-    .logo{
-      width:78px;
-      height:78px;
-      margin:0 auto 14px;
-      border-radius:22px;
-      background:linear-gradient(180deg, var(--primary), var(--primary-dark));
+    .company-header{
+      background-image:
+        linear-gradient(rgba(34,50,67,.3), rgba(34,50,67,.3)),
+        url('https://drive.google.com/thumbnail?id=1kGABjKDT_tHkUbce1CWMVVFfrbfJ1_P7&sz=w1400');
+      background-size:cover;
+      background-position:center;
+      padding:64px 5% 60px;
       display:flex;
       align-items:center;
-      justify-content:center;
+      gap:16px;
       color:#fff;
-      font-size:28px;
+      flex-wrap:wrap;
+      justify-content:center;
+      text-align:center;
+      box-shadow:0 12px 28px rgba(0,0,0,.18);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .company-logo{
+      width:100px;
+      height:100px;
+      background:#fff;
+      border-radius:50%;
+      padding:5px;
+      object-fit:contain;
+      display:block;
+      flex-shrink:0;
+      box-shadow:
+        -1px -1px 0 rgba(0,0,0,0.1),
+         1px -1px 0 rgba(0,0,0,0.1),
+        -1px  1px 0 rgba(0,0,0,0.1),
+         1px  1px 0 rgba(0,0,0,0.1),
+         0 1px 4px rgba(0,0,0,0.1) !important;
+    }
+
+    .header-text{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:6px;
+    }
+
+    .header-text h1{
+      color:#fff !important;
+      margin:0;
+      font-size:30px !important;
+      font-weight:900 !important;
+      text-shadow:
+        -1px -1px 0 rgba(0,0,0,0.9),
+         1px -1px 0 rgba(0,0,0,0.9),
+        -1px  1px 0 rgba(0,0,0,0.9),
+         1px  1px 0 rgba(0,0,0,0.9),
+         0 4px 10px rgba(0,0,0,0.8) !important;
+    }
+
+    .header-text p{
+      color:#fff !important;
+      margin:0;
+      font-size:18px !important;
+      font-weight:900 !important;
+      text-shadow:
+        -1px -1px 0 rgba(0,0,0,0.9),
+         1px -1px 0 rgba(0,0,0,0.9),
+        -1px  1px 0 rgba(0,0,0,0.9),
+         1px  1px 0 rgba(0,0,0,0.9),
+         0 4px 10px rgba(0,0,0,0.8) !important;
+    }
+
+    .user-pill{
+      margin-top:6px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:2px 14px;
+      border-radius:999px;
+      background:rgba(128,0,32,0.4);
+      border:1px solid rgba(231,76,60,0.45);
+      color:#fff;
       font-weight:900;
-      box-shadow:0 12px 24px rgba(34,50,67,.22);
+      font-size:13px;
+      box-shadow:0 4px 12px rgba(231,76,60,.25);
+      text-shadow:
+        -1px -1px 0 rgba(0,0,0,0.9),
+         1px -1px 0 rgba(0,0,0,0.9),
+        -1px  1px 0 rgba(0,0,0,0.9),
+         1px  1px 0 rgba(0,0,0,0.9),
+         0 4px 10px rgba(0,0,0,0.8) !important;
+    }
+
+    .wrap{
+      padding:0 5% 30px;
+      display:flex;
+      justify-content:center;
+      position:relative;
+      margin-top:-40px;
+    }
+
+    .panel{
+      width:100%;
+      max-width:1275px;
+      margin-top:13px;
+      background:rgba(255,255,255,0.88);
+      border-radius:22px;
+      padding:0;
+      box-shadow:
+        0 20px 50px rgba(0,0,0,.12),
+        0 6px 18px rgba(0,0,0,.06);
+      position:relative;
+      z-index:2;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transition:.25s;
+      border:1px solid rgba(255,255,255,.65);
+      overflow:hidden;
+    }
+
+    .panel:hover{
+      transform:translateY(-3px);
+      box-shadow:
+        0 26px 60px rgba(0,0,0,.16),
+        0 8px 22px rgba(0,0,0,.08);
+    }
+
+    .panel::before{
+      content:"";
+      position:absolute;
+      top:0;
+      left:0;
+      right:0;
+      height:60px;
+      background:linear-gradient(to bottom, rgba(255,255,255,.55), transparent);
+      border-radius:22px 22px 0 0;
+      pointer-events:none;
+    }
+
+    .panel-head{
+      padding:16px 18px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      gap:12px;
+      align-items:center;
+      position:relative;
+      z-index:2;
+      background:linear-gradient(180deg, rgba(243,156,18,0.08), transparent);
     }
 
     .title{
-      margin:0;
-      text-align:center;
-      color:var(--primary);
-      font-size:30px;
       font-weight:900;
-    }
-
-    .subtitle{
-      margin:8px 0 24px;
-      text-align:center;
-      color:var(--muted);
-      line-height:1.9;
-      font-size:14px;
-    }
-
-    .field{
-      margin-bottom:16px;
-    }
-
-    .label{
-      display:block;
-      margin-bottom:8px;
-      font-size:14px;
-      font-weight:800;
       color:var(--primary);
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-size:18px;
     }
 
-    .input{
+    .controls{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      position:relative;
+      z-index:10;
       width:100%;
-      height:52px;
-      border:1px solid var(--line);
-      border-radius:14px;
-      background:#fff;
-      padding:0 16px;
-      font-family:'Cairo',sans-serif;
-      font-size:15px;
-      outline:none;
-      transition:.2s ease;
     }
 
-    .input:focus{
-      border-color:var(--accent);
-      box-shadow:0 0 0 4px rgba(245,166,35,.12);
+    input, select{
+      padding:12px 12px;
+      border-radius:10px;
+      border:1.5px solid var(--line);
+      font-family:'Cairo',sans-serif;
+      font-weight:900;
+      text-align:center;
+      min-width:180px;
+      outline:none;
+      background:#fff;
+      transition:.2s;
+      color:#1f2d3a;
+    }
+
+    input:focus, select:focus{
+      border-color:#d8b15d;
+      box-shadow:0 0 0 4px rgba(245,166,35,.10);
+    }
+
+    input::placeholder{
+      color:#9aa6b2;
+      font-weight:800;
     }
 
     .btn{
-      width:100%;
-      height:54px;
-      margin-top:8px;
+      padding:12px 14px;
       border:none;
-      border-radius:14px;
-      background:linear-gradient(180deg, var(--accent), var(--accent-dark));
-      color:#fff;
+      border-radius:10px;
       font-family:'Cairo',sans-serif;
-      font-size:17px;
       font-weight:900;
+      font-size:18px;
       cursor:pointer;
-      transition:.2s ease;
-      box-shadow:0 12px 24px rgba(245,166,35,.3);
+      display:inline-flex;
+      gap:10px;
+      align-items:center;
+      transition:.2s;
+      white-space:nowrap;
+      touch-action:manipulation;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .btn::before{
+      content:"";
+      position:absolute;
+      top:0;
+      right:-120%;
+      width:120%;
+      height:100%;
+      background:linear-gradient(
+        120deg,
+        transparent 20%,
+        rgba(255,255,255,.18) 40%,
+        rgba(255,255,255,.35) 50%,
+        rgba(255,255,255,.18) 60%,
+        transparent 80%
+      );
+      transition:.65s;
+    }
+
+    .btn:hover::before{
+      right:120%;
     }
 
     .btn:hover{
       transform:translateY(-1px);
+      opacity:.96;
     }
 
     .btn:disabled{
-      opacity:.7;
+      opacity:.6;
       cursor:not-allowed;
       transform:none;
     }
 
-    .msg{
-      display:none;
-      margin-top:14px;
+    .btn-primary{
+      background:linear-gradient(180deg,#1e3c72,#162c52);
+      color:#fff;
+      box-shadow:0 10px 20px rgba(30,60,114,.20);
+    }
+
+    .btn-warn{
+      background:linear-gradient(180deg,#e74c3c,#c0392b);
+      color:#fff;
+      box-shadow:0 10px 20px rgba(231,76,60,.20);
+    }
+
+    .btn-ok{
+      background:linear-gradient(180deg,#2ebf68,#26a65b);
+      color:#fff;
+      box-shadow:0 10px 20px rgba(39,174,96,.20);
+    }
+
+    .btn-ghost{
+      background:#eef2f6;
+      color:#1f2d3a;
+    }
+
+    .btn-admin{
+      background:linear-gradient(180deg,#7b4bd3,#5f35b1);
+      color:#fff;
+      box-shadow:0 10px 20px rgba(111,66,193,.20);
+    }
+
+    .file-btn{
+      border:none;
+      border-radius:10px;
       padding:12px 14px;
-      border-radius:12px;
-      font-size:14px;
-      line-height:1.8;
+      font-family:'Cairo',sans-serif;
+      font-weight:900;
+      cursor:pointer;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      background:linear-gradient(180deg,#2ebf68,#26a65b);
+      color:#fff;
+      box-shadow:0 10px 20px rgba(39,174,96,.20);
+      transition:.2s;
+      white-space:nowrap;
     }
 
-    .msg.error{
-      display:block;
-      background:rgba(231,76,60,.08);
-      color:#b03a2e;
-      border:1px solid rgba(231,76,60,.18);
+    .file-btn:hover{
+      transform:translateY(-1px);
+      opacity:.96;
     }
 
-    .msg.success{
-      display:block;
-      background:rgba(39,174,96,.08);
-      color:#1f7a45;
-      border:1px solid rgba(39,174,96,.18);
-    }
-
-    .links{
+    .bar{
+      padding:12px 18px;
+      border-bottom:1px solid var(--line);
       display:flex;
-      justify-content:space-between;
       gap:10px;
-      margin-top:18px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:space-between;
+      background:#fafbfc;
+      font-weight:900;
+      position:relative;
+      z-index:2;
+    }
+
+    .bar-right,
+    .bar-left{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .stat{
+      display:inline-flex;
+      align-items:center;
+      justify-content:flex-start;
+      gap:6px;
+      padding:8px 12px;
+      border-radius:12px;
+      background:#fff;
+      border:1px solid #eef1f4;
+      font-weight:900;
+      color:#111;
+    }
+
+    .stat .muted{
+      color:var(--muted);
+      font-size:15px;
+      margin-left:2px;
+    }
+
+    #count{
+      font-size:18px;
+      margin-right:2px;
+      height:32px;
+      min-width:25px;
+    }
+
+    #at{
+      font-size:18px;
+      margin-right:2px;
+      height:32px;
+      min-width:60px;
+    }
+
+    .date-input{
+      min-width:181px;
+      width:181px;
+      height:50px;
+      padding:0 14px;
+      border-radius:12px;
+      border:1.5px solid var(--line);
+      font-family:'Cairo',sans-serif;
+      font-weight:900;
+      font-size:16px;
+      text-align:center;
+      line-height:56px;
+      background:#fff;
+      color:#1f2d3a;
+    }
+
+    #status{
+      padding:10px 18px;
+      border-bottom:1px solid var(--line);
+      font-weight:900;
+      position:relative;
+      z-index:2;
+    }
+
+    #status.ok{ color:#1d5e3b; }
+    #status.bad{ color:var(--danger); }
+
+    .list{
+      padding:14px 18px 22px;
+      display:grid;
+      grid-template-columns:1fr;
+      gap:12px;
+      position:relative;
+      z-index:2;
+    }
+
+    .item{
+      border:1px solid #eef1f4;
+      border-radius:16px;
+      padding:14px;
+      background:#fff;
+      box-shadow:0 10px 24px rgba(0,0,0,.04);
+    }
+
+    .row1{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:flex-start;
+      justify-content:space-between;
+      border-bottom:1px solid #f0f3f6;
+      padding-bottom:10px;
+      margin-bottom:10px;
+    }
+
+    .action-wrap{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:flex-end;
+    }
+
+    .idbox{
+      display:flex;
+      font-size:17px;
+      align-items:center;
+      gap:10px;
+      font-weight:900;
+      color:var(--primary);
       flex-wrap:wrap;
     }
 
-    .link{
-      color:var(--primary);
-      text-decoration:none;
-      font-size:14px;
-      font-weight:700;
+    .pill{
+      padding:6px 10px;
+      border-radius:999px;
+      background:#f6f8fa;
+      border:1px solid #eef1f4;
+      font-weight:900;
+      font-size:15px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
     }
 
-    .link:hover{
-      text-decoration:underline;
+    .pill.ok{
+      background:rgba(39,174,96,.10);
+      border-color:rgba(39,174,96,.22);
+      color:#1d5e3b;
     }
 
-    .note{
-      margin-top:16px;
-      font-size:12px;
-      color:var(--muted);
-      line-height:1.8;
+    .pill.bad{
+      background:rgba(231,76,60,.10);
+      border-color:rgba(231,76,60,.20);
+      color:#7b1f17;
+    }
+
+    .late{
+      margin-top:8px;
+      font-weight:900;
+      color:var(--danger);
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+
+    .client{
+      margin-top:8px;
+      font-size:17px;
+      font-weight:900;
+      color:#111;
+    }
+
+    .stepper-scroll{
+      overflow-x:auto;
+      padding:4px 2px 2px;
+    }
+
+    .stepper{
+      display:flex;
+      gap:12px;
+      width:max-content;
+      align-items:flex-start;
+      padding:4px 2px 8px;
+      direction:rtl;
+    }
+
+    .node{
+      width:98px;
+      min-width:98px;
       text-align:center;
+      font-weight:900;
+      position:relative;
+      padding:2px 1px 6px;
+      user-select:none;
+    }
+
+    .node:not(:first-child)::before{
+      content:"";
+      position:absolute;
+      top:25px;
+      right:-10px;
+      width:10px;
+      height:3px;
+      background:#dfe5ec;
+      border-radius:999px;
+    }
+
+    .circle{
+      width:56px;
+      height:56px;
+      border-radius:50%;
+      background:var(--disabled);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:white;
+      margin:auto;
+      box-shadow:0 6px 14px rgba(0,0,0,0.12);
+    }
+
+    .circle i{ font-size:16px; }
+    .node.done .circle{ background:var(--ok); }
+    .node.next .circle{ background:var(--accent); transform:scale(1.04); }
+    .node.done:not(:first-child)::before{ background:var(--ok); }
+    .node.next:not(:first-child)::before{ background:var(--accent); }
+
+    .label{
+      margin-top:5px;
+      font-size:15px;
+    }
+
+    .sub{
+      margin-top:5px;
+      min-height:36px;
+      line-height:1.2;
+    }
+
+    .sub-name{
+      font-size:13px;
+      font-weight:900;
+      display:block;
+      line-height:1.2;
+      margin-top:8px;
+    }
+
+    .sub-date{
+      font-size:11px;
+      font-weight:900;
+      direction:ltr;
+      display:block;
+      line-height:1.2;
+      margin-top:2px;
+    }
+
+    .empty{
+      padding:26px 18px;
+      text-align:center;
+      font-weight:900;
+      color:var(--muted);
+    }
+
+    #toast{
+      position:fixed;
+      bottom:22px;
+      left:50%;
+      transform:translateX(-50%);
+      min-width:240px;
+      max-width:90%;
+      background:#223243;
+      color:#fff;
+      padding:12px 18px;
+      border-radius:12px;
+      font-weight:900;
+      font-family:'Cairo',sans-serif;
+      font-size:14px;
+      display:none;
+      z-index:99999;
+      text-align:center;
+      box-shadow:0 10px 25px rgba(0,0,0,.22);
+    }
+
+    #toast.ok{ background:#27ae60; }
+    #toast.warn{ background:#f39c12; }
+    #toast.err{ background:#e74c3c; }
+
+    #qDone{
+      flex:1;
+      min-width:100px;
+      height:50px;
+      font-size:18px;
+      line-height:50px;
+      padding:0 12px;
+    }
+
+    #qDone::placeholder{
+      flex:1;
+      min-width:100px;
+      height:50px;
+      font-size:15px;
+      line-height:50px;
+      padding:0 12px;
+    }
+
+    #sheetSelect{
+      flex:1;
+      min-width:100px;
+      height:50px;
+      font-size:18px;
+      line-height:50px;
+      padding:0 12px;
+    }
+
+    #btnAdmin{
+      margin-left:20px;
+    }
+
+    #btnSearchDone{
+      height:57px;
+      min-width:106px;
+      padding:0 16px;
+      font-size:16px;
+      font-weight:900;
+      border-radius:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin-left:auto;
+    }
+
+    #btnExport{
+      height:57px;
+      min-width:106px;
+      padding:0 16px;
+      font-size:16px;
+      font-weight:900;
+      border-radius:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+    }
+
+    @media (max-width:820px){
+      .header-text h1{ font-size:24px; }
+      .header-text p{ font-size:15px; }
+      input, select{ min-width:220px; width:100%; }
+      .controls{ width:100%; justify-content:stretch; }
+      .btn{ width:100%; justify-content:center; }
+      .file-btn{ width:100%; justify-content:center; }
+      .action-wrap{ width:100%; justify-content:stretch; }
+      .bar-right, .bar-left{ width:100%; }
+      .date-input{ width:100%; min-width:unset; }
     }
   </style>
 </head>
 <body>
 
-  <div class="login-box">
-    <div class="logo">WO</div>
-
-    <h1 class="title">تسجيل الدخول</h1>
-    <p class="subtitle">
-      أدخل اسم المستخدم وكلمة المرور للدخول إلى نظام تتبع أوامر العمل
-    </p>
-
-    <div class="field">
-      <label class="label" for="username">اسم المستخدم</label>
-      <input class="input" id="username" type="text" placeholder="أدخل اسم المستخدم">
+<div id="pageWrap">
+  <header class="company-header">
+    <img src="https://drive.google.com/thumbnail?id=1NN7G2zhk7nhgXuPWGW4qE_pdGC-Ptjkt&sz=w500" class="company-logo" alt="logo">
+    <div class="header-text">
+      <h1>الشركة العامة للفحص والتأهيل الهندسي</h1>
+      <p>
+        <i class="fas fa-layer-group"></i>
+        منصة تتبع اوامر العمل - المعاملات
+      </p>
+      <div id="welcomeUser" class="user-pill"></div>
     </div>
+  </header>
 
-    <div class="field">
-      <label class="label" for="password">كلمة المرور</label>
-      <input class="input" id="password" type="password" placeholder="أدخل كلمة المرور">
-    </div>
+  <div class="wrap">
+    <div class="panel">
 
-    <button class="btn" id="loginBtn" onclick="login()">دخول</button>
+      <div class="panel-head">
+        <div>
+          <div class="title"><i class="fas fa-list-check"></i> قائمة المعاملات</div>
+        </div>
 
-    <div id="msg" class="msg"></div>
+        <div class="controls">
+          <button class="btn btn-primary" id="btnOpen" type="button">
+            <i class="fas fa-folder-open"></i> غير المنجز
+          </button>
 
-    <div class="links">
-      <a class="link" href="index.html">العودة إلى الصفحة الرئيسية</a>
-      <a class="link" href="main.html">فتح اللوحة</a>
-    </div>
+          <button class="btn btn-warn" id="btnDelayed" type="button">
+            <i class="fas fa-triangle-exclamation"></i> المتأخر
+          </button>
 
-    <div class="note">
-      على GitHub Pages يجب فتح الصفحة باستخدام اسم الملف الكامل مثل
-      <b>main.html</b> و <b>login.html</b>
+          <button class="btn btn-ghost" id="btnOpenArchive" type="button">
+            <i class="fas fa-table"></i> فتح شيت المعاملات
+          </button>
+
+          <button class="btn btn-admin" id="btnAdmin" type="button" style="display:none;">
+            <i class="fas fa-users-cog"></i> إدارة المستخدمين
+          </button>
+
+          <select id="sheetSelect"></select>
+
+          <input id="qDone" type="text" placeholder="بحث: رقم أمر العمل" />
+          <button class="btn btn-primary" id="btnSearchDone" type="button">
+            <i class="fas fa-magnifying-glass"></i> بحث
+          </button>
+        </div>
+      </div>
+
+      <div class="bar">
+        <div class="bar-right">
+          <div class="stat"><i class="fas fa-list"></i> <span class="muted">العدد:</span> <span id="count">0</span></div>
+          <div class="stat"><i class="fas fa-clock"></i> <span class="muted">آخر تحديث:</span> <span id="at">—</span></div>
+        </div>
+
+        <div class="bar-left">
+          <input type="date" id="dateFrom" class="date-input">
+          <input type="date" id="dateTo" class="date-input">
+
+          <button class="btn btn-ok" id="btnDone" type="button">
+            <i class="fas fa-check-circle"></i> الإنجاز
+          </button>
+
+          <button class="btn btn-primary" id="btnExport" type="button">
+            <i class="fas fa-file-excel"></i> تصدير
+          </button>
+        </div>
+      </div>
+
+      <div id="status" class="ok">جاهز...</div>
+      <div id="list" class="list"></div>
+
     </div>
   </div>
+</div>
 
-  <script>
-    const API_URL = "ضع_رابط_الويب_آب_هنا";
+<div id="toast"></div>
 
-    const REPO_BASE = getBasePath();
+<script>
+  const API_BASE = "https://script.google.com/macros/s/AKfycbwCjTBWBcgZ7uL0XNIT3-TZKlXLNlwRgcEBqWnJE4SqUp0l4HYOX22fqb6MzeeTZggG/exec";
+  const STORAGE_KEY = "tracking_session_token_plan";
+  const PAGE_NAME = "main";
 
-    function getBasePath(){
-      const path = window.location.pathname;
-      const parts = path.split('/').filter(Boolean);
+  let CURRENT_MODE = "open";
+  let CURRENT_ITEMS = [];
+  let CURRENT_USER_ROLE = "";
+  let CURRENT_USER_NAME = "";
 
-      if(parts.length <= 1) return '/';
-      return '/' + parts[0] + '/';
+  function getSessionToken(){
+    return sessionStorage.getItem(STORAGE_KEY) || "";
+  }
+
+  function clearSessionToken(){
+    sessionStorage.removeItem(STORAGE_KEY);
+  }
+
+  async function apiPost(payload){
+    const response = await fetch(API_BASE, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const text = await response.text();
+
+    try{
+      return JSON.parse(text);
+    }catch(err){
+      throw new Error(text);
+    }
+  }
+
+  async function ensurePageSession(){
+    const token = getSessionToken();
+
+    if(!token){
+      window.location.href = "login.html?p=main";
+      return;
     }
 
-    function buildPageUrl(fileName){
-      return REPO_BASE + fileName;
+    try{
+      const result = await apiPost({
+        action: "checkSession",
+        token: token,
+        page: PAGE_NAME
+      });
+
+      if(result && result.ok){
+        CURRENT_USER_NAME = result.user || "مخول غير معروف";
+        CURRENT_USER_ROLE = result.role || "user";
+
+        const w = document.getElementById("welcomeUser");
+        if(CURRENT_USER_NAME && CURRENT_USER_NAME !== "مخول غير معروف"){
+          w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: ' + CURRENT_USER_NAME;
+        }else{
+          w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: مخول غير معروف';
+        }
+
+        document.getElementById("pageWrap").classList.add("show");
+        showAdminButton();
+        loadSheetOptions();
+        loadOpen();
+      }else{
+        clearSessionToken();
+        window.location.href = "login.html?p=main";
+      }
+    }catch(error){
+      clearSessionToken();
+      window.location.href = "login.html?p=main";
+    }
+  }
+
+  function safeErr(err){
+    try{
+      if(!err) return "Unknown error";
+      if(typeof err === "string") return err;
+      if(err.message) return err.message;
+      return JSON.stringify(err);
+    }catch(e){
+      return String(err);
+    }
+  }
+
+  function showMsg(text, type){
+    var t = document.getElementById("toast");
+    t.className = "";
+
+    if(type === "ok") t.classList.add("ok");
+    else if(type === "warn") t.classList.add("warn");
+    else if(type === "err") t.classList.add("err");
+
+    t.textContent = text || "";
+    t.style.display = "block";
+
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(function(){
+      t.style.display = "none";
+    }, 2500);
+  }
+
+  function setStatus(msg, ok){
+    var el = document.getElementById("status");
+    el.className = ok ? "ok" : "bad";
+    el.textContent = msg;
+  }
+
+  function setLoading(on){
+    document.getElementById("btnOpen").disabled = on;
+    document.getElementById("btnDelayed").disabled = on;
+    document.getElementById("btnDone").disabled = on;
+    document.getElementById("btnSearchDone").disabled = on;
+    document.getElementById("sheetSelect").disabled = on;
+    document.getElementById("dateFrom").disabled = on;
+    document.getElementById("dateTo").disabled = on;
+    document.getElementById("qDone").disabled = on;
+
+    var btnExport = document.getElementById("btnExport");
+    if(btnExport) btnExport.disabled = on;
+
+    var btnOpenArchive = document.getElementById("btnOpenArchive");
+    if(btnOpenArchive){
+      var isAdmin = String(CURRENT_USER_ROLE || "").trim().toLowerCase() === "admin";
+      btnOpenArchive.disabled = on || !isAdmin;
     }
 
-    function showMessage(text, type){
-      const msg = document.getElementById("msg");
-      msg.className = "msg " + type;
-      msg.textContent = text;
+    var btnAdmin = document.getElementById("btnAdmin");
+    if(btnAdmin){
+      var isAdmin2 = String(CURRENT_USER_ROLE || "").trim().toLowerCase() === "admin";
+      btnAdmin.disabled = on || !isAdmin2;
     }
 
-    function clearMessage(){
-      const msg = document.getElementById("msg");
-      msg.className = "msg";
-      msg.textContent = "";
-    }
+    if(on) setStatus("جاري التحميل...", true);
+  }
 
-    function saveSession(data){
-      localStorage.setItem("tracking_logged_in", "1");
-      localStorage.setItem("tracking_session", data.session || "");
-      localStorage.setItem("tracking_user", data.user || document.getElementById("username").value.trim());
+  async function loadSheetOptions(){
+    const token = getSessionToken();
+    if(!token) return;
 
-      if(data.pages) localStorage.setItem("tracking_pages", JSON.stringify(data.pages));
-      if(data.role) localStorage.setItem("tracking_role", data.role);
-    }
+    try{
+      const res = await apiPost({
+        action: "getMainSearchSheets",
+        token: token,
+        page: PAGE_NAME
+      });
 
-    async function login(){
-      clearMessage();
+      var sheets = Array.isArray(res && res.items) ? res.items : (Array.isArray(res) ? res : []);
+      var select = document.getElementById("sheetSelect");
+      if(!select) return;
 
-      const username = document.getElementById("username").value.trim();
-      const password = document.getElementById("password").value.trim();
-      const btn = document.getElementById("loginBtn");
+      select.innerHTML = "";
 
-      if(!username || !password){
-        showMessage("يرجى إدخال اسم المستخدم وكلمة المرور.", "error");
+      if(!sheets || !sheets.length){
+        var opt = document.createElement("option");
+        opt.value = "";
+        opt.textContent = "لا توجد سنوات";
+        select.appendChild(opt);
         return;
       }
 
-      if(API_URL === "https://script.google.com/macros/s/AKfycbxDNDaXEN1011Y1Q_088C1yRsHqDir1dEY2-rYxmjYmbMOXOL_HpADnHH193FnhITWp/execا"){
-        showMessage("يرجى أولاً وضع رابط Google Apps Script Web App داخل المتغير API_URL.", "error");
-        return;
+      sheets.forEach(function(name){
+        var opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name;
+        select.appendChild(opt);
+      });
+
+      var currentYear = new Date().getFullYear().toString();
+      if(sheets.indexOf(currentYear) !== -1){
+        select.value = currentYear;
+      }else{
+        select.value = sheets[0];
+      }
+    }catch(err){
+      console.log("sheet options error:", safeErr(err));
+    }
+  }
+
+  function showAdminButton(){
+    var btnAdmin = document.getElementById("btnAdmin");
+    var btnSheet = document.getElementById("btnOpenArchive");
+    var isAdmin = String(CURRENT_USER_ROLE || "").trim().toLowerCase() === "admin";
+
+    if(btnAdmin){
+      btnAdmin.style.display = "inline-flex";
+      btnAdmin.disabled = !isAdmin;
+      btnAdmin.title = isAdmin ? "" : "متاح لمدير النظام فقط";
+      btnAdmin.style.opacity = isAdmin ? "1" : "0.6";
+      btnAdmin.style.cursor = isAdmin ? "pointer" : "not-allowed";
+    }
+
+    if(btnSheet){
+      btnSheet.style.display = "inline-flex";
+      btnSheet.disabled = !isAdmin;
+      btnSheet.title = isAdmin ? "" : "متاح لمدير النظام فقط";
+      btnSheet.style.opacity = isAdmin ? "1" : "0.6";
+      btnSheet.style.cursor = isAdmin ? "pointer" : "not-allowed";
+    }
+  }
+
+  function openAdminPage(){
+    window.location.href = "admin.html";
+  }
+
+  function isDoneAny(v){
+    return String(v || "").indexOf("✅") !== -1;
+  }
+
+  function formatSub(val, done, cls, stepKey){
+    if(!done){
+      return (cls.indexOf("next") !== -1)
+        ? '<div class="sub-date">الخطوة الحالية</div>'
+        : '<div class="sub-date">بانتظار</div>';
+    }
+
+    val = String(val || "");
+    val = val.replace("✅", "").replace("استلام -", "").replace("استلام", "").trim();
+
+    var name = "";
+    var date = "";
+
+    var marked = val.match(/\((.*?)\)/);
+    if(marked && marked[1]){
+      name = marked[1].trim();
+      date = val.replace(marked[0], "").trim();
+    } else {
+      var dt = val.match(/(\d{4}-\d{2}-\d{2}\s*\|\s*\d{2}:\d{2})/);
+      if(dt){
+        date = dt[1].trim();
+        name = val.replace(dt[1], "").trim();
+      } else {
+        var parts = val.split(/\s*\|\s*/);
+        if(parts.length >= 2){
+          name = parts[0].trim();
+          date = parts.slice(1).join(" | ").trim();
+        } else {
+          date = val.trim();
+        }
+      }
+    }
+
+    if(stepKey === "pricing"){
+      var dt2 = val.match(/(\d{4}-\d{2}-\d{2}\s*\|\s*\d{2}:\d{2})/);
+
+      if(dt2){
+        date = dt2[1].trim();
+        name = val.replace(dt2[1], "").trim();
+      } else {
+        name = val.trim();
       }
 
-      btn.disabled = true;
-      btn.textContent = "جاري التحقق...";
+      name = name.replace(/^[\-\–—\s]+/, "").trim();
+      name = name.replace(/[\-\–—\s]+$/, "").trim();
+      name = name.replace(/[\d.,]+/g, "").trim();
+      name = name.replace(/د\.?ع|دينار|IQD|\$/gi, "").trim();
+      name = name.replace(/[()]/g, "").trim();
+      date = date.replace(/^[\-\–—\s]+/, "").trim();
+    }
 
-      try{
-        const res = await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify({
-            action: "login",
-            user: username,
-            pass: password
-          })
+    if(stepKey === "payment"){
+      name = name.replace("تم التسديد", "").trim();
+      date = date.replace("تم التسديد", "").trim();
+    }
+
+    name = name.replace(/^[\-\–—\s]+/, "").replace(/[\-\–—\s]+$/, "").trim();
+    date = date.replace(/^[\-\–—\s]+/, "").replace(/[\-\–—\s]+$/, "").trim();
+
+    return ''
+      + '<div class="sub-name">' + (name || "") + '</div>'
+      + '<div class="sub-date">' + (date || "") + '</div>';
+  }
+
+  function inferType(it){
+    var pricingDone = isDoneAny(it.pricing);
+    if(!pricingDone) return "";
+
+    var t = String(it.testType || "").trim();
+    if(t === "مصاعد" || t === "مختبرات") return t;
+
+    var elev = String(it.elev || "").trim();
+    var lab1 = String(it.lab1 || "").trim();
+    var workshop = String(it.workshop || "").trim();
+    var lab2 = String(it.lab2 || "").trim();
+
+    if(elev && elev !== "-" && elev !== "—") return "مصاعد";
+    if(lab1 || workshop || lab2) return "مختبرات";
+
+    return "";
+  }
+
+  function inferLabPath(it){
+    var pricingDone = isDoneAny(it.pricing);
+    if(!pricingDone) return "";
+
+    var labPath = String(it.labPath || "").trim();
+    if(labPath) return labPath;
+
+    var workshop = String(it.workshop || "").trim();
+    var lab2 = String(it.lab2 || "").trim();
+
+    if(workshop || lab2) return "ورشة";
+    return "مختبرات فقط";
+  }
+
+  function buildSteps(it){
+    var type = inferType(it);
+    var labPath = inferLabPath(it);
+
+    var pricingDone = isDoneAny(it.pricing);
+    var workflowReady = pricingDone && !!type;
+
+    var steps = [
+      {key:"inspection",  label:"استلام",  icon:"fa-handshake"},
+      {key:"pricing",     label:"تسعيرة",  icon:"fa-receipt"}
+    ];
+
+    if(!workflowReady){
+      return steps;
+    }
+
+    steps.push({key:"payment", label:"تسديد", icon:"fa-sack-dollar"});
+
+    if(type === "مصاعد"){
+      steps.push({key:"elev", label:"مصاعد", icon:"fa-elevator"});
+    }else{
+      steps.push({key:"lab1", label:"مختبرات", icon:"fa-microscope"});
+      if(labPath !== "مختبرات فقط"){
+        steps.push({key:"workshop", label:"ورشة", icon:"fa-screwdriver-wrench"});
+        steps.push({key:"lab2", label:"مختبرات", icon:"fa-flask"});
+      }
+    }
+
+    steps.push({key:"testResults", label:"نتائج", icon:"fa-clipboard-check"});
+    steps.push({key:"official",    label:"كتاب",  icon:"fa-file"});
+    steps.push({key:"barcode",     label:"باركود", icon:"fa-qrcode"});
+    steps.push({key:"email",       label:"ايميل", icon:"fa-paper-plane"});
+    steps.push({key:"final",       label:"استلام", icon:"fa-flag-checkered"});
+
+    return steps;
+  }
+
+  function typePills(it){
+    var pricingDone = isDoneAny(it.pricing);
+    var type = inferType(it);
+    var labPath = inferLabPath(it);
+
+    if(!pricingDone || !type){
+      return '<span class="pill bad"><i class="fas fa-hourglass-half"></i>بانتظار التسعيرة</span>';
+    }
+
+    var typePill = '<span class="pill bad"><i class="fas fa-triangle-exclamation"></i> غير محدد</span>';
+
+    if(type === "مصاعد"){
+      typePill = '<span class="pill ok"><i class="fas fa-elevator"></i> مصاعد</span>';
+    } else if(type === "مختبرات"){
+      typePill = '<span class="pill ok"><i class="fas fa-microscope"></i> مختبرات</span>';
+    }
+
+    var showPathPill =
+      type === "مختبرات" &&
+      labPath &&
+      labPath !== "مختبرات فقط";
+
+    var pathPill = showPathPill
+      ? '<span class="pill"><i class="fas fa-route"></i> ' + labPath + '</span>'
+      : "";
+
+    return typePill + (pathPill ? " " + pathPill : "");
+  }
+
+  function renderStepper(it){
+    var steps = buildSteps(it);
+    var firstPending = false;
+
+    var pricingDone = isDoneAny(it.pricing);
+    var type = inferType(it);
+    var workflowReady = pricingDone && !!type;
+
+    var html = '<div class="stepper-scroll"><div class="stepper">';
+
+    for(var i = 0; i < steps.length; i++){
+      var s = steps[i];
+      var val = String(it[s.key] || "");
+      var done = isDoneAny(val);
+
+      var cls = "node";
+      if(done){
+        cls += " done";
+      }else if(!firstPending){
+        cls += " next";
+        firstPending = true;
+      }else{
+        cls += " locked";
+      }
+
+      var sub = formatSub(val, done, cls, s.key);
+
+      html += '<div class="' + cls + '">'
+           +    '<div class="circle"><i class="fas ' + s.icon + '"></i></div>'
+           +    '<div class="label">' + s.label + '</div>'
+           +    '<div class="sub">' + sub + '</div>'
+           +  '</div>';
+    }
+
+    html += '</div></div>';
+
+    if(!workflowReady){
+      html += ''
+        + '<div class="empty" style="padding-top:8px;">'
+        +   '<i class="fas fa-circle-info"></i> '
+        +   'تظهر بقية المراحل بعد تثبيت التسعيرة ونوع الفحص'
+        + '</div>';
+    }
+
+    return html;
+  }
+
+  function escapeHtml(s){
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  function getExportTitleByMode(mode){
+    if(mode === "open") return "تقرير المعاملات غير المنجزة";
+    if(mode === "delayed") return "تقرير المعاملات المتأخرة";
+    if(mode === "done") return "تقرير المعاملات المنجزة";
+    if(mode === "search") return "تقرير نتائج البحث";
+    return "تقرير المعاملات";
+  }
+
+  function exportCurrentTable(){
+    if(!CURRENT_ITEMS || !CURRENT_ITEMS.length){
+      setStatus("⚠️ لا توجد بيانات معروضة للتصدير", false);
+      showMsg("⚠️ لا توجد بيانات للتصدير", "warn");
+      return;
+    }
+
+    var rows = [];
+    for(var i = 0; i < CURRENT_ITEMS.length; i++){
+      var it = CURRENT_ITEMS[i] || {};
+      rows.push({
+        orderNo: String(it.orderNo || "").trim() || "—",
+        orderDate: String(it.orderDate || "").trim() || "—",
+        clientName: String(it.clientName || "").trim() || "—",
+        lastStage: String(it.lastStage || "").trim() || "—"
+      });
+    }
+
+    var title = getExportTitleByMode(CURRENT_MODE);
+    var now = new Date();
+    var yyyy = now.getFullYear();
+    var mm = String(now.getMonth() + 1).padStart(2, "0");
+    var dd = String(now.getDate()).padStart(2, "0");
+    var hh = String(now.getHours()).padStart(2, "0");
+    var mi = String(now.getMinutes()).padStart(2, "0");
+    var fileName = title + "_" + yyyy + "-" + mm + "-" + dd + "_" + hh + "-" + mi + ".xls";
+
+    var html = ''
+      + '<html dir="rtl" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">'
+      + '<head><meta charset="UTF-8"></head>'
+      + '<body>'
+      + '<table border="1" style="border-collapse:collapse;font-family:Cairo,Arial,sans-serif;text-align:center;">'
+      + '<tr>'
+      +   '<th colspan="4" style="background:#223243;color:#fff;font-size:18px;padding:10px;">' + escapeHtml(title) + '</th>'
+      + '</tr>'
+      + '<tr>'
+      +   '<th style="background:#f5a623;color:#111;padding:8px;">رقم أمر العمل</th>'
+      +   '<th style="background:#f5a623;color:#111;padding:8px;">تاريخ أمر العمل</th>'
+      +   '<th style="background:#f5a623;color:#111;padding:8px;">الجهة المستفيدة</th>'
+      +   '<th style="background:#f5a623;color:#111;padding:8px;">آخر مرحلة</th>'
+      + '</tr>';
+
+    for(var j = 0; j < rows.length; j++){
+      html += '<tr>'
+        + '<td style="padding:8px;">' + escapeHtml(rows[j].orderNo) + '</td>'
+        + '<td style="padding:8px;">' + escapeHtml(rows[j].orderDate) + '</td>'
+        + '<td style="padding:8px;">' + escapeHtml(rows[j].clientName) + '</td>'
+        + '<td style="padding:8px;">' + escapeHtml(rows[j].lastStage) + '</td>'
+        + '</tr>';
+    }
+
+    html += '</table></body></html>';
+
+    var blob = new Blob(['\ufeff' + html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    showMsg("✅ تم تصدير الجدول بنجاح", "ok");
+  }
+
+  function computeLastStage(item){
+    const steps = [
+      { key: "final", label: "استلام النتائج" },
+      { key: "email", label: "ارسال الايميل" },
+      { key: "barcode", label: "الباركود" },
+      { key: "official", label: "الكتاب الرسمي" },
+      { key: "testResults", label: "نتائج الفحص" },
+      { key: "lab2", label: "المختبرات بعد الورشة" },
+      { key: "workshop", label: "الورشة" },
+      { key: "elev", label: "المصاعد" },
+      { key: "lab1", label: "المختبرات" },
+      { key: "payment", label: "التسديد" },
+      { key: "pricing", label: "التسعيرة" },
+      { key: "inspection", label: "استلام المعاملة" }
+    ];
+
+    for(let i = 0; i < steps.length; i++){
+      if(isDoneAny(item[steps[i].key])) return steps[i].label;
+    }
+    return "لم تبدأ";
+  }
+
+  function normalizeItemsForRender(items){
+    return (items || []).map(function(it){
+      const item = Object.assign({}, it);
+
+      if(!item.orderDate){
+        let src = String(item.inspection || "");
+        let dt = src.match(/(\d{4}-\d{2}-\d{2})/);
+        item.orderDate = dt ? dt[1] : "—";
+      }
+
+      if(!item.lastStage){
+        item.lastStage = computeLastStage(item);
+      }
+
+      return item;
+    });
+  }
+
+  function renderList(res, mode){
+    if(res && res.error){
+      CURRENT_MODE = mode || "open";
+      CURRENT_ITEMS = [];
+
+      document.getElementById("count").textContent = "0";
+      document.getElementById("at").textContent = res.at || "—";
+      document.getElementById("list").innerHTML = "";
+      setStatus("❌ خطأ من السيرفر: " + res.error, false);
+      showMsg("❌ خطأ من السيرفر", "err");
+      return;
+    }
+
+    var rawItems = (res && res.items) ? res.items : [];
+    var items = normalizeItemsForRender(rawItems);
+
+    CURRENT_MODE = mode || "open";
+    CURRENT_ITEMS = items.slice();
+
+    document.getElementById("count").textContent = String(items.length);
+    document.getElementById("at").textContent = (res && res.at) ? res.at : "—";
+
+    if(!items.length){
+      document.getElementById("list").innerHTML =
+        '<div class="empty"><i class="fas fa-check-circle"></i> لا توجد معاملات</div>';
+      setStatus("تم التحميل — items=0", true);
+      return;
+    }
+
+    var html = "";
+
+    for(var i = 0; i < items.length; i++){
+      var it = items[i] || {};
+      var orderNo = it.orderNo || "";
+      var client  = it.clientName || "—";
+      var lateDays = Number(it.lateDays || 0);
+      var fileUrl = String(it.barcodeFileUrl || it.barcodeLink || it.fileUrl || it.fileLink || "").trim();
+
+      html += '<div class="item">';
+      html +=   '<div class="row1">';
+      html +=     '<div>';
+      html +=       '<div class="idbox">أمر العمل : <span>' + orderNo + '</span> ' + typePills(it) + '</div>';
+      html +=       '<div class="client"><i class="fas fa-building"></i> ' + client + '</div>';
+
+      if(mode === "delayed"){
+        html += '<div class="late"><i class="fas fa-hourglass-half"></i> متأخر ' + lateDays + ' يوم</div>';
+      }
+
+      html +=     '</div>';
+      html +=     '<div class="action-wrap">';
+
+      if(mode === "done" || mode === "search"){
+        if(fileUrl){
+          html += '<a href="' + fileUrl + '" target="_blank" class="file-btn">'
+               +    '<i class="fas fa-up-right-from-square"></i> فتح الملف'
+               +  '</a>';
+        } else {
+          html += '<button class="btn btn-ghost" type="button" disabled>'
+               +    '<i class="fas fa-ban"></i> لا يوجد ملف'
+               +  '</button>';
+        }
+      }
+
+      html +=     '</div>';
+      html +=   '</div>';
+      html +=   renderStepper(it);
+      html += '</div>';
+    }
+
+    document.getElementById("list").innerHTML = html;
+    setStatus("تم التحميل بنجاح", true);
+  }
+
+  async function loadOpen(){
+    const token = getSessionToken();
+    if(!token){
+      window.location.href = "login.html?p=main";
+      return;
+    }
+
+    setLoading(true);
+
+    try{
+      const res = await apiPost({
+        action: "getOpenOrders",
+        token: token,
+        page: PAGE_NAME
+      });
+
+      setLoading(false);
+      renderList(res, "open");
+    }catch(err){
+      setLoading(false);
+      setStatus("❌ open error: " + safeErr(err), false);
+      showMsg("❌ فشل تحميل غير المنجز", "err");
+    }
+  }
+
+  async function loadDelayed(){
+    const token = getSessionToken();
+    if(!token){
+      window.location.href = "login.html?p=main";
+      return;
+    }
+
+    setLoading(true);
+
+    try{
+      const res = await apiPost({
+        action: "getDelayedOrders",
+        token: token,
+        page: PAGE_NAME
+      });
+
+      setLoading(false);
+      renderList(res, "delayed");
+    }catch(err){
+      setLoading(false);
+      setStatus("❌ delayed error: " + safeErr(err), false);
+      showMsg("❌ فشل تحميل المتأخر", "err");
+    }
+  }
+
+  async function loadDone(){
+    const token = getSessionToken();
+    if(!token){
+      window.location.href = "login.html?p=main";
+      return;
+    }
+
+    var from = String(document.getElementById("dateFrom").value || "").trim();
+    var to   = String(document.getElementById("dateTo").value || "").trim();
+
+    setLoading(true);
+
+    try{
+      let res;
+
+      if(from && to){
+        res = await apiPost({
+          action: "getCompletedOrdersByDateRange",
+          token: token,
+          page: PAGE_NAME,
+          fromDate: from,
+          toDate: to,
+          limit: 5000
         });
 
-        const data = await res.json();
-
-        if(data.ok){
-          saveSession(data);
-          showMessage("تم تسجيل الدخول بنجاح. جاري التحويل...", "success");
-
-          setTimeout(() => {
-            window.location.href = buildPageUrl("main.html");
-          }, 700);
-        }else{
-          showMessage(data.message || data.msg || "اسم المستخدم أو كلمة المرور غير صحيحة.", "error");
-        }
-      }catch(err){
-        showMessage("تعذر الاتصال بالخادم. تأكد من رابط Apps Script وأن النشر تم بصلاحية Anyone.", "error");
-      }finally{
-        btn.disabled = false;
-        btn.textContent = "دخول";
+        setLoading(false);
+        renderList(res, "done");
+        setStatus("✅ تم تحميل الإنجاز ضمن التاريخ المحدد", true);
+        showMsg("✅ تم تحميل النتائج حسب التاريخ", "ok");
+        return;
       }
+
+      res = await apiPost({
+        action: "getCompletedOrders",
+        token: token,
+        page: PAGE_NAME,
+        limit: 5000
+      });
+
+      setLoading(false);
+      renderList(res, "done");
+    }catch(err){
+      setLoading(false);
+      setStatus("❌ done error: " + safeErr(err), false);
+      showMsg("❌ فشل تحميل الإنجاز", "err");
+    }
+  }
+
+  async function searchAny(){
+    const token = getSessionToken();
+    if(!token){
+      window.location.href = "login.html?p=main";
+      return;
     }
 
-    document.getElementById("password").addEventListener("keydown", function(e){
-      if(e.key === "Enter") login();
-    });
+    var id = String(document.getElementById("qDone").value || "").trim();
+    var sheetName = String(document.getElementById("sheetSelect").value || "").trim();
 
-    document.getElementById("username").addEventListener("keydown", function(e){
-      if(e.key === "Enter") login();
-    });
-
-    if(localStorage.getItem("tracking_logged_in") === "1"){
-      window.location.href = buildPageUrl("main.html");
+    if(!id){
+      setStatus("⚠️ أدخل رقم أمر العمل", false);
+      showMsg("⚠️ أدخل رقم أمر العمل", "warn");
+      return;
     }
-  </script>
+
+    if(!sheetName){
+      setStatus("⚠️ لا توجد سنة محددة للبحث", false);
+      showMsg("⚠️ لا توجد سنة محددة", "warn");
+      return;
+    }
+
+    setLoading(true);
+
+    try{
+      const res = await apiPost({
+        action: "searchOrderAnywhere",
+        token: token,
+        page: PAGE_NAME,
+        orderNo: id,
+        sheetName: sheetName
+      });
+
+      setLoading(false);
+
+      if(res && res.error){
+        setStatus("❌ خطأ: " + res.error, false);
+        showMsg("❌ خطأ من السيرفر", "err");
+        return;
+      }
+
+      if(!res || !res.found){
+        CURRENT_MODE = "search";
+        CURRENT_ITEMS = [];
+        document.getElementById("count").textContent = "0";
+        document.getElementById("at").textContent = "—";
+        document.getElementById("list").innerHTML =
+          '<div class="empty"><i class="fas fa-circle-xmark"></i> لا توجد معاملة بهذا الرقم داخل السنة المحددة</div>';
+        setStatus("❌ لم يتم العثور على أمر العمل " + id + " داخل السنة المحددة", false);
+        showMsg("⚠️ غير موجود", "warn");
+        return;
+      }
+
+      var item = res.item ? res.item : res;
+      item = Object.assign({}, item, {
+        orderNo: item.orderNo || id
+      });
+
+      renderList({
+        at: (res.at || "—"),
+        items: [item]
+      }, "search");
+
+      setStatus("✅ تم العثور على أمر العمل " + id + " داخل " + (item.sourceSheet || sheetName), true);
+      showMsg("✅ تم العثور على المعاملة", "ok");
+    }catch(err){
+      setLoading(false);
+      setStatus("❌ search error: " + safeErr(err), false);
+      showMsg("❌ فشل البحث", "err");
+    }
+  }
+
+  async function openArchiveSheet(){
+    const token = getSessionToken();
+    if(!token){
+      window.location.href = "login.html?p=main";
+      return;
+    }
+
+    try{
+      const res = await apiPost({
+        action: "getArchiveSheetUrl",
+        token: token,
+        page: PAGE_NAME
+      });
+
+      if(!res || !res.ok){
+        setStatus("❌ " + (res && res.error ? res.error : "لا يمكن فتح الشيت"), false);
+        showMsg("❌ لا يمكن فتح الشيت", "err");
+        return;
+      }
+      window.open(res.url, "_blank");
+    }catch(err){
+      setStatus("❌ خطأ: " + safeErr(err), false);
+      showMsg("❌ خطأ في فتح الشيت", "err");
+    }
+  }
+
+  window.addEventListener("load", function(){
+    var openSheetBtn = document.getElementById("btnOpenArchive");
+    var adminBtn = document.getElementById("btnAdmin");
+
+    (function setDefaultDates(){
+      const today = new Date();
+      const toDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const fromDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+
+      const formatLocal = function(d){
+        const y = d.getFullYear();
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return y + "-" + m + "-" + day;
+      };
+
+      document.getElementById("dateFrom").value = formatLocal(fromDate);
+      document.getElementById("dateTo").value = formatLocal(toDate);
+    })();
+
+    document.getElementById("btnOpen").addEventListener("click", loadOpen);
+    document.getElementById("btnDelayed").addEventListener("click", loadDelayed);
+    document.getElementById("btnDone").addEventListener("click", loadDone);
+    document.getElementById("btnSearchDone").addEventListener("click", searchAny);
+    document.getElementById("btnExport").addEventListener("click", exportCurrentTable);
+
+    if(openSheetBtn){
+      openSheetBtn.addEventListener("click", openArchiveSheet);
+    }
+
+    if(adminBtn){
+      adminBtn.addEventListener("click", openAdminPage);
+    }
+
+    document.getElementById("qDone").addEventListener("keypress", function(e){
+      if(e.key === "Enter") searchAny();
+    });
+
+    ensurePageSession();
+  });
+</script>
+
 </body>
 </html>
