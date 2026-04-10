@@ -394,19 +394,18 @@ input::placeholder{
   font-weight:600;
   color:#000;
   text-align:center;
-  height:40px;      /* ارتفاع المربع */
-  width:100%; 
+  height:40px;
+  width:100%;
 }
 
 #orderID::placeholder{
-  height:40px;      /* ارتفاع المربع */
-  width:100%;       /* عرض كامل */
+  height:40px;
+  width:100%;
   font-size:16px;
   font-weight:600;
   color:#999;
   opacity:1;
 }
-
 </style>
 </head>
 
@@ -442,7 +441,7 @@ input::placeholder{
         <input type="text" id="orderID" placeholder="أدخل الرقم..." inputmode="numeric" pattern="[0-9]*">
       </div>
 
-      <button class="main-btn" id="fetchBtn" onclick="fetchData()">
+      <button class="main-btn" id="fetchBtn" type="button" onclick="fetchData()">
         <i class="fas fa-search"></i>
         جلب بيانات المعاملة
       </button>
@@ -463,7 +462,7 @@ input::placeholder{
           <div id="priceText" style="font-size:17px;font-weight:900;color:#222;">—</div>
         </div>
 
-        <button id="payBtn" class="main-btn" style="background:linear-gradient(180deg,#2ebf68,#26a65b);" onclick="pay()">
+        <button id="payBtn" class="main-btn" type="button" style="background:linear-gradient(180deg,#2ebf68,#26a65b);" onclick="pay()">
           <i class="fas fa-check"></i>
           توثيق التسديد
         </button>
@@ -476,7 +475,7 @@ input::placeholder{
     <i class="fas fa-check-circle"></i>
     <h2>تم الحفظ بنجاح</h2>
     <p id="detailsText">تم التسديد مبلغ امر العمل وتوثيقة</p>
-    <button class="again" onclick="resetPage()">
+    <button class="again" type="button" onclick="resetPage()">
       <i class="fas fa-plus"></i>
       معاملة جديدة
     </button>
@@ -541,10 +540,25 @@ function fetchData(){
 
       if(data && data.found){
         document.getElementById('cName').innerText = data.clientName || "---";
-        document.getElementById('priceText').innerText = (data.price && data.price !== 0) ? data.price : "غير مثبتة";
-        lastPayStatus = String(data.status || "").trim();
 
         const btn = document.getElementById('payBtn');
+        const priceValue = Number(data.price || 0);
+        const isPriced = priceValue > 0;
+
+        if(isPriced){
+          document.getElementById('priceText').innerText = priceValue;
+          showMsg("✅ أمر العمل مسعّر", "ok");
+        } else {
+          document.getElementById('priceText').innerText = "غير مسعّر";
+          btn.disabled = true;
+          btn.style.background = "#bdc3c7";
+          btn.innerHTML = '<i class="fas fa-ban"></i> لا يمكن التسديد';
+          document.getElementById('resPanel').style.display = 'block';
+          showMsg("⚠️ أمر العمل غير مسعّر", "warn");
+          return;
+        }
+
+        lastPayStatus = String(data.status || "").trim();
         const done = lastPayStatus.includes("تم التسديد") || lastPayStatus.includes("✅");
 
         if(done){
