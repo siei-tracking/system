@@ -34,7 +34,6 @@
       color:#111;
     }
 
-    /* لا نعرض الصفحة إلا بعد التحقق المحلي */
     #pageWrap{
       display:none;
     }
@@ -459,7 +458,6 @@
       .again{ width:100%; }
     }
 
-    /* توحيد حجم رقم أمر العمل */
     #nID , #pID{
       font-size:20px;
       font-weight:600;
@@ -826,7 +824,7 @@
       const session = getLocalSession();
       if(!session || !session.token){
         clearLocalSession();
-        window.location.href = "login.html";
+        window.location.href = "login.html?p=plan";
         return;
       }
 
@@ -865,3 +863,5 @@
 
 </body>
 </html>
+
+اعملها على نظاك login الموحد
