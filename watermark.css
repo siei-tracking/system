@@ -1,61 +1,35 @@
-﻿<style>
-  .page-shell{
-    position:relative;
-    min-height:100vh;
-    isolation:isolate;
-  }
+﻿.page-shell{
+  position:relative;
+  min-height:100vh;
+  isolation:isolate;
+}
 
-  .page-shell::before{
-    content:"";
-    position:fixed;
-    inset:0;
-    margin:auto;
-    width:min(36vw, 360px);
-    height:min(36vw, 360px);
-    background-image:url('https://drive.google.com/thumbnail?id=1NN7G2zhk7nhgXuPWGW4qE_pdGC-Ptjkt&sz=w1000');
-    background-repeat:no-repeat;
-    background-position:center;
-    background-size:contain;
-    opacity:.055;
-    pointer-events:none;
-    z-index:0;
-  }
+.page-shell::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  margin:auto;
+  width:min(36vw, 360px);
+  height:min(36vw, 360px);
+  background-image:url('https://drive.google.com/thumbnail?id=1NN7G2zhk7nhgXuPWGW4qE_pdGC-Ptjkt&sz=w1000');
+  background-repeat:no-repeat;
+  background-position:center;
+  background-size:contain;
+  opacity:.055;
+  pointer-events:none;
+  z-index:0;
+}
 
-  /* ضمان أن المحتوى فوق العلامة المائية */
-  .company-header,
-  .page-content,
-  .main-content,
-  .card,
-  .success,
-  header,
-  main,
-  section{
-    position:relative;
-    z-index:1;
-  }
-
-  /* موبايل */
-  @media (max-width:600px){
-    .page-shell::before{
-      width:min(58vw, 220px);
-      height:min(58vw, 220px);
-      opacity:.05;
-    }
-  }
-
-  /* تابلت */
-  @media (min-width:601px) and (max-width:1024px){
-    .page-shell::before{
-      width:min(40vw, 300px);
-      height:min(40vw, 300px);
-    }
-  }
-
-  /* شاشات كبيرة */
-  @media (min-width:1400px){
-    .page-shell::before{
-      width:380px;
-      height:380px;
-    }
-  }
-</style>
+.company-header,
+.page-content,
+.wrap,
+.panel,
+.card,
+.main-content,
+.success,
+.stepper-scroll,
+.workflow-note,
+.empty{
+  position:relative;
+  z-index:1;
+}
