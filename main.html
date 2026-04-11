@@ -1210,8 +1210,7 @@
     return "تقرير المعاملات";
   }
 
-  <script>
-function exportCurrentTable(){
+  function exportCurrentTable(){
   if(!CURRENT_ITEMS || !CURRENT_ITEMS.length){
     setStatus("⚠️ لا توجد بيانات معروضة للتصدير", false);
     showMsg("⚠️ لا توجد بيانات للتصدير", "warn");
@@ -1240,8 +1239,8 @@ function exportCurrentTable(){
 
   var exportDate = yyyy + "-" + mm + "-" + dd;
   var exportTime = hh + ":" + mi + ":" + ss;
-
-  var fileName = title + "_" + yyyy + "-" + mm + "-" + dd + "_" + hh + "-" + mi + ".xls";
+  var reportNo = "RPT-" + yyyy + mm + dd + "-" + hh + mi + ss;
+  var fileName = title + "" + yyyy + "-" + mm + "-" + dd + "" + hh + "-" + mi + ".xls";
 
   function esc(s){
     return String(s == null ? "" : s)
@@ -1270,36 +1269,47 @@ function exportCurrentTable(){
     +   '<meta charset="UTF-8">'
     +   '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />'
     +   '<!--[if gte mso 9]><xml>'
-    +   '<x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>تقرير</x:Name>'
+    +   '<x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>تقرير رسمي</x:Name>'
     +   '<x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>'
     +   '</x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook>'
     +   '</xml><![endif]-->'
     +   '<style>'
     +     'body{margin:0;padding:0;background:#ffffff;font-family:Tahoma,Arial,sans-serif;color:#111;direction:rtl;}'
-    +     '.page{width:100%;padding:20px 18px 28px 18px;box-sizing:border-box;}'
-    +     '.header-table{width:100%;border-collapse:collapse;margin-bottom:14px;}'
+    +     '.page{width:100%;padding:18px 18px 28px 18px;box-sizing:border-box;}'
+    +     '.top-band{height:12px;background:#223243;margin-bottom:10px;}'
+    +     '.header-table{width:100%;border-collapse:collapse;margin-bottom:8px;}'
     +     '.header-table td{vertical-align:middle;}'
     +     '.logo-cell{width:110px;text-align:center;}'
-    +     '.logo{width:78px;height:78px;border-radius:50%;background:#fff;border:2px solid #d7dde5;object-fit:contain;padding:3px;}'
+    +     '.logo{width:82px;height:82px;border-radius:50%;background:#fff;border:2px solid #d7dde5;object-fit:contain;padding:4px;}'
     +     '.title-cell{text-align:center;}'
-    +     '.company-name{font-size:24px;font-weight:700;color:#223243;line-height:1.6;}'
-    +     '.platform-name{font-size:16px;font-weight:700;color:#44576b;line-height:1.8;}'
-    +     '.report-title{margin-top:10px;background:#223243;color:#fff;font-size:18px;font-weight:700;padding:10px 14px;border-radius:8px;display:inline-block;}'
-    +     '.meta-wrap{margin-top:14px;margin-bottom:16px;border:1px solid #dbe3eb;background:#f8fafc;border-radius:8px;padding:10px 14px;}'
-    +     '.meta-line{font-size:13px;font-weight:700;color:#334455;line-height:2;}'
-    +     '.meta-label{color:#223243;font-weight:700;}'
-    +     '.main-table{width:100%;border-collapse:collapse;table-layout:fixed;}'
+    +     '.company-name{font-size:25px;font-weight:700;color:#223243;line-height:1.7;}'
+    +     '.platform-name{font-size:16px;font-weight:700;color:#5b6b7c;line-height:1.8;}'
+    +     '.sub-line{font-size:13px;font-weight:700;color:#6f7f8f;line-height:1.8;}'
+    +     '.report-box{margin-top:10px;border:2px solid #223243;padding:10px 12px;text-align:center;border-radius:8px;background:#f8fafc;}'
+    +     '.report-title{font-size:20px;font-weight:700;color:#223243;}'
+    +     '.report-sub{font-size:12px;color:#6d7d8d;margin-top:4px;font-weight:700;}'
+    +     '.meta-table{width:100%;border-collapse:collapse;margin-top:14px;margin-bottom:14px;}'
+    +     '.meta-table td{border:1px solid #dbe3eb;padding:8px 10px;font-size:13px;font-weight:700;background:#fafcfe;}'
+    +     '.meta-label{color:#223243;width:18%;background:#eef3f8;}'
+    +     '.main-table{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:8px;}'
     +     '.main-table th{background:#2f4356;color:#fff;border:1px solid #cfd8e3;padding:10px 8px;font-size:13px;font-weight:700;text-align:center;}'
     +     '.main-table td{border:1px solid #d7dde5;padding:9px 8px;font-size:13px;color:#111;vertical-align:middle;background:#fff;}'
     +     '.main-table tr:nth-child(even) td{background:#f9fbfd;}'
     +     '.td-center{text-align:center;}'
     +     '.td-text{text-align:right;}'
-    +     '.footer{margin-top:18px;border-top:2px solid #223243;padding-top:10px;text-align:center;font-size:12px;font-weight:700;color:#4c5d6f;line-height:1.9;}'
-    +     '.note{margin-top:6px;font-size:11px;color:#6b7c8d;}'
+    +     '.footer-box{margin-top:18px;border-top:2px solid #223243;padding-top:12px;}'
+    +     '.footer-text{text-align:center;font-size:12px;font-weight:700;color:#4c5d6f;line-height:1.9;}'
+    +     '.sign-table{width:100%;border-collapse:collapse;margin-top:22px;}'
+    +     '.sign-table td{width:50%;vertical-align:top;text-align:center;padding-top:12px;font-size:13px;font-weight:700;color:#223243;}'
+    +     '.sign-line{margin:0 auto 8px auto;width:75%;border-top:1px solid #444;height:20px;}'
+    +     '.stamp-box{margin:16px auto 0 auto;width:160px;height:70px;border:2px dashed #9aa8b6;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#7a8896;}'
+    +     '.confidential{margin-top:8px;text-align:center;font-size:11px;color:#8a97a4;font-weight:700;}'
     +   '</style>'
     + '</head>'
     + '<body>'
     +   '<div class="page">'
+    +     '<div class="top-band"></div>'
+
     +     '<table class="header-table">'
     +       '<tr>'
     +         '<td class="logo-cell">'
@@ -1308,18 +1318,35 @@ function exportCurrentTable(){
     +         '<td class="title-cell">'
     +           '<div class="company-name">الشركة العامة للفحص والتأهيل الهندسي</div>'
     +           '<div class="platform-name">منصة تتبع أوامر العمل</div>'
-    +           '<div class="report-title">' + esc(title) + '</div>'
+    +           '<div class="sub-line">نظام إلكتروني لإدارة ومتابعة معاملات أوامر العمل</div>'
     +         '</td>'
     +         '<td class="logo-cell"></td>'
     +       '</tr>'
     +     '</table>'
 
-    +     '<div class="meta-wrap">'
-    +       '<div class="meta-line"><span class="meta-label">تاريخ التصدير:</span> ' + esc(exportDate) + '</div>'
-    +       '<div class="meta-line"><span class="meta-label">وقت التصدير:</span> ' + esc(exportTime) + '</div>'
-    +       '<div class="meta-line"><span class="meta-label">عدد السجلات:</span> ' + rows.length + '</div>'
-    +       '<div class="meta-line"><span class="meta-label">مصدر التقرير:</span> منصة تتبع أوامر العمل</div>'
+    +     '<div class="report-box">'
+    +       '<div class="report-title">' + esc(title) + '</div>'
+    +       '<div class="report-sub">تقرير إداري صادر من منصة تتبع أوامر العمل</div>'
     +     '</div>'
+
+    +     '<table class="meta-table">'
+    +       '<tr>'
+    +         '<td class="meta-label">رقم التقرير</td>'
+    +         '<td>' + esc(reportNo) + '</td>'
+    +         '<td class="meta-label">تاريخ التصدير</td>'
+    +         '<td>' + esc(exportDate) + '</td>'
+    +       '</tr>'
+    +       '<tr>'
+    +         '<td class="meta-label">وقت التصدير</td>'
+    +         '<td>' + esc(exportTime) + '</td>'
+    +         '<td class="meta-label">عدد السجلات</td>'
+    +         '<td>' + rows.length + '</td>'
+    +       '</tr>'
+    +       '<tr>'
+    +         '<td class="meta-label">مصدر التقرير</td>'
+    +         '<td colspan="3">منصة تتبع أوامر العمل - الشركة العامة للفحص والتأهيل الهندسي</td>'
+    +       '</tr>'
+    +     '</table>'
 
     +     '<table class="main-table">'
     +       '<thead>'
@@ -1336,9 +1363,28 @@ function exportCurrentTable(){
     +       '</tbody>'
     +     '</table>'
 
-    +     '<div class="footer">'
-    +       'تم إنشاء هذا التقرير إلكترونيًا من خلال منصة تتبع أوامر العمل'
-    +       '<div class="note">الشركة العامة للفحص والتأهيل الهندسي</div>'
+    +     '<div class="footer-box">'
+    +       '<div class="footer-text">'
+    +         'تم إنشاء هذا التقرير إلكترونيًا من خلال منصة تتبع أوامر العمل'
+    +         '<br>'
+    +         'ويُعتمد كمخرج إداري داخلي لأغراض المتابعة والتوثيق'
+    +       '</div>'
+
+    +       '<table class="sign-table">'
+    +         '<tr>'
+    +           '<td>'
+    +             '<div class="sign-line"></div>'
+    +             'إعداد وتنظيم'
+    +           '</td>'
+    +           '<td>'
+    +             '<div class="sign-line"></div>'
+    +             'اعتماد الجهة المختصة'
+    +           '</td>'
+    +         '</tr>'
+    +       '</table>'
+
+    +       '<div class="stamp-box">مكان الختم الرسمي</div>'
+    +       '<div class="confidential">نسخة إدارية - للاستخدام الداخلي</div>'
     +     '</div>'
     +   '</div>'
     + '</body>'
@@ -1359,7 +1405,6 @@ function exportCurrentTable(){
 
   showMsg("✅ تم تصدير التقرير الرسمي بنجاح", "ok");
 }
-</script>
 
   function computeLastStage(item){
     const steps = [
