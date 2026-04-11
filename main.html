@@ -4,6 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+  <title>االمعاملات - منصة تتبع أوامر العمل</title>
+
+<link rel="icon" href="https://siei-tracking.github.io/system/logo.png">
+
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -1206,71 +1210,156 @@
     return "تقرير المعاملات";
   }
 
-  function exportCurrentTable(){
-    if(!CURRENT_ITEMS || !CURRENT_ITEMS.length){
-      setStatus("⚠️ لا توجد بيانات معروضة للتصدير", false);
-      showMsg("⚠️ لا توجد بيانات للتصدير", "warn");
-      return;
-    }
-
-    var rows = [];
-    for(var i = 0; i < CURRENT_ITEMS.length; i++){
-      var it = CURRENT_ITEMS[i] || {};
-      rows.push({
-        orderNo: String(it.orderNo || "").trim() || "—",
-        orderDate: String(it.orderDate || "").trim() || "—",
-        clientName: String(it.clientName || "").trim() || "—",
-        lastStage: String(it.lastStage || "").trim() || "—"
-      });
-    }
-
-    var title = getExportTitleByMode(CURRENT_MODE);
-    var now = new Date();
-    var yyyy = now.getFullYear();
-    var mm = String(now.getMonth() + 1).padStart(2, "0");
-    var dd = String(now.getDate()).padStart(2, "0");
-    var hh = String(now.getHours()).padStart(2, "0");
-    var mi = String(now.getMinutes()).padStart(2, "0");
-    var fileName = title + "_" + yyyy + "-" + mm + "-" + dd + "_" + hh + "-" + mi + ".xls";
-
-    var html = ''
-      + '<html dir="rtl" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">'
-      + '<head><meta charset="UTF-8"></head>'
-      + '<body>'
-      + '<table border="1" style="border-collapse:collapse;font-family:Cairo,Arial,sans-serif;text-align:center;">'
-      + '<tr>'
-      +   '<th colspan="4" style="background:#223243;color:#fff;font-size:18px;padding:10px;">' + escapeHtml(title) + '</th>'
-      + '</tr>'
-      + '<tr>'
-      +   '<th style="background:#f5a623;color:#111;padding:8px;">رقم أمر العمل</th>'
-      +   '<th style="background:#f5a623;color:#111;padding:8px;">تاريخ أمر العمل</th>'
-      +   '<th style="background:#f5a623;color:#111;padding:8px;">الجهة المستفيدة</th>'
-      +   '<th style="background:#f5a623;color:#111;padding:8px;">آخر مرحلة</th>'
-      + '</tr>';
-
-    for(var j = 0; j < rows.length; j++){
-      html += '<tr>'
-        + '<td style="padding:8px;">' + escapeHtml(rows[j].orderNo) + '</td>'
-        + '<td style="padding:8px;">' + escapeHtml(rows[j].orderDate) + '</td>'
-        + '<td style="padding:8px;">' + escapeHtml(rows[j].clientName) + '</td>'
-        + '<td style="padding:8px;">' + escapeHtml(rows[j].lastStage) + '</td>'
-        + '</tr>';
-    }
-
-    html += '</table></body></html>';
-
-    var blob = new Blob(['\ufeff' + html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement("a");
-    a.href = url;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
-    showMsg("✅ تم تصدير الجدول بنجاح", "ok");
+  <script>
+function exportCurrentTable(){
+  if(!CURRENT_ITEMS || !CURRENT_ITEMS.length){
+    setStatus("⚠️ لا توجد بيانات معروضة للتصدير", false);
+    showMsg("⚠️ لا توجد بيانات للتصدير", "warn");
+    return;
   }
+
+  var rows = [];
+  for(var i = 0; i < CURRENT_ITEMS.length; i++){
+    var it = CURRENT_ITEMS[i] || {};
+    rows.push({
+      orderNo: String(it.orderNo || "").trim() || "—",
+      orderDate: String(it.orderDate || "").trim() || "—",
+      clientName: String(it.clientName || "").trim() || "—",
+      lastStage: String(it.lastStage || "").trim() || "—"
+    });
+  }
+
+  var title = getExportTitleByMode(CURRENT_MODE);
+  var now = new Date();
+  var yyyy = now.getFullYear();
+  var mm = String(now.getMonth() + 1).padStart(2, "0");
+  var dd = String(now.getDate()).padStart(2, "0");
+  var hh = String(now.getHours()).padStart(2, "0");
+  var mi = String(now.getMinutes()).padStart(2, "0");
+  var ss = String(now.getSeconds()).padStart(2, "0");
+
+  var exportDate = yyyy + "-" + mm + "-" + dd;
+  var exportTime = hh + ":" + mi + ":" + ss;
+
+  var fileName = title + "_" + yyyy + "-" + mm + "-" + dd + "_" + hh + "-" + mi + ".xls";
+
+  function esc(s){
+    return String(s == null ? "" : s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  var tableRows = "";
+  for(var j = 0; j < rows.length; j++){
+    tableRows += ''
+      + '<tr>'
+      +   '<td class="td-center">' + (j + 1) + '</td>'
+      +   '<td class="td-center">' + esc(rows[j].orderNo) + '</td>'
+      +   '<td class="td-center">' + esc(rows[j].orderDate) + '</td>'
+      +   '<td class="td-text">' + esc(rows[j].clientName) + '</td>'
+      +   '<td class="td-text">' + esc(rows[j].lastStage) + '</td>'
+      + '</tr>';
+  }
+
+  var html = ''
+    + '<html dir="rtl" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">'
+    + '<head>'
+    +   '<meta charset="UTF-8">'
+    +   '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />'
+    +   '<!--[if gte mso 9]><xml>'
+    +   '<x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>تقرير</x:Name>'
+    +   '<x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>'
+    +   '</x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook>'
+    +   '</xml><![endif]-->'
+    +   '<style>'
+    +     'body{margin:0;padding:0;background:#ffffff;font-family:Tahoma,Arial,sans-serif;color:#111;direction:rtl;}'
+    +     '.page{width:100%;padding:20px 18px 28px 18px;box-sizing:border-box;}'
+    +     '.header-table{width:100%;border-collapse:collapse;margin-bottom:14px;}'
+    +     '.header-table td{vertical-align:middle;}'
+    +     '.logo-cell{width:110px;text-align:center;}'
+    +     '.logo{width:78px;height:78px;border-radius:50%;background:#fff;border:2px solid #d7dde5;object-fit:contain;padding:3px;}'
+    +     '.title-cell{text-align:center;}'
+    +     '.company-name{font-size:24px;font-weight:700;color:#223243;line-height:1.6;}'
+    +     '.platform-name{font-size:16px;font-weight:700;color:#44576b;line-height:1.8;}'
+    +     '.report-title{margin-top:10px;background:#223243;color:#fff;font-size:18px;font-weight:700;padding:10px 14px;border-radius:8px;display:inline-block;}'
+    +     '.meta-wrap{margin-top:14px;margin-bottom:16px;border:1px solid #dbe3eb;background:#f8fafc;border-radius:8px;padding:10px 14px;}'
+    +     '.meta-line{font-size:13px;font-weight:700;color:#334455;line-height:2;}'
+    +     '.meta-label{color:#223243;font-weight:700;}'
+    +     '.main-table{width:100%;border-collapse:collapse;table-layout:fixed;}'
+    +     '.main-table th{background:#2f4356;color:#fff;border:1px solid #cfd8e3;padding:10px 8px;font-size:13px;font-weight:700;text-align:center;}'
+    +     '.main-table td{border:1px solid #d7dde5;padding:9px 8px;font-size:13px;color:#111;vertical-align:middle;background:#fff;}'
+    +     '.main-table tr:nth-child(even) td{background:#f9fbfd;}'
+    +     '.td-center{text-align:center;}'
+    +     '.td-text{text-align:right;}'
+    +     '.footer{margin-top:18px;border-top:2px solid #223243;padding-top:10px;text-align:center;font-size:12px;font-weight:700;color:#4c5d6f;line-height:1.9;}'
+    +     '.note{margin-top:6px;font-size:11px;color:#6b7c8d;}'
+    +   '</style>'
+    + '</head>'
+    + '<body>'
+    +   '<div class="page">'
+    +     '<table class="header-table">'
+    +       '<tr>'
+    +         '<td class="logo-cell">'
+    +           '<img class="logo" src="https://drive.google.com/thumbnail?id=1NN7G2zhk7nhgXuPWGW4qE_pdGC-Ptjkt&sz=w500" alt="Logo">'
+    +         '</td>'
+    +         '<td class="title-cell">'
+    +           '<div class="company-name">الشركة العامة للفحص والتأهيل الهندسي</div>'
+    +           '<div class="platform-name">منصة تتبع أوامر العمل</div>'
+    +           '<div class="report-title">' + esc(title) + '</div>'
+    +         '</td>'
+    +         '<td class="logo-cell"></td>'
+    +       '</tr>'
+    +     '</table>'
+
+    +     '<div class="meta-wrap">'
+    +       '<div class="meta-line"><span class="meta-label">تاريخ التصدير:</span> ' + esc(exportDate) + '</div>'
+    +       '<div class="meta-line"><span class="meta-label">وقت التصدير:</span> ' + esc(exportTime) + '</div>'
+    +       '<div class="meta-line"><span class="meta-label">عدد السجلات:</span> ' + rows.length + '</div>'
+    +       '<div class="meta-line"><span class="meta-label">مصدر التقرير:</span> منصة تتبع أوامر العمل</div>'
+    +     '</div>'
+
+    +     '<table class="main-table">'
+    +       '<thead>'
+    +         '<tr>'
+    +           '<th style="width:6%;">ت</th>'
+    +           '<th style="width:16%;">رقم أمر العمل</th>'
+    +           '<th style="width:16%;">تاريخ أمر العمل</th>'
+    +           '<th style="width:36%;">الجهة المستفيدة</th>'
+    +           '<th style="width:26%;">آخر مرحلة</th>'
+    +         '</tr>'
+    +       '</thead>'
+    +       '<tbody>'
+    +         tableRows
+    +       '</tbody>'
+    +     '</table>'
+
+    +     '<div class="footer">'
+    +       'تم إنشاء هذا التقرير إلكترونيًا من خلال منصة تتبع أوامر العمل'
+    +       '<div class="note">الشركة العامة للفحص والتأهيل الهندسي</div>'
+    +     '</div>'
+    +   '</div>'
+    + '</body>'
+    + '</html>';
+
+  var blob = new Blob(['\ufeff' + html], {
+    type: 'application/vnd.ms-excel;charset=utf-8;'
+  });
+
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  showMsg("✅ تم تصدير التقرير الرسمي بنجاح", "ok");
+}
+</script>
 
   function computeLastStage(item){
     const steps = [
