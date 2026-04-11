@@ -494,8 +494,10 @@
   const PAGE_NAME = "workshop";
 
   let currentUserName = "";
-  let lastStatus = "";
   let testType = "";
+  let labPath = "";
+  let stage = "WORKSHOP";
+  let alreadyReceived = false;
 
   function getSessionToken(){
     return sessionStorage.getItem(STORAGE_KEY) || "";
@@ -575,10 +577,10 @@
     }, 2500);
   }
 
-  async function fetchData(){
+  async function fetchWorkshopData(){
     const id = document.getElementById("orderID").value.trim();
     if(!id){
-      showMsg("⚠️ يرجى إدخال رقم أمر العمل", "warn");
+      showMsg("⚠️ أدخل رقم أمر العمل", "warn");
       return;
     }
 
@@ -593,7 +595,7 @@
     document.getElementById("resPanel").style.display = "none";
 
     try{
-      const data = await apiPost({
+      const d = await apiPost({
         action: "getWorkshopDetails",
         token: token,
         page: PAGE_NAME,
@@ -603,34 +605,38 @@
       document.getElementById("loader").style.display = "none";
       document.getElementById("fetchBtn").disabled = false;
 
-      if(data && data.found){
-        document.getElementById("cName").innerText = data.clientName || "---";
-        lastStatus = String(data.workshopStatus || "").trim();
-        testType = String(data.testType || "").trim();
-
-        const btn = document.getElementById("receiveBtn");
-        const isDone = lastStatus.includes("استلام") || lastStatus.includes("✅");
-
-        if(testType === "مصاعد"){
-          btn.disabled = true;
-          btn.style.background = "#bdc3c7";
-          btn.innerHTML = '<i class="fas fa-ban"></i> لا توجد ورشة للمصاعد';
-          showMsg("⚠️ لا توجد ورشة للمصاعد", "warn");
-        } else if(isDone){
-          btn.disabled = true;
-          btn.style.background = "#bdc3c7";
-          btn.innerHTML = '<i class="fas fa-lock"></i> مستلمة مسبقاً';
-          showMsg("⚠️ هذه المرحلة موثقة مسبقاً", "warn");
-        } else {
-          btn.disabled = false;
-          btn.style.background = "linear-gradient(180deg,#2ebf68,#26a65b)";
-          btn.innerHTML = '<i class="fas fa-check-double"></i> توثيق استلام الورشة';
-        }
-
-        document.getElementById("resPanel").style.display = "block";
-      } else {
-        showMsg("⚠️ الرقم غير موجود", "warn");
+      if(!d || !d.found){
+        showMsg("⚠️ المعاملة غير موجودة", "warn");
+        return;
       }
+
+      document.getElementById("cName").innerText = d.clientName || "";
+      labPath = d.labPath || "";
+      stage = d.stage || "WORKSHOP";
+
+      alreadyReceived =
+        d.alreadyReceived === true ||
+        d.isReceived === true ||
+        d.workshopReceived === true ||
+        d.receivedBefore === true ||
+        stage === "DONE";
+
+      const t = await apiPost({
+        action: "getSelectedTestType",
+        token: token,
+        page: PAGE_NAME,
+        orderNo: id
+      });
+
+      testType = (t && t.found) ? t.testType : "";
+
+      document.getElementById("hintBox").style.display = "flex";
+      document.getElementById("hintType").innerText = testType || "---";
+      document.getElementById("hintPath").innerText = labPath || "---";
+
+      setupButtonState();
+      document.getElementById("resPanel").style.display = "block";
+
     }catch(err){
       document.getElementById("loader").style.display = "none";
       document.getElementById("fetchBtn").disabled = false;
@@ -638,10 +644,65 @@
     }
   }
 
-  async function receive(){
+  function setupButtonState(){
+    const btn = document.getElementById("receiveBtn");
+
+    btn.disabled = false;
+    btn.className = "main-btn btn-success";
+
+    if(testType === "مصاعد"){
+      btn.disabled = true;
+      btn.className = "main-btn btn-disabled";
+      btn.innerHTML = '<i class="fas fa-ban"></i> لا توجد ورشة';
+      showMsg("⚠️ هذه المعاملة تخص المصاعد", "warn");
+      return;
+    }
+
+    if(labPath === "مختبرات فقط"){
+      btn.disabled = true;
+      btn.className = "main-btn btn-disabled";
+      btn.innerHTML = '<i class="fas fa-ban"></i> التوجيه مختبرات فقط';
+      showMsg("⚠️ هذه المعاملة موجهة إلى المختبرات فقط", "warn");
+      return;
+    }
+
+    if(alreadyReceived){
+      btn.disabled = true;
+      btn.className = "main-btn btn-disabled";
+      btn.innerHTML = '<i class="fas fa-lock"></i> مستلمة سابقاً';
+      showMsg("⚠️ أمر العمل مستلم سابقاً", "warn");
+      return;
+    }
+
+    if(stage === "WAIT_LAB1"){
+      btn.disabled = true;
+      btn.className = "main-btn btn-disabled";
+      btn.innerHTML = '<i class="fas fa-hourglass-half"></i> بانتظار المختبرات';
+      showMsg("⚠️ بانتظار مرحلة المختبرات أولاً", "warn");
+      return;
+    }
+
+    if(stage === "DONE"){
+      btn.disabled = true;
+      btn.className = "main-btn btn-disabled";
+      btn.innerHTML = '<i class="fas fa-lock"></i> مكتمل';
+      showMsg("⚠️ هذه المرحلة موثقة مسبقاً", "warn");
+      return;
+    }
+
+    btn.innerHTML = '<i class="fas fa-tools"></i> استلام الورشة';
+  }
+
+  async function receiveOrder(){
     const id = document.getElementById("orderID").value.trim();
     if(!id){
-      showMsg("⚠️ يرجى إدخال رقم أمر العمل", "warn");
+      showMsg("⚠️ أدخل رقم أمر العمل", "warn");
+      return;
+    }
+
+    if(alreadyReceived){
+      showMsg("⚠️ أمر العمل مستلم سابقاً", "warn");
+      setupButtonState();
       return;
     }
 
@@ -667,17 +728,16 @@
       const msg = String((r && (r.message || r.result)) || "");
 
       if(r && r.ok){
+        document.getElementById("detailsText").innerText = "تم توثيق استلام الورشة.";
         document.getElementById("cardForm").style.display = "none";
         document.getElementById("successMessage").style.display = "block";
-      } else {
+      }else{
         showMsg(msg || "❌ تعذر الحفظ", "err");
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-check-double"></i> توثيق استلام الورشة';
+        setupButtonState();
       }
     }catch(err){
       showMsg("❌ خطأ في الاتصال", "err");
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fas fa-check-double"></i> توثيق استلام الورشة';
+      setupButtonState();
     }
   }
 
@@ -685,17 +745,24 @@
     document.getElementById("orderID").value = "";
     document.getElementById("cardForm").style.display = "block";
     document.getElementById("successMessage").style.display = "none";
-    document.getElementById("inputForm").style.display = "block";
     document.getElementById("resPanel").style.display = "none";
     document.getElementById("loader").style.display = "none";
+    document.getElementById("hintBox").style.display = "none";
+    document.getElementById("cName").innerText = "";
+    document.getElementById("hintType").innerText = "";
+    document.getElementById("hintPath").innerText = "";
+    document.getElementById("detailsText").innerText = "تم توثيق العملية في السجل الموحد.";
+    document.getElementById("fetchBtn").disabled = false;
+
+    testType = "";
+    labPath = "";
+    stage = "WORKSHOP";
+    alreadyReceived = false;
 
     const btn = document.getElementById("receiveBtn");
     btn.disabled = false;
-    btn.style.background = "linear-gradient(180deg,#2ebf68,#26a65b)";
-    btn.innerHTML = '<i class="fas fa-check-double"></i> توثيق استلام الورشة';
-
-    lastStatus = "";
-    testType = "";
+    btn.className = "main-btn btn-success";
+    btn.innerHTML = '<i class="fas fa-tools"></i> استلام الورشة';
   }
 
   ensurePageSession();
