@@ -550,6 +550,7 @@
   let testType = "";
   let labPath = "";
   let stage = "LAB1";
+  let alreadyReceived = false;
 
   function getSessionToken(){
     return sessionStorage.getItem(STORAGE_KEY) || "";
@@ -666,6 +667,13 @@
       labPath = d.labPath || "";
       stage = d.stage || "LAB1";
 
+      alreadyReceived =
+        d.alreadyReceived === true ||
+        d.isReceived === true ||
+        d.labReceived === true ||
+        d.receivedBefore === true ||
+        stage === "DONE";
+
       const t = await apiPost({
         action: "getSelectedTestType",
         token: token,
@@ -703,6 +711,14 @@
       return;
     }
 
+    if(alreadyReceived){
+      btn.disabled = true;
+      btn.className = "main-btn btn-disabled";
+      btn.innerHTML = '<i class="fas fa-lock"></i> مستلمة سابقاً';
+      showMsg("⚠️ أمر العمل مستلم سابقاً", "warn");
+      return;
+    }
+
     if(stage === "WAIT_WORKSHOP"){
       btn.disabled = true;
       btn.className = "main-btn btn-disabled";
@@ -731,6 +747,12 @@
     const id = document.getElementById("orderID").value.trim();
     if(!id){
       showMsg("⚠️ أدخل رقم أمر العمل", "warn");
+      return;
+    }
+
+    if(alreadyReceived){
+      showMsg("⚠️ أمر العمل مستلم سابقاً", "warn");
+      setupButtonState();
       return;
     }
 
@@ -793,6 +815,7 @@
     testType = "";
     labPath = "";
     stage = "LAB1";
+    alreadyReceived = false;
 
     const btn = document.getElementById("receiveBtn");
     btn.disabled = false;
