@@ -774,7 +774,7 @@
 <div id="toast"></div>
 
 <script>
-  const API_BASE = "https://script.google.com/macros/s/AKfycbzCX9UCZ6h1RT-wZcif86_uvO_pwi4k2V1INq2BdjovImm1I-iLEV3_pbegyYJO_UtF/exec";
+  const API_BASE = "https://script.google.com/macros/s/AKfycbwLt7PaCyUIuLMPOHqjmHzgeNbFfF95oe3dnWlBgjdrCRw9p6vbpiZftddSfRNRHYsV/exec";
   const STORAGE_KEY = "tracking_session_token_plan";
   const PAGE_NAME = "main";
 
@@ -1211,200 +1211,70 @@
   }
 
   function exportCurrentTable(){
-  if(!CURRENT_ITEMS || !CURRENT_ITEMS.length){
-    setStatus("⚠️ لا توجد بيانات معروضة للتصدير", false);
-    showMsg("⚠️ لا توجد بيانات للتصدير", "warn");
-    return;
-  }
+    if(!CURRENT_ITEMS || !CURRENT_ITEMS.length){
+      setStatus("⚠️ لا توجد بيانات معروضة للتصدير", false);
+      showMsg("⚠️ لا توجد بيانات للتصدير", "warn");
+      return;
+    }
 
-  var rows = [];
-  for(var i = 0; i < CURRENT_ITEMS.length; i++){
-    var it = CURRENT_ITEMS[i] || {};
-    rows.push({
-      orderNo: String(it.orderNo || "").trim() || "—",
-      orderDate: String(it.orderDate || "").trim() || "—",
-      clientName: String(it.clientName || "").trim() || "—",
-      lastStage: String(it.lastStage || "").trim() || "—"
-    });
-  }
+    var rows = [];
+    for(var i = 0; i < CURRENT_ITEMS.length; i++){
+      var it = CURRENT_ITEMS[i] || {};
+      rows.push({
+        orderNo: String(it.orderNo || "").trim() || "—",
+        orderDate: String(it.orderDate || "").trim() || "—",
+        clientName: String(it.clientName || "").trim() || "—",
+        lastStage: String(it.lastStage || "").trim() || "—"
+      });
+    }
 
-  var title = getExportTitleByMode(CURRENT_MODE);
-  var now = new Date();
-  var yyyy = now.getFullYear();
-  var mm = String(now.getMonth() + 1).padStart(2, "0");
-  var dd = String(now.getDate()).padStart(2, "0");
-  var hh = String(now.getHours()).padStart(2, "0");
-  var mi = String(now.getMinutes()).padStart(2, "0");
-  var ss = String(now.getSeconds()).padStart(2, "0");
+    var title = getExportTitleByMode(CURRENT_MODE);
+    var now = new Date();
+    var yyyy = now.getFullYear();
+    var mm = String(now.getMonth() + 1).padStart(2, "0");
+    var dd = String(now.getDate()).padStart(2, "0");
+    var hh = String(now.getHours()).padStart(2, "0");
+    var mi = String(now.getMinutes()).padStart(2, "0");
+    var fileName = title + "_" + yyyy + "-" + mm + "-" + dd + "_" + hh + "-" + mi + ".xls";
 
-  var exportDate = yyyy + "-" + mm + "-" + dd;
-  var exportTime = hh + ":" + mi + ":" + ss;
-  var reportNo = "RPT-" + yyyy + mm + dd + "-" + hh + mi + ss;
-  var fileName = title + "" + yyyy + "-" + mm + "-" + dd + "" + hh + "-" + mi + ".xls";
-
-  function esc(s){
-    return String(s == null ? "" : s)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
-  }
-
-  var tableRows = "";
-  for(var j = 0; j < rows.length; j++){
-    tableRows += ''
+    var html = ''
+      + '<html dir="rtl" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">'
+      + '<head><meta charset="UTF-8"></head>'
+      + '<body>'
+      + '<table border="1" style="border-collapse:collapse;font-family:Cairo,Arial,sans-serif;text-align:center;">'
       + '<tr>'
-      +   '<td class="td-center">' + (j + 1) + '</td>'
-      +   '<td class="td-center">' + esc(rows[j].orderNo) + '</td>'
-      +   '<td class="td-center">' + esc(rows[j].orderDate) + '</td>'
-      +   '<td class="td-text">' + esc(rows[j].clientName) + '</td>'
-      +   '<td class="td-text">' + esc(rows[j].lastStage) + '</td>'
+      +   '<th colspan="4" style="background:#223243;color:#fff;font-size:18px;padding:10px;">' + escapeHtml(title) + '</th>'
+      + '</tr>'
+      + '<tr>'
+      +   '<th style="background:#f5a623;color:#111;padding:8px;">رقم أمر العمل</th>'
+      +   '<th style="background:#f5a623;color:#111;padding:8px;">تاريخ أمر العمل</th>'
+      +   '<th style="background:#f5a623;color:#111;padding:8px;">الجهة المستفيدة</th>'
+      +   '<th style="background:#f5a623;color:#111;padding:8px;">آخر مرحلة</th>'
       + '</tr>';
+
+    for(var j = 0; j < rows.length; j++){
+      html += '<tr>'
+        + '<td style="padding:8px;">' + escapeHtml(rows[j].orderNo) + '</td>'
+        + '<td style="padding:8px;">' + escapeHtml(rows[j].orderDate) + '</td>'
+        + '<td style="padding:8px;">' + escapeHtml(rows[j].clientName) + '</td>'
+        + '<td style="padding:8px;">' + escapeHtml(rows[j].lastStage) + '</td>'
+        + '</tr>';
+    }
+
+    html += '</table></body></html>';
+
+    var blob = new Blob(['\ufeff' + html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    showMsg("✅ تم تصدير الجدول بنجاح", "ok");
   }
-
-  var html = ''
-    + '<html dir="rtl" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">'
-    + '<head>'
-    +   '<meta charset="UTF-8">'
-    +   '<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />'
-    +   '<!--[if gte mso 9]><xml>'
-    +   '<x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>تقرير رسمي</x:Name>'
-    +   '<x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions>'
-    +   '</x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook>'
-    +   '</xml><![endif]-->'
-    +   '<style>'
-    +     'body{margin:0;padding:0;background:#ffffff;font-family:Tahoma,Arial,sans-serif;color:#111;direction:rtl;}'
-    +     '.page{width:100%;padding:18px 18px 28px 18px;box-sizing:border-box;}'
-    +     '.top-band{height:12px;background:#223243;margin-bottom:10px;}'
-    +     '.header-table{width:100%;border-collapse:collapse;margin-bottom:8px;}'
-    +     '.header-table td{vertical-align:middle;}'
-    +     '.logo-cell{width:110px;text-align:center;}'
-    +     '.logo{width:82px;height:82px;border-radius:50%;background:#fff;border:2px solid #d7dde5;object-fit:contain;padding:4px;}'
-    +     '.title-cell{text-align:center;}'
-    +     '.company-name{font-size:25px;font-weight:700;color:#223243;line-height:1.7;}'
-    +     '.platform-name{font-size:16px;font-weight:700;color:#5b6b7c;line-height:1.8;}'
-    +     '.sub-line{font-size:13px;font-weight:700;color:#6f7f8f;line-height:1.8;}'
-    +     '.report-box{margin-top:10px;border:2px solid #223243;padding:10px 12px;text-align:center;border-radius:8px;background:#f8fafc;}'
-    +     '.report-title{font-size:20px;font-weight:700;color:#223243;}'
-    +     '.report-sub{font-size:12px;color:#6d7d8d;margin-top:4px;font-weight:700;}'
-    +     '.meta-table{width:100%;border-collapse:collapse;margin-top:14px;margin-bottom:14px;}'
-    +     '.meta-table td{border:1px solid #dbe3eb;padding:8px 10px;font-size:13px;font-weight:700;background:#fafcfe;}'
-    +     '.meta-label{color:#223243;width:18%;background:#eef3f8;}'
-    +     '.main-table{width:100%;border-collapse:collapse;table-layout:fixed;margin-top:8px;}'
-    +     '.main-table th{background:#2f4356;color:#fff;border:1px solid #cfd8e3;padding:10px 8px;font-size:13px;font-weight:700;text-align:center;}'
-    +     '.main-table td{border:1px solid #d7dde5;padding:9px 8px;font-size:13px;color:#111;vertical-align:middle;background:#fff;}'
-    +     '.main-table tr:nth-child(even) td{background:#f9fbfd;}'
-    +     '.td-center{text-align:center;}'
-    +     '.td-text{text-align:right;}'
-    +     '.footer-box{margin-top:18px;border-top:2px solid #223243;padding-top:12px;}'
-    +     '.footer-text{text-align:center;font-size:12px;font-weight:700;color:#4c5d6f;line-height:1.9;}'
-    +     '.sign-table{width:100%;border-collapse:collapse;margin-top:22px;}'
-    +     '.sign-table td{width:50%;vertical-align:top;text-align:center;padding-top:12px;font-size:13px;font-weight:700;color:#223243;}'
-    +     '.sign-line{margin:0 auto 8px auto;width:75%;border-top:1px solid #444;height:20px;}'
-    +     '.stamp-box{margin:16px auto 0 auto;width:160px;height:70px;border:2px dashed #9aa8b6;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#7a8896;}'
-    +     '.confidential{margin-top:8px;text-align:center;font-size:11px;color:#8a97a4;font-weight:700;}'
-    +   '</style>'
-    + '</head>'
-    + '<body>'
-    +   '<div class="page">'
-    +     '<div class="top-band"></div>'
-
-    +     '<table class="header-table">'
-    +       '<tr>'
-    +         '<td class="logo-cell">'
-    +           '<img class="logo" src="https://drive.google.com/thumbnail?id=1NN7G2zhk7nhgXuPWGW4qE_pdGC-Ptjkt&sz=w500" alt="Logo">'
-    +         '</td>'
-    +         '<td class="title-cell">'
-    +           '<div class="company-name">الشركة العامة للفحص والتأهيل الهندسي</div>'
-    +           '<div class="platform-name">منصة تتبع أوامر العمل</div>'
-    +           '<div class="sub-line">نظام إلكتروني لإدارة ومتابعة معاملات أوامر العمل</div>'
-    +         '</td>'
-    +         '<td class="logo-cell"></td>'
-    +       '</tr>'
-    +     '</table>'
-
-    +     '<div class="report-box">'
-    +       '<div class="report-title">' + esc(title) + '</div>'
-    +       '<div class="report-sub">تقرير إداري صادر من منصة تتبع أوامر العمل</div>'
-    +     '</div>'
-
-    +     '<table class="meta-table">'
-    +       '<tr>'
-    +         '<td class="meta-label">رقم التقرير</td>'
-    +         '<td>' + esc(reportNo) + '</td>'
-    +         '<td class="meta-label">تاريخ التصدير</td>'
-    +         '<td>' + esc(exportDate) + '</td>'
-    +       '</tr>'
-    +       '<tr>'
-    +         '<td class="meta-label">وقت التصدير</td>'
-    +         '<td>' + esc(exportTime) + '</td>'
-    +         '<td class="meta-label">عدد السجلات</td>'
-    +         '<td>' + rows.length + '</td>'
-    +       '</tr>'
-    +       '<tr>'
-    +         '<td class="meta-label">مصدر التقرير</td>'
-    +         '<td colspan="3">منصة تتبع أوامر العمل - الشركة العامة للفحص والتأهيل الهندسي</td>'
-    +       '</tr>'
-    +     '</table>'
-
-    +     '<table class="main-table">'
-    +       '<thead>'
-    +         '<tr>'
-    +           '<th style="width:6%;">ت</th>'
-    +           '<th style="width:16%;">رقم أمر العمل</th>'
-    +           '<th style="width:16%;">تاريخ أمر العمل</th>'
-    +           '<th style="width:36%;">الجهة المستفيدة</th>'
-    +           '<th style="width:26%;">آخر مرحلة</th>'
-    +         '</tr>'
-    +       '</thead>'
-    +       '<tbody>'
-    +         tableRows
-    +       '</tbody>'
-    +     '</table>'
-
-    +     '<div class="footer-box">'
-    +       '<div class="footer-text">'
-    +         'تم إنشاء هذا التقرير إلكترونيًا من خلال منصة تتبع أوامر العمل'
-    +         '<br>'
-    +         'ويُعتمد كمخرج إداري داخلي لأغراض المتابعة والتوثيق'
-    +       '</div>'
-
-    +       '<table class="sign-table">'
-    +         '<tr>'
-    +           '<td>'
-    +             '<div class="sign-line"></div>'
-    +             'إعداد وتنظيم'
-    +           '</td>'
-    +           '<td>'
-    +             '<div class="sign-line"></div>'
-    +             'اعتماد الجهة المختصة'
-    +           '</td>'
-    +         '</tr>'
-    +       '</table>'
-
-    +       '<div class="stamp-box">مكان الختم الرسمي</div>'
-    +       '<div class="confidential">نسخة إدارية - للاستخدام الداخلي</div>'
-    +     '</div>'
-    +   '</div>'
-    + '</body>'
-    + '</html>';
-
-  var blob = new Blob(['\ufeff' + html], {
-    type: 'application/vnd.ms-excel;charset=utf-8;'
-  });
-
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement("a");
-  a.href = url;
-  a.download = fileName;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-
-  showMsg("✅ تم تصدير التقرير الرسمي بنجاح", "ok");
-}
 
   function computeLastStage(item){
     const steps = [
