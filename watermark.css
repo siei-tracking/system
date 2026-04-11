@@ -1,35 +1,53 @@
-﻿.page-shell{
+﻿<style>
+.page-shell{
   position:relative;
   min-height:100vh;
-  isolation:isolate;
 }
 
 .page-shell::before{
   content:"";
   position:fixed;
-  inset:0;
-  margin:auto;
-  width:min(36vw, 360px);
-  height:min(36vw, 360px);
+  left:50%;
+  top:52%;
+  transform:translate(-50%, -50%);
+  width:min(42vw, 430px);
+  height:min(42vw, 430px);
   background-image:url('https://drive.google.com/thumbnail?id=1NN7G2zhk7nhgXuPWGW4qE_pdGC-Ptjkt&sz=w1000');
+  background-size:contain;
   background-repeat:no-repeat;
   background-position:center;
-  background-size:contain;
-  opacity:.055;
+  opacity:.07;
   pointer-events:none;
   z-index:0;
 }
 
-.company-header,
-.page-content,
-.wrap,
-.panel,
-.card,
-.main-content,
-.success,
-.stepper-scroll,
-.workflow-note,
-.empty{
+.page-content{
   position:relative;
   z-index:1;
 }
+
+@media (max-width:600px){
+  .page-shell::before{
+    width:min(58vw, 240px);
+    height:min(58vw, 240px);
+    top:54%;
+    opacity:.06;
+  }
+}
+
+@media (min-width:601px) and (max-width:1024px){
+  .page-shell::before{
+    width:min(42vw, 340px);
+    height:min(42vw, 340px);
+    top:53%;
+  }
+}
+
+@media (min-width:1400px){
+  .page-shell::before{
+    width:430px;
+    height:430px;
+    top:51%;
+  }
+}
+</style>
