@@ -4,14 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>االمعاملات - منصة تتبع أوامر العمل</title>
+  <title>المعاملات - منصة تتبع أوامر العمل</title>
 
   <link rel="icon" href="https://siei-tracking.github.io/system/logo.png">
-
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-  <title>المعاملات - منصة تتبع أوامر العمل</title>
 
   <style>
     :root{
@@ -531,34 +528,35 @@
     }
 
     .stepper{
-      display:grid;
-      grid-template-columns:repeat(var(--steps-count, 10), minmax(86px, 1fr));
-      gap:12px;
-      align-items:start;
-      width:max(100%, calc(var(--steps-count, 10) * 98px));
-      min-width:max(100%, calc(var(--steps-count, 10) * 98px));
-      padding:4px 2px 8px;
+      display:flex;
+      align-items:flex-start;
       direction:rtl;
+      gap:0;
+      width:100%;
+      min-width:100%;
+      padding:4px 2px 8px;
     }
 
     .node{
+      flex:1 1 0;
+      min-width:0;
       text-align:center;
       font-weight:900;
       position:relative;
-      padding:2px 1px 6px;
+      padding:2px 6px 6px;
       user-select:none;
-      min-width:86px;
     }
 
     .node:not(:first-child)::before{
       content:"";
       position:absolute;
       top:25px;
-      right:calc(100% + 1px);
-      width:12px;
+      right:calc(50% + 28px);
+      width:calc(100% - 56px);
       height:3px;
       background:#dfe5ec;
       border-radius:999px;
+      z-index:0;
     }
 
     .circle{
@@ -572,6 +570,8 @@
       color:white;
       margin:auto;
       box-shadow:0 6px 14px rgba(0,0,0,0.12);
+      position:relative;
+      z-index:1;
     }
 
     .circle i{ font-size:16px; }
@@ -583,6 +583,7 @@
     .label{
       margin-top:5px;
       font-size:15px;
+      line-height:1.2;
     }
 
     .sub{
@@ -606,14 +607,6 @@
       display:block;
       line-height:1.2;
       margin-top:2px;
-    }
-
-    .node.placeholder{
-      visibility:hidden;
-    }
-
-    .node.placeholder::before{
-      background:transparent !important;
     }
 
     .empty{
@@ -715,34 +708,88 @@
       .bar-right, .bar-left{ width:100%; }
       .date-input{ width:100%; min-width:unset; }
 
+      .item{
+        padding:10px;
+      }
+
       .stepper-scroll{
         overflow-x:auto;
+        overflow-y:hidden;
+        padding:2px 0 2px;
       }
 
       .stepper{
         width:max-content;
         min-width:max-content;
-        grid-template-columns:repeat(var(--steps-count, 10), 98px);
-        gap:12px;
+        gap:0;
       }
 
       .node{
-        min-width:98px;
+        flex:0 0 78px;
+        width:78px;
+        min-width:78px;
+        padding:0 4px 4px;
       }
 
       .node:not(:first-child)::before{
-        top:25px;
-        right:calc(100% + 2px);
-        width:12px;
+        top:19px;
+        right:calc(50% + 21px);
+        width:calc(100% - 42px);
+        height:3px;
       }
 
       .circle{
-        width:56px;
-        height:56px;
+        width:42px;
+        height:42px;
       }
 
       .circle i{
-        font-size:16px;
+        font-size:13px;
+      }
+
+      .label{
+        margin-top:4px;
+        font-size:11px;
+        line-height:1.15;
+      }
+
+      .sub{
+        margin-top:3px;
+        min-height:28px;
+        line-height:1.1;
+      }
+
+      .sub-name{
+        font-size:10px;
+        margin-top:4px;
+        line-height:1.1;
+      }
+
+      .sub-date{
+        font-size:9px;
+        margin-top:1px;
+        line-height:1.1;
+      }
+
+      .pill{
+        font-size:12px;
+        padding:5px 8px;
+        gap:6px;
+      }
+
+      .idbox{
+        font-size:14px;
+        gap:6px;
+      }
+
+      .client{
+        font-size:14px;
+        margin-top:6px;
+      }
+
+      .late{
+        font-size:12px;
+        margin-top:6px;
       }
     }
 
@@ -754,6 +801,11 @@
       .stepper{
         width:100%;
         min-width:100%;
+      }
+
+      .node{
+        flex:1 1 0;
+        max-width:none;
       }
     }
   </style>
@@ -837,7 +889,7 @@
 <div id="toast"></div>
 
 <script>
-  const API_BASE = "https://script.google.com/macros/s/AKfycbx_n9H6jfSaedz0Rlnk75RUPnZ0U6RWWCvCeNqJW7EDwK5HTAmnw90X_Gms9C36hPnZ/exec";
+  const API_BASE = "https://script.google.com/macros/s/AKfycbwLt7PaCyUIuLMPOHqjmHzgeNbFfF95oe3dnWlBgjdrCRw9p6vbpiZftddSfRNRHYsV/exec";
   const STORAGE_KEY = "tracking_session_token_plan";
   const PAGE_NAME = "main";
 
@@ -1217,9 +1269,7 @@
     var type = inferType(it);
     var workflowReady = pricingDone && !!type;
 
-    var MAX_STEPS = 10;
-
-    var html = '<div class="stepper-scroll"><div class="stepper" style="--steps-count:' + MAX_STEPS + '">';
+    var html = '<div class="stepper-scroll"><div class="stepper">';
 
     for(var i = 0; i < steps.length; i++){
       var s = steps[i];
@@ -1242,14 +1292,6 @@
            +    '<div class="circle"><i class="fas ' + s.icon + '"></i></div>'
            +    '<div class="label">' + s.label + '</div>'
            +    '<div class="sub">' + sub + '</div>'
-           +  '</div>';
-    }
-
-    for(var j = steps.length; j < MAX_STEPS; j++){
-      html += '<div class="node placeholder">'
-           +    '<div class="circle"><i class="fas fa-circle"></i></div>'
-           +    '<div class="label">—</div>'
-           +    '<div class="sub"><div class="sub-date">—</div></div>'
            +  '</div>';
     }
 
