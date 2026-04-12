@@ -515,36 +515,47 @@
     .stepper-scroll{
       overflow-x:auto;
       overflow-y:hidden;
-      padding:4px 2px 2px;
+      padding:6px 4px 4px;
       -webkit-overflow-scrolling:touch;
+      touch-action:pan-x;
+      overscroll-behavior-x:contain;
+    }
+
+    .stepper-scroll::-webkit-scrollbar{
+      height:8px;
+    }
+
+    .stepper-scroll::-webkit-scrollbar-thumb{
+      background:#d9e1ea;
+      border-radius:999px;
     }
 
     .stepper{
-      display:flex;
+      display:grid;
+      grid-template-columns:repeat(var(--steps-count, 10), minmax(86px, 1fr));
       gap:12px;
-      width:max-content;
-      align-items:flex-start;
+      align-items:start;
+      width:max(100%, calc(var(--steps-count, 10) * 98px));
+      min-width:max(100%, calc(var(--steps-count, 10) * 98px));
       padding:4px 2px 8px;
       direction:rtl;
     }
 
     .node{
-      width:98px;
-      min-width:98px;
       text-align:center;
       font-weight:900;
       position:relative;
       padding:2px 1px 6px;
       user-select:none;
-      flex:0 0 98px;
+      min-width:86px;
     }
 
     .node:not(:first-child)::before{
       content:"";
       position:absolute;
       top:25px;
-      right:-10px;
-      width:10px;
+      right:calc(100% + 1px);
+      width:12px;
       height:3px;
       background:#dfe5ec;
       border-radius:999px;
@@ -595,6 +606,14 @@
       display:block;
       line-height:1.2;
       margin-top:2px;
+    }
+
+    .node.placeholder{
+      visibility:hidden;
+    }
+
+    .node.placeholder::before{
+      background:transparent !important;
     }
 
     .empty{
@@ -702,19 +721,19 @@
 
       .stepper{
         width:max-content;
+        min-width:max-content;
+        grid-template-columns:repeat(var(--steps-count, 10), 98px);
         gap:12px;
       }
 
       .node{
-        width:98px;
         min-width:98px;
-        flex:0 0 98px;
       }
 
       .node:not(:first-child)::before{
         top:25px;
-        right:-10px;
-        width:10px;
+        right:calc(100% + 2px);
+        width:12px;
       }
 
       .circle{
@@ -734,21 +753,7 @@
 
       .stepper{
         width:100%;
-        justify-content:space-between;
-        gap:8px;
-      }
-
-      .node{
-        flex:1 1 0;
-        min-width:0;
-        max-width:98px;
-        width:auto;
-      }
-
-      .node:not(:first-child)::before{
-        top:25px;
-        right:calc(100% - 1px);
-        width:9px;
+        min-width:100%;
       }
     }
   </style>
@@ -832,7 +837,7 @@
 <div id="toast"></div>
 
 <script>
-  const API_BASE = "https://script.google.com/macros/s/AKfycbwLt7PaCyUIuLMPOHqjmHzgeNbFfF95oe3dnWlBgjdrCRw9p6vbpiZftddSfRNRHYsV/exec";
+  const API_BASE = "https://script.google.com/macros/s/AKfycbx_n9H6jfSaedz0Rlnk75RUPnZ0U6RWWCvCeNqJW7EDwK5HTAmnw90X_Gms9C36hPnZ/exec";
   const STORAGE_KEY = "tracking_session_token_plan";
   const PAGE_NAME = "main";
 
@@ -1212,7 +1217,9 @@
     var type = inferType(it);
     var workflowReady = pricingDone && !!type;
 
-    var html = '<div class="stepper-scroll"><div class="stepper">';
+    var MAX_STEPS = 10;
+
+    var html = '<div class="stepper-scroll"><div class="stepper" style="--steps-count:' + MAX_STEPS + '">';
 
     for(var i = 0; i < steps.length; i++){
       var s = steps[i];
@@ -1235,6 +1242,14 @@
            +    '<div class="circle"><i class="fas ' + s.icon + '"></i></div>'
            +    '<div class="label">' + s.label + '</div>'
            +    '<div class="sub">' + sub + '</div>'
+           +  '</div>';
+    }
+
+    for(var j = steps.length; j < MAX_STEPS; j++){
+      html += '<div class="node placeholder">'
+           +    '<div class="circle"><i class="fas fa-circle"></i></div>'
+           +    '<div class="label">—</div>'
+           +    '<div class="sub"><div class="sub-date">—</div></div>'
            +  '</div>';
     }
 
