@@ -512,7 +512,7 @@
     .stepper-scroll{
       overflow-x:auto;
       overflow-y:hidden;
-      padding:4px 2px 2px;
+      padding:4px 10px 2px;
       -webkit-overflow-scrolling:touch;
       touch-action:pan-x;
     }
@@ -532,7 +532,7 @@
       width:max-content;
       align-items:flex-start;
       padding:4px 2px 8px;
-      direction:rtl;
+      direction:ltr;
     }
 
     .node{
@@ -550,7 +550,7 @@
       content:"";
       position:absolute;
       top:25px;
-      right:-10px;
+      left:-10px;
       width:10px;
       height:3px;
       background:#dfe5ec;
@@ -721,7 +721,7 @@
       .stepper-scroll{
         overflow-x:auto;
         overflow-y:hidden;
-        padding:2px 0 2px;
+        padding:2px 10px 2px;
       }
 
       .stepper{
@@ -739,7 +739,7 @@
 
       .node:not(:first-child)::before{
         top:19px;
-        right:-8px;
+        left:-8px;
         width:8px;
         height:3px;
       }
@@ -802,6 +802,7 @@
     @media (min-width:821px){
       .stepper-scroll{
         overflow-x:hidden;
+        padding:4px 8px 2px;
       }
 
       .stepper{
@@ -810,7 +811,6 @@
         gap:0;
         width:100%;
         min-width:100%;
-        padding:4px 0 8px;
       }
 
       .node{
@@ -822,7 +822,7 @@
 
       .node:not(:first-child)::before{
         top:25px;
-        right:calc(50% + 28px);
+        left:calc(-50% + 28px);
         width:calc(100% - 56px);
         height:3px;
       }
@@ -1313,14 +1313,16 @@
     var firstPending = false;
     var MAX_STEPS_DESKTOP = 11;
 
+    var visualSteps = steps.slice().reverse();
+
     var pricingDone = isDoneAny(it.pricing);
     var type = inferType(it);
     var workflowReady = pricingDone && !!type;
 
     var html = '<div class="stepper-scroll"><div class="stepper">';
 
-    for(var i = 0; i < steps.length; i++){
-      var s = steps[i];
+    for(var i = 0; i < visualSteps.length; i++){
+      var s = visualSteps[i];
       var val = String(it[s.key] || "");
       var done = isDoneAny(val);
 
@@ -1343,7 +1345,7 @@
            +  '</div>';
     }
 
-    for(var j = steps.length; j < MAX_STEPS_DESKTOP; j++){
+    for(var j = visualSteps.length; j < MAX_STEPS_DESKTOP; j++){
       html += '<div class="node placeholder">'
            +    '<div class="circle"><i class="fas fa-circle"></i></div>'
            +    '<div class="label">—</div>'
