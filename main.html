@@ -512,10 +512,9 @@
     .stepper-scroll{
       overflow-x:auto;
       overflow-y:hidden;
-      padding:6px 4px 4px;
+      padding:4px 2px 2px;
       -webkit-overflow-scrolling:touch;
       touch-action:pan-x;
-      overscroll-behavior-x:contain;
     }
 
     .stepper-scroll::-webkit-scrollbar{
@@ -529,34 +528,33 @@
 
     .stepper{
       display:flex;
+      gap:12px;
+      width:max-content;
       align-items:flex-start;
-      direction:rtl;
-      gap:0;
-      width:100%;
-      min-width:100%;
       padding:4px 2px 8px;
+      direction:rtl;
     }
 
     .node{
-      flex:1 1 0;
-      min-width:0;
+      width:98px;
+      min-width:98px;
       text-align:center;
       font-weight:900;
       position:relative;
-      padding:2px 6px 6px;
+      padding:2px 1px 6px;
       user-select:none;
+      flex:0 0 98px;
     }
 
     .node:not(:first-child)::before{
       content:"";
       position:absolute;
       top:25px;
-      right:calc(50% + 28px);
-      width:calc(100% - 56px);
+      right:-10px;
+      width:10px;
       height:3px;
       background:#dfe5ec;
       border-radius:999px;
-      z-index:0;
     }
 
     .circle{
@@ -570,11 +568,12 @@
       color:white;
       margin:auto;
       box-shadow:0 6px 14px rgba(0,0,0,0.12);
-      position:relative;
-      z-index:1;
     }
 
-    .circle i{ font-size:16px; }
+    .circle i{
+      font-size:16px;
+    }
+
     .node.done .circle{ background:var(--ok); }
     .node.next .circle{ background:var(--accent); transform:scale(1.04); }
     .node.done:not(:first-child)::before{ background:var(--ok); }
@@ -583,7 +582,6 @@
     .label{
       margin-top:5px;
       font-size:15px;
-      line-height:1.2;
     }
 
     .sub{
@@ -607,6 +605,14 @@
       display:block;
       line-height:1.2;
       margin-top:2px;
+    }
+
+    .node.placeholder{
+      visibility:hidden;
+    }
+
+    .node.placeholder::before{
+      background:transparent !important;
     }
 
     .empty{
@@ -719,22 +725,22 @@
       }
 
       .stepper{
+        gap:10px;
         width:max-content;
         min-width:max-content;
-        gap:0;
       }
 
       .node{
-        flex:0 0 78px;
         width:78px;
         min-width:78px;
-        padding:0 4px 4px;
+        flex:0 0 78px;
+        padding:0 2px 4px;
       }
 
       .node:not(:first-child)::before{
         top:19px;
-        right:calc(50% + 21px);
-        width:calc(100% - 42px);
+        right:-8px;
+        width:8px;
         height:3px;
       }
 
@@ -799,13 +805,54 @@
       }
 
       .stepper{
+        display:grid;
+        grid-template-columns:repeat(11, minmax(0, 1fr));
+        gap:0;
         width:100%;
         min-width:100%;
+        padding:4px 0 8px;
       }
 
       .node{
-        flex:1 1 0;
-        max-width:none;
+        width:auto;
+        min-width:0;
+        flex:none;
+        padding:2px 2px 6px;
+      }
+
+      .node:not(:first-child)::before{
+        top:25px;
+        right:calc(50% + 28px);
+        width:calc(100% - 56px);
+        height:3px;
+      }
+
+      .circle{
+        width:56px;
+        height:56px;
+      }
+
+      .circle i{
+        font-size:16px;
+      }
+
+      .label{
+        font-size:13px;
+        line-height:1.15;
+      }
+
+      .sub{
+        min-height:34px;
+      }
+
+      .sub-name{
+        font-size:11px;
+        line-height:1.1;
+      }
+
+      .sub-date{
+        font-size:10px;
+        line-height:1.1;
       }
     }
   </style>
@@ -1264,6 +1311,7 @@
   function renderStepper(it){
     var steps = buildSteps(it);
     var firstPending = false;
+    var MAX_STEPS_DESKTOP = 11;
 
     var pricingDone = isDoneAny(it.pricing);
     var type = inferType(it);
@@ -1292,6 +1340,14 @@
            +    '<div class="circle"><i class="fas ' + s.icon + '"></i></div>'
            +    '<div class="label">' + s.label + '</div>'
            +    '<div class="sub">' + sub + '</div>'
+           +  '</div>';
+    }
+
+    for(var j = steps.length; j < MAX_STEPS_DESKTOP; j++){
+      html += '<div class="node placeholder">'
+           +    '<div class="circle"><i class="fas fa-circle"></i></div>'
+           +    '<div class="label">—</div>'
+           +    '<div class="sub"><div class="sub-date">—</div></div>'
            +  '</div>';
     }
 
