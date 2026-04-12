@@ -6,7 +6,7 @@
 
   <title>االمعاملات - منصة تتبع أوامر العمل</title>
 
-<link rel="icon" href="https://siei-tracking.github.io/system/logo.png">
+  <link rel="icon" href="https://siei-tracking.github.io/system/logo.png">
 
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -514,7 +514,9 @@
 
     .stepper-scroll{
       overflow-x:auto;
+      overflow-y:hidden;
       padding:4px 2px 2px;
+      -webkit-overflow-scrolling:touch;
     }
 
     .stepper{
@@ -534,6 +536,7 @@
       position:relative;
       padding:2px 1px 6px;
       user-select:none;
+      flex:0 0 98px;
     }
 
     .node:not(:first-child)::before{
@@ -692,6 +695,61 @@
       .action-wrap{ width:100%; justify-content:stretch; }
       .bar-right, .bar-left{ width:100%; }
       .date-input{ width:100%; min-width:unset; }
+
+      .stepper-scroll{
+        overflow-x:auto;
+      }
+
+      .stepper{
+        width:max-content;
+        gap:12px;
+      }
+
+      .node{
+        width:98px;
+        min-width:98px;
+        flex:0 0 98px;
+      }
+
+      .node:not(:first-child)::before{
+        top:25px;
+        right:-10px;
+        width:10px;
+      }
+
+      .circle{
+        width:56px;
+        height:56px;
+      }
+
+      .circle i{
+        font-size:16px;
+      }
+    }
+
+    @media (min-width:821px){
+      .stepper-scroll{
+        overflow-x:hidden;
+      }
+
+      .stepper{
+        width:100%;
+        justify-content:space-between;
+        gap:8px;
+      }
+
+      .node{
+        flex:1 1 0;
+        min-width:0;
+        max-width:98px;
+        width:auto;
+      }
+
+      .node:not(:first-child)::before{
+        top:25px;
+        right:calc(100% - 1px);
+        width:9px;
+      }
     }
   </style>
 </head>
