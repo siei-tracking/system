@@ -4,13 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>االمعاملات - منصة تتبع أوامر العمل</title>
+  <title>المعاملات - منصة تتبع أوامر العمل</title>
   <link rel="icon" href="https://siei-tracking.github.io/system/logo.png">
 
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-  <title>المعاملات - منصة تتبع أوامر العمل</title>
 
   <style>
     :root{
@@ -30,6 +28,11 @@
     }
 
     *{ box-sizing:border-box; }
+
+    html, body{
+      width:100%;
+      overflow-x:hidden;
+    }
 
     body{
       margin:0;
@@ -54,7 +57,7 @@
         url('https://drive.google.com/thumbnail?id=1kGABjKDT_tHkUbce1CWMVVFfrbfJ1_P7&sz=w1400');
       background-size:cover;
       background-position:center;
-      padding:64px 5% 60px;
+      padding:48px 16px 54px;
       display:flex;
       align-items:center;
       gap:16px;
@@ -89,6 +92,7 @@
       flex-direction:column;
       align-items:center;
       gap:6px;
+      max-width:100%;
     }
 
     .header-text h1{
@@ -96,6 +100,7 @@
       margin:0;
       font-size:30px !important;
       font-weight:900 !important;
+      line-height:1.45;
       text-shadow:
         -1px -1px 0 rgba(0,0,0,0.9),
          1px -1px 0 rgba(0,0,0,0.9),
@@ -109,6 +114,7 @@
       margin:0;
       font-size:18px !important;
       font-weight:900 !important;
+      line-height:1.5;
       text-shadow:
         -1px -1px 0 rgba(0,0,0,0.9),
          1px -1px 0 rgba(0,0,0,0.9),
@@ -121,8 +127,9 @@
       margin-top:6px;
       display:inline-flex;
       align-items:center;
+      justify-content:center;
       gap:8px;
-      padding:2px 14px;
+      padding:6px 14px;
       border-radius:999px;
       background:rgba(128,0,32,0.4);
       border:1px solid rgba(231,76,60,0.45);
@@ -136,14 +143,16 @@
         -1px  1px 0 rgba(0,0,0,0.9),
          1px  1px 0 rgba(0,0,0,0.9),
          0 4px 10px rgba(0,0,0,0.8) !important;
+      max-width:100%;
+      word-break:break-word;
     }
 
     .wrap{
-      padding:0 5% 30px;
+      padding:0 12px 24px;
       display:flex;
       justify-content:center;
       position:relative;
-      margin-top:-40px;
+      margin-top:-34px;
     }
 
     .panel{
@@ -207,10 +216,10 @@
     }
 
     .controls{
-      display:flex;
+      display:grid;
+      grid-template-columns:repeat(6, minmax(0, 1fr));
       align-items:center;
       gap:10px;
-      flex-wrap:wrap;
       position:relative;
       z-index:10;
       width:100%;
@@ -223,11 +232,13 @@
       font-family:'Cairo',sans-serif;
       font-weight:900;
       text-align:center;
-      min-width:180px;
+      min-width:0;
+      width:100%;
       outline:none;
       background:#fff;
       transition:.2s;
       color:#1f2d3a;
+      font-size:16px;
     }
 
     input:focus, select:focus{
@@ -251,11 +262,14 @@
       display:inline-flex;
       gap:10px;
       align-items:center;
+      justify-content:center;
       transition:.2s;
       white-space:nowrap;
       touch-action:manipulation;
       position:relative;
       overflow:hidden;
+      min-width:0;
+      width:100%;
     }
 
     .btn::before{
@@ -330,12 +344,15 @@
       text-decoration:none;
       display:inline-flex;
       align-items:center;
+      justify-content:center;
       gap:8px;
       background:linear-gradient(180deg,#2ebf68,#26a65b);
       color:#fff;
       box-shadow:0 10px 20px rgba(39,174,96,.20);
       transition:.2s;
       white-space:nowrap;
+      width:auto;
+      max-width:100%;
     }
 
     .file-btn:hover{
@@ -363,6 +380,11 @@
       gap:10px;
       flex-wrap:wrap;
       align-items:center;
+      width:100%;
+    }
+
+    .bar-left{
+      justify-content:flex-end;
     }
 
     .stat{
@@ -409,7 +431,7 @@
       font-weight:900;
       font-size:16px;
       text-align:center;
-      line-height:56px;
+      line-height:50px;
       background:#fff;
       color:#1f2d3a;
     }
@@ -420,6 +442,7 @@
       font-weight:900;
       position:relative;
       z-index:2;
+      word-break:break-word;
     }
 
     #status.ok{ color:#1d5e3b; }
@@ -440,6 +463,7 @@
       padding:14px;
       background:#fff;
       box-shadow:0 10px 24px rgba(0,0,0,.04);
+      overflow:hidden;
     }
 
     .row1{
@@ -459,6 +483,7 @@
       flex-wrap:wrap;
       align-items:center;
       justify-content:flex-end;
+      max-width:100%;
     }
 
     .idbox{
@@ -469,6 +494,7 @@
       font-weight:900;
       color:var(--primary);
       flex-wrap:wrap;
+      word-break:break-word;
     }
 
     .pill{
@@ -481,6 +507,8 @@
       display:inline-flex;
       align-items:center;
       gap:8px;
+      max-width:100%;
+      word-break:break-word;
     }
 
     .pill.ok{
@@ -502,6 +530,7 @@
       display:inline-flex;
       align-items:center;
       gap:8px;
+      flex-wrap:wrap;
     }
 
     .client{
@@ -509,51 +538,50 @@
       font-size:17px;
       font-weight:900;
       color:#111;
+      word-break:break-word;
     }
 
-    /* ===== التعديل المطلوب فقط: Stepper للحاسبة ===== */
     .stepper-scroll{
-      overflow:hidden;
+      overflow-x:auto;
       overflow-y:hidden;
-      padding:4px 0 2px;
+      -webkit-overflow-scrolling:touch;
+      padding:4px 2px 2px;
     }
 
     .stepper{
       display:flex;
-      width:100%;
-      min-width:0;
-      gap:0;
+      gap:12px;
+      width:max-content;
+      min-width:100%;
       align-items:flex-start;
-      justify-content:space-between;
+      padding:4px 2px 8px;
       direction:rtl;
     }
 
     .node{
-      flex:1 1 0;
-      min-width:0;
-      width:auto;
+      width:98px;
+      min-width:98px;
       text-align:center;
       font-weight:900;
       position:relative;
-      padding:2px 0 6px;
+      padding:2px 1px 6px;
       user-select:none;
     }
 
     .node:not(:first-child)::before{
       content:"";
       position:absolute;
-      top:19px;
-      right:50%;
-      width:100%;
-      height:2px;
+      top:25px;
+      right:-10px;
+      width:10px;
+      height:3px;
       background:#dfe5ec;
       border-radius:999px;
-      z-index:0;
     }
 
     .circle{
-      width:38px;
-      height:38px;
+      width:56px;
+      height:56px;
       border-radius:50%;
       background:var(--disabled);
       display:flex;
@@ -561,51 +589,43 @@
       justify-content:center;
       color:white;
       margin:auto;
-      box-shadow:0 4px 10px rgba(0,0,0,0.12);
-      position:relative;
-      z-index:1;
+      box-shadow:0 6px 14px rgba(0,0,0,0.12);
     }
 
-    .circle i{ font-size:12px; }
+    .circle i{ font-size:16px; }
     .node.done .circle{ background:var(--ok); }
-    .node.next .circle{ background:var(--accent); transform:scale(1.03); }
+    .node.next .circle{ background:var(--accent); transform:scale(1.04); }
     .node.done:not(:first-child)::before{ background:var(--ok); }
     .node.next:not(:first-child)::before{ background:var(--accent); }
 
     .label{
       margin-top:5px;
-      font-size:11px;
-      line-height:1.1;
-      white-space:nowrap;
+      font-size:15px;
     }
 
     .sub{
-      margin-top:4px;
-      min-height:24px;
-      line-height:1.1;
+      margin-top:5px;
+      min-height:36px;
+      line-height:1.2;
     }
 
     .sub-name{
-      font-size:9px;
+      font-size:13px;
       font-weight:900;
       display:block;
-      line-height:1.1;
-      margin-top:4px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
+      line-height:1.2;
+      margin-top:8px;
+      word-break:break-word;
     }
 
     .sub-date{
-      font-size:8px;
+      font-size:11px;
       font-weight:900;
       direction:ltr;
       display:block;
-      line-height:1.1;
+      line-height:1.2;
       margin-top:2px;
-      white-space:nowrap;
-      overflow:hidden;
-      text-overflow:ellipsis;
+      word-break:break-word;
     }
 
     .empty{
@@ -640,8 +660,6 @@
     #toast.err{ background:#e74c3c; }
 
     #qDone{
-      flex:1;
-      min-width:100px;
       height:50px;
       font-size:18px;
       line-height:50px;
@@ -649,17 +667,12 @@
     }
 
     #qDone::placeholder{
-      flex:1;
-      min-width:100px;
-      height:50px;
       font-size:15px;
       line-height:50px;
       padding:0 12px;
     }
 
     #sheetSelect{
-      flex:1;
-      min-width:100px;
       height:50px;
       font-size:18px;
       line-height:50px;
@@ -667,11 +680,11 @@
     }
 
     #btnAdmin{
-      margin-left:20px;
+      margin-left:0;
     }
 
     #btnSearchDone{
-      height:57px;
+      height:50px;
       min-width:106px;
       padding:0 16px;
       font-size:16px;
@@ -680,11 +693,10 @@
       display:flex;
       align-items:center;
       justify-content:center;
-      margin-left:auto;
     }
 
     #btnExport{
-      height:57px;
+      height:50px;
       min-width:106px;
       padding:0 16px;
       font-size:16px;
@@ -696,73 +708,218 @@
       gap:8px;
     }
 
+    @media (max-width:1100px){
+      .controls{
+        grid-template-columns:repeat(3, minmax(0, 1fr));
+      }
+    }
+
     @media (max-width:820px){
-      .header-text h1{ font-size:24px; }
-      .header-text p{ font-size:15px; }
-      input, select{ min-width:220px; width:100%; }
-      .controls{ width:100%; justify-content:stretch; }
-      .btn{ width:100%; justify-content:center; }
-      .file-btn{ width:100%; justify-content:center; }
-      .action-wrap{ width:100%; justify-content:stretch; }
-      .bar-right, .bar-left{ width:100%; }
-      .date-input{ width:100%; min-width:unset; }
-
-      /* ===== الموبايل يبقى كما هو ===== */
-      .stepper-scroll{
-        overflow-x:auto;
-        overflow-y:hidden;
-        -webkit-overflow-scrolling:touch;
-        padding:4px 2px 2px;
-      }
-
-      .stepper{
-        display:flex;
+      .company-header{
+        padding:34px 14px 48px;
         gap:12px;
-        width:max-content;
-        min-width:100%;
-        align-items:flex-start;
-        padding:4px 2px 8px;
-        direction:rtl;
-        justify-content:flex-start;
       }
 
-      .node{
-        width:98px;
-        min-width:98px;
-        flex:0 0 auto;
+      .company-logo{
+        width:78px;
+        height:78px;
       }
 
-      .node:not(:first-child)::before{
-        top:25px;
-        right:-10px;
-        width:10px;
-        height:3px;
+      .header-text h1{
+        font-size:22px !important;
       }
 
-      .circle{
-        width:56px;
-        height:56px;
+      .header-text p{
+        font-size:14px !important;
       }
 
-      .circle i{
-        font-size:16px;
+      .wrap{
+        padding:0 10px 20px;
+        margin-top:-24px;
       }
 
-      .label{
+      .panel{
+        border-radius:18px;
+      }
+
+      .panel-head{
+        padding:14px;
+      }
+
+      .title{
+        width:100%;
+        justify-content:center;
+        text-align:center;
+        font-size:17px;
+      }
+
+      .controls{
+        grid-template-columns:1fr;
+      }
+
+      input, select,
+      .btn,
+      .file-btn,
+      #qDone,
+      #sheetSelect,
+      #btnSearchDone,
+      #btnExport{
+        width:100%;
+        min-width:0;
+      }
+
+      .bar{
+        padding:12px 14px;
+      }
+
+      .bar-right,
+      .bar-left{
+        width:100%;
+      }
+
+      .bar-right{
+        justify-content:space-between;
+      }
+
+      .bar-left{
+        justify-content:stretch;
+      }
+
+      .date-input{
+        width:100%;
+        min-width:0;
+        height:50px;
+      }
+
+      .stat{
+        flex:1 1 calc(50% - 5px);
+        justify-content:center;
+      }
+
+      .list{
+        padding:12px 12px 18px;
+      }
+
+      .item{
+        padding:12px;
+      }
+
+      .row1{
+        flex-direction:column;
+        align-items:stretch;
+      }
+
+      .action-wrap{
+        width:100%;
+        justify-content:stretch;
+      }
+
+      .action-wrap .btn,
+      .action-wrap .file-btn{
+        width:100%;
+      }
+
+      .idbox{
         font-size:15px;
       }
 
-      .sub{
-        min-height:36px;
+      .client{
+        font-size:15px;
+      }
+
+      .pill{
+        font-size:13px;
+      }
+
+      .node{
+        width:86px;
+        min-width:86px;
+      }
+
+      .circle{
+        width:50px;
+        height:50px;
+      }
+
+      .label{
+        font-size:13px;
       }
 
       .sub-name{
-        font-size:13px;
-        margin-top:8px;
+        font-size:12px;
       }
 
       .sub-date{
-        font-size:11px;
+        font-size:10px;
+      }
+
+      #status{
+        font-size:14px;
+        padding:10px 14px;
+      }
+    }
+
+    @media (max-width:480px){
+      .company-header{
+        padding:28px 12px 42px;
+      }
+
+      .company-logo{
+        width:68px;
+        height:68px;
+      }
+
+      .header-text h1{
+        font-size:19px !important;
+      }
+
+      .header-text p{
+        font-size:13px !important;
+      }
+
+      .user-pill{
+        font-size:12px;
+        padding:6px 12px;
+      }
+
+      .wrap{
+        padding:0 8px 16px;
+        margin-top:-18px;
+      }
+
+      .panel-head{
+        padding:12px;
+      }
+
+      .bar{
+        padding:10px 12px;
+      }
+
+      .list{
+        padding:10px 10px 16px;
+      }
+
+      .item{
+        padding:10px;
+        border-radius:14px;
+      }
+
+      .stat{
+        width:100%;
+        flex:1 1 100%;
+      }
+
+      .btn,
+      #btnSearchDone,
+      #btnExport{
+        font-size:15px;
+      }
+
+      #qDone,
+      #sheetSelect,
+      input,
+      select{
+        font-size:15px;
       }
     }
   </style>
@@ -784,6 +941,7 @@
 
     <div class="wrap">
       <div class="panel">
+
         <div class="panel-head">
           <div>
             <div class="title"><i class="fas fa-list-check"></i> قائمة المعاملات</div>
@@ -809,6 +967,7 @@
             <select id="sheetSelect"></select>
 
             <input id="qDone" type="text" placeholder="بحث: رقم أمر العمل" />
+
             <button class="btn btn-primary" id="btnSearchDone" type="button">
               <i class="fas fa-magnifying-glass"></i> بحث
             </button>
@@ -837,6 +996,7 @@
 
         <div id="status" class="ok">جاهز...</div>
         <div id="list" class="list"></div>
+
       </div>
     </div>
   </div>
@@ -844,7 +1004,7 @@
   <div id="toast"></div>
 
   <script>
-    const API_BASE = "https://script.google.com/macros/s/AKfycbzCX9UCZ6h1RT-wZcif86_uvO_pwi4k2V1INq2BdjovImm1I-iLEV3_pbegyYJO_UtF/exec";
+    const API_BASE = "https://script.google.com/macros/s/AKfycbx_n9H6jfSaedz0Rlnk75RUPnZ0U6RWWCvCeNqJW7EDwK5HTAmnw90X_Gms9C36hPnZ/exec";
     const STORAGE_KEY = "tracking_session_token_plan";
     const PAGE_NAME = "main";
 
