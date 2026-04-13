@@ -671,17 +671,220 @@
       gap:8px;  
     }  
   
-    @media (max-width:820px){  
-      .header-text h1{ font-size:24px; }  
-      .header-text p{ font-size:15px; }  
-      input, select{ min-width:220px; width:100%; }  
-      .controls{ width:100%; justify-content:stretch; }  
-      .btn{ width:100%; justify-content:center; }  
-      .file-btn{ width:100%; justify-content:center; }  
-      .action-wrap{ width:100%; justify-content:stretch; }  
-      .bar-right, .bar-left{ width:100%; }  
-      .date-input{ width:100%; min-width:unset; }  
-    }  
+    @media (max-width:1100px){
+      .controls{
+        grid-template-columns:repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width:820px){
+      .company-header{
+        padding:34px 14px 48px;
+        gap:12px;
+      }
+
+      .company-logo{
+        width:78px;
+        height:78px;
+      }
+
+      .header-text h1{
+        font-size:22px !important;
+      }
+
+      .header-text p{
+        font-size:14px !important;
+      }
+
+      .wrap{
+        padding:0 10px 20px;
+        margin-top:-24px;
+      }
+
+      .panel{
+        border-radius:18px;
+      }
+
+      .panel-head{
+        padding:14px;
+      }
+
+      .title{
+        width:100%;
+        justify-content:center;
+        text-align:center;
+        font-size:17px;
+      }
+
+      .controls{
+        grid-template-columns:1fr;
+      }
+
+      input, select,
+      .btn,
+      .file-btn,
+      #qDone,
+      #sheetSelect,
+      #btnSearchDone,
+      #btnExport{
+        width:100%;
+        min-width:0;
+      }
+
+      .bar{
+        padding:12px 14px;
+      }
+
+      .bar-right,
+      .bar-left{
+        width:100%;
+      }
+
+      .bar-right{
+        justify-content:space-between;
+      }
+
+      .bar-left{
+        justify-content:stretch;
+      }
+
+      .date-input{
+        width:100%;
+        min-width:0;
+        height:50px;
+      }
+
+      .stat{
+        flex:1 1 calc(50% - 5px);
+        justify-content:center;
+      }
+
+      .list{
+        padding:12px 12px 18px;
+      }
+
+      .item{
+        padding:12px;
+      }
+
+      .row1{
+        flex-direction:column;
+        align-items:stretch;
+      }
+
+      .action-wrap{
+        width:100%;
+        justify-content:stretch;
+      }
+
+      .action-wrap .btn,
+      .action-wrap .file-btn{
+        width:100%;
+      }
+
+      .idbox{
+        font-size:15px;
+      }
+
+      .client{
+        font-size:15px;
+      }
+
+      .pill{
+        font-size:13px;
+      }
+
+      .node{
+        width:86px;
+        min-width:86px;
+      }
+
+      .circle{
+        width:50px;
+        height:50px;
+      }
+
+      .label{
+        font-size:13px;
+      }
+
+      .sub-name{
+        font-size:12px;
+      }
+
+      .sub-date{
+        font-size:10px;
+      }
+
+      #status{
+        font-size:14px;
+        padding:10px 14px;
+      }
+    }
+
+    @media (max-width:480px){
+      .company-header{
+        padding:28px 12px 42px;
+      }
+
+      .company-logo{
+        width:68px;
+        height:68px;
+      }
+
+      .header-text h1{
+        font-size:19px !important;
+      }
+
+      .header-text p{
+        font-size:13px !important;
+      }
+
+      .user-pill{
+        font-size:12px;
+        padding:6px 12px;
+      }
+
+      .wrap{
+        padding:0 8px 16px;
+        margin-top:-18px;
+      }
+
+      .panel-head{
+        padding:12px;
+      }
+
+      .bar{
+        padding:10px 12px;
+      }
+
+      .list{
+        padding:10px 10px 16px;
+      }
+
+      .item{
+        padding:10px;
+        border-radius:14px;
+      }
+
+      .stat{
+        width:100%;
+        flex:1 1 100%;
+      }
+
+      .btn,
+      #btnSearchDone,
+      #btnExport{
+        font-size:15px;
+      }
+
+      #qDone,
+      #sheetSelect,
+      input,
+      select{
+        font-size:15px;
+      }
+    }
   </style>  </head>  
 <body>  <div id="pageWrap">  
   <header class="company-header">  
@@ -1605,6 +1808,4 @@
     ensurePageSession();  
   });  
 </script>  </body>  
-</html>  هذه صفحة main  بها كلمة تصدير
-اريد تصميم تقرير رسمي يظهر خروجه من منصة تتبع اوامر العمل
-مع شعر الشركة واسمها يعني مثل تصميم رسمي حكومي
+</html>
