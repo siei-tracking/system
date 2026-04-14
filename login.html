@@ -143,110 +143,69 @@
     <div id="msg"></div>
   </div>
 
-  <script>
-    const API_BASE = "https://script.google.com/macros/s/AKfycbwO-vegDiHhcTYMGlh47OYMcfeBvAO4TVdFTipNntKmw9pW8ol8JNoMJK8zS6qbqVbx/exec";
-    const STORAGE_KEY = "tracking_session_token_plan";
+<script>
+const API_BASE = "https://script.google.com/macros/s/AKfycbwO-vegDiHhcTYMGlh47OYMcfeBvAO4TVdFTipNntKmw9pW8ol8JNoMJK8zS6qbqVbx/exec";
+const STORAGE_KEY = "tracking_session_token_plan";
 
-    const params = new URLSearchParams(window.location.search);
-    const PAGE = String(params.get("p") || "main").trim().toLowerCase();
+const params = new URLSearchParams(window.location.search);
+const PAGE = String(params.get("p") || "main").trim().toLowerCase();
 
-    function setMsg(text, isOk){
-      const el = document.getElementById("msg");
-      el.textContent = text || "";
-      el.className = isOk ? "ok" : "";
-    }
+function setMsg(text, isOk){
+  const el = document.getElementById("msg");
+  el.textContent = text || "";
+  el.className = isOk ? "ok" : "";
+}
 
-    function saveSessionAndGo(res){
-      try{
-        sessionStorage.setItem(STORAGE_KEY, String(res.token || ""));
-      }catch(e){}
+function saveSessionAndGo(res){
+  sessionStorage.setItem(STORAGE_KEY, String(res.token || ""));
+  window.location.href = PAGE + ".html";
+}
 
-      window.location.href = PAGE + ".html";
-    }
+async function login(){
+  const pass = document.getElementById("pass").value.trim();
+  const btn  = document.getElementById("btnLogin");
 
-    async function apiPost(payload){
-      const response = await fetch(API_BASE, {
-        method: "POST",
-        headers: {
-          "Content-Type": "text/plain;charset=utf-8"
-        },
-        body: JSON.stringify(payload)
-      });
+  if(!pass){
+    setMsg("⚠️ أدخل كلمة المرور", false);
+    return;
+  }
 
-      const text = await response.text();
+  btn.disabled = true;
+  setMsg("جاري التحقق...", true);
 
-      try{
-        return JSON.parse(text);
-      }catch(err){
-        throw new Error(text);
-      }
-    }
-
-    async function login(){
-      const username = String(document.getElementById("username").value || "").trim();
-      const pass = String(document.getElementById("pass").value || "").trim();
-      const btn  = document.getElementById("btnLogin");
-
-      if(!username){
-        setMsg("⚠️ أدخل اسم المستخدم", false);
-        return;
-      }
-
-      if(!pass){
-        setMsg("⚠️ أدخل كلمة المرور", false);
-        return;
-      }
-
-      btn.disabled = true;
-      setMsg("جاري التحقق...", true);
-
-      try{
-        const res = await apiPost({
-          action: "login",
-          username: username,
-          password: pass,
-          page: PAGE
-        });
-
-        btn.disabled = false;
-
-        if(!res || !res.ok){
-          setMsg(
-            (res && (res.message || res.error))
-              ? (res.message || res.error)
-              : "❌ اسم المستخدم أو كلمة المرور أو الصفحة غير صحيحة",
-            false
-          );
-          return;
-        }
-
-        setMsg("✅ تم تسجيل الدخول بنجاح", true);
-        saveSessionAndGo(res);
-
-      }catch(error){
-        btn.disabled = false;
-        setMsg("❌ فشل الاتصال بالسيرفر", false);
-      }
-    }
-
-    document.getElementById("btnLogin").addEventListener("click", login);
-
-    document.getElementById("username").addEventListener("keypress", function(e){
-      if(e.key === "Enter") login();
+  try{
+    const res = await fetch(API_BASE,{
+      method:"POST",
+      headers:{ "Content-Type":"text/plain;charset=utf-8" },
+      body: JSON.stringify({
+        action:"login",
+        password: pass,
+        page: PAGE
+      })
     });
 
-    document.getElementById("pass").addEventListener("keypress", function(e){
-      if(e.key === "Enter") login();
-    });
+    const data = await res.json();
+    btn.disabled = false;
 
-    document.getElementById("username").addEventListener("input", function(){
-      setMsg("", false);
-    });
+    if(!data.ok){
+      setMsg(data.message || "❌ خطأ", false);
+      return;
+    }
 
-    document.getElementById("pass").addEventListener("input", function(){
-      setMsg("", false);
-    });
-  </script>
+    setMsg("✅ تم تسجيل الدخول", true);
+    saveSessionAndGo(data);
 
+  }catch(e){
+    btn.disabled = false;
+    setMsg("❌ خطأ اتصال", false);
+  }
+}
+
+document.getElementById("btnLogin").addEventListener("click", login);
+
+document.getElementById("pass").addEventListener("keypress", function(e){
+  if(e.key === "Enter") login();
+});
+</script>
 </body>
 </html>
