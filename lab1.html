@@ -3,15 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="watermark.css">
-  <title>االمختبرات - منصة تتبع أوامر العمل</title>
+  <link rel="stylesheet" href="watermark.css">
+  <title>المختبرات - منصة تتبع أوامر العمل</title>
 
-<link rel="icon" href="https://siei-tracking.github.io/system/logo.png">
-
+  <link rel="icon" href="https://siei-tracking.github.io/system/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-  <title>المختبرات - منصة تتبع أوامر العمل</title>
 
   <style>
     :root{
@@ -542,9 +539,9 @@
 <div id="toast"></div>
 
 <script>
-  const API_BASE = "https://script.google.com/macros/s/AKfycbwLt7PaCyUIuLMPOHqjmHzgeNbFfF95oe3dnWlBgjdrCRw9p6vbpiZftddSfRNRHYsV/exec";
-  const STORAGE_KEY = "tracking_session_token_plan";
+  const API_BASE = "https://script.google.com/macros/s/AKfycbzJalmVr2LizmnErUeRPcp1-ZtTzQCmUcmql8jRnuy0PDaXh-pnG6PSa7xe01Q55N8k/exec";
   const PAGE_NAME = "lab1";
+  const STORAGE_KEY = "tracking_session_token_" + PAGE_NAME;
 
   let currentUserName = "";
   let testType = "";
@@ -558,6 +555,11 @@
 
   function clearSessionToken(){
     sessionStorage.removeItem(STORAGE_KEY);
+  }
+
+  function goToLogin(){
+    clearSessionToken();
+    window.location.href = "login.html?p=" + PAGE_NAME;
   }
 
   async function apiPost(payload){
@@ -582,7 +584,7 @@
     const token = getSessionToken();
 
     if(!token){
-      window.location.href = "login.html?p=lab1";
+      goToLogin();
       return;
     }
 
@@ -605,23 +607,23 @@
 
         document.getElementById("pageWrap").classList.add("show");
       }else{
-        clearSessionToken();
-        window.location.href = "login.html?p=lab1";
+        goToLogin();
       }
     }catch(error){
-      clearSessionToken();
-      window.location.href = "login.html?p=lab1";
+      goToLogin();
     }
   }
 
   function showMsg(text, type){
+    if(!text) return;
+
     const t = document.getElementById("toast");
     t.className = "";
     if(type === "ok") t.classList.add("ok");
     else if(type === "warn") t.classList.add("warn");
     else if(type === "err") t.classList.add("err");
 
-    t.textContent = text || "";
+    t.textContent = text;
     t.style.display = "block";
 
     clearTimeout(window.__toastTimer);
@@ -639,7 +641,7 @@
 
     const token = getSessionToken();
     if(!token){
-      window.location.href = "login.html?p=lab1";
+      goToLogin();
       return;
     }
 
@@ -657,6 +659,17 @@
 
       document.getElementById("loader").style.display = "none";
       document.getElementById("fetchBtn").disabled = false;
+
+      if(d && d.ok === false && d.message){
+        if(d.message.indexOf("انتهت الجلسة") !== -1 || d.message.indexOf("غير صالح") !== -1 || d.message.indexOf("غير مصرح") !== -1){
+          showMsg("❌ انتهت الجلسة", "err");
+          setTimeout(goToLogin, 800);
+          return;
+        }
+
+        showMsg(d.message, "err");
+        return;
+      }
 
       if(!d || !d.found){
         showMsg("⚠️ المعاملة غير موجودة", "warn");
@@ -758,7 +771,7 @@
 
     const token = getSessionToken();
     if(!token){
-      window.location.href = "login.html?p=lab1";
+      goToLogin();
       return;
     }
 
@@ -783,13 +796,12 @@
         userName: currentUserName
       });
 
-      const msg = String((r && (r.message || r.result)) || "");
-
       if(r && r.ok){
         document.getElementById("detailsText").innerText = txt;
         document.getElementById("cardForm").style.display = "none";
         document.getElementById("successMessage").style.display = "block";
       }else{
+        const msg = String((r && (r.message || r.result)) || "");
         showMsg(msg || "❌ تعذر الحفظ", "err");
         setupButtonState();
       }
@@ -821,9 +833,19 @@
     btn.disabled = false;
     btn.className = "main-btn btn-success";
     btn.innerHTML = '<i class="fas fa-hand-holding-medical"></i> تأكيد استلام المختبرات';
+
+    document.getElementById("orderID").focus();
   }
 
-  ensurePageSession();
+  window.addEventListener("load", function(){
+    ensurePageSession();
+
+    document.getElementById("orderID").addEventListener("keydown", function(e){
+      if(e.key === "Enter"){
+        fetchLabData();
+      }
+    });
+  });
 </script>
 </body>
 </html>
