@@ -215,7 +215,6 @@
       font-size:18px;
     }
 
-    /* ===== ستايل الحاسبة / الديسكتوب ===== */
     .controls{
       display:flex;
       align-items:center;
@@ -538,7 +537,6 @@
       word-break:break-word;
     }
 
-    /* ===== ستايل الحاسبة / الديسكتوب للستبر ===== */
     .stepper-scroll{
       overflow-x:auto;
       overflow-y:hidden;
@@ -711,7 +709,6 @@
       gap:8px;
     }
 
-    /* ===== ستايل الموبايل المعتمد ===== */
     @media (max-width:1100px){
       .controls{
         display:grid;
@@ -857,7 +854,6 @@
         font-size:13px;
       }
 
-      /* ستايل ستبر الموبايل المعتمد */
       .stepper-scroll{
         overflow-x:auto;
         scroll-behavior:smooth;
@@ -1008,7 +1004,6 @@
 
     <div class="wrap">
       <div class="panel">
-
         <div class="panel-head">
           <div>
             <div class="title"><i class="fas fa-list-check"></i> قائمة المعاملات</div>
@@ -1061,9 +1056,8 @@
           </div>
         </div>
 
-        <div id="status" class="ok">جاهز...</div>
+        <div id="status" class="ok">جاري التحقق من الجلسة...</div>
         <div id="list" class="list"></div>
-
       </div>
     </div>
   </div>
@@ -1072,13 +1066,14 @@
 
   <script>
     const API_BASE = "https://script.google.com/macros/s/AKfycbwO-vegDiHhcTYMGlh47OYMcfeBvAO4TVdFTipNntKmw9pW8ol8JNoMJK8zS6qbqVbx/exec";
-    const STORAGE_KEY = "tracking_session_token_plan";
     const PAGE_NAME = "main";
+    const STORAGE_KEY = "tracking_session_token_" + PAGE_NAME;
 
     let CURRENT_MODE = "open";
     let CURRENT_ITEMS = [];
     let CURRENT_USER_ROLE = "";
     let CURRENT_USER_NAME = "";
+    let CURRENT_USERNAME = "";
 
     function getSessionToken(){
       return sessionStorage.getItem(STORAGE_KEY) || "";
@@ -1086,6 +1081,10 @@
 
     function clearSessionToken(){
       sessionStorage.removeItem(STORAGE_KEY);
+    }
+
+    function isAdminUser(){
+      return String(CURRENT_USERNAME || "").trim().toLowerCase() === "admin";
     }
 
     async function apiPost(payload){
@@ -1123,19 +1122,16 @@
 
         if(result && result.ok){
           CURRENT_USER_NAME = result.user || "مخول غير معروف";
-          CURRENT_USER_ROLE = result.role || "user";
+          CURRENT_USERNAME = result.username || "";
+          CURRENT_USER_ROLE = isAdminUser() ? "admin" : "user";
 
           const w = document.getElementById("welcomeUser");
-          if(CURRENT_USER_NAME && CURRENT_USER_NAME !== "مخول غير معروف"){
-            w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: ' + CURRENT_USER_NAME;
-          }else{
-            w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: مخول غير معروف';
-          }
+          w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: ' + CURRENT_USER_NAME;
 
           document.getElementById("pageWrap").classList.add("show");
           showAdminButton();
-          loadSheetOptions();
-          loadOpen();
+          await loadSheetOptions();
+          await loadOpen();
         }else{
           clearSessionToken();
           window.location.href = "login.html?p=main";
@@ -1195,14 +1191,12 @@
 
       var btnOpenArchive = document.getElementById("btnOpenArchive");
       if(btnOpenArchive){
-        var isAdmin = String(CURRENT_USER_ROLE || "").trim().toLowerCase() === "admin";
-        btnOpenArchive.disabled = on || !isAdmin;
+        btnOpenArchive.disabled = on || !isAdminUser();
       }
 
       var btnAdmin = document.getElementById("btnAdmin");
       if(btnAdmin){
-        var isAdmin2 = String(CURRENT_USER_ROLE || "").trim().toLowerCase() === "admin";
-        btnAdmin.disabled = on || !isAdmin2;
+        btnAdmin.disabled = on || !isAdminUser();
       }
 
       if(on) setStatus("جاري التحميل...", true);
@@ -1254,22 +1248,22 @@
     function showAdminButton(){
       var btnAdmin = document.getElementById("btnAdmin");
       var btnSheet = document.getElementById("btnOpenArchive");
-      var isAdmin = String(CURRENT_USER_ROLE || "").trim().toLowerCase() === "admin";
+      var admin = isAdminUser();
 
       if(btnAdmin){
         btnAdmin.style.display = "inline-flex";
-        btnAdmin.disabled = !isAdmin;
-        btnAdmin.title = isAdmin ? "" : "متاح لمدير النظام فقط";
-        btnAdmin.style.opacity = isAdmin ? "1" : "0.6";
-        btnAdmin.style.cursor = isAdmin ? "pointer" : "not-allowed";
+        btnAdmin.disabled = !admin;
+        btnAdmin.title = admin ? "" : "متاح لمدير النظام فقط";
+        btnAdmin.style.opacity = admin ? "1" : "0.6";
+        btnAdmin.style.cursor = admin ? "pointer" : "not-allowed";
       }
 
       if(btnSheet){
         btnSheet.style.display = "inline-flex";
-        btnSheet.disabled = !isAdmin;
-        btnSheet.title = isAdmin ? "" : "متاح لمدير النظام فقط";
-        btnSheet.style.opacity = isAdmin ? "1" : "0.6";
-        btnSheet.style.cursor = isAdmin ? "pointer" : "not-allowed";
+        btnSheet.disabled = !admin;
+        btnSheet.title = admin ? "" : "متاح لمدير النظام فقط";
+        btnSheet.style.opacity = admin ? "1" : "0.6";
+        btnSheet.style.cursor = admin ? "pointer" : "not-allowed";
       }
     }
 
@@ -1294,10 +1288,10 @@
       var name = "";
       var date = "";
 
-      var marked = val.match(/(.*?)/);
-      if(marked && marked[1]){
-        name = marked[1].trim();
-        date = val.replace(marked[0], "").trim();
+      var userMatch = val.match(/\((.*?)\)/);
+      if(userMatch && userMatch[1]){
+        name = userMatch[1].trim();
+        date = val.replace(userMatch[0], "").trim();
       } else {
         var dt = val.match(/(\d{4}-\d{2}-\d{2}\s*\|\s*\d{2}:\d{2})/);
         if(dt){
@@ -1326,8 +1320,6 @@
 
         name = name.replace(/^[\-\–—\s]+/, "").trim();
         name = name.replace(/[\-\–—\s]+$/, "").trim();
-        name = name.replace(/[\d.,]+/g, "").trim();
-        name = name.replace(/د\.?ع|دينار|IQD|\$/gi, "").trim();
         name = name.replace(/[()]/g, "").trim();
         date = date.replace(/^[\-\–—\s]+/, "").trim();
       }
@@ -1871,7 +1863,7 @@
         });
 
         if(!res || !res.ok){
-          setStatus("❌ " + (res && res.error ? res.error : "لا يمكن فتح الشيت"), false);
+          setStatus("❌ " + (res && (res.error || res.message) ? (res.error || res.message) : "لا يمكن فتح الشيت"), false);
           showMsg("❌ لا يمكن فتح الشيت", "err");
           return;
         }
