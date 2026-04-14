@@ -4,14 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>دارة المستخدمين والصلاحيات</title>
-
-<link rel="icon" href="https://siei-tracking.github.io/system/logo.png">
+  <title>إدارة المستخدمين والصلاحيات</title>
+  <link rel="icon" href="https://siei-tracking.github.io/system/logo.png">
 
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-  <title>إدارة المستخدمين والصلاحيات</title>
 
   <style>
     :root{
@@ -86,36 +83,43 @@
       table-layout:fixed;
       width:100%;
       border-collapse:collapse;
-      min-width:900px;
+      min-width:1100px;
       background:#fff;
     }
 
     th:nth-child(1),
     td:nth-child(1){
-      width:100px;
-      min-width:100px;
-      max-width:100px;
-    }
-
-    th:nth-child(2),
-    td:nth-child(2){
       width:140px;
       min-width:140px;
       max-width:140px;
     }
 
+    th:nth-child(2),
+    td:nth-child(2){
+      width:120px;
+      min-width:120px;
+      max-width:120px;
+    }
+
     th:nth-child(3),
     td:nth-child(3){
+      width:160px;
+      min-width:160px;
+      max-width:160px;
+    }
+
+    th:nth-child(4),
+    td:nth-child(4){
       width:380px;
       min-width:380px;
       max-width:380px;
     }
 
-    th:nth-child(4),
-    td:nth-child(4){
-      width:240px;
-      min-width:240px;
-      max-width:240px;
+    th:nth-child(5),
+    td:nth-child(5){
+      width:220px;
+      min-width:220px;
+      max-width:220px;
     }
 
     .header-text{
@@ -241,7 +245,7 @@
 
     .grid{
       display:grid;
-      grid-template-columns:repeat(2,minmax(0,1fr));
+      grid-template-columns:repeat(3,minmax(0,1fr));
       gap:12px;
     }
 
@@ -527,8 +531,11 @@
       .pages-box{ grid-template-columns:repeat(2,minmax(0,1fr)); }
     }
 
-    @media (max-width:700px){
+    @media (max-width:800px){
       .grid{ grid-template-columns:1fr; }
+    }
+
+    @media (max-width:700px){
       .pages-box{ grid-template-columns:1fr; }
       .btn-row, .head-actions{ flex-direction:column; }
       .btn{ width:100%; }
@@ -561,12 +568,17 @@
         </div>
       </div>
 
-      <div id="status" class="ok">جاهز...</div>
+      <div id="status" class="ok">جاري التحقق من الجلسة...</div>
 
       <div class="section">
         <h3 class="section-title"><i class="fas fa-user-plus"></i> إضافة / تعديل مستخدم</h3>
 
         <div class="grid">
+          <div class="field">
+            <label for="username">اسم المستخدم</label>
+            <input id="username" type="text" placeholder="مثال: admin أو user1">
+          </div>
+
           <div class="field">
             <label for="pass">كلمة المرور</label>
             <input id="pass" type="text" placeholder="مثال: 1234">
@@ -574,7 +586,7 @@
 
           <div class="field">
             <label for="name">الاسم</label>
-            <input id="name" type="text" placeholder="اسم المستخدم">
+            <input id="name" type="text" placeholder="اسم المستخدم الظاهر">
           </div>
         </div>
 
@@ -609,6 +621,7 @@
           <table>
             <thead>
               <tr>
+                <th>اسم المستخدم</th>
                 <th>كلمة المرور</th>
                 <th>الاسم</th>
                 <th>الصفحات</th>
@@ -616,7 +629,7 @@
               </tr>
             </thead>
             <tbody id="usersBody">
-              <tr><td colspan="4" class="empty">جاري التحميل...</td></tr>
+              <tr><td colspan="5" class="empty">جاري التحميل...</td></tr>
             </tbody>
           </table>
         </div>
@@ -649,15 +662,15 @@
 </div>
 
 <script>
-  const API_BASE = "https://script.google.com/macros/s/AKfycbwLt7PaCyUIuLMPOHqjmHzgeNbFfF95oe3dnWlBgjdrCRw9p6vbpiZftddSfRNRHYsV/exec";
-  const STORAGE_KEY = "tracking_session_token_plan";
+  const API_BASE = "https://script.google.com/macros/s/AKfycbwO-vegDiHhcTYMGlh47OYMcfeBvAO4TVdFTipNntKmw9pW8ol8JNoMJK8zS6qbqVbx/exec";
   const PAGE_NAME = "admin";
+  const STORAGE_KEY = "tracking_session_token_" + PAGE_NAME;
 
   let ALL_PAGES_CACHE = [];
   let USERS_CACHE = [];
   let confirmCallback = null;
-  let CURRENT_USER_ROLE = "";
   let CURRENT_USER_NAME = "";
+  let CURRENT_USERNAME = "";
 
   function getSessionToken(){
     return sessionStorage.getItem(STORAGE_KEY) || "";
@@ -665,6 +678,15 @@
 
   function clearSessionToken(){
     sessionStorage.removeItem(STORAGE_KEY);
+  }
+
+  function goToLogin(){
+    clearSessionToken();
+    window.location.href = "login.html?p=" + PAGE_NAME;
+  }
+
+  function isAdminUser(){
+    return String(CURRENT_USERNAME || "").trim().toLowerCase() === "admin";
   }
 
   async function apiPost(payload){
@@ -689,7 +711,7 @@
     const token = getSessionToken();
 
     if(!token){
-      window.location.href = "login.html?p=admin";
+      goToLogin();
       return;
     }
 
@@ -702,17 +724,14 @@
 
       if(result && result.ok){
         CURRENT_USER_NAME = result.user || "مخول غير معروف";
-        CURRENT_USER_ROLE = result.role || "user";
+        CURRENT_USERNAME = result.username || "";
 
         const w = document.getElementById("welcomeUser");
-        if(CURRENT_USER_NAME && CURRENT_USER_NAME !== "مخول غير معروف"){
-          w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: ' + CURRENT_USER_NAME;
-        }else{
-          w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: مخول غير معروف';
-        }
+        w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: ' + CURRENT_USER_NAME;
 
-        if(String(CURRENT_USER_ROLE).toLowerCase() !== "admin"){
-          document.getElementById("pageWrap").classList.add("show");
+        document.getElementById("pageWrap").classList.add("show");
+
+        if(!isAdminUser()){
           setStatus("❌ هذه الصفحة متاحة لمدير النظام فقط", false);
           showMsg("❌ غير مصرح", "err");
           document.querySelector(".panel").style.pointerEvents = "none";
@@ -720,16 +739,13 @@
           return;
         }
 
-        document.getElementById("pageWrap").classList.add("show");
-        loadAllPages();
-        loadUsers();
+        await loadAllPages();
+        await loadUsers();
       }else{
-        clearSessionToken();
-        window.location.href = "login.html?p=admin";
+        goToLogin();
       }
     }catch(error){
-      clearSessionToken();
-      window.location.href = "login.html?p=admin";
+      goToLogin();
     }
   }
 
@@ -770,7 +786,7 @@
   function setLoading(on){
     [
       "btnAdd","btnUpdate","btnDelete","btnClear",
-      "btnBackMain","pass","name"
+      "btnBackMain","username","pass","name"
     ].forEach(function(id){
       const el = document.getElementById(id);
       if(el) el.disabled = on;
@@ -793,6 +809,10 @@
 
   function normalizeName(name){
     return String(name || "").trim().replace(/\s+/g, " ").toLowerCase();
+  }
+
+  function normalizeUsername(username){
+    return String(username || "").trim().toLowerCase();
   }
 
   function getCheckedPages(){
@@ -819,6 +839,7 @@
   }
 
   function clearForm(silent){
+    document.getElementById("username").value = "";
     document.getElementById("pass").value = "";
     document.getElementById("name").value = "";
 
@@ -862,25 +883,27 @@
     const body = document.getElementById("usersBody");
 
     if(!USERS_CACHE.length){
-      body.innerHTML = '<tr><td colspan="4" class="empty">لا توجد بيانات</td></tr>';
+      body.innerHTML = '<tr><td colspan="5" class="empty">لا توجد بيانات</td></tr>';
       return;
     }
 
     let html = "";
 
     USERS_CACHE.forEach(function(u){
+      const username = String(u.username || "").trim();
       const pass = String(u.password || "").trim();
       const name = String(u.name || "").trim();
       const pages = Array.isArray(u.pages) ? u.pages.join(", ") : String(u.pages || "").trim();
 
       html += '<tr>';
+      html +=   '<td>' + escapeHtml(username) + '</td>';
       html +=   '<td>' + escapeHtml(pass) + '</td>';
       html +=   '<td>' + escapeHtml(name) + '</td>';
       html +=   '<td class="pages-cell">' + escapeHtml(pages || "—") + '</td>';
       html +=   '<td class="action-cell">';
       html +=     '<div class="action-box">';
-      html +=       '<button class="btn btn-primary btn-fill-user" type="button" data-pass="' + escapeHtml(pass) + '"><i class="fas fa-pen"></i> تعبئة</button>';
-      html +=       '<button class="btn btn-danger btn-remove-user" type="button" data-pass="' + escapeHtml(pass) + '"><i class="fas fa-trash"></i> حذف</button>';
+      html +=       '<button class="btn btn-primary btn-fill-user" type="button" data-username="' + escapeHtml(username) + '"><i class="fas fa-pen"></i> تعبئة</button>';
+      html +=       '<button class="btn btn-danger btn-remove-user" type="button" data-username="' + escapeHtml(username) + '"><i class="fas fa-trash"></i> حذف</button>';
       html +=     '</div>';
       html +=   '</td>';
       html += '</tr>';
@@ -929,7 +952,7 @@
   async function loadUsers(){
     const token = getSessionToken();
     if(!token){
-      window.location.href = "login.html?p=admin";
+      goToLogin();
       return;
     }
 
@@ -943,7 +966,14 @@
       });
 
       setLoading(false);
-      renderUsersTable(list || []);
+
+      if(list && list.ok === false){
+        setStatus("❌ " + (list.message || "فشل تحميل المستخدمين"), false);
+        showMsg("❌ فشل تحميل المستخدمين", "err");
+        return;
+      }
+
+      renderUsersTable(Array.isArray(list) ? list : []);
       setStatus("✅ تم تحميل المستخدمين", true);
     }catch(err){
       setLoading(false);
@@ -952,29 +982,30 @@
     }
   }
 
-  function isDuplicateName(name, currentPass){
+  function isDuplicateName(name, currentUsername){
     const target = normalizeName(name);
-    const current = String(currentPass || "").trim();
+    const current = normalizeUsername(currentUsername);
 
     return USERS_CACHE.some(function(u){
       const sameName = normalizeName(u.name) === target;
-      const samePass = String(u.password || "").trim() === current;
-      return sameName && !samePass;
+      const sameUsername = normalizeUsername(u.username) === current;
+      return sameName && !sameUsername;
     });
   }
 
   async function addUser(){
     const token = getSessionToken();
     if(!token){
-      window.location.href = "login.html?p=admin";
+      goToLogin();
       return;
     }
 
+    const username = String(document.getElementById("username").value || "").trim();
     const pass = String(document.getElementById("pass").value || "").trim();
     const name = String(document.getElementById("name").value || "").trim();
     const pages = getCheckedPages();
 
-    if(!pass || !name){
+    if(!username || !pass || !name){
       setStatus("⚠️ أكمل الحقول المطلوبة", false);
       showMsg("⚠️ أكمل الحقول", "warn");
       return;
@@ -1000,7 +1031,8 @@
         token: token,
         page: PAGE_NAME,
         data: {
-          pass: pass,
+          username: username,
+          password: pass,
           name: name,
           pages: pages
         }
@@ -1013,7 +1045,7 @@
       if(text.indexOf("✅") !== -1){
         showMsg(text, "ok");
         clearForm(true);
-        loadUsers();
+        await loadUsers();
         setStatus(text, true);
       }else{
         showMsg(text || "تعذر الإضافة", "warn");
@@ -1029,15 +1061,16 @@
   async function updateUser(){
     const token = getSessionToken();
     if(!token){
-      window.location.href = "login.html?p=admin";
+      goToLogin();
       return;
     }
 
+    const username = String(document.getElementById("username").value || "").trim();
     const pass = String(document.getElementById("pass").value || "").trim();
     const name = String(document.getElementById("name").value || "").trim();
     const pages = getCheckedPages();
 
-    if(!pass || !name){
+    if(!username || !pass || !name){
       setStatus("⚠️ أكمل الحقول المطلوبة", false);
       showMsg("⚠️ أكمل الحقول", "warn");
       return;
@@ -1049,7 +1082,7 @@
       return;
     }
 
-    if(isDuplicateName(name, pass)){
+    if(isDuplicateName(name, username)){
       setStatus("❌ الاسم موجود مسبقاً", false);
       showMsg("❌ لا يسمح بتكرار الاسم", "err");
       return;
@@ -1063,7 +1096,8 @@
         token: token,
         page: PAGE_NAME,
         data: {
-          pass: pass,
+          username: username,
+          password: pass,
           name: name,
           pages: pages
         }
@@ -1076,7 +1110,7 @@
       if(text.indexOf("✅") !== -1){
         showMsg(text, "ok");
         clearForm(true);
-        loadUsers();
+        await loadUsers();
         setStatus(text, true);
       }else{
         showMsg(text || "تعذر التحديث", "warn");
@@ -1089,18 +1123,18 @@
     }
   }
 
-  function removeUser(pass){
-    const p = String(pass || document.getElementById("pass").value || "").trim();
-    if(!p){
-      setStatus("⚠️ أدخل كلمة المرور أو اختر مستخدمًا", false);
-      showMsg("⚠️ لا توجد كلمة مرور", "warn");
+  function removeUser(username){
+    const u = String(username || document.getElementById("username").value || "").trim();
+    if(!u){
+      setStatus("⚠️ أدخل اسم المستخدم أو اختر مستخدمًا", false);
+      showMsg("⚠️ لا يوجد اسم مستخدم", "warn");
       return;
     }
 
-    showConfirmBox("هل أنت متأكد من حذف المستخدم ذو الباسورد " + p + " ؟", async function(){
+    showConfirmBox("هل أنت متأكد من حذف المستخدم " + u + " ؟", async function(){
       const token = getSessionToken();
       if(!token){
-        window.location.href = "login.html?p=admin";
+        goToLogin();
         return;
       }
 
@@ -1111,17 +1145,17 @@
           action: "deleteUserFromSheet",
           token: token,
           page: PAGE_NAME,
-          pass: p
+          username: u
         });
 
         const text = typeof msg === "string" ? msg : String((msg && (msg.message || msg.result)) || "");
 
         setLoading(false);
 
-        if(text.includes("تم الحذف")){
+        if(text.includes("✅")){
           showMsg(text, "ok");
           clearForm(true);
-          loadUsers();
+          await loadUsers();
           setStatus(text, true);
         }else{
           showMsg(text || "تعذر الحذف", "warn");
@@ -1135,12 +1169,12 @@
     });
   }
 
-  function fillUserByPass(pass){
-    const p = String(pass || "").trim();
-    if(!p) return;
+  function fillUserByUsername(username){
+    const u = String(username || "").trim();
+    if(!u) return;
 
-    const user = USERS_CACHE.find(function(u){
-      return String(u.password || "").trim() === p;
+    const user = USERS_CACHE.find(function(item){
+      return String(item.username || "").trim() === u;
     });
 
     if(!user){
@@ -1148,6 +1182,7 @@
       return;
     }
 
+    document.getElementById("username").value = String(user.username || "");
     document.getElementById("pass").value = String(user.password || "");
     document.getElementById("name").value = String(user.name || "");
     setCheckedPages(user.pages || "");
@@ -1168,12 +1203,12 @@
       const removeBtn = e.target.closest(".btn-remove-user");
 
       if(fillBtn){
-        fillUserByPass(fillBtn.getAttribute("data-pass"));
+        fillUserByUsername(fillBtn.getAttribute("data-username"));
         return;
       }
 
       if(removeBtn){
-        removeUser(removeBtn.getAttribute("data-pass"));
+        removeUser(removeBtn.getAttribute("data-username"));
       }
     });
   }
