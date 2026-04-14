@@ -122,7 +122,6 @@
     }
   </style>
 </head>
-
 <body>
 
   <div class="box">
@@ -156,27 +155,28 @@ function setMsg(text, isOk = false){
   el.className = isOk ? "ok" : "";
 }
 
-function saveSessionAndGo(res){
-  if(res && res.token){
-    sessionStorage.setItem(STORAGE_KEY, String(res.token));
-  }
+function saveSessionAndGo(token){
+  sessionStorage.setItem(STORAGE_KEY, String(token || ""));
   window.location.href = PAGE + ".html";
 }
 
 async function login(){
-  const username = document.getElementById("username").value.trim();
-  const pass = document.getElementById("pass").value.trim();
+  const usernameEl = document.getElementById("username");
+  const passEl = document.getElementById("pass");
   const btn = document.getElementById("btnLogin");
+
+  const username = usernameEl.value.trim();
+  const pass = passEl.value.trim();
 
   if(!username){
     setMsg("⚠️ أدخل اسم المستخدم");
-    document.getElementById("username").focus();
+    usernameEl.focus();
     return;
   }
 
   if(!pass){
     setMsg("⚠️ أدخل كلمة المرور");
-    document.getElementById("pass").focus();
+    passEl.focus();
     return;
   }
 
@@ -186,7 +186,9 @@ async function login(){
   try{
     const res = await fetch(API_BASE, {
       method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
       body: JSON.stringify({
         action: "login",
         username: username,
@@ -199,16 +201,16 @@ async function login(){
     btn.disabled = false;
 
     if(!data.ok){
-      setMsg(data.message || "❌ اسم المستخدم أو كلمة المرور غير صحيحة");
+      setMsg(data.message || "❌ فشل تسجيل الدخول");
       return;
     }
 
-    setMsg("✅ تم تسجيل الدخول", true);
-    saveSessionAndGo(data);
+    setMsg("✅ تم تسجيل الدخول بنجاح", true);
+    saveSessionAndGo(data.token);
 
-  }catch(error){
+  }catch(err){
     btn.disabled = false;
-    setMsg("❌ تعذر الاتصال بالخادم");
+    setMsg("❌ خطأ اتصال بالخادم");
   }
 }
 
