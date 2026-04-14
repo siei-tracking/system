@@ -4,14 +4,11 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <link rel="stylesheet" href="watermark.css">
-  <title>التخطيط - منصة تتبع أوامر العمل</title>
+<title>التخطيط - منصة تتبع أوامر العمل</title>
 
 <link rel="icon" href="https://siei-tracking.github.io/system/logo.png">
-
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-<title>التخطيط - منصة تتبع أوامر العمل</title>
 
 <style>
 :root{
@@ -38,7 +35,6 @@ body{
   color:#111;
 }
 
-/* لا نعرض الصفحة إلا بعد التحقق */
 #pageWrap{
   display:none;
 }
@@ -485,10 +481,9 @@ input::placeholder{
   font-size:20px;
   font-weight:600;
   color:#000;
-  text-align:center;
+  text-align:right;
   height:40px;
   width:100%;
-  text-align:right;
 }
 
 #nClient::placeholder{
@@ -523,119 +518,120 @@ input::placeholder{
 <body>
 
 <div id="pageWrap">
-<div class="page-shell">
-  <header class="company-header">
-    <img class="logo" src="https://drive.google.com/thumbnail?id=1NN7G2zhk7nhgXuPWGW4qE_pdGC-Ptjkt&sz=w500" alt="logo">
+  <div class="page-shell">
+    <header class="company-header">
+      <img class="logo" src="https://drive.google.com/thumbnail?id=1NN7G2zhk7nhgXuPWGW4qE_pdGC-Ptjkt&sz=w500" alt="logo">
 
-    <div class="header-text">
-      <h1>الشركة العامة للفحص والتأهيل الهندسي</h1>
+      <div class="header-text">
+        <h1>الشركة العامة للفحص والتأهيل الهندسي</h1>
 
-      <p>
-        <i class="fas fa-clipboard-list"></i>
-        منصة تتبع اوامر العمل - اصدار امر العمل والتسعيرة
-      </p>
+        <p>
+          <i class="fas fa-clipboard-list"></i>
+          منصة تتبع اوامر العمل - اصدار امر العمل والتسعيرة
+        </p>
 
-      <div class="user-row">
-        <div id="welcomeUser" class="user-pill"></div>
+        <div class="user-row">
+          <div id="welcomeUser" class="user-pill"></div>
+        </div>
       </div>
-    </div>
-  </header>
+    </header>
 
-  <main class="main-content">
-    <div class="card" id="cardForm">
+    <main class="main-content">
+      <div class="card" id="cardForm">
 
-      <div class="tabs">
-        <button class="tab-btn primary" id="tabNew" type="button" onclick="switchTab('new')">
-          <i class="fas fa-plus-circle"></i>
-          إضافة أمر عمل
-        </button>
+        <div class="tabs">
+          <button class="tab-btn primary" id="tabNew" type="button" onclick="switchTab('new')">
+            <i class="fas fa-plus-circle"></i>
+            إضافة أمر عمل
+          </button>
 
-        <button class="tab-btn ghost" id="tabPrice" type="button" onclick="switchTab('price')">
-          <i class="fas fa-receipt"></i>
-          تثبيت التسعيرة
-        </button>
-      </div>
+          <button class="tab-btn ghost" id="tabPrice" type="button" onclick="switchTab('price')">
+            <i class="fas fa-receipt"></i>
+            تثبيت التسعيرة
+          </button>
+        </div>
 
-      <div class="section active" id="secNew">
-        <div class="grid">
+        <div class="section active" id="secNew">
+          <div class="grid">
+            <div class="field">
+              <label>رقم أمر العمل</label>
+              <input id="nID" type="text" placeholder="ادخل رقم أمر العمل" inputmode="numeric">
+            </div>
+
+            <div class="field">
+              <label>اسم الجهة المستفيدة</label>
+              <input id="nClient" type="text" placeholder="اسم الجهة">
+            </div>
+          </div>
+
+          <button class="main-action" id="btnNew" type="button" onclick="saveNew()">
+            اعتماد وحفظ البيانات
+          </button>
+        </div>
+
+        <div class="section" id="secPrice">
           <div class="field">
             <label>رقم أمر العمل</label>
-            <input id="nID" type="text" placeholder="ادخل رقم أمر العمل" inputmode="numeric">
+            <input id="pID" type="text" placeholder="ادخل رقم أمر العمل" inputmode="numeric">
+          </div>
+
+          <div class="row-2">
+            <div class="field">
+              <label>التسعيرة</label>
+              <input id="pVal" type="number" placeholder="0">
+            </div>
+
+            <div class="field">
+              <label>عدد الأيام</label>
+              <input id="pDays" type="number" placeholder="0">
+            </div>
           </div>
 
           <div class="field">
-            <label>اسم الجهة المستفيدة</label>
-            <input id="nClient" type="text" placeholder="اسم الجهة">
-          </div>
-        </div>
-
-        <button class="main-action" id="btnNew" type="button" onclick="saveNew()">
-          اعتماد وحفظ البيانات
-        </button>
-      </div>
-
-      <div class="section" id="secPrice">
-        <div class="field">
-          <label>رقم أمر العمل</label>
-          <input id="pID" type="text" placeholder="ادخل رقم أمر العمل" inputmode="numeric">
-        </div>
-
-        <div class="row-2">
-          <div class="field">
-            <label>التسعيرة</label>
-            <input id="pVal" type="number" placeholder="0">
-          </div>
-
-          <div class="field">
-            <label>عدد الأيام</label>
-            <input id="pDays" type="number" placeholder="0">
-          </div>
-        </div>
-
-        <div class="field">
-          <label>نوع الفحص</label>
-          <select id="pType" onchange="toggleLab(this.value)">
-            <option value="">اختر النوع</option>
-            <option value="مختبرات">الفحص المختبري</option>
-            <option value="مصاعد">فحص المصاعد</option>
-          </select>
-        </div>
-
-        <div class="lab-box" id="labBox">
-          <div class="field">
-            <label>التوجيه</label>
-            <select id="pLabVal">
-              <option value="ورشة">ورشة</option>
-              <option value="مختبرات فقط">مختبرات فقط</option>
+            <label>نوع الفحص</label>
+            <select id="pType" onchange="toggleLab(this.value)">
+              <option value="">اختر النوع</option>
+              <option value="مختبرات">الفحص المختبري</option>
+              <option value="مصاعد">فحص المصاعد</option>
             </select>
           </div>
-        </div>
 
-        <button class="main-action" id="btnPrice" type="button" onclick="savePrice()">
-          اعتماد وحفظ البيانات
+          <div class="lab-box" id="labBox">
+            <div class="field">
+              <label>التوجيه</label>
+              <select id="pLabVal">
+                <option value="ورشة">ورشة</option>
+                <option value="مختبرات فقط">مختبرات فقط</option>
+              </select>
+            </div>
+          </div>
+
+          <button class="main-action" id="btnPrice" type="button" onclick="savePrice()">
+            اعتماد وحفظ البيانات
+          </button>
+        </div>
+      </div>
+
+      <div class="card success" id="cardSuccess">
+        <i class="fas fa-check-circle"></i>
+        <h2>تم الحفظ بنجاح</h2>
+        <p id="successText">تم توثيق العملية في السجل الموحد.</p>
+
+        <button class="again" type="button" onclick="resetAll()">
+          <i class="fas fa-plus"></i>
+          معاملة جديدة
         </button>
       </div>
-    </div>
-
-    <div class="card success" id="cardSuccess">
-      <i class="fas fa-check-circle"></i>
-      <h2>تم الحفظ بنجاح</h2>
-      <p id="successText">تم توثيق العملية في السجل الموحد.</p>
-
-      <button class="again" type="button" onclick="resetAll()">
-        <i class="fas fa-plus"></i>
-        معاملة جديدة
-      </button>
-    </div>
-  </main>
+    </main>
+  </div>
 </div>
 
 <div id="toast" class="toast"></div>
 
 <script>
-const API_BASE = "https://script.google.com/macros/s/AKfycbxcC_OGL2rfLVX0QPPw0qtXVoZFVM68stc8vscElXRcWM0vhKncL6nO3JQGy10UtRLm/exec";
-const STORAGE_KEY = "tracking_session_token_plan";
+const API_BASE = "https://script.google.com/macros/s/AKfycbwO-vegDiHhcTYMGlh47OYMcfeBvAO4TVdFTipNntKmw9pW8ol8JNoMJK8zS6qbqVbx/exec";
 const PAGE_NAME = "plan";
+const STORAGE_KEY = "tracking_session_token_" + PAGE_NAME;
 
 let currentUserName = "";
 
@@ -645,6 +641,11 @@ function getSessionToken(){
 
 function clearSessionToken(){
   sessionStorage.removeItem(STORAGE_KEY);
+}
+
+function goToLogin(){
+  clearSessionToken();
+  window.location.href = "login.html?p=" + PAGE_NAME;
 }
 
 async function apiPost(payload){
@@ -669,7 +670,7 @@ async function ensurePageSession(){
   const token = getSessionToken();
 
   if(!token){
-    window.location.href = "login.html?p=plan";
+    goToLogin();
     return;
   }
 
@@ -684,20 +685,14 @@ async function ensurePageSession(){
       currentUserName = result.user || "مخول غير معروف";
 
       const w = document.getElementById("welcomeUser");
-      if(currentUserName && currentUserName !== "مخول غير معروف"){
-        w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: ' + currentUserName;
-      }else{
-        w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: مخول غير معروف';
-      }
+      w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: ' + currentUserName;
 
       document.getElementById("pageWrap").classList.add("show");
     }else{
-      clearSessionToken();
-      window.location.href = "login.html?p=plan";
+      goToLogin();
     }
   }catch(error){
-    clearSessionToken();
-    window.location.href = "login.html?p=plan";
+    goToLogin();
   }
 }
 
@@ -754,8 +749,13 @@ function resetAll(){
   document.getElementById("cardSuccess").style.display = "none";
   document.getElementById("cardForm").style.display = "block";
 
-  document.querySelectorAll("input").forEach(function(i){ i.value = ""; });
-  document.querySelectorAll("select").forEach(function(s){ s.selectedIndex = 0; });
+  document.querySelectorAll("#secNew input, #secPrice input").forEach(function(i){
+    i.value = "";
+  });
+
+  document.querySelectorAll("#secPrice select").forEach(function(s){
+    s.selectedIndex = 0;
+  });
 
   toggleLab("");
   switchTab("new");
@@ -765,6 +765,8 @@ function resetAll(){
 
   document.getElementById("btnPrice").disabled = false;
   document.getElementById("btnPrice").innerHTML = "اعتماد وحفظ البيانات";
+
+  document.getElementById("nID").focus();
 }
 
 async function saveNew(){
@@ -778,7 +780,7 @@ async function saveNew(){
 
   const token = getSessionToken();
   if(!token){
-    window.location.href = "login.html?p=plan";
+    goToLogin();
     return;
   }
 
@@ -802,6 +804,12 @@ async function saveNew(){
       showSuccess("تم إضافة أمر العمل وتوثيقه");
       showToast(msg || "تم الحفظ بنجاح", "success");
     }else{
+      if(msg.indexOf("انتهت الجلسة") !== -1 || msg.indexOf("غير صالح") !== -1 || msg.indexOf("غير مصرح") !== -1){
+        showToast("انتهت الجلسة", "error");
+        setTimeout(goToLogin, 800);
+        return;
+      }
+
       showToast(msg || "تعذر حفظ البيانات", "error");
       btn.disabled = false;
       btn.innerHTML = "اعتماد وحفظ البيانات";
@@ -833,7 +841,7 @@ async function savePrice(){
 
   const token = getSessionToken();
   if(!token){
-    window.location.href = "login.html?p=plan";
+    goToLogin();
     return;
   }
 
@@ -855,6 +863,12 @@ async function savePrice(){
       showSuccess("تم تثبيت التسعيرة وعدد الأيام وتوثيقها");
       showToast(msg || "تم تثبيت التسعيرة بنجاح", "success");
     }else{
+      if(msg.indexOf("انتهت الجلسة") !== -1 || msg.indexOf("غير صالح") !== -1 || msg.indexOf("غير مصرح") !== -1){
+        showToast("انتهت الجلسة", "error");
+        setTimeout(goToLogin, 800);
+        return;
+      }
+
       showToast(msg || "تعذر حفظ البيانات", "error");
       btn.disabled = false;
       btn.innerHTML = "اعتماد وحفظ البيانات";
@@ -867,7 +881,9 @@ async function savePrice(){
   }
 }
 
-ensurePageSession();
+window.addEventListener("load", function(){
+  ensurePageSession();
+});
 </script>
 
 </body>
