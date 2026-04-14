@@ -145,28 +145,38 @@
 
 <script>
 const API_BASE = "https://script.google.com/macros/s/AKfycbwO-vegDiHhcTYMGlh47OYMcfeBvAO4TVdFTipNntKmw9pW8ol8JNoMJK8zS6qbqVbx/exec";
-const STORAGE_KEY = "tracking_session_token_plan";
 
 const params = new URLSearchParams(window.location.search);
 const PAGE = String(params.get("p") || "main").trim().toLowerCase();
+const STORAGE_KEY = "tracking_session_token_" + PAGE;
 
-function setMsg(text, isOk){
+function setMsg(text, isOk = false){
   const el = document.getElementById("msg");
   el.textContent = text || "";
   el.className = isOk ? "ok" : "";
 }
 
 function saveSessionAndGo(res){
-  sessionStorage.setItem(STORAGE_KEY, String(res.token || ""));
+  if(res && res.token){
+    sessionStorage.setItem(STORAGE_KEY, String(res.token));
+  }
   window.location.href = PAGE + ".html";
 }
 
 async function login(){
+  const username = document.getElementById("username").value.trim();
   const pass = document.getElementById("pass").value.trim();
-  const btn  = document.getElementById("btnLogin");
+  const btn = document.getElementById("btnLogin");
+
+  if(!username){
+    setMsg("⚠️ أدخل اسم المستخدم");
+    document.getElementById("username").focus();
+    return;
+  }
 
   if(!pass){
-    setMsg("⚠️ أدخل كلمة المرور", false);
+    setMsg("⚠️ أدخل كلمة المرور");
+    document.getElementById("pass").focus();
     return;
   }
 
@@ -174,11 +184,12 @@ async function login(){
   setMsg("جاري التحقق...", true);
 
   try{
-    const res = await fetch(API_BASE,{
-      method:"POST",
-      headers:{ "Content-Type":"text/plain;charset=utf-8" },
+    const res = await fetch(API_BASE, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify({
-        action:"login",
+        action: "login",
+        username: username,
         password: pass,
         page: PAGE
       })
@@ -188,24 +199,29 @@ async function login(){
     btn.disabled = false;
 
     if(!data.ok){
-      setMsg(data.message || "❌ خطأ", false);
+      setMsg(data.message || "❌ اسم المستخدم أو كلمة المرور غير صحيحة");
       return;
     }
 
     setMsg("✅ تم تسجيل الدخول", true);
     saveSessionAndGo(data);
 
-  }catch(e){
+  }catch(error){
     btn.disabled = false;
-    setMsg("❌ خطأ اتصال", false);
+    setMsg("❌ تعذر الاتصال بالخادم");
   }
 }
 
 document.getElementById("btnLogin").addEventListener("click", login);
 
-document.getElementById("pass").addEventListener("keypress", function(e){
+document.getElementById("username").addEventListener("keydown", function(e){
+  if(e.key === "Enter") login();
+});
+
+document.getElementById("pass").addEventListener("keydown", function(e){
   if(e.key === "Enter") login();
 });
 </script>
+
 </body>
 </html>
