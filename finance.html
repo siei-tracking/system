@@ -43,7 +43,6 @@ body{
   display:block;
 }
 
-/* ===== Header ===== */
 .company-header{
   background-image:
     linear-gradient(rgba(34,50,67,.3), rgba(34,50,67,.3)),
@@ -134,7 +133,6 @@ body{
    0 4px 10px rgba(0,0,0,0.8) !important;
 }
 
-/* ===== Main ===== */
 .main-content{
   padding:0 5% 30px;
   display:flex;
@@ -143,7 +141,6 @@ body{
   margin-top:-40px;
 }
 
-/* ===== Floating Card ===== */
 .card{
   width:100%;
   max-width:820px;
@@ -180,7 +177,6 @@ body{
   pointer-events:none;
 }
 
-/* ===== Form ===== */
 .input-group{
   margin-bottom:10px;
   text-align:right;
@@ -495,8 +491,8 @@ input::placeholder{
 
 <script>
 const API_BASE = "https://script.google.com/macros/s/AKfycbxRrpDpniNXisjWPkZJZ0EXbdtRVkiEmvQuxgKd1QYno-_2wrwlq4UJc9XICrUQPBgD/exec";
-const STORAGE_KEY = "tracking_session_token_plan";
 const PAGE_NAME = "finance";
+const STORAGE_KEY = "tracking_session_token_" + PAGE_NAME;
 
 let currentUserName = "";
 let lastPayStatus = "";
@@ -507,6 +503,11 @@ function getSessionToken(){
 
 function clearSessionToken(){
   sessionStorage.removeItem(STORAGE_KEY);
+}
+
+function goToLogin(){
+  clearSessionToken();
+  window.location.href = "login.html?p=" + PAGE_NAME;
 }
 
 async function apiPost(payload){
@@ -531,7 +532,7 @@ async function ensurePageSession(){
   const token = getSessionToken();
 
   if(!token){
-    window.location.href = "login.html?p=finance";
+    goToLogin();
     return;
   }
 
@@ -545,17 +546,15 @@ async function ensurePageSession(){
     if(result && result.ok){
       currentUserName = result.user || "مخول غير معروف";
 
-      const w = document.getElementById('welcomeUser');
+      const w = document.getElementById("welcomeUser");
       w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: ' + currentUserName;
 
       document.getElementById("pageWrap").classList.add("show");
     }else{
-      clearSessionToken();
-      window.location.href = "login.html?p=finance";
+      goToLogin();
     }
   }catch(error){
-    clearSessionToken();
-    window.location.href = "login.html?p=finance";
+    goToLogin();
   }
 }
 
@@ -564,8 +563,8 @@ function showMsg(text, type){
 
   const t = document.getElementById("toast");
   t.className = "";
-
-  if(type === "warn") t.classList.add("warn");
+  if(type === "ok") t.classList.add("ok");
+  else if(type === "warn") t.classList.add("warn");
   else if(type === "err") t.classList.add("err");
 
   t.textContent = text;
@@ -578,7 +577,7 @@ function showMsg(text, type){
 }
 
 async function fetchData(){
-  const id = document.getElementById('orderID').value.trim();
+  const id = document.getElementById("orderID").value.trim();
   if(!id){
     showMsg("⚠️ يرجى إدخال رقم أمر العمل", "warn");
     return;
@@ -586,13 +585,13 @@ async function fetchData(){
 
   const token = getSessionToken();
   if(!token){
-    window.location.href = "login.html?p=finance";
+    goToLogin();
     return;
   }
 
-  document.getElementById('fetchBtn').disabled = true;
-  document.getElementById('loader').style.display = 'block';
-  document.getElementById('resPanel').style.display = 'none';
+  document.getElementById("fetchBtn").disabled = true;
+  document.getElementById("loader").style.display = "block";
+  document.getElementById("resPanel").style.display = "none";
 
   try{
     const data = await apiPost({
@@ -602,24 +601,34 @@ async function fetchData(){
       orderNo: id
     });
 
-    document.getElementById('loader').style.display = 'none';
-    document.getElementById('fetchBtn').disabled = false;
+    document.getElementById("loader").style.display = "none";
+    document.getElementById("fetchBtn").disabled = false;
+
+    if(data && data.ok === false && data.message){
+      if(data.message.indexOf("انتهت الجلسة") !== -1 || data.message.indexOf("غير صالح") !== -1 || data.message.indexOf("غير مصرح") !== -1){
+        showMsg("❌ انتهت الجلسة", "err");
+        setTimeout(goToLogin, 800);
+        return;
+      }
+
+      showMsg(data.message, "err");
+      return;
+    }
 
     if(data && data.found){
+      document.getElementById("cName").innerText = data.clientName || "---";
 
-      document.getElementById('cName').innerText = data.clientName || "---";
-
-      const btn = document.getElementById('payBtn');
+      const btn = document.getElementById("payBtn");
       const priceValue = Number(data.price || 0);
 
       if(priceValue > 0){
-        document.getElementById('priceText').innerText = priceValue;
+        document.getElementById("priceText").innerText = priceValue;
       } else {
-        document.getElementById('priceText').innerText = "غير مسعّر";
+        document.getElementById("priceText").innerText = "غير مسعّر";
         btn.disabled = true;
         btn.style.background = "#bdc3c7";
         btn.innerHTML = '<i class="fas fa-ban"></i> لا يمكن التسديد';
-        document.getElementById('resPanel').style.display = 'block';
+        document.getElementById("resPanel").style.display = "block";
         showMsg("⚠️ أمر العمل غير مسعّر", "warn");
         return;
       }
@@ -637,21 +646,20 @@ async function fetchData(){
         btn.innerHTML = '<i class="fas fa-check"></i> توثيق التسديد';
       }
 
-      document.getElementById('resPanel').style.display = 'block';
-
+      document.getElementById("resPanel").style.display = "block";
     } else {
       showMsg("⚠️ الرقم غير موجود", "warn");
     }
 
   }catch(err){
-    document.getElementById('loader').style.display = 'none';
-    document.getElementById('fetchBtn').disabled = false;
+    document.getElementById("loader").style.display = "none";
+    document.getElementById("fetchBtn").disabled = false;
     showMsg("❌ خطأ في الاتصال", "err");
   }
 }
 
 async function pay(){
-  const id = document.getElementById('orderID').value.trim();
+  const id = document.getElementById("orderID").value.trim();
   if(!id){
     showMsg("⚠️ يرجى إدخال رقم أمر العمل", "warn");
     return;
@@ -659,11 +667,11 @@ async function pay(){
 
   const token = getSessionToken();
   if(!token){
-    window.location.href = "login.html?p=finance";
+    goToLogin();
     return;
   }
 
-  const btn = document.getElementById('payBtn');
+  const btn = document.getElementById("payBtn");
   btn.disabled = true;
   btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
 
@@ -677,10 +685,11 @@ async function pay(){
     });
 
     if(r && r.ok){
-      document.getElementById('cardForm').style.display = 'none';
-      document.getElementById('successMessage').style.display = 'block';
+      document.getElementById("cardForm").style.display = "none";
+      document.getElementById("successMessage").style.display = "block";
     } else {
-      showMsg("❌ تعذر الحفظ", "err");
+      const msg = String((r && (r.message || r.result)) || "");
+      showMsg(msg || "❌ تعذر الحفظ", "err");
       btn.disabled = false;
       btn.innerHTML = '<i class="fas fa-check"></i> توثيق التسديد';
     }
@@ -693,18 +702,33 @@ async function pay(){
 }
 
 function resetPage(){
-  document.getElementById('orderID').value = "";
-  document.getElementById('cardForm').style.display = 'block';
-  document.getElementById('successMessage').style.display = 'none';
-  document.getElementById('resPanel').style.display = 'none';
+  document.getElementById("orderID").value = "";
+  document.getElementById("cardForm").style.display = "block";
+  document.getElementById("successMessage").style.display = "none";
+  document.getElementById("resPanel").style.display = "none";
+  document.getElementById("loader").style.display = "none";
 
-  const btn = document.getElementById('payBtn');
+  const btn = document.getElementById("payBtn");
   btn.disabled = false;
   btn.style.background = "linear-gradient(180deg,#2ebf68,#26a65b)";
   btn.innerHTML = '<i class="fas fa-check"></i> توثيق التسديد';
+
+  document.getElementById("cName").innerText = "---";
+  document.getElementById("priceText").innerText = "—";
+  document.getElementById("fetchBtn").disabled = false;
+  lastPayStatus = "";
+  document.getElementById("orderID").focus();
 }
 
-ensurePageSession();
+window.addEventListener("load", function(){
+  ensurePageSession();
+
+  document.getElementById("orderID").addEventListener("keydown", function(e){
+    if(e.key === "Enter"){
+      fetchData();
+    }
+  });
+});
 </script>
 
 </body>
