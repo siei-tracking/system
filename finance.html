@@ -494,9 +494,9 @@ input::placeholder{
 <div id="toast"></div>
 
 <script>
-const API_BASE = "https://script.google.com/macros/s/AKfycbxqFgvYejFEp3cxr5CTnI60sLIvRSJc_wfrM_3sjWrJS9lJOV37A3k3GvVb8Lv5SRLJ/exec";
+const API_BASE = "https://script.google.com/macros/s/AKfycbxRrpDpniNXisjWPkZJZ0EXbdtRVkiEmvQuxgKd1QYno-_2wrwlq4UJc9XICrUQPBgD/exec";
+const STORAGE_KEY = "tracking_session_token_plan";
 const PAGE_NAME = "finance";
-const STORAGE_KEY = "tracking_session_token_" + PAGE_NAME;
 
 let currentUserName = "";
 let lastPayStatus = "";
@@ -507,11 +507,6 @@ function getSessionToken(){
 
 function clearSessionToken(){
   sessionStorage.removeItem(STORAGE_KEY);
-}
-
-function goToLogin(){
-  clearSessionToken();
-  window.location.href = "login.html?p=" + PAGE_NAME;
 }
 
 async function apiPost(payload){
@@ -536,7 +531,7 @@ async function ensurePageSession(){
   const token = getSessionToken();
 
   if(!token){
-    goToLogin();
+    window.location.href = "login.html?p=finance";
     return;
   }
 
@@ -550,30 +545,30 @@ async function ensurePageSession(){
     if(result && result.ok){
       currentUserName = result.user || "مخول غير معروف";
 
-      const w = document.getElementById("welcomeUser");
-      if(currentUserName && currentUserName !== "مخول غير معروف"){
-        w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: ' + currentUserName;
-      } else {
-        w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: مخول غير معروف';
-      }
+      const w = document.getElementById('welcomeUser');
+      w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: ' + currentUserName;
 
       document.getElementById("pageWrap").classList.add("show");
     }else{
-      goToLogin();
+      clearSessionToken();
+      window.location.href = "login.html?p=finance";
     }
   }catch(error){
-    goToLogin();
+    clearSessionToken();
+    window.location.href = "login.html?p=finance";
   }
 }
 
 function showMsg(text, type){
-  var t = document.getElementById("toast");
+  if(!text) return;
+
+  const t = document.getElementById("toast");
   t.className = "";
-  if(type === "ok") t.classList.add("ok");
-  else if(type === "warn") t.classList.add("warn");
+
+  if(type === "warn") t.classList.add("warn");
   else if(type === "err") t.classList.add("err");
 
-  t.textContent = text || "";
+  t.textContent = text;
   t.style.display = "block";
 
   clearTimeout(window.__toastTimer);
@@ -583,7 +578,7 @@ function showMsg(text, type){
 }
 
 async function fetchData(){
-  const id = document.getElementById("orderID").value.trim();
+  const id = document.getElementById('orderID').value.trim();
   if(!id){
     showMsg("⚠️ يرجى إدخال رقم أمر العمل", "warn");
     return;
@@ -591,13 +586,13 @@ async function fetchData(){
 
   const token = getSessionToken();
   if(!token){
-    goToLogin();
+    window.location.href = "login.html?p=finance";
     return;
   }
 
-  document.getElementById("fetchBtn").disabled = true;
-  document.getElementById("loader").style.display = "block";
-  document.getElementById("resPanel").style.display = "none";
+  document.getElementById('fetchBtn').disabled = true;
+  document.getElementById('loader').style.display = 'block';
+  document.getElementById('resPanel').style.display = 'none';
 
   try{
     const data = await apiPost({
@@ -607,36 +602,24 @@ async function fetchData(){
       orderNo: id
     });
 
-    document.getElementById("loader").style.display = "none";
-    document.getElementById("fetchBtn").disabled = false;
-
-    if(data && data.ok === false && data.message){
-      if(data.message.indexOf("انتهت الجلسة") !== -1 || data.message.indexOf("غير صالح") !== -1 || data.message.indexOf("غير مصرح") !== -1){
-        showMsg("❌ انتهت الجلسة", "err");
-        setTimeout(goToLogin, 800);
-        return;
-      }
-
-      showMsg(data.message, "err");
-      return;
-    }
+    document.getElementById('loader').style.display = 'none';
+    document.getElementById('fetchBtn').disabled = false;
 
     if(data && data.found){
-      document.getElementById("cName").innerText = data.clientName || "---";
 
-      const btn = document.getElementById("payBtn");
+      document.getElementById('cName').innerText = data.clientName || "---";
+
+      const btn = document.getElementById('payBtn');
       const priceValue = Number(data.price || 0);
-      const isPriced = priceValue > 0;
 
-      if(isPriced){
-        document.getElementById("priceText").innerText = priceValue;
-        showMsg("✅ أمر العمل مسعّر", "ok");
+      if(priceValue > 0){
+        document.getElementById('priceText').innerText = priceValue;
       } else {
-        document.getElementById("priceText").innerText = "غير مسعّر";
+        document.getElementById('priceText').innerText = "غير مسعّر";
         btn.disabled = true;
         btn.style.background = "#bdc3c7";
         btn.innerHTML = '<i class="fas fa-ban"></i> لا يمكن التسديد';
-        document.getElementById("resPanel").style.display = "block";
+        document.getElementById('resPanel').style.display = 'block';
         showMsg("⚠️ أمر العمل غير مسعّر", "warn");
         return;
       }
@@ -648,26 +631,27 @@ async function fetchData(){
         btn.disabled = true;
         btn.style.background = "#bdc3c7";
         btn.innerHTML = '<i class="fas fa-lock"></i> مسدد مسبقاً';
-        showMsg("⚠️ هذه المرحلة موثقة مسبقاً", "warn");
       } else {
         btn.disabled = false;
         btn.style.background = "linear-gradient(180deg,#2ebf68,#26a65b)";
         btn.innerHTML = '<i class="fas fa-check"></i> توثيق التسديد';
       }
 
-      document.getElementById("resPanel").style.display = "block";
+      document.getElementById('resPanel').style.display = 'block';
+
     } else {
       showMsg("⚠️ الرقم غير موجود", "warn");
     }
+
   }catch(err){
-    document.getElementById("loader").style.display = "none";
-    document.getElementById("fetchBtn").disabled = false;
+    document.getElementById('loader').style.display = 'none';
+    document.getElementById('fetchBtn').disabled = false;
     showMsg("❌ خطأ في الاتصال", "err");
   }
 }
 
 async function pay(){
-  const id = document.getElementById("orderID").value.trim();
+  const id = document.getElementById('orderID').value.trim();
   if(!id){
     showMsg("⚠️ يرجى إدخال رقم أمر العمل", "warn");
     return;
@@ -675,11 +659,11 @@ async function pay(){
 
   const token = getSessionToken();
   if(!token){
-    goToLogin();
+    window.location.href = "login.html?p=finance";
     return;
   }
 
-  const btn = document.getElementById("payBtn");
+  const btn = document.getElementById('payBtn');
   btn.disabled = true;
   btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
 
@@ -692,23 +676,15 @@ async function pay(){
       userName: currentUserName
     });
 
-    const msg = String((r && (r.message || r.result)) || "");
-
     if(r && r.ok){
-      document.getElementById("cardForm").style.display = "none";
-      document.getElementById("successMessage").style.display = "block";
-      showMsg(msg || "✅ تم توثيق التسديد", "ok");
+      document.getElementById('cardForm').style.display = 'none';
+      document.getElementById('successMessage').style.display = 'block';
     } else {
-      if(msg.indexOf("انتهت الجلسة") !== -1 || msg.indexOf("غير صالح") !== -1 || msg.indexOf("غير مصرح") !== -1){
-        showMsg("❌ انتهت الجلسة", "err");
-        setTimeout(goToLogin, 800);
-        return;
-      }
-
-      showMsg(msg || "❌ تعذر الحفظ", "err");
+      showMsg("❌ تعذر الحفظ", "err");
       btn.disabled = false;
       btn.innerHTML = '<i class="fas fa-check"></i> توثيق التسديد';
     }
+
   }catch(err){
     showMsg("❌ خطأ في الاتصال", "err");
     btn.disabled = false;
@@ -717,34 +693,18 @@ async function pay(){
 }
 
 function resetPage(){
-  document.getElementById("orderID").value = "";
-  document.getElementById("cardForm").style.display = "block";
-  document.getElementById("successMessage").style.display = "none";
-  document.getElementById("inputForm").style.display = "block";
-  document.getElementById("resPanel").style.display = "none";
-  document.getElementById("loader").style.display = "none";
+  document.getElementById('orderID').value = "";
+  document.getElementById('cardForm').style.display = 'block';
+  document.getElementById('successMessage').style.display = 'none';
+  document.getElementById('resPanel').style.display = 'none';
 
-  const btn = document.getElementById("payBtn");
+  const btn = document.getElementById('payBtn');
   btn.disabled = false;
   btn.style.background = "linear-gradient(180deg,#2ebf68,#26a65b)";
   btn.innerHTML = '<i class="fas fa-check"></i> توثيق التسديد';
-
-  document.getElementById("cName").innerText = "---";
-  document.getElementById("priceText").innerText = "—";
-  lastPayStatus = "";
-  document.getElementById("fetchBtn").disabled = false;
-  document.getElementById("orderID").focus();
 }
 
-window.addEventListener("load", function(){
-  ensurePageSession();
-
-  document.getElementById("orderID").addEventListener("keydown", function(e){
-    if(e.key === "Enter"){
-      fetchData();
-    }
-  });
-});
+ensurePageSession();
 </script>
 
 </body>
