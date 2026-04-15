@@ -830,7 +830,7 @@
       : String(pagesValue || "")
           .split(",")
           .map(function(p){ return String(p || "").trim().toLowerCase(); })
-          .filter(function(p){ return !!p; });
+          .filter(function(p){ return !!p && p !== "admin"; });
 
     const checks = document.querySelectorAll('#pagesBox input[type="checkbox"]');
     checks.forEach(function(ch){
@@ -866,7 +866,7 @@
       const page = String(p || "").trim();
       const lower = page.toLowerCase();
 
-      if(lower === "index") return;
+      if(lower === "index" || lower === "admin") return;
 
       const item = document.createElement("label");
       item.className = "page-item";
@@ -893,7 +893,16 @@
       const username = String(u.username || "").trim();
       const pass = String(u.password || "").trim();
       const name = String(u.name || "").trim();
-      const pages = Array.isArray(u.pages) ? u.pages.join(", ") : String(u.pages || "").trim();
+
+      let pagesArr = Array.isArray(u.pages)
+        ? u.pages
+        : String(u.pages || "").split(",");
+
+      pagesArr = pagesArr
+        .map(function(p){ return String(p || "").trim(); })
+        .filter(function(p){ return p && p.toLowerCase() !== "admin"; });
+
+      const pages = pagesArr.join(", ");
 
       html += '<tr>';
       html +=   '<td>' + escapeHtml(username) + '</td>';
