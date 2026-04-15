@@ -1,228 +1,1241 @@
 ﻿<!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>تسجيل الدخول</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+  <title>إدارة المستخدمين والصلاحيات</title>
   <link rel="icon" href="https://siei-tracking.github.io/system/logo.png">
+
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
   <style>
+    :root{
+      --primary:#223243;
+      --accent:#f5a623;
+      --bg:#eef2f6;
+      --card:rgba(255,255,255,0.92);
+      --line:#e5ebf1;
+      --muted:#758292;
+      --ok:#27ae60;
+      --danger:#e74c3c;
+      --warn:#f39c12;
+      --soft:#f8fafc;
+    }
+
     *{ box-sizing:border-box; }
 
     body{
       margin:0;
       font-family:'Cairo',sans-serif;
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      padding:16px;
       background:
+        radial-gradient(circle at top right, rgba(245,166,35,.08), transparent 24%),
+        radial-gradient(circle at top left, rgba(34,50,67,.05), transparent 30%),
+        var(--bg);
+      color:#111;
+    }
+
+    #pageWrap{
+      display:none;
+    }
+    #pageWrap.show{
+      display:block;
+    }
+
+    .company-header{
+      background-image:
         linear-gradient(rgba(34,50,67,.3), rgba(34,50,67,.3)),
         url('https://drive.google.com/thumbnail?id=1kGABjKDT_tHkUbce1CWMVVFfrbfJ1_P7&sz=w1400');
       background-size:cover;
       background-position:center;
-      background-repeat:no-repeat;
-    }
-
-    .box{
-      width:100%;
-      max-width:380px;
-      background:rgba(255,255,255,.95);
-      border-radius:20px;
-      padding:30px 24px;
+      padding:64px 5% 60px;
+      display:flex;
+      align-items:center;
+      gap:16px;
+      color:#fff;
+      flex-wrap:wrap;
+      justify-content:center;
       text-align:center;
-      box-shadow:0 20px 60px rgba(0,0,0,.28);
-      backdrop-filter: blur(6px);
+      box-shadow:0 12px 28px rgba(0,0,0,.18);
+      position:relative;
+      overflow:hidden;
     }
 
-    .logo{
-      width:92px;
-      height:92px;
-      object-fit:cover;
+    .company-logo{
+      width:100px;
+      height:100px;
+      background:#fff;
       border-radius:50%;
-      border:3px solid #fff;
-      box-shadow:0 8px 24px rgba(0,0,0,.22);
-      margin:0 auto 14px;
+      padding:5px;
+      object-fit:contain;
       display:block;
+      flex-shrink:0;
+      box-shadow:
+        -1px -1px 0 rgba(0,0,0,0.1),
+         1px -1px 0 rgba(0,0,0,0.1),
+        -1px  1px 0 rgba(0,0,0,0.1),
+         1px  1px 0 rgba(0,0,0,0.1),
+         0 1px 4px rgba(0,0,0,0.1) !important;
+    }
+
+    table{
+      table-layout:fixed;
+      width:100%;
+      border-collapse:collapse;
+      min-width:1100px;
       background:#fff;
     }
 
-    h2{
-      margin:0 0 6px;
-      color:#223243;
-      font-size:24px;
-      font-weight:900;
+    th:nth-child(1),
+    td:nth-child(1){
+      width:140px;
+      min-width:140px;
+      max-width:140px;
     }
 
-    .sub{
-      margin:0 0 18px;
-      color:#6b7785;
-      font-size:14px;
-      font-weight:700;
-      line-height:1.7;
+    th:nth-child(2),
+    td:nth-child(2){
+      width:120px;
+      min-width:120px;
+      max-width:120px;
+    }
+
+    th:nth-child(3),
+    td:nth-child(3){
+      width:160px;
+      min-width:160px;
+      max-width:160px;
+    }
+
+    th:nth-child(4),
+    td:nth-child(4){
+      width:380px;
+      min-width:380px;
+      max-width:380px;
+    }
+
+    th:nth-child(5),
+    td:nth-child(5){
+      width:220px;
+      min-width:220px;
+      max-width:220px;
+    }
+
+    .header-text{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:6px;
+    }
+
+    .header-text h1{
+      color:#fff !important;
+      margin:0;
+      font-size:30px !important;
+      font-weight:900 !important;
+      text-shadow:
+        -1px -1px 0 rgba(0,0,0,0.9),
+         1px -1px 0 rgba(0,0,0,0.9),
+        -1px  1px 0 rgba(0,0,0,0.9),
+         1px  1px 0 rgba(0,0,0,0.9),
+         0 4px 10px rgba(0,0,0,0.8) !important;
+    }
+
+    .header-text p{
+      color:#fff !important;
+      margin:0;
+      font-size:18px !important;
+      font-weight:900 !important;
+      text-shadow:
+        -1px -1px 0 rgba(0,0,0,0.9),
+         1px -1px 0 rgba(0,0,0,0.9),
+        -1px  1px 0 rgba(0,0,0,0.9),
+         1px  1px 0 rgba(0,0,0,0.9),
+         0 4px 10px rgba(0,0,0,0.8) !important;
+    }
+
+    .user-pill{
+      margin-top:6px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      padding:2px 14px;
+      border-radius:999px;
+      background:rgba(128,0,32,0.4);
+      border:1px solid rgba(231,76,60,0.45);
+      color:#fff;
+      font-weight:900;
+      font-size:13px;
+      box-shadow:0 4px 12px rgba(231,76,60,.25);
+      text-shadow:
+        -1px -1px 0 rgba(0,0,0,0.9),
+         1px -1px 0 rgba(0,0,0,0.9),
+        -1px  1px 0 rgba(0,0,0,0.9),
+         1px  1px 0 rgba(0,0,0,0.9),
+         0 4px 10px rgba(0,0,0,0.8) !important;
+    }
+
+    .wrap{
+      padding:0 5% 30px;
+      display:flex;
+      justify-content:center;
+      position:relative;
+      margin-top:-40px;
+    }
+
+    .panel{
+      width:100%;
+      max-width:1300px;
+      margin-top:13px;
+      background:rgba(255,255,255,0.9);
+      border-radius:22px;
+      box-shadow:
+        0 20px 50px rgba(0,0,0,.12),
+        0 6px 18px rgba(0,0,0,.06);
+      position:relative;
+      z-index:2;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transition:.25s;
+      border:1px solid rgba(255,255,255,.65);
+      overflow:hidden;
+    }
+
+    .panel-head{
+      padding:18px 20px;
+      border-bottom:1px solid var(--line);
+      display:flex;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      gap:12px;
+      align-items:center;
+      background:linear-gradient(180deg, rgba(243,156,18,0.08), transparent);
+    }
+
+    .title{
+      font-weight:900;
+      color:var(--primary);
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-size:20px;
+    }
+
+    .head-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .section{
+      padding:18px;
+      border-bottom:1px solid var(--line);
+    }
+
+    .section-title{
+      font-size:18px;
+      font-weight:900;
+      color:var(--primary);
+      margin:0 0 14px;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:12px;
+    }
+
+    .field{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+    }
+
+    .field label{
+      font-weight:900;
+      color:#1f2d3a;
+      font-size:15px;
     }
 
     input{
-      width:100%;
-      padding:13px 14px;
-      border-radius:12px;
-      border:1px solid #ccd5dd;
-      margin-bottom:14px;
-      font-size:16px;
+      padding:12px 12px;
+      border-radius:10px;
+      border:1.5px solid var(--line);
       font-family:'Cairo',sans-serif;
+      font-weight:900;
       outline:none;
-      text-align:center;
       background:#fff;
+      transition:.2s;
+      color:#1f2d3a;
+      min-height:46px;
+      text-align:right;
     }
 
     input:focus{
-      border-color:#223243;
-      box-shadow:0 0 0 4px rgba(34,50,67,.08);
+      border-color:#d8b15d;
+      box-shadow:0 0 0 4px rgba(245,166,35,.10);
     }
 
-    button{
-      width:100%;
-      padding:13px;
+    .btn{
+      padding:12px 14px;
       border:none;
-      background:linear-gradient(135deg,#223243,#2f4356);
-      color:#fff;
-      border-radius:12px;
-      font-size:16px;
+      border-radius:10px;
       font-family:'Cairo',sans-serif;
       font-weight:900;
+      font-size:17px;
       cursor:pointer;
+      display:inline-flex;
+      gap:10px;
+      align-items:center;
+      justify-content:center;
       transition:.2s;
+      white-space:nowrap;
+      position:relative;
+      overflow:hidden;
     }
 
-    button:hover{
-      transform:translateY(-1px);
-      box-shadow:0 10px 20px rgba(0,0,0,.18);
+    .btn::before{
+      content:"";
+      position:absolute;
+      top:0;
+      right:-120%;
+      width:120%;
+      height:100%;
+      background:linear-gradient(
+        120deg,
+        transparent 20%,
+        rgba(255,255,255,.18) 40%,
+        rgba(255,255,255,.35) 50%,
+        rgba(255,255,255,.18) 60%,
+        transparent 80%
+      );
+      transition:.65s;
     }
 
-    button:disabled{
-      opacity:.6;
-      cursor:not-allowed;
-      transform:none;
-      box-shadow:none;
+    .btn:hover::before{ right:120%; }
+    .btn:hover{ transform:translateY(-1px); opacity:.97; }
+    .btn:disabled{ opacity:.6; cursor:not-allowed; transform:none; }
+
+    .btn-primary{
+      background:linear-gradient(180deg,#1e3c72,#162c52);
+      color:#fff;
+      box-shadow:0 10px 20px rgba(30,60,114,.20);
     }
 
-    #msg{
-      margin-top:12px;
-      min-height:24px;
+    .btn-ok{
+      background:linear-gradient(180deg,#2ebf68,#26a65b);
+      color:#fff;
+      box-shadow:0 10px 20px rgba(39,174,96,.20);
+    }
+
+    .btn-warn{
+      background:linear-gradient(180deg,#f39c12,#d68910);
+      color:#fff;
+      box-shadow:0 10px 20px rgba(243,156,18,.20);
+    }
+
+    .btn-danger{
+      background:linear-gradient(180deg,#e74c3c,#c0392b);
+      color:#fff;
+      box-shadow:0 10px 20px rgba(231,76,60,.20);
+    }
+
+    .btn-ghost{
+      background:#eef2f6;
+      color:#1f2d3a;
+    }
+
+    .btn-row{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:14px;
+    }
+
+    .pages-box{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:10px;
+      background:#fafbfc;
+      padding:14px;
+      border-radius:14px;
+      border:1px solid #eef1f4;
+      margin-top:10px;
+    }
+
+    .page-item{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      background:#fff;
+      border:1px solid #eef1f4;
+      border-radius:10px;
+      padding:10px 12px;
+      font-weight:900;
+      color:#223243;
+    }
+
+    .page-item input{
+      min-height:auto;
+      width:18px;
+      height:18px;
+      margin:0;
+    }
+
+    #status{
+      padding:12px 18px;
+      border-bottom:1px solid var(--line);
+      font-weight:900;
+    }
+
+    #status.ok{ color:#1d5e3b; }
+    #status.bad{ color:var(--danger); }
+
+    .table-wrap{
+      overflow:auto;
+    }
+
+    th, td{
+      border-bottom:1px solid #edf1f5;
+      padding:12px 10px;
+      text-align:center;
+      vertical-align:middle;
+      font-weight:900;
+    }
+
+    th{
+      background:#fafbfc;
+      color:var(--primary);
+      position:sticky;
+      top:0;
+      z-index:1;
+    }
+
+    tr:hover td{
+      background:#fcfdff;
+    }
+
+    .pages-cell{
+      text-align:right;
+      line-height:1.7;
+      font-size:13px;
+      color:#334155;
+      white-space:normal;
+    }
+
+    .action-cell{
+      text-align:center;
+      vertical-align:middle;
+    }
+
+    .action-box{
+      width:100%;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:8px;
+      flex-wrap:nowrap;
+    }
+
+    .empty{
+      padding:26px 18px;
+      text-align:center;
+      font-weight:900;
+      color:var(--muted);
+    }
+
+    #toast{
+      position:fixed;
+      bottom:22px;
+      left:50%;
+      transform:translateX(-50%);
+      min-width:240px;
+      max-width:90%;
+      background:#223243;
+      color:#fff;
+      padding:12px 18px;
+      border-radius:12px;
+      font-weight:900;
+      font-family:'Cairo',sans-serif;
       font-size:14px;
-      font-weight:800;
-      color:#c0392b;
+      display:none;
+      z-index:99999;
+      text-align:center;
+      box-shadow:0 10px 25px rgba(0,0,0,.22);
     }
 
-    .ok{
-      color:#1e8449 !important;
+    #toast.ok{ background:#27ae60; }
+    #toast.warn{ background:#f39c12; }
+    #toast.err{ background:#e74c3c; }
+
+    .confirm-overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,.35);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:100000;
+      padding:20px;
+    }
+
+    .confirm-box{
+      width:100%;
+      max-width:460px;
+      background:#fff;
+      border-radius:18px;
+      box-shadow:0 20px 50px rgba(0,0,0,.25);
+      overflow:hidden;
+      border:1px solid #eef1f4;
+      animation:popIn .18s ease-out;
+    }
+
+    .confirm-head{
+      padding:16px 18px;
+      background:linear-gradient(180deg, rgba(231,76,60,.08), transparent);
+      border-bottom:1px solid #eef1f4;
+      font-weight:900;
+      color:#223243;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-size:18px;
+    }
+
+    .confirm-body{
+      padding:18px;
+      font-weight:900;
+      color:#223243;
+      line-height:1.8;
+      text-align:center;
+    }
+
+    .confirm-actions{
+      padding:0 18px 18px;
+      display:flex;
+      gap:10px;
+      justify-content:center;
+      flex-wrap:wrap;
+    }
+
+    @keyframes popIn{
+      from{ transform:scale(.96); opacity:0; }
+      to{ transform:scale(1); opacity:1; }
+    }
+
+    @media (max-width:1100px){
+      .pages-box{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+    }
+
+    @media (max-width:800px){
+      .grid{ grid-template-columns:1fr; }
+    }
+
+    @media (max-width:700px){
+      .pages-box{ grid-template-columns:1fr; }
+      .btn-row, .head-actions{ flex-direction:column; }
+      .btn{ width:100%; }
     }
   </style>
 </head>
+
 <body>
 
-  <div class="box">
-    <img src="https://drive.google.com/thumbnail?id=1NN7G2zhk7nhgXuPWGW4qE_pdGC-Ptjkt&sz=w500" class="logo" alt="Logo">
-
-    <h2>تسجيل الدخول</h2>
-
-    <div class="sub">
-      منصة تتبع اوامر العمل<br>
-      الشركة العامة للفحص والتأهيل الهندسي
+<div id="pageWrap">
+  <header class="company-header">
+    <img src="https://drive.google.com/thumbnail?id=1NN7G2zhk7nhgXuPWGW4qE_pdGC-Ptjkt&sz=w500" class="company-logo" alt="logo">
+    <div class="header-text">
+      <h1>الشركة العامة للفحص والتأهيل الهندسي</h1>
+      <p><i class="fas fa-user-shield"></i> إدارة المستخدمين والصلاحيات</p>
+      <div id="welcomeUser" class="user-pill"></div>
     </div>
+  </header>
 
-    <input type="text" id="username" placeholder="أدخل اسم المستخدم" autocomplete="off">
-    <input type="password" id="pass" placeholder="أدخل كلمة المرور" autocomplete="off">
+  <div class="wrap">
+    <div class="panel">
 
-    <button id="btnLogin" type="button">دخول</button>
+      <div class="panel-head">
+        <div class="title"><i class="fas fa-users-cog"></i> لوحة إدارة المخولين</div>
 
-    <div id="msg"></div>
+        <div class="head-actions">
+          <button class="btn btn-primary" id="btnBackMain" type="button">
+            <i class="fas fa-arrow-right"></i> العودة إلى main
+          </button>
+        </div>
+      </div>
+
+      <div id="status" class="ok">جاري التحقق من الجلسة...</div>
+
+      <div class="section">
+        <h3 class="section-title"><i class="fas fa-user-plus"></i> إضافة / تعديل مستخدم</h3>
+
+        <div class="grid">
+          <div class="field">
+            <label for="username">اسم المستخدم</label>
+            <input id="username" type="text" placeholder="مثال: admin أو user1">
+          </div>
+
+          <div class="field">
+            <label for="pass">كلمة المرور</label>
+            <input id="pass" type="text" placeholder="مثال: 1234">
+          </div>
+
+          <div class="field">
+            <label for="name">الاسم</label>
+            <input id="name" type="text" placeholder="اسم المستخدم الظاهر">
+          </div>
+        </div>
+
+        <div style="margin-top:14px;">
+          <label style="font-weight:900;color:#1f2d3a;font-size:15px;">صلاحيات الصفحات</label>
+          <div id="pagesBox" class="pages-box"></div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-ok" id="btnAdd" type="button">
+            <i class="fas fa-user-plus"></i> إضافة مستخدم
+          </button>
+
+          <button class="btn btn-primary" id="btnUpdate" type="button">
+            <i class="fas fa-pen-to-square"></i> تحديث مستخدم
+          </button>
+
+          <button class="btn btn-danger" id="btnDelete" type="button">
+            <i class="fas fa-trash"></i> حذف مستخدم
+          </button>
+
+          <button class="btn btn-warn" id="btnClear" type="button">
+            <i class="fas fa-broom"></i> مسح الحقول
+          </button>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3 class="section-title"><i class="fas fa-table-list"></i> قائمة المستخدمين</h3>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>اسم المستخدم</th>
+                <th>كلمة المرور</th>
+                <th>الاسم</th>
+                <th>الصفحات</th>
+                <th>إجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="usersBody">
+              <tr><td colspan="5" class="empty">جاري التحميل...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
   </div>
+</div>
+
+<div id="toast"></div>
+
+<div id="confirmOverlay" class="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-head">
+      <i class="fas fa-triangle-exclamation"></i>
+      <span>تأكيد الحذف</span>
+    </div>
+    <div class="confirm-body" id="confirmMessage">
+      هل أنت متأكد؟
+    </div>
+    <div class="confirm-actions">
+      <button class="btn btn-danger" id="confirmOkBtn" type="button">
+        <i class="fas fa-trash"></i> نعم، حذف
+      </button>
+      <button class="btn btn-ghost" id="confirmCancelBtn" type="button">
+        <i class="fas fa-xmark"></i> إلغاء
+      </button>
+    </div>
+  </div>
+</div>
 
 <script>
-const API_BASE = "https://script.google.com/macros/s/AKfycbwkLLrh7HBOR_0SdOAvbp2zhJZMb2WrIX2MplQZrooptCU4ZKbtqtGHwCQsgeQx6FQ/exec";
+  const API_BASE = "https://script.google.com/macros/s/AKfycbwkLLrh7HBOR_0SdOAvbp2zhJZMb2WrIX2MplQZrooptCU4ZKbtqtGHwCQsgeQx6FQ/exec";
+  const PAGE_NAME = "admin";
+  const STORAGE_KEY = "tracking_session_token_" + PAGE_NAME;
 
-const params = new URLSearchParams(window.location.search);
-const PAGE = String(params.get("p") || "main").trim().toLowerCase();
-const STORAGE_KEY = "tracking_session_token_" + PAGE;
+  let ALL_PAGES_CACHE = [];
+  let USERS_CACHE = [];
+  let confirmCallback = null;
+  let CURRENT_USER_NAME = "";
+  let CURRENT_USERNAME = "";
 
-function setMsg(text, isOk = false){
-  const el = document.getElementById("msg");
-  el.textContent = text || "";
-  el.className = isOk ? "ok" : "";
-}
-
-function saveSessionAndGo(token){
-  sessionStorage.setItem(STORAGE_KEY, String(token || ""));
-  window.location.href = PAGE + ".html";
-}
-
-async function login(){
-  const usernameEl = document.getElementById("username");
-  const passEl = document.getElementById("pass");
-  const btn = document.getElementById("btnLogin");
-
-  const username = usernameEl.value.trim();
-  const pass = passEl.value.trim();
-
-  if(!username){
-    setMsg("⚠️ أدخل اسم المستخدم");
-    usernameEl.focus();
-    return;
+  function getSessionToken(){
+    return sessionStorage.getItem(STORAGE_KEY) || "";
   }
 
-  if(!pass){
-    setMsg("⚠️ أدخل كلمة المرور");
-    passEl.focus();
-    return;
+  function clearSessionToken(){
+    sessionStorage.removeItem(STORAGE_KEY);
   }
 
-  btn.disabled = true;
-  setMsg("جاري التحقق...", true);
+  function goToLogin(){
+    clearSessionToken();
+    window.location.href = "login.html?p=" + PAGE_NAME;
+  }
 
-  try{
-    const res = await fetch(API_BASE, {
+  function isAdminUser(){
+    return String(CURRENT_USERNAME || "").trim().toLowerCase() === "admin";
+  }
+
+  async function apiPost(payload){
+    const response = await fetch(API_BASE, {
       method: "POST",
       headers: {
         "Content-Type": "text/plain;charset=utf-8"
       },
-      body: JSON.stringify({
-        action: "login",
-        username: username,
-        password: pass,
-        page: PAGE
-      })
+      body: JSON.stringify(payload)
     });
 
-    const data = await res.json();
-    btn.disabled = false;
+    const text = await response.text();
 
-    if(!data.ok){
-      setMsg(data.message || "❌ فشل تسجيل الدخول");
+    try{
+      return JSON.parse(text);
+    }catch(err){
+      throw new Error(text);
+    }
+  }
+
+  async function ensurePageSession(){
+    const token = getSessionToken();
+
+    if(!token){
+      goToLogin();
       return;
     }
 
-    setMsg("✅ تم تسجيل الدخول بنجاح", true);
-    saveSessionAndGo(data.token);
+    try{
+      const result = await apiPost({
+        action: "checkSession",
+        token: token,
+        page: PAGE_NAME
+      });
 
-  }catch(err){
-    btn.disabled = false;
-    setMsg("❌ خطأ اتصال بالخادم");
+      if(result && result.ok){
+        CURRENT_USER_NAME = result.user || "مخول غير معروف";
+        CURRENT_USERNAME = result.username || "";
+
+        const w = document.getElementById("welcomeUser");
+        w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: ' + CURRENT_USER_NAME;
+
+        document.getElementById("pageWrap").classList.add("show");
+
+        if(!isAdminUser()){
+          setStatus("❌ هذه الصفحة متاحة لمدير النظام فقط", false);
+          showMsg("❌ غير مصرح", "err");
+          document.querySelector(".panel").style.pointerEvents = "none";
+          document.querySelector(".panel").style.opacity = "0.6";
+          return;
+        }
+
+        await loadAllPages();
+        await loadUsers();
+      }else{
+        goToLogin();
+      }
+    }catch(error){
+      goToLogin();
+    }
   }
-}
 
-document.getElementById("btnLogin").addEventListener("click", login);
+  function safeErr(err){
+    try{
+      if(!err) return "Unknown error";
+      if(typeof err === "string") return err;
+      if(err.message) return err.message;
+      return JSON.stringify(err);
+    }catch(e){
+      return String(err);
+    }
+  }
 
-document.getElementById("username").addEventListener("keydown", function(e){
-  if(e.key === "Enter") login();
-});
+  function showMsg(text, type){
+    const t = document.getElementById("toast");
+    t.className = "";
 
-document.getElementById("pass").addEventListener("keydown", function(e){
-  if(e.key === "Enter") login();
-});
+    if(type === "ok") t.classList.add("ok");
+    else if(type === "warn") t.classList.add("warn");
+    else if(type === "err") t.classList.add("err");
+
+    t.textContent = text || "";
+    t.style.display = "block";
+
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(function(){
+      t.style.display = "none";
+    }, 2500);
+  }
+
+  function setStatus(msg, ok){
+    const el = document.getElementById("status");
+    el.className = ok ? "ok" : "bad";
+    el.textContent = msg;
+  }
+
+  function setLoading(on){
+    [
+      "btnAdd","btnUpdate","btnDelete","btnClear",
+      "btnBackMain","username","pass","name"
+    ].forEach(function(id){
+      const el = document.getElementById(id);
+      if(el) el.disabled = on;
+    });
+
+    const checks = document.querySelectorAll('#pagesBox input[type="checkbox"]');
+    checks.forEach(function(ch){ ch.disabled = on; });
+
+    if(on) setStatus("جاري التنفيذ...", true);
+  }
+
+  function escapeHtml(text){
+    return String(text || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function normalizeName(name){
+    return String(name || "").trim().replace(/\s+/g, " ").toLowerCase();
+  }
+
+  function normalizeUsername(username){
+    return String(username || "").trim().toLowerCase();
+  }
+
+  function getCheckedPages(){
+    const checks = document.querySelectorAll('#pagesBox input[type="checkbox"]:checked');
+    const arr = [];
+    checks.forEach(function(ch){
+      arr.push(String(ch.value || "").trim());
+    });
+    return arr;
+  }
+
+  function setCheckedPages(pagesValue){
+    const pages = Array.isArray(pagesValue)
+      ? pagesValue.map(function(p){ return String(p || "").trim().toLowerCase(); })
+      : String(pagesValue || "")
+          .split(",")
+          .map(function(p){ return String(p || "").trim().toLowerCase(); })
+          .filter(function(p){ return !!p; });
+
+    const checks = document.querySelectorAll('#pagesBox input[type="checkbox"]');
+    checks.forEach(function(ch){
+      ch.checked = pages.indexOf(String(ch.value || "").trim().toLowerCase()) !== -1;
+    });
+  }
+
+  function clearForm(silent){
+    document.getElementById("username").value = "";
+    document.getElementById("pass").value = "";
+    document.getElementById("name").value = "";
+
+    const checks = document.querySelectorAll('#pagesBox input[type="checkbox"]');
+    checks.forEach(function(ch){ ch.checked = false; });
+
+    if(!silent){
+      setStatus("تم مسح الحقول", true);
+    }
+  }
+
+  function renderPages(pages){
+    ALL_PAGES_CACHE = Array.isArray(pages) ? pages.slice() : [];
+
+    const box = document.getElementById("pagesBox");
+    box.innerHTML = "";
+
+    if(!ALL_PAGES_CACHE.length){
+      box.innerHTML = '<div class="empty">لا توجد صفحات</div>';
+      return;
+    }
+
+    ALL_PAGES_CACHE.forEach(function(p){
+      const page = String(p || "").trim();
+      const lower = page.toLowerCase();
+
+      if(lower === "index") return;
+
+      const item = document.createElement("label");
+      item.className = "page-item";
+      item.innerHTML =
+        '<input type="checkbox" value="' + escapeHtml(page) + '">' +
+        '<span>' + escapeHtml(page) + '</span>';
+      box.appendChild(item);
+    });
+  }
+
+  function renderUsersTable(list){
+    USERS_CACHE = Array.isArray(list) ? list.slice() : [];
+
+    const body = document.getElementById("usersBody");
+
+    if(!USERS_CACHE.length){
+      body.innerHTML = '<tr><td colspan="5" class="empty">لا توجد بيانات</td></tr>';
+      return;
+    }
+
+    let html = "";
+
+    USERS_CACHE.forEach(function(u){
+      const username = String(u.username || "").trim();
+      const pass = String(u.password || "").trim();
+      const name = String(u.name || "").trim();
+      const pages = Array.isArray(u.pages) ? u.pages.join(", ") : String(u.pages || "").trim();
+
+      html += '<tr>';
+      html +=   '<td>' + escapeHtml(username) + '</td>';
+      html +=   '<td>' + escapeHtml(pass) + '</td>';
+      html +=   '<td>' + escapeHtml(name) + '</td>';
+      html +=   '<td class="pages-cell">' + escapeHtml(pages || "—") + '</td>';
+      html +=   '<td class="action-cell">';
+      html +=     '<div class="action-box">';
+      html +=       '<button class="btn btn-primary btn-fill-user" type="button" data-username="' + escapeHtml(username) + '"><i class="fas fa-pen"></i> تعبئة</button>';
+      html +=       '<button class="btn btn-danger btn-remove-user" type="button" data-username="' + escapeHtml(username) + '"><i class="fas fa-trash"></i> حذف</button>';
+      html +=     '</div>';
+      html +=   '</td>';
+      html += '</tr>';
+    });
+
+    body.innerHTML = html;
+  }
+
+  function showConfirmBox(message, onConfirm){
+    const overlay = document.getElementById("confirmOverlay");
+    const msg = document.getElementById("confirmMessage");
+
+    msg.textContent = message || "هل أنت متأكد؟";
+    confirmCallback = onConfirm || null;
+    overlay.style.display = "flex";
+  }
+
+  function closeConfirmBox(){
+    document.getElementById("confirmOverlay").style.display = "none";
+    confirmCallback = null;
+  }
+
+  async function loadAllPages(){
+    const token = getSessionToken();
+    if(!token) return;
+
+    try{
+      const res = await apiPost({
+        action: "getAllPages",
+        token: token,
+        page: PAGE_NAME
+      });
+
+      let pages = [];
+      if(Array.isArray(res)) pages = res;
+      else if(Array.isArray(res && res.items)) pages = res.items;
+      else if(Array.isArray(res && res.pages)) pages = res.pages;
+
+      renderPages(pages || []);
+    }catch(err){
+      setStatus("❌ فشل تحميل الصفحات: " + safeErr(err), false);
+      showMsg("❌ فشل تحميل الصفحات", "err");
+    }
+  }
+
+  async function loadUsers(){
+    const token = getSessionToken();
+    if(!token){
+      goToLogin();
+      return;
+    }
+
+    setLoading(true);
+
+    try{
+      const list = await apiPost({
+        action: "getUsersList",
+        token: token,
+        page: PAGE_NAME
+      });
+
+      setLoading(false);
+
+      if(list && list.ok === false){
+        setStatus("❌ " + (list.message || "فشل تحميل المستخدمين"), false);
+        showMsg("❌ فشل تحميل المستخدمين", "err");
+        return;
+      }
+
+      renderUsersTable(Array.isArray(list) ? list : []);
+      setStatus("✅ تم تحميل المستخدمين", true);
+    }catch(err){
+      setLoading(false);
+      setStatus("❌ فشل تحميل المستخدمين: " + safeErr(err), false);
+      showMsg("❌ فشل تحميل المستخدمين", "err");
+    }
+  }
+
+  function isDuplicateName(name, currentUsername){
+    const target = normalizeName(name);
+    const current = normalizeUsername(currentUsername);
+
+    return USERS_CACHE.some(function(u){
+      const sameName = normalizeName(u.name) === target;
+      const sameUsername = normalizeUsername(u.username) === current;
+      return sameName && !sameUsername;
+    });
+  }
+
+  async function addUser(){
+    const token = getSessionToken();
+    if(!token){
+      goToLogin();
+      return;
+    }
+
+    const username = String(document.getElementById("username").value || "").trim();
+    const pass = String(document.getElementById("pass").value || "").trim();
+    const name = String(document.getElementById("name").value || "").trim();
+    const pages = getCheckedPages();
+
+    if(!username || !pass || !name){
+      setStatus("⚠️ أكمل الحقول المطلوبة", false);
+      showMsg("⚠️ أكمل الحقول", "warn");
+      return;
+    }
+
+    if(!pages.length){
+      setStatus("⚠️ اختر صفحة واحدة على الأقل", false);
+      showMsg("⚠️ اختر صفحة واحدة على الأقل", "warn");
+      return;
+    }
+
+    if(isDuplicateName(name, "")){
+      setStatus("❌ الاسم موجود مسبقاً", false);
+      showMsg("❌ لا يسمح بتكرار الاسم", "err");
+      return;
+    }
+
+    setLoading(true);
+
+    try{
+      const msg = await apiPost({
+        action: "saveUserToSheet",
+        token: token,
+        page: PAGE_NAME,
+        data: {
+          username: username,
+          password: pass,
+          name: name,
+          pages: pages
+        }
+      });
+
+      const text = typeof msg === "string" ? msg : String((msg && (msg.message || msg.result)) || "");
+
+      setLoading(false);
+
+      if(text.indexOf("✅") !== -1){
+        showMsg(text, "ok");
+        clearForm(true);
+        await loadUsers();
+        setStatus(text, true);
+      }else{
+        showMsg(text || "تعذر الإضافة", "warn");
+        setStatus(text || "تعذر الإضافة", false);
+      }
+    }catch(err){
+      setLoading(false);
+      setStatus("❌ خطأ: " + safeErr(err), false);
+      showMsg("❌ فشل الإضافة", "err");
+    }
+  }
+
+  async function updateUser(){
+    const token = getSessionToken();
+    if(!token){
+      goToLogin();
+      return;
+    }
+
+    const username = String(document.getElementById("username").value || "").trim();
+    const pass = String(document.getElementById("pass").value || "").trim();
+    const name = String(document.getElementById("name").value || "").trim();
+    const pages = getCheckedPages();
+
+    if(!username || !pass || !name){
+      setStatus("⚠️ أكمل الحقول المطلوبة", false);
+      showMsg("⚠️ أكمل الحقول", "warn");
+      return;
+    }
+
+    if(!pages.length){
+      setStatus("⚠️ اختر صفحة واحدة على الأقل", false);
+      showMsg("⚠️ اختر صفحة واحدة على الأقل", "warn");
+      return;
+    }
+
+    if(isDuplicateName(name, username)){
+      setStatus("❌ الاسم موجود مسبقاً", false);
+      showMsg("❌ لا يسمح بتكرار الاسم", "err");
+      return;
+    }
+
+    setLoading(true);
+
+    try{
+      const msg = await apiPost({
+        action: "updateUserInSheet",
+        token: token,
+        page: PAGE_NAME,
+        data: {
+          username: username,
+          password: pass,
+          name: name,
+          pages: pages
+        }
+      });
+
+      const text = typeof msg === "string" ? msg : String((msg && (msg.message || msg.result)) || "");
+
+      setLoading(false);
+
+      if(text.indexOf("✅") !== -1){
+        showMsg(text, "ok");
+        clearForm(true);
+        await loadUsers();
+        setStatus(text, true);
+      }else{
+        showMsg(text || "تعذر التحديث", "warn");
+        setStatus(text || "تعذر التحديث", false);
+      }
+    }catch(err){
+      setLoading(false);
+      setStatus("❌ خطأ: " + safeErr(err), false);
+      showMsg("❌ فشل التحديث", "err");
+    }
+  }
+
+  function removeUser(username){
+    const u = String(username || document.getElementById("username").value || "").trim();
+    if(!u){
+      setStatus("⚠️ أدخل اسم المستخدم أو اختر مستخدمًا", false);
+      showMsg("⚠️ لا يوجد اسم مستخدم", "warn");
+      return;
+    }
+
+    showConfirmBox("هل أنت متأكد من حذف المستخدم " + u + " ؟", async function(){
+      const token = getSessionToken();
+      if(!token){
+        goToLogin();
+        return;
+      }
+
+      setLoading(true);
+
+      try{
+        const msg = await apiPost({
+          action: "deleteUserFromSheet",
+          token: token,
+          page: PAGE_NAME,
+          username: u
+        });
+
+        const text = typeof msg === "string" ? msg : String((msg && (msg.message || msg.result)) || "");
+
+        setLoading(false);
+
+        if(text.includes("✅")){
+          showMsg(text, "ok");
+          clearForm(true);
+          await loadUsers();
+          setStatus(text, true);
+        }else{
+          showMsg(text || "تعذر الحذف", "warn");
+          setStatus(text || "تعذر الحذف", false);
+        }
+      }catch(err){
+        setLoading(false);
+        setStatus("❌ خطأ: " + safeErr(err), false);
+        showMsg("❌ فشل الحذف", "err");
+      }
+    });
+  }
+
+  function fillUserByUsername(username){
+    const u = String(username || "").trim();
+    if(!u) return;
+
+    const user = USERS_CACHE.find(function(item){
+      return String(item.username || "").trim() === u;
+    });
+
+    if(!user){
+      showMsg("⚠️ المستخدم غير موجود في القائمة الحالية", "warn");
+      return;
+    }
+
+    document.getElementById("username").value = String(user.username || "");
+    document.getElementById("pass").value = String(user.password || "");
+    document.getElementById("name").value = String(user.name || "");
+    setCheckedPages(user.pages || "");
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    setStatus("تمت تعبئة بيانات المستخدم", true);
+  }
+
+  function goToMain(){
+    window.location.href = "main.html";
+  }
+
+  function bindTableActions(){
+    const body = document.getElementById("usersBody");
+
+    body.addEventListener("click", function(e){
+      const fillBtn = e.target.closest(".btn-fill-user");
+      const removeBtn = e.target.closest(".btn-remove-user");
+
+      if(fillBtn){
+        fillUserByUsername(fillBtn.getAttribute("data-username"));
+        return;
+      }
+
+      if(removeBtn){
+        removeUser(removeBtn.getAttribute("data-username"));
+      }
+    });
+  }
+
+  window.addEventListener("load", function(){
+    bindTableActions();
+
+    document.getElementById("btnAdd").addEventListener("click", addUser);
+    document.getElementById("btnUpdate").addEventListener("click", updateUser);
+    document.getElementById("btnDelete").addEventListener("click", function(){ removeUser(); });
+    document.getElementById("btnClear").addEventListener("click", function(){ clearForm(false); });
+    document.getElementById("btnBackMain").addEventListener("click", goToMain);
+
+    document.getElementById("confirmOkBtn").addEventListener("click", function(){
+      const cb = confirmCallback;
+      closeConfirmBox();
+      if(typeof cb === "function") cb();
+    });
+
+    document.getElementById("confirmCancelBtn").addEventListener("click", closeConfirmBox);
+
+    document.getElementById("confirmOverlay").addEventListener("click", function(e){
+      if(e.target === this) closeConfirmBox();
+    });
+
+    ensurePageSession();
+  });
 </script>
 
 </body>
