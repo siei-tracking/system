@@ -1268,6 +1268,19 @@
     }
 
     function openAdminPage(){
+      if(!isAdminUser()){
+        showMsg("⚠️ متاح لمدير النظام فقط", "warn");
+        return;
+      }
+
+      const token = getSessionToken();
+
+      if(!token){
+        window.location.href = "login.html?p=main";
+        return;
+      }
+
+      sessionStorage.setItem("tracking_session_token_admin", token);
       window.location.href = "admin.html";
     }
 
@@ -1849,6 +1862,11 @@
     }
 
     async function openArchiveSheet(){
+      if(!isAdminUser()){
+        showMsg("⚠️ متاح لمدير النظام فقط", "warn");
+        return;
+      }
+
       const token = getSessionToken();
       if(!token){
         window.location.href = "login.html?p=main";
