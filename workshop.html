@@ -490,9 +490,9 @@
 <div id="toast"></div>
 
 <script>
-  const API_BASE = "https://script.google.com/macros/s/AKfycbwLt7PaCyUIuLMPOHqjmHzgeNbFfF95oe3dnWlBgjdrCRw9p6vbpiZftddSfRNRHYsV/exec";
-  const STORAGE_KEY = "tracking_session_token_plan";
+  const API_BASE = "https://script.google.com/macros/s/AKfycbxcUjhDpyEcZqJm71qW6BujHOokF3dzixLLUykslqGoZ09o4X_qS0leGKNulQGFSsdO/exec";
   const PAGE_NAME = "workshop";
+  const STORAGE_KEY = "tracking_session_token_" + PAGE_NAME;
 
   let currentUserName = "";
   let lastStatus = "";
@@ -505,6 +505,11 @@
 
   function clearSessionToken(){
     sessionStorage.removeItem(STORAGE_KEY);
+  }
+
+  function goToLogin(){
+    clearSessionToken();
+    window.location.href = "login.html?p=" + PAGE_NAME;
   }
 
   async function apiPost(payload){
@@ -529,7 +534,7 @@
     const token = getSessionToken();
 
     if(!token){
-      window.location.href = "login.html?p=workshop";
+      goToLogin();
       return;
     }
 
@@ -552,23 +557,23 @@
 
         document.getElementById("pageWrap").classList.add("show");
       }else{
-        clearSessionToken();
-        window.location.href = "login.html?p=workshop";
+        goToLogin();
       }
     }catch(error){
-      clearSessionToken();
-      window.location.href = "login.html?p=workshop";
+      goToLogin();
     }
   }
 
   function showMsg(text, type){
+    if(!text) return;
+
     const t = document.getElementById("toast");
     t.className = "";
     if(type === "ok") t.classList.add("ok");
     else if(type === "warn") t.classList.add("warn");
     else if(type === "err") t.classList.add("err");
 
-    t.textContent = text || "";
+    t.textContent = text;
     t.style.display = "block";
 
     clearTimeout(window.__toastTimer);
@@ -602,7 +607,7 @@
 
     const token = getSessionToken();
     if(!token){
-      window.location.href = "login.html?p=workshop";
+      goToLogin();
       return;
     }
 
@@ -620,6 +625,17 @@
 
       document.getElementById("loader").style.display = "none";
       document.getElementById("fetchBtn").disabled = false;
+
+      if(data && data.ok === false && data.message){
+        if(data.message.indexOf("انتهت الجلسة") !== -1 || data.message.indexOf("غير صالح") !== -1 || data.message.indexOf("غير مصرح") !== -1){
+          showMsg("❌ انتهت الجلسة", "err");
+          setTimeout(goToLogin, 800);
+          return;
+        }
+
+        showMsg(data.message, "err");
+        return;
+      }
 
       if(data && data.found){
         document.getElementById("cName").innerText = data.clientName || "---";
@@ -676,7 +692,7 @@
 
     const token = getSessionToken();
     if(!token){
-      window.location.href = "login.html?p=workshop";
+      goToLogin();
       return;
     }
 
@@ -693,13 +709,12 @@
         userName: currentUserName
       });
 
-      const msg = String((r && (r.message || r.result)) || "");
-
       if(r && r.ok){
         alreadyReceived = true;
         document.getElementById("cardForm").style.display = "none";
         document.getElementById("successMessage").style.display = "block";
       } else {
+        const msg = String((r && (r.message || r.result)) || "");
         showMsg(msg || "❌ تعذر الحفظ", "err");
         if(alreadyReceived){
           disableReceiveButton(
@@ -737,9 +752,19 @@
     alreadyReceived = false;
 
     enableReceiveButton();
+    document.getElementById("fetchBtn").disabled = false;
+    document.getElementById("orderID").focus();
   }
 
-  ensurePageSession();
+  window.addEventListener("load", function(){
+    ensurePageSession();
+
+    document.getElementById("orderID").addEventListener("keydown", function(e){
+      if(e.key === "Enter"){
+        fetchData();
+      }
+    });
+  });
 </script>
 </body>
 </html>

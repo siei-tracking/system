@@ -3,15 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="watermark.css">
-  <title>لباركود - منصة تتبع أوامر العمل</title>
+  <link rel="stylesheet" href="watermark.css">
+  <title>الباركود - منصة تتبع أوامر العمل</title>
 
-<link rel="icon" href="https://siei-tracking.github.io/system/logo.png">
-
+  <link rel="icon" href="https://siei-tracking.github.io/system/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-  <title>الباركود - منصة تتبع أوامر العمل</title>
 
   <style>
     :root{
@@ -207,7 +204,7 @@
       width:100%;
       border:1.5px solid var(--line);
       border-radius:10px;
-      padding:0px 8px;
+      padding:0 8px;
       font-weight:900;
       font-size:15px;
       background:#fff;
@@ -605,9 +602,9 @@
 <div id="toast"></div>
 
 <script>
-  const API_BASE = "https://script.google.com/macros/s/AKfycbwLt7PaCyUIuLMPOHqjmHzgeNbFfF95oe3dnWlBgjdrCRw9p6vbpiZftddSfRNRHYsV/exec";
-  const STORAGE_KEY = "tracking_session_token_plan";
+  const API_BASE = "https://script.google.com/macros/s/AKfycbxcUjhDpyEcZqJm71qW6BujHOokF3dzixLLUykslqGoZ09o4X_qS0leGKNulQGFSsdO/exec";
   const PAGE_NAME = "barcode";
+  const STORAGE_KEY = "tracking_session_token_" + PAGE_NAME;
 
   let currentUserName = "";
 
@@ -617,6 +614,11 @@
 
   function clearSessionToken(){
     sessionStorage.removeItem(STORAGE_KEY);
+  }
+
+  function goToLogin(){
+    clearSessionToken();
+    window.location.href = "login.html?p=" + PAGE_NAME;
   }
 
   async function apiPost(payload){
@@ -641,7 +643,7 @@
     const token = getSessionToken();
 
     if(!token){
-      window.location.href = "login.html?p=barcode";
+      goToLogin();
       return;
     }
 
@@ -664,12 +666,10 @@
 
         document.getElementById("pageWrap").classList.add("show");
       }else{
-        clearSessionToken();
-        window.location.href = "login.html?p=barcode";
+        goToLogin();
       }
     }catch(error){
-      clearSessionToken();
-      window.location.href = "login.html?p=barcode";
+      goToLogin();
     }
   }
 
@@ -727,7 +727,7 @@
 
     const token = getSessionToken();
     if(!token){
-      window.location.href = "login.html?p=barcode";
+      goToLogin();
       return;
     }
 
@@ -748,6 +748,17 @@
 
       document.getElementById('loader').style.display = 'none';
       document.getElementById('fetchBtn').disabled = false;
+
+      if(data && data.ok === false && data.message){
+        if(data.message.indexOf("انتهت الجلسة") !== -1 || data.message.indexOf("غير صالح") !== -1 || data.message.indexOf("غير مصرح") !== -1){
+          showToast("❌ انتهت الجلسة", "err");
+          setTimeout(goToLogin, 800);
+          return;
+        }
+
+        showBad(data.message);
+        return;
+      }
 
       if(data && data.found){
         document.getElementById('resPanel').style.display = 'block';
@@ -795,7 +806,7 @@
 
     const token = getSessionToken();
     if(!token){
-      window.location.href = "login.html?p=barcode";
+      goToLogin();
       return;
     }
 
@@ -833,10 +844,20 @@
           oldFileUrl: oldUrl
         });
 
+        if(res && res.ok === false && res.message){
+          if(res.message.indexOf("انتهت الجلسة") !== -1 || res.message.indexOf("غير صالح") !== -1 || res.message.indexOf("غير مصرح") !== -1){
+            showToast("❌ انتهت الجلسة", "err");
+            setTimeout(goToLogin, 800);
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> رفع وتوثيق الباركود';
+            return;
+          }
+        }
+
         if(!(res && res.ok)){
           btn.disabled = false;
           btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> رفع وتوثيق الباركود';
-          showBad((res && res.error) ? res.error : "فشل رفع الملف");
+          showBad((res && (res.error || res.message)) ? (res.error || res.message) : "فشل رفع الملف");
           return;
         }
 
@@ -859,6 +880,11 @@
           document.getElementById('cardForm').style.display = 'none';
           document.getElementById('successCard').style.display = 'block';
         }else{
+          if(msg.indexOf("انتهت الجلسة") !== -1 || msg.indexOf("غير صالح") !== -1 || msg.indexOf("غير مصرح") !== -1){
+            showToast("❌ انتهت الجلسة", "err");
+            setTimeout(goToLogin, 800);
+            return;
+          }
           showBad(msg || "فشل التوثيق");
         }
       }catch(err){
@@ -881,15 +907,26 @@
     document.getElementById('fileBox').innerHTML = "";
     document.getElementById('replaceNote').style.display = "none";
     document.getElementById('loader').style.display = "none";
+    document.getElementById('cName').innerText = "---";
 
     const btn = document.getElementById('uploadBtn');
     btn.disabled = false;
     btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> رفع وتوثيق الباركود';
 
+    document.getElementById('fetchBtn').disabled = false;
     hideMsgs();
+    document.getElementById('orderID').focus();
   }
 
-  ensurePageSession();
+  window.addEventListener("load", function(){
+    ensurePageSession();
+
+    document.getElementById("orderID").addEventListener("keydown", function(e){
+      if(e.key === "Enter"){
+        fetchData();
+      }
+    });
+  });
 </script>
 </body>
 </html>

@@ -3,15 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="watermark.css">
+  <link rel="stylesheet" href="watermark.css">
   <title>استلام النتائج - منصة تتبع أوامر العمل</title>
 
-<link rel="icon" href="https://siei-tracking.github.io/system/logo.png">
-
+  <link rel="icon" href="https://siei-tracking.github.io/system/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-  <title>استلام النتائج - منصة تتبع أوامر العمل</title>
 
   <style>
     :root{
@@ -627,9 +624,9 @@
 <div id="toast"></div>
 
 <script>
-  const API_BASE = "https://script.google.com/macros/s/AKfycbwLt7PaCyUIuLMPOHqjmHzgeNbFfF95oe3dnWlBgjdrCRw9p6vbpiZftddSfRNRHYsV/exec";
-  const STORAGE_KEY = "tracking_session_token_plan";
+  const API_BASE = "https://script.google.com/macros/s/AKfycbxcUjhDpyEcZqJm71qW6BujHOokF3dzixLLUykslqGoZ09o4X_qS0leGKNulQGFSsdO/exec";
   const PAGE_NAME = "results";
+  const STORAGE_KEY = "tracking_session_token_" + PAGE_NAME;
 
   let currentUserName = "";
   let lastStatus = "";
@@ -641,6 +638,11 @@
 
   function clearSessionToken(){
     sessionStorage.removeItem(STORAGE_KEY);
+  }
+
+  function goToLogin(){
+    clearSessionToken();
+    window.location.href = "login.html?p=" + PAGE_NAME;
   }
 
   async function apiPost(payload){
@@ -665,7 +667,7 @@
     const token = getSessionToken();
 
     if(!token){
-      window.location.href = "login.html?p=results";
+      goToLogin();
       return;
     }
 
@@ -688,12 +690,10 @@
 
         document.getElementById("pageWrap").classList.add("show");
       }else{
-        clearSessionToken();
-        window.location.href = "login.html?p=results";
+        goToLogin();
       }
     }catch(error){
-      clearSessionToken();
-      window.location.href = "login.html?p=results";
+      goToLogin();
     }
   }
 
@@ -787,7 +787,7 @@
 
     const token = getSessionToken();
     if(!token){
-      window.location.href = "login.html?p=results";
+      goToLogin();
       return;
     }
 
@@ -806,6 +806,17 @@
 
       document.getElementById('loader').style.display = 'none';
       document.getElementById('fetchBtn').disabled = false;
+
+      if(data && data.ok === false && data.message){
+        if(data.message.indexOf("انتهت الجلسة") !== -1 || data.message.indexOf("غير صالح") !== -1 || data.message.indexOf("غير مصرح") !== -1){
+          showMsg("❌ انتهت الجلسة", "err");
+          setTimeout(goToLogin, 800);
+          return;
+        }
+
+        showMsg(data.message, "err");
+        return;
+      }
 
       if(data && data.found){
         document.getElementById('cName').innerText = data.clientName || "---";
@@ -851,7 +862,7 @@
 
     const token = getSessionToken();
     if(!token){
-      window.location.href = "login.html?p=results";
+      goToLogin();
       return;
     }
 
@@ -874,6 +885,12 @@
         document.getElementById('cardForm').style.display = 'none';
         document.getElementById('successMessage').style.display = 'block';
       } else {
+        if(msg.indexOf("انتهت الجلسة") !== -1 || msg.indexOf("غير صالح") !== -1 || msg.indexOf("غير مصرح") !== -1){
+          showMsg("❌ انتهت الجلسة", "err");
+          setTimeout(goToLogin, 800);
+          return;
+        }
+
         showMsg(msg || "❌ فشل التوثيق", "err");
         btn.disabled = false;
         btn.innerHTML = '<i class="fas fa-check-double"></i> توثيق استلام النتائج وإغلاق المعاملة';
@@ -892,6 +909,7 @@
     document.getElementById('inputForm').style.display = 'block';
     document.getElementById('resPanel').style.display = 'none';
     document.getElementById('loader').style.display = 'none';
+    document.getElementById('cName').innerText = "---";
 
     showBarcodePreview("");
 
@@ -900,10 +918,20 @@
     btn.style.background = "linear-gradient(180deg,#2ebf68,#26a65b)";
     btn.innerHTML = '<i class="fas fa-check-double"></i> توثيق استلام النتائج وإغلاق المعاملة';
 
+    document.getElementById('fetchBtn').disabled = false;
     lastStatus = "";
+    document.getElementById('orderID').focus();
   }
 
-  ensurePageSession();
+  window.addEventListener("load", function(){
+    ensurePageSession();
+
+    document.getElementById("orderID").addEventListener("keydown", function(e){
+      if(e.key === "Enter"){
+        fetchData();
+      }
+    });
+  });
 </script>
 </body>
 </html>
