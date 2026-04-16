@@ -686,11 +686,11 @@
             '<i class="fas fa-ban"></i> لا توجد ورشة للمصاعد'
           );
         } else if(alreadyReceived){
-          disableReceiveButton(
-            "⚠️ أمر العمل مستلم سابقاً",
-            '<i class="fas fa-lock"></i> مستلمة مسبقاً'
-          );
-        } else {
+            return;
+        }
+
+       
+          else {
           enableReceiveButton();
         }
 
