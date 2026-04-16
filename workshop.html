@@ -685,12 +685,12 @@
             "⚠️ لا توجد ورشة للمصاعد",
             '<i class="fas fa-ban"></i> لا توجد ورشة للمصاعد'
           );
-        } else if(alreadyReceived){
-          disableReceiveButton(
-            "⚠️ أمر العمل مستلم سابقاً",
+       } else if(alreadyReceived){
+         disableReceiveButton(
+           "",
             '<i class="fas fa-lock"></i> مستلمة مسبقاً'
-          );
-        } else {
+             );
+         } else {
           enableReceiveButton();
         }
 
@@ -713,12 +713,12 @@
     }
 
     if(alreadyReceived){
-      disableReceiveButton(
-        "⚠️ أمر العمل مستلم سابقاً",
-        '<i class="fas fa-lock"></i> مستلمة مسبقاً'
-      );
-      return;
-    }
+  disableReceiveButton(
+    "",
+    '<i class="fas fa-lock"></i> مستلمة مسبقاً'
+  );
+  return;
+}
 
     const token = getSessionToken();
     if(!token){
