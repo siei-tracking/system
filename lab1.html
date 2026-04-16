@@ -759,7 +759,6 @@
       btn.disabled = true;
       btn.className = "main-btn btn-disabled";
       btn.innerHTML = '<i class="fas fa-lock"></i> مستلمة سابقاً';
-      showMsg("⚠️ أمر العمل مستلم سابقاً", "warn");
       return;
     }
 
@@ -795,9 +794,7 @@
     }
 
     if(alreadyReceived){
-      showMsg("⚠️ أمر العمل مستلم سابقاً", "warn");
-      setupButtonState();
-      return;
+     return;
     }
 
     const token = getSessionToken();
