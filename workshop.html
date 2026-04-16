@@ -712,14 +712,10 @@
       return;
     }
 
-    if(alreadyReceived){
-      disableReceiveButton(
-        "⚠️ أمر العمل مستلم سابقاً",
-        '<i class="fas fa-lock"></i> مستلمة مسبقاً'
-      );
-      return;
-    }
-
+if(alreadyReceived){
+  document.getElementById("receiveBtn").style.display = "none";
+  return;
+}
     const token = getSessionToken();
     if(!token){
       goToLogin();
