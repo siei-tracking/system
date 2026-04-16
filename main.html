@@ -44,12 +44,8 @@
       color:#111;
     }
 
-    #pageWrap{
-      display:none;
-    }
-    #pageWrap.show{
-      display:block;
-    }
+    #pageWrap{ display:none; }
+    #pageWrap.show{ display:block; }
 
     .company-header{
       background-image:
@@ -287,20 +283,9 @@
       transition:.65s;
     }
 
-    .btn:hover::before{
-      right:120%;
-    }
-
-    .btn:hover{
-      transform:translateY(-1px);
-      opacity:.96;
-    }
-
-    .btn:disabled{
-      opacity:.6;
-      cursor:not-allowed;
-      transform:none;
-    }
+    .btn:hover::before{ right:120%; }
+    .btn:hover{ transform:translateY(-1px); opacity:.96; }
+    .btn:disabled{ opacity:.6; cursor:not-allowed; transform:none; }
 
     .btn-primary{
       background:linear-gradient(180deg,#1e3c72,#162c52);
@@ -717,14 +702,8 @@
         gap:10px;
       }
 
-      input, select{
-        min-width:0;
-        width:100%;
-      }
-
-      .btn{
-        width:100%;
-      }
+      input, select{ min-width:0; width:100%; }
+      .btn{ width:100%; }
 
       #qDone,
       #sheetSelect,
@@ -746,26 +725,16 @@
         height:78px;
       }
 
-      .header-text h1{
-        font-size:22px !important;
-      }
-
-      .header-text p{
-        font-size:14px !important;
-      }
+      .header-text h1{ font-size:22px !important; }
+      .header-text p{ font-size:14px !important; }
 
       .wrap{
         padding:0 10px 20px;
         margin-top:-24px;
       }
 
-      .panel{
-        border-radius:18px;
-      }
-
-      .panel-head{
-        padding:14px;
-      }
+      .panel{ border-radius:18px; }
+      .panel-head{ padding:14px; }
 
       .title{
         width:100%;
@@ -791,22 +760,15 @@
         min-width:0;
       }
 
-      .bar{
-        padding:12px 14px;
-      }
+      .bar{ padding:12px 14px; }
 
       .bar-right,
       .bar-left{
         width:100%;
       }
 
-      .bar-right{
-        justify-content:space-between;
-      }
-
-      .bar-left{
-        justify-content:stretch;
-      }
+      .bar-right{ justify-content:space-between; }
+      .bar-left{ justify-content:stretch; }
 
       .date-input{
         width:100%;
@@ -819,13 +781,8 @@
         justify-content:center;
       }
 
-      .list{
-        padding:12px 12px 18px;
-      }
-
-      .item{
-        padding:12px;
-      }
+      .list{ padding:12px 12px 18px; }
+      .item{ padding:12px; }
 
       .row1{
         flex-direction:column;
@@ -842,17 +799,9 @@
         width:100%;
       }
 
-      .idbox{
-        font-size:15px;
-      }
-
-      .client{
-        font-size:15px;
-      }
-
-      .pill{
-        font-size:13px;
-      }
+      .idbox{ font-size:15px; }
+      .client{ font-size:15px; }
+      .pill{ font-size:13px; }
 
       .stepper-scroll{
         overflow-x:auto;
@@ -862,9 +811,7 @@
         -webkit-overflow-scrolling:touch;
       }
 
-      .stepper-scroll::-webkit-scrollbar{
-        display:none;
-      }
+      .stepper-scroll::-webkit-scrollbar{ display:none; }
 
       .stepper{
         width:max-content;
@@ -887,26 +834,16 @@
         height:50px;
       }
 
-      .label{
-        font-size:13px;
-      }
-
-      .sub-name{
-        font-size:12px;
-      }
-
-      .sub-date{
-        font-size:10px;
-      }
+      .label{ font-size:13px; }
+      .sub-name{ font-size:12px; }
+      .sub-date{ font-size:10px; }
 
       #status{
         font-size:14px;
         padding:10px 14px;
       }
 
-      #btnAdmin{
-        margin-left:0;
-      }
+      #btnAdmin{ margin-left:0; }
 
       #btnSearchDone,
       #btnExport{
@@ -923,22 +860,10 @@
     }
 
     @media (max-width:480px){
-      .company-header{
-        padding:28px 12px 42px;
-      }
-
-      .company-logo{
-        width:68px;
-        height:68px;
-      }
-
-      .header-text h1{
-        font-size:19px !important;
-      }
-
-      .header-text p{
-        font-size:13px !important;
-      }
+      .company-header{ padding:28px 12px 42px; }
+      .company-logo{ width:68px; height:68px; }
+      .header-text h1{ font-size:19px !important; }
+      .header-text p{ font-size:13px !important; }
 
       .user-pill{
         font-size:12px;
@@ -950,17 +875,9 @@
         margin-top:-18px;
       }
 
-      .panel-head{
-        padding:12px;
-      }
-
-      .bar{
-        padding:10px 12px;
-      }
-
-      .list{
-        padding:10px 10px 16px;
-      }
+      .panel-head{ padding:12px; }
+      .bar{ padding:10px 12px; }
+      .list{ padding:10px 10px 16px; }
 
       .item{
         padding:10px;
@@ -1065,9 +982,10 @@
   <div id="toast"></div>
 
   <script>
-    const API_BASE = "https://script.google.com/macros/s/AKfycbyckaM2ihwPaFJbZEt2hcgOu7QCGVaP7IdeHC7mMJkPVmL4ceCs3bjt1r9z36FyNmtr/exec";
+    const API_BASE = "https://script.google.com/macros/s/AKfycbzrJ_toRYNrx4iDQ14Q4I2B2s3aMM3fXEd2jNh4xiBkWNrq4zLvStXHXbTiG1k-aSIx/exec";
     const PAGE_NAME = "main";
-    const STORAGE_KEY = "tracking_session_token_" + PAGE_NAME;
+    const STORAGE_KEY_PAGE = "tracking_session_token_" + PAGE_NAME;
+    const STORAGE_KEY_GLOBAL = "tracking_session_token";
 
     let CURRENT_MODE = "open";
     let CURRENT_ITEMS = [];
@@ -1076,11 +994,26 @@
     let CURRENT_USERNAME = "";
 
     function getSessionToken(){
-      return sessionStorage.getItem(STORAGE_KEY) || "";
+      return (
+        sessionStorage.getItem(STORAGE_KEY_PAGE) ||
+        sessionStorage.getItem(STORAGE_KEY_GLOBAL) ||
+        localStorage.getItem(STORAGE_KEY_PAGE) ||
+        localStorage.getItem(STORAGE_KEY_GLOBAL) ||
+        ""
+      );
+    }
+
+    function setSessionToken(token){
+      if(!token) return;
+      sessionStorage.setItem(STORAGE_KEY_PAGE, token);
+      sessionStorage.setItem(STORAGE_KEY_GLOBAL, token);
     }
 
     function clearSessionToken(){
-      sessionStorage.removeItem(STORAGE_KEY);
+      sessionStorage.removeItem(STORAGE_KEY_PAGE);
+      sessionStorage.removeItem(STORAGE_KEY_GLOBAL);
+      localStorage.removeItem(STORAGE_KEY_PAGE);
+      localStorage.removeItem(STORAGE_KEY_GLOBAL);
     }
 
     function isAdminUser(){
@@ -1101,7 +1034,7 @@
       try{
         return JSON.parse(text);
       }catch(err){
-        throw new Error(text);
+        throw new Error(text || "Invalid JSON response");
       }
     }
 
@@ -1109,7 +1042,7 @@
       const token = getSessionToken();
 
       if(!token){
-        window.location.href = "login.html?p=main";
+        window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
         return;
       }
 
@@ -1121,12 +1054,14 @@
         });
 
         if(result && result.ok){
-          CURRENT_USER_NAME = result.user || "مخول غير معروف";
+          setSessionToken(token);
+
+          CURRENT_USER_NAME = result.user || result.userName || "مخول غير معروف";
           CURRENT_USERNAME = result.username || "";
           CURRENT_USER_ROLE = isAdminUser() ? "admin" : "user";
 
           const w = document.getElementById("welcomeUser");
-          w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: ' + CURRENT_USER_NAME;
+          w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: ' + escapeHtml(CURRENT_USER_NAME);
 
           document.getElementById("pageWrap").classList.add("show");
           showAdminButton();
@@ -1134,11 +1069,14 @@
           await loadOpen();
         }else{
           clearSessionToken();
-          window.location.href = "login.html?p=main";
+          window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
         }
       }catch(error){
-        clearSessionToken();
-        window.location.href = "login.html?p=main";
+        showMsg("❌ تعذر التحقق من الجلسة", "err");
+        setTimeout(function(){
+          clearSessionToken();
+          window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
+        }, 900);
       }
     }
 
@@ -1276,11 +1214,12 @@
       const token = getSessionToken();
 
       if(!token){
-        window.location.href = "login.html?p=main";
+        window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
         return;
       }
 
       sessionStorage.setItem("tracking_session_token_admin", token);
+      sessionStorage.setItem("tracking_session_token", token);
       window.location.href = "admin.html";
     }
 
@@ -1346,8 +1285,8 @@
       date = date.replace(/^[\-\–—\s]+/, "").replace(/[\-\–—\s]+$/, "").trim();
 
       return ''
-        + '<div class="sub-name">' + (name || "") + '</div>'
-        + '<div class="sub-date">' + (date || "") + '</div>';
+        + '<div class="sub-name">' + escapeHtml(name || "") + '</div>'
+        + '<div class="sub-date">' + escapeHtml(date || "") + '</div>';
     }
 
     function inferType(it){
@@ -1442,7 +1381,7 @@
         labPath !== "مختبرات فقط";
 
       var pathPill = showPathPill
-        ? '<span class="pill"><i class="fas fa-route"></i> ' + labPath + '</span>'
+        ? '<span class="pill"><i class="fas fa-route"></i> ' + escapeHtml(labPath) + '</span>'
         : "";
 
       return typePill + (pathPill ? " " + pathPill : "");
@@ -1477,7 +1416,7 @@
 
         html += '<div class="' + cls + '">'
              +    '<div class="circle"><i class="fas ' + s.icon + '"></i></div>'
-             +    '<div class="label">' + s.label + '</div>'
+             +    '<div class="label">' + escapeHtml(s.label) + '</div>'
              +    '<div class="sub">' + sub + '</div>'
              +  '</div>';
       }
@@ -1651,8 +1590,8 @@
 
       for(var i = 0; i < items.length; i++){
         var it = items[i] || {};
-        var orderNo = it.orderNo || "";
-        var client  = it.clientName || "—";
+        var orderNo = escapeHtml(it.orderNo || "");
+        var client  = escapeHtml(it.clientName || "—");
         var lateDays = Number(it.lateDays || 0);
         var fileUrl = String(it.barcodeFileUrl || it.barcodeLink || it.fileUrl || it.fileLink || "").trim();
 
@@ -1671,7 +1610,7 @@
 
         if(mode === "done" || mode === "search"){
           if(fileUrl){
-            html += '<a href="' + fileUrl + '" target="_blank" class="file-btn">'
+            html += '<a href="' + escapeHtml(fileUrl) + '" target="_blank" rel="noopener noreferrer" class="file-btn">'
                  +    '<i class="fas fa-up-right-from-square"></i> فتح الملف'
                  +  '</a>';
           } else {
@@ -1694,7 +1633,7 @@
     async function loadOpen(){
       const token = getSessionToken();
       if(!token){
-        window.location.href = "login.html?p=main";
+        window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
         return;
       }
 
@@ -1719,7 +1658,7 @@
     async function loadDelayed(){
       const token = getSessionToken();
       if(!token){
-        window.location.href = "login.html?p=main";
+        window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
         return;
       }
 
@@ -1744,7 +1683,7 @@
     async function loadDone(){
       const token = getSessionToken();
       if(!token){
-        window.location.href = "login.html?p=main";
+        window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
         return;
       }
 
@@ -1792,7 +1731,7 @@
     async function searchAny(){
       const token = getSessionToken();
       if(!token){
-        window.location.href = "login.html?p=main";
+        window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
         return;
       }
 
@@ -1837,7 +1776,7 @@
           document.getElementById("at").textContent = "—";
           document.getElementById("list").innerHTML =
             '<div class="empty"><i class="fas fa-circle-xmark"></i> لا توجد معاملة بهذا الرقم داخل السنة المحددة</div>';
-          setStatus("❌ لم يتم العثور على أمر العمل " + id + " داخل السنة المحددة", false);
+          setStatus("❌ لم يتم العثور على أمر العمل " + escapeHtml(id) + " داخل السنة المحددة", false);
           showMsg("⚠️ غير موجود", "warn");
           return;
         }
@@ -1852,7 +1791,7 @@
           items: [item]
         }, "search");
 
-        setStatus("✅ تم العثور على أمر العمل " + id + " داخل " + (item.sourceSheet || sheetName), true);
+        setStatus("✅ تم العثور على أمر العمل " + escapeHtml(id) + " داخل " + escapeHtml(item.sourceSheet || sheetName), true);
         showMsg("✅ تم العثور على المعاملة", "ok");
       }catch(err){
         setLoading(false);
@@ -1869,7 +1808,7 @@
 
       const token = getSessionToken();
       if(!token){
-        window.location.href = "login.html?p=main";
+        window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
         return;
       }
 
@@ -1885,7 +1824,7 @@
           showMsg("❌ لا يمكن فتح الشيت", "err");
           return;
         }
-        window.open(res.url, "_blank");
+        window.open(res.url, "_blank", "noopener");
       }catch(err){
         setStatus("❌ خطأ: " + safeErr(err), false);
         showMsg("❌ خطأ في فتح الشيت", "err");

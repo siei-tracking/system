@@ -36,12 +36,8 @@
       color:#111;
     }
 
-    #pageWrap{
-      display:none;
-    }
-    #pageWrap.show{
-      display:block;
-    }
+    #pageWrap{ display:none; }
+    #pageWrap.show{ display:block; }
 
     .company-header{
       background-image:
@@ -87,39 +83,24 @@
       background:#fff;
     }
 
-    th:nth-child(1),
-    td:nth-child(1){
-      width:140px;
-      min-width:140px;
-      max-width:140px;
+    th:nth-child(1), td:nth-child(1){
+      width:140px; min-width:140px; max-width:140px;
     }
 
-    th:nth-child(2),
-    td:nth-child(2){
-      width:120px;
-      min-width:120px;
-      max-width:120px;
+    th:nth-child(2), td:nth-child(2){
+      width:120px; min-width:120px; max-width:120px;
     }
 
-    th:nth-child(3),
-    td:nth-child(3){
-      width:160px;
-      min-width:160px;
-      max-width:160px;
+    th:nth-child(3), td:nth-child(3){
+      width:160px; min-width:160px; max-width:160px;
     }
 
-    th:nth-child(4),
-    td:nth-child(4){
-      width:380px;
-      min-width:380px;
-      max-width:380px;
+    th:nth-child(4), td:nth-child(4){
+      width:380px; min-width:380px; max-width:380px;
     }
 
-    th:nth-child(5),
-    td:nth-child(5){
-      width:220px;
-      min-width:220px;
-      max-width:220px;
+    th:nth-child(5), td:nth-child(5){
+      width:220px; min-width:220px; max-width:220px;
     }
 
     .header-text{
@@ -576,7 +557,7 @@
         <div class="grid">
           <div class="field">
             <label for="username">اسم المستخدم</label>
-            <input id="username" type="text" placeholder="مثال: admin أو user1">
+            <input id="username" type="text" placeholder="مثال: user1">
           </div>
 
           <div class="field">
@@ -662,9 +643,10 @@
 </div>
 
 <script>
-  const API_BASE = "https://script.google.com/macros/s/AKfycbyckaM2ihwPaFJbZEt2hcgOu7QCGVaP7IdeHC7mMJkPVmL4ceCs3bjt1r9z36FyNmtr/exec";
+  const API_BASE = "https://script.google.com/macros/s/AKfycbzrJ_toRYNrx4iDQ14Q4I2B2s3aMM3fXEd2jNh4xiBkWNrq4zLvStXHXbTiG1k-aSIx/exec";
   const PAGE_NAME = "admin";
-  const STORAGE_KEY = "tracking_session_token_" + PAGE_NAME;
+  const STORAGE_KEY_PAGE = "tracking_session_token_" + PAGE_NAME;
+  const STORAGE_KEY_GLOBAL = "tracking_session_token";
 
   let ALL_PAGES_CACHE = [];
   let USERS_CACHE = [];
@@ -673,16 +655,30 @@
   let CURRENT_USERNAME = "";
 
   function getSessionToken(){
-    return sessionStorage.getItem(STORAGE_KEY) || "";
+    return (
+      sessionStorage.getItem(STORAGE_KEY_PAGE) ||
+      sessionStorage.getItem(STORAGE_KEY_GLOBAL) ||
+      localStorage.getItem(STORAGE_KEY_PAGE) ||
+      localStorage.getItem(STORAGE_KEY_GLOBAL) ||
+      ""
+    );
+  }
+
+  function setSessionToken(token){
+    if(!token) return;
+    sessionStorage.setItem(STORAGE_KEY_PAGE, token);
+    sessionStorage.setItem(STORAGE_KEY_GLOBAL, token);
   }
 
   function clearSessionToken(){
-    sessionStorage.removeItem(STORAGE_KEY);
+    sessionStorage.removeItem(STORAGE_KEY_PAGE);
+    sessionStorage.removeItem(STORAGE_KEY_GLOBAL);
+    localStorage.removeItem(STORAGE_KEY_PAGE);
+    localStorage.removeItem(STORAGE_KEY_GLOBAL);
   }
 
   function goToLogin(){
-    clearSessionToken();
-    window.location.href = "login.html?p=" + PAGE_NAME;
+    window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
   }
 
   function isAdminUser(){
@@ -703,7 +699,7 @@
     try{
       return JSON.parse(text);
     }catch(err){
-      throw new Error(text);
+      throw new Error(text || "Invalid JSON response");
     }
   }
 
@@ -723,11 +719,13 @@
       });
 
       if(result && result.ok){
-        CURRENT_USER_NAME = result.user || "مخول غير معروف";
+        setSessionToken(token);
+
+        CURRENT_USER_NAME = result.user || result.userName || "مخول غير معروف";
         CURRENT_USERNAME = result.username || "";
 
         const w = document.getElementById("welcomeUser");
-        w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: ' + CURRENT_USER_NAME;
+        w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: ' + escapeHtml(CURRENT_USER_NAME);
 
         document.getElementById("pageWrap").classList.add("show");
 
@@ -742,10 +740,15 @@
         await loadAllPages();
         await loadUsers();
       }else{
+        clearSessionToken();
         goToLogin();
       }
     }catch(error){
-      goToLogin();
+      showMsg("❌ تعذر التحقق من الجلسة", "err");
+      setTimeout(function(){
+        clearSessionToken();
+        goToLogin();
+      }, 900);
     }
   }
 
@@ -1051,6 +1054,19 @@
 
       setLoading(false);
 
+      if(
+        text.indexOf("انتهت الجلسة") !== -1 ||
+        text.indexOf("غير صالح") !== -1 ||
+        text.indexOf("غير مصرح") !== -1
+      ){
+        showMsg("❌ انتهت الجلسة", "err");
+        setTimeout(function(){
+          clearSessionToken();
+          goToLogin();
+        }, 800);
+        return;
+      }
+
       if(text.indexOf("✅") !== -1){
         showMsg(text, "ok");
         clearForm(true);
@@ -1116,6 +1132,19 @@
 
       setLoading(false);
 
+      if(
+        text.indexOf("انتهت الجلسة") !== -1 ||
+        text.indexOf("غير صالح") !== -1 ||
+        text.indexOf("غير مصرح") !== -1
+      ){
+        showMsg("❌ انتهت الجلسة", "err");
+        setTimeout(function(){
+          clearSessionToken();
+          goToLogin();
+        }, 800);
+        return;
+      }
+
       if(text.indexOf("✅") !== -1){
         showMsg(text, "ok");
         clearForm(true);
@@ -1161,6 +1190,19 @@
 
         setLoading(false);
 
+        if(
+          text.indexOf("انتهت الجلسة") !== -1 ||
+          text.indexOf("غير صالح") !== -1 ||
+          text.indexOf("غير مصرح") !== -1
+        ){
+          showMsg("❌ انتهت الجلسة", "err");
+          setTimeout(function(){
+            clearSessionToken();
+            goToLogin();
+          }, 800);
+          return;
+        }
+
         if(text.includes("✅")){
           showMsg(text, "ok");
           clearForm(true);
@@ -1201,6 +1243,11 @@
   }
 
   function goToMain(){
+    const token = getSessionToken();
+    if(token){
+      sessionStorage.setItem("tracking_session_token_main", token);
+      sessionStorage.setItem("tracking_session_token", token);
+    }
     window.location.href = "main.html";
   }
 

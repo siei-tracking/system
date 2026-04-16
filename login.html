@@ -143,11 +143,13 @@
   </div>
 
 <script>
-const API_BASE = "https://script.google.com/macros/s/AKfycbyckaM2ihwPaFJbZEt2hcgOu7QCGVaP7IdeHC7mMJkPVmL4ceCs3bjt1r9z36FyNmtr/exec";
+const API_BASE = "https://script.google.com/macros/s/AKfycbzrJ_toRYNrx4iDQ14Q4I2B2s3aMM3fXEd2jNh4xiBkWNrq4zLvStXHXbTiG1k-aSIx/exec";
 
 const params = new URLSearchParams(window.location.search);
 const PAGE = String(params.get("p") || "main").trim().toLowerCase();
-const STORAGE_KEY = "tracking_session_token_" + PAGE;
+
+const STORAGE_KEY_PAGE = "tracking_session_token_" + PAGE;
+const STORAGE_KEY_GLOBAL = "tracking_session_token";
 
 function setMsg(text, isOk = false){
   const el = document.getElementById("msg");
@@ -155,8 +157,35 @@ function setMsg(text, isOk = false){
   el.className = isOk ? "ok" : "";
 }
 
+function clearAllSessionTokens(){
+  try{
+    Object.keys(sessionStorage).forEach(function(key){
+      if(key.indexOf("tracking_session_token") === 0){
+        sessionStorage.removeItem(key);
+      }
+    });
+
+    Object.keys(localStorage).forEach(function(key){
+      if(key.indexOf("tracking_session_token") === 0){
+        localStorage.removeItem(key);
+      }
+    });
+  }catch(err){}
+}
+
 function saveSessionAndGo(token){
-  sessionStorage.setItem(STORAGE_KEY, String(token || ""));
+  const safeToken = String(token || "").trim();
+
+  if(!safeToken){
+    setMsg("❌ لم يتم استلام رمز الجلسة");
+    return;
+  }
+
+  clearAllSessionTokens();
+
+  sessionStorage.setItem(STORAGE_KEY_PAGE, safeToken);
+  sessionStorage.setItem(STORAGE_KEY_GLOBAL, safeToken);
+
   window.location.href = PAGE + ".html";
 }
 
@@ -197,11 +226,21 @@ async function login(){
       })
     });
 
-    const data = await res.json();
+    const text = await res.text();
+    let data = null;
+
+    try{
+      data = JSON.parse(text);
+    }catch(parseErr){
+      btn.disabled = false;
+      setMsg("❌ استجابة غير صالحة من الخادم");
+      return;
+    }
+
     btn.disabled = false;
 
-    if(!data.ok){
-      setMsg(data.message || "❌ فشل تسجيل الدخول");
+    if(!data || !data.ok){
+      setMsg((data && data.message) || "❌ فشل تسجيل الدخول");
       return;
     }
 

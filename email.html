@@ -484,24 +484,39 @@
 <div id="toast"></div>
 
 <script>
-  const API_BASE = "https://script.google.com/macros/s/AKfycbxcUjhDpyEcZqJm71qW6BujHOokF3dzixLLUykslqGoZ09o4X_qS0leGKNulQGFSsdO/exec";
+  const API_BASE = "https://script.google.com/macros/s/AKfycbzrJ_toRYNrx4iDQ14Q4I2B2s3aMM3fXEd2jNh4xiBkWNrq4zLvStXHXbTiG1k-aSIx/exec";
   const PAGE_NAME = "email";
-  const STORAGE_KEY = "tracking_session_token_" + PAGE_NAME;
+  const STORAGE_KEY_PAGE = "tracking_session_token_" + PAGE_NAME;
+  const STORAGE_KEY_GLOBAL = "tracking_session_token";
 
   let currentUserName = "";
   let lastStatus = "";
 
   function getSessionToken(){
-    return sessionStorage.getItem(STORAGE_KEY) || "";
+    return (
+      sessionStorage.getItem(STORAGE_KEY_PAGE) ||
+      sessionStorage.getItem(STORAGE_KEY_GLOBAL) ||
+      localStorage.getItem(STORAGE_KEY_PAGE) ||
+      localStorage.getItem(STORAGE_KEY_GLOBAL) ||
+      ""
+    );
+  }
+
+  function setSessionToken(token){
+    if(!token) return;
+    sessionStorage.setItem(STORAGE_KEY_PAGE, token);
+    sessionStorage.setItem(STORAGE_KEY_GLOBAL, token);
   }
 
   function clearSessionToken(){
-    sessionStorage.removeItem(STORAGE_KEY);
+    sessionStorage.removeItem(STORAGE_KEY_PAGE);
+    sessionStorage.removeItem(STORAGE_KEY_GLOBAL);
+    localStorage.removeItem(STORAGE_KEY_PAGE);
+    localStorage.removeItem(STORAGE_KEY_GLOBAL);
   }
 
   function goToLogin(){
-    clearSessionToken();
-    window.location.href = "login.html?p=" + PAGE_NAME;
+    window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
   }
 
   async function apiPost(payload){
@@ -518,7 +533,7 @@
     try{
       return JSON.parse(text);
     }catch(err){
-      throw new Error(text);
+      throw new Error(text || "Invalid JSON response");
     }
   }
 
@@ -538,7 +553,9 @@
       });
 
       if(result && result.ok){
-        currentUserName = result.user || "مخول غير معروف";
+        setSessionToken(token);
+
+        currentUserName = result.user || result.userName || "مخول غير معروف";
 
         const w = document.getElementById("welcomeUser");
         if(currentUserName && currentUserName !== "مخول غير معروف"){
@@ -549,10 +566,15 @@
 
         document.getElementById("pageWrap").classList.add("show");
       }else{
+        clearSessionToken();
         goToLogin();
       }
     }catch(error){
-      goToLogin();
+      showMsg("❌ تعذر التحقق من الجلسة", "err");
+      setTimeout(function(){
+        clearSessionToken();
+        goToLogin();
+      }, 900);
     }
   }
 
@@ -570,6 +592,20 @@
     window.__toastTimer = setTimeout(function(){
       t.style.display = "none";
     }, 2500);
+  }
+
+  function setReceiveButtonEnabled(){
+    const btn = document.getElementById('receiveBtn');
+    btn.disabled = false;
+    btn.style.background = "linear-gradient(180deg,#2ebf68,#26a65b)";
+    btn.innerHTML = '<i class="fas fa-check-double"></i> توثيق ارسال الايميل';
+  }
+
+  function setReceiveButtonDisabled(html){
+    const btn = document.getElementById('receiveBtn');
+    btn.disabled = true;
+    btn.style.background = "#bdc3c7";
+    btn.innerHTML = html;
   }
 
   async function fetchData(){
@@ -601,9 +637,16 @@
       document.getElementById('fetchBtn').disabled = false;
 
       if(data && data.ok === false && data.message){
-        if(data.message.indexOf("انتهت الجلسة") !== -1 || data.message.indexOf("غير صالح") !== -1 || data.message.indexOf("غير مصرح") !== -1){
+        if(
+          data.message.indexOf("انتهت الجلسة") !== -1 ||
+          data.message.indexOf("غير صالح") !== -1 ||
+          data.message.indexOf("غير مصرح") !== -1
+        ){
           showMsg("❌ انتهت الجلسة", "err");
-          setTimeout(goToLogin, 800);
+          setTimeout(function(){
+            clearSessionToken();
+            goToLogin();
+          }, 800);
           return;
         }
 
@@ -615,18 +658,13 @@
         document.getElementById('cName').innerText = data.clientName || "---";
         lastStatus = String(data.emailStatus || "").trim();
 
-        const btn = document.getElementById('receiveBtn');
         const isDone = lastStatus.includes("استلام") || lastStatus.includes("✅");
 
         if(isDone){
-          btn.disabled = true;
-          btn.style.background = "#bdc3c7";
-          btn.innerHTML = '<i class="fas fa-lock"></i> مثبت مسبقاً';
+          setReceiveButtonDisabled('<i class="fas fa-lock"></i> مثبت مسبقاً');
           showMsg("⚠️ هذه المرحلة موثقة مسبقاً", "warn");
         } else {
-          btn.disabled = false;
-          btn.style.background = "linear-gradient(180deg,#2ebf68,#26a65b)";
-          btn.innerHTML = '<i class="fas fa-check-double"></i> توثيق ارسال الايميل';
+          setReceiveButtonEnabled();
         }
 
         document.getElementById('resPanel').style.display = 'block';
@@ -672,20 +710,25 @@
         document.getElementById('cardForm').style.display = 'none';
         document.getElementById('successMessage').style.display = 'block';
       } else {
-        if(msg.indexOf("انتهت الجلسة") !== -1 || msg.indexOf("غير صالح") !== -1 || msg.indexOf("غير مصرح") !== -1){
+        if(
+          msg.indexOf("انتهت الجلسة") !== -1 ||
+          msg.indexOf("غير صالح") !== -1 ||
+          msg.indexOf("غير مصرح") !== -1
+        ){
           showMsg("❌ انتهت الجلسة", "err");
-          setTimeout(goToLogin, 800);
+          setTimeout(function(){
+            clearSessionToken();
+            goToLogin();
+          }, 800);
           return;
         }
 
         showMsg(msg || "❌ تعذر الحفظ", "err");
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-check-double"></i> توثيق ارسال الايميل';
+        setReceiveButtonEnabled();
       }
     }catch(err){
       showMsg("❌ خطأ في الاتصال", "err");
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fas fa-check-double"></i> توثيق ارسال الايميل';
+      setReceiveButtonEnabled();
     }
   }
 
@@ -698,11 +741,7 @@
     document.getElementById('loader').style.display = 'none';
     document.getElementById('cName').innerText = "---";
 
-    const btn = document.getElementById('receiveBtn');
-    btn.disabled = false;
-    btn.style.background = "linear-gradient(180deg,#2ebf68,#26a65b)";
-    btn.innerHTML = '<i class="fas fa-check-double"></i> توثيق ارسال الايميل';
-
+    setReceiveButtonEnabled();
     document.getElementById('fetchBtn').disabled = false;
     lastStatus = "";
     document.getElementById('orderID').focus();
