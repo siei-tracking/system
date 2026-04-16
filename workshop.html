@@ -606,7 +606,6 @@
 
   function disableReceiveButton(messageText, buttonText){
     const btn = document.getElementById("receiveBtn");
-    btn.style.display = "flex";
     btn.disabled = true;
     btn.className = "main-btn btn-disabled";
     btn.style.background = "";
@@ -616,7 +615,6 @@
 
   function enableReceiveButton(){
     const btn = document.getElementById("receiveBtn");
-    btn.style.display = "flex";
     btn.disabled = false;
     btn.className = "main-btn";
     btn.style.background = "linear-gradient(180deg,#2ebf68,#26a65b)";
@@ -688,10 +686,11 @@
             '<i class="fas fa-ban"></i> لا توجد ورشة للمصاعد'
           );
         } else if(alreadyReceived){
-          document.getElementById("receiveBtn").style.display = "none";
-          showMsg("⚠️ أمر العمل مستلم سابقاً", "warn");
+          disableReceiveButton(
+            "⚠️ أمر العمل مستلم سابقاً",
+            '<i class="fas fa-lock"></i> مستلمة مسبقاً'
+          );
         } else {
-          document.getElementById("receiveBtn").style.display = "flex";
           enableReceiveButton();
         }
 
@@ -714,8 +713,10 @@
     }
 
     if(alreadyReceived){
-      document.getElementById("receiveBtn").style.display = "none";
-      showMsg("⚠️ أمر العمل مستلم سابقاً", "warn");
+      disableReceiveButton(
+        "⚠️ أمر العمل مستلم سابقاً",
+        '<i class="fas fa-lock"></i> مستلمة مسبقاً'
+      );
       return;
     }
 
@@ -746,18 +747,22 @@
         const msg = String((r && (r.message || r.result)) || "");
         showMsg(msg || "❌ تعذر الحفظ", "err");
         if(alreadyReceived){
-          document.getElementById("receiveBtn").style.display = "none";
+          disableReceiveButton(
+            "",
+            '<i class="fas fa-lock"></i> مستلمة مسبقاً'
+          );
         }else{
-          document.getElementById("receiveBtn").style.display = "flex";
           enableReceiveButton();
         }
       }
     }catch(err){
       showMsg("❌ خطأ في الاتصال", "err");
       if(alreadyReceived){
-        document.getElementById("receiveBtn").style.display = "none";
+        disableReceiveButton(
+          "",
+          '<i class="fas fa-lock"></i> مستلمة مسبقاً'
+        );
       }else{
-        document.getElementById("receiveBtn").style.display = "flex";
         enableReceiveButton();
       }
     }
@@ -776,7 +781,6 @@
     testType = "";
     alreadyReceived = false;
 
-    document.getElementById("receiveBtn").style.display = "flex";
     enableReceiveButton();
     document.getElementById("fetchBtn").disabled = false;
     document.getElementById("orderID").focus();
