@@ -662,8 +662,7 @@
         const isDone = lastStatus.includes("استلام") || lastStatus.includes("✅");
 
         if(isDone){
-          setReceiveButtonDisabled('<i class="fas fa-lock"></i> مثبتة مسبقاً');
-          showMsg("⚠️ هذه المرحلة موثقة مسبقاً", "warn");
+          setReceiveButtonDisabled('<i class="fas fa-lock"></i> مستلمة مسبقاً');
         } else {
           setReceiveButtonEnabled();
         }
