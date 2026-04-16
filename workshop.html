@@ -686,11 +686,11 @@
             '<i class="fas fa-ban"></i> لا توجد ورشة للمصاعد'
           );
         } else if(alreadyReceived){
-            return;
-        }
-
-       
-          else {
+          disableReceiveButton(
+            "⚠️ أمر العمل مستلم سابقاً",
+            '<i class="fas fa-lock"></i> مستلمة مسبقاً'
+          );
+        } else {
           enableReceiveButton();
         }
 
@@ -708,10 +708,15 @@
   async function receive(){
     const id = document.getElementById("orderID").value.trim();
     if(!id){
+      showMsg("⚠️ يرجى إدخال رقم أمر العمل", "warn");
       return;
     }
 
     if(alreadyReceived){
+      disableReceiveButton(
+        "⚠️ أمر العمل مستلم سابقاً",
+        '<i class="fas fa-lock"></i> مستلمة مسبقاً'
+      );
       return;
     }
 
