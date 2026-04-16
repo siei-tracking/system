@@ -498,6 +498,9 @@
   let currentUserName = "";
   let lastStatus = "";
   let testType = "";
+  let labPath = "";
+  let lab1Status = "";
+  let pricingText = "";
   let alreadyReceived = false;
 
   function getSessionToken(){
@@ -604,6 +607,10 @@
     }, 2500);
   }
 
+  function isDoneCell(v){
+    return String(v || "").includes("✅");
+  }
+
   function disableReceiveButton(messageText, buttonText){
     const btn = document.getElementById("receiveBtn");
     btn.disabled = true;
@@ -619,6 +626,42 @@
     btn.className = "main-btn";
     btn.style.background = "linear-gradient(180deg,#2ebf68,#26a65b)";
     btn.innerHTML = '<i class="fas fa-check-double"></i> توثيق استلام الورشة';
+  }
+
+  function setupButtonState(){
+    if(testType === "مصاعد"){
+      disableReceiveButton(
+        "⚠️ لا توجد ورشة للمصاعد",
+        '<i class="fas fa-ban"></i> لا توجد ورشة للمصاعد'
+      );
+      return;
+    }
+
+    if(testType === "مختبرات" && labPath !== "ورشة"){
+      disableReceiveButton(
+        "",
+        '<i class="fas fa-ban"></i> لا تحتاج ورشة'
+      );
+      return;
+    }
+
+    if(!isDoneCell(pricingText)){
+      disableReceiveButton(
+        "",
+        '<i class="fas fa-lock"></i> ثبت التسعيرة أولاً'
+      );
+      return;
+    }
+
+    if(alreadyReceived){
+      disableReceiveButton(
+        "",
+        '<i class="fas fa-lock"></i> مستلمة مسبقاً'
+      );
+      return;
+    }
+
+    enableReceiveButton();
   }
 
   async function fetchData(){
@@ -671,6 +714,9 @@
         document.getElementById("cName").innerText = data.clientName || "---";
         lastStatus = String(data.workshopStatus || "").trim();
         testType = String(data.testType || "").trim();
+        labPath = String(data.labPath || "").trim();
+        lab1Status = String(data.lab1Status || "").trim();
+        pricingText = String(data.pricing || "").trim();
 
         alreadyReceived =
           data.alreadyReceived === true ||
@@ -680,20 +726,7 @@
           lastStatus.includes("استلام") ||
           lastStatus.includes("✅");
 
-        if(testType === "مصاعد"){
-          disableReceiveButton(
-            "⚠️ لا توجد ورشة للمصاعد",
-            '<i class="fas fa-ban"></i> لا توجد ورشة للمصاعد'
-          );
-       } else if(alreadyReceived){
-         disableReceiveButton(
-           "",
-            '<i class="fas fa-lock"></i> مستلمة مسبقاً'
-             );
-         } else {
-          enableReceiveButton();
-        }
-
+        setupButtonState();
         document.getElementById("resPanel").style.display = "block";
       } else {
         showMsg("⚠️ الرقم غير موجود", "warn");
@@ -713,12 +746,20 @@
     }
 
     if(alreadyReceived){
-  disableReceiveButton(
-    "",
-    '<i class="fas fa-lock"></i> مستلمة مسبقاً'
-  );
-  return;
-}
+      disableReceiveButton(
+        "",
+        '<i class="fas fa-lock"></i> مستلمة مسبقاً'
+      );
+      return;
+    }
+
+    if(!isDoneCell(pricingText)){
+      disableReceiveButton(
+        "",
+        '<i class="fas fa-lock"></i> ثبت التسعيرة أولاً'
+      );
+      return;
+    }
 
     const token = getSessionToken();
     if(!token){
@@ -746,25 +787,11 @@
       } else {
         const msg = String((r && (r.message || r.result)) || "");
         showMsg(msg || "❌ تعذر الحفظ", "err");
-        if(alreadyReceived){
-          disableReceiveButton(
-            "",
-            '<i class="fas fa-lock"></i> مستلمة مسبقاً'
-          );
-        }else{
-          enableReceiveButton();
-        }
+        setupButtonState();
       }
     }catch(err){
       showMsg("❌ خطأ في الاتصال", "err");
-      if(alreadyReceived){
-        disableReceiveButton(
-          "",
-          '<i class="fas fa-lock"></i> مستلمة مسبقاً'
-        );
-      }else{
-        enableReceiveButton();
-      }
+      setupButtonState();
     }
   }
 
@@ -779,6 +806,9 @@
 
     lastStatus = "";
     testType = "";
+    labPath = "";
+    lab1Status = "";
+    pricingText = "";
     alreadyReceived = false;
 
     enableReceiveButton();
