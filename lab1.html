@@ -342,6 +342,10 @@
       font-weight:900;
     }
 
+    .action-wrap{
+      margin-top:14px;
+    }
+
     .success{
       display:none;
       text-align:center;
@@ -510,10 +514,12 @@
                   </span>
                 </div>
 
-                <button id="receiveBtn" class="main-btn btn-success" type="button" onclick="receiveOrder()">
-                  <i class="fas fa-hand-holding-medical"></i>
-                  تأكيد استلام المختبرات
-                </button>
+                <div class="action-wrap">
+                  <button id="receiveBtn" class="main-btn btn-success" type="button" onclick="receiveOrder()">
+                    <i class="fas fa-hand-holding-medical"></i>
+                    تأكيد استلام المختبرات
+                  </button>
+                </div>
               </div>
 
             </div>
@@ -551,6 +557,7 @@
   let labPath = "";
   let stage = "LAB1";
   let alreadyReceived = false;
+  let pricingText = "";
 
   function getSessionToken(){
     return (
@@ -656,6 +663,64 @@
     }, 2500);
   }
 
+  function isDoneCell(v){
+    return String(v || "").includes("✅");
+  }
+
+  function pricingIsDone(v){
+    return isDoneCell(v);
+  }
+
+  function setupButtonState(){
+    const btn = document.getElementById("receiveBtn");
+    const pricingDone = pricingIsDone(pricingText);
+
+    btn.disabled = false;
+    btn.className = "main-btn btn-success";
+
+    if(testType === "مصاعد"){
+      btn.disabled = true;
+      btn.className = "main-btn btn-disabled";
+      btn.innerHTML = '<i class="fas fa-ban"></i> لا يوجد مختبرات';
+      return;
+    }
+
+    if(!pricingDone){
+      btn.disabled = true;
+      btn.className = "main-btn btn-disabled";
+      btn.innerHTML = '<i class="fas fa-lock"></i> ثبت التسعيرة أولاً';
+      return;
+    }
+
+    if(alreadyReceived){
+      btn.disabled = true;
+      btn.className = "main-btn btn-disabled";
+      btn.innerHTML = '<i class="fas fa-lock"></i> مستلمة سابقاً';
+      return;
+    }
+
+    if(stage === "WAIT_WORKSHOP"){
+      btn.disabled = true;
+      btn.className = "main-btn btn-disabled";
+      btn.innerHTML = '<i class="fas fa-hourglass-half"></i> بانتظار الورشة';
+      return;
+    }
+
+    if(stage === "DONE"){
+      btn.disabled = true;
+      btn.className = "main-btn btn-disabled";
+      btn.innerHTML = '<i class="fas fa-lock"></i> مكتمل';
+      return;
+    }
+
+    if(stage === "LAB2"){
+      btn.innerHTML = '<i class="fas fa-flask"></i> استلام المختبرات بعد الورشة';
+      return;
+    }
+
+    btn.innerHTML = '<i class="fas fa-hand-holding-medical"></i> استلام المختبرات';
+  }
+
   async function fetchLabData(){
     const id = document.getElementById("orderID").value.trim();
     if(!id){
@@ -708,6 +773,7 @@
       }
 
       document.getElementById("cName").innerText = d.clientName || "";
+      pricingText = d.pricing || "";
       labPath = d.labPath || "";
       stage = d.stage || "LAB1";
 
@@ -741,50 +807,6 @@
     }
   }
 
-  function setupButtonState(){
-    const btn = document.getElementById("receiveBtn");
-
-    btn.disabled = false;
-    btn.className = "main-btn btn-success";
-
-    if(testType === "مصاعد"){
-      btn.disabled = true;
-      btn.className = "main-btn btn-disabled";
-      btn.innerHTML = '<i class="fas fa-ban"></i> لا يوجد مختبرات';
-      showMsg("⚠️ هذه المعاملة تخص المصاعد", "warn");
-      return;
-    }
-
-    if(alreadyReceived){
-      btn.disabled = true;
-      btn.className = "main-btn btn-disabled";
-      btn.innerHTML = '<i class="fas fa-lock"></i> مستلمة سابقاً';
-      return;
-    }
-
-    if(stage === "WAIT_WORKSHOP"){
-      btn.disabled = true;
-      btn.className = "main-btn btn-disabled";
-      btn.innerHTML = '<i class="fas fa-hourglass-half"></i> بانتظار الورشة';
-      return;
-    }
-
-    if(stage === "DONE"){
-      btn.disabled = true;
-      btn.className = "main-btn btn-disabled";
-      btn.innerHTML = '<i class="fas fa-lock"></i> مكتمل';
-      showMsg("⚠️ هذه المرحلة موثقة مسبقاً", "warn");
-      return;
-    }
-
-    if(stage === "LAB2"){
-      btn.innerHTML = '<i class="fas fa-flask"></i> استلام المختبرات بعد الورشة';
-      return;
-    }
-
-    btn.innerHTML = '<i class="fas fa-hand-holding-medical"></i> استلام المختبرات';
-  }
-
   async function receiveOrder(){
     const id = document.getElementById("orderID").value.trim();
     if(!id){
@@ -793,7 +815,12 @@
     }
 
     if(alreadyReceived){
-     return;
+      return;
+    }
+
+    if(!pricingIsDone(pricingText)){
+      showMsg("⚠️ يجب تثبيت التسعيرة أولاً", "warn");
+      return;
     }
 
     const token = getSessionToken();
@@ -855,6 +882,7 @@
     labPath = "";
     stage = "LAB1";
     alreadyReceived = false;
+    pricingText = "";
 
     const btn = document.getElementById("receiveBtn");
     btn.disabled = false;
