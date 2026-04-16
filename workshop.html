@@ -604,8 +604,19 @@
     }, 2500);
   }
 
+  function hideReceiveButton(){
+    const btn = document.getElementById("receiveBtn");
+    if(btn) btn.style.display = "none";
+  }
+
+  function showReceiveButton(){
+    const btn = document.getElementById("receiveBtn");
+    if(btn) btn.style.display = "flex";
+  }
+
   function disableReceiveButton(messageText, buttonText){
     const btn = document.getElementById("receiveBtn");
+    showReceiveButton();
     btn.disabled = true;
     btn.className = "main-btn btn-disabled";
     btn.style.background = "";
@@ -615,6 +626,7 @@
 
   function enableReceiveButton(){
     const btn = document.getElementById("receiveBtn");
+    showReceiveButton();
     btn.disabled = false;
     btn.className = "main-btn";
     btn.style.background = "linear-gradient(180deg,#2ebf68,#26a65b)";
@@ -686,10 +698,7 @@
             '<i class="fas fa-ban"></i> لا توجد ورشة للمصاعد'
           );
         } else if(alreadyReceived){
-          disableReceiveButton(
-            "⚠️ أمر العمل مستلم سابقاً",
-            '<i class="fas fa-lock"></i> مستلمة مسبقاً'
-          );
+          hideReceiveButton();
         } else {
           enableReceiveButton();
         }
@@ -712,10 +721,11 @@
       return;
     }
 
-if(alreadyReceived){
-  document.getElementById("receiveBtn").style.display = "none";
-  return;
-}
+    if(alreadyReceived){
+      hideReceiveButton();
+      return;
+    }
+
     const token = getSessionToken();
     if(!token){
       goToLogin();
@@ -742,11 +752,10 @@ if(alreadyReceived){
       } else {
         const msg = String((r && (r.message || r.result)) || "");
         showMsg(msg || "❌ تعذر الحفظ", "err");
-        if(alreadyReceived){
-          disableReceiveButton(
-            "",
-            '<i class="fas fa-lock"></i> مستلمة مسبقاً'
-          );
+
+        if(msg.includes("موثقة مسبقاً") || msg.includes("مستلم سابقاً") || msg.includes("مستلمة مسبقاً")){
+          alreadyReceived = true;
+          hideReceiveButton();
         }else{
           enableReceiveButton();
         }
@@ -754,10 +763,7 @@ if(alreadyReceived){
     }catch(err){
       showMsg("❌ خطأ في الاتصال", "err");
       if(alreadyReceived){
-        disableReceiveButton(
-          "",
-          '<i class="fas fa-lock"></i> مستلمة مسبقاً'
-        );
+        hideReceiveButton();
       }else{
         enableReceiveButton();
       }
