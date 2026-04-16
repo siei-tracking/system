@@ -541,7 +541,10 @@
 <script>
   const API_BASE = "https://script.google.com/macros/s/AKfycbzRH6p-zwiHMRlvGvdWL8NVHSZEWfOj0uJciwCxeNO1Ve268IJY3RUNnhMY0rBIXcqF/exec";
   const PAGE_NAME = "lab1";
-  const STORAGE_KEY = "tracking_session_token_" + PAGE_NAME;
+  const PAGE_FILE = "lab1.html";
+
+  const STORAGE_KEY_PAGE = "tracking_session_token_" + PAGE_NAME;
+  const STORAGE_KEY_GLOBAL = "tracking_session_token";
 
   let currentUserName = "";
   let testType = "";
@@ -550,16 +553,30 @@
   let alreadyReceived = false;
 
   function getSessionToken(){
-    return sessionStorage.getItem(STORAGE_KEY) || "";
+    return (
+      sessionStorage.getItem(STORAGE_KEY_PAGE) ||
+      sessionStorage.getItem(STORAGE_KEY_GLOBAL) ||
+      localStorage.getItem(STORAGE_KEY_PAGE) ||
+      localStorage.getItem(STORAGE_KEY_GLOBAL) ||
+      ""
+    );
+  }
+
+  function setSessionToken(token){
+    if(!token) return;
+    sessionStorage.setItem(STORAGE_KEY_PAGE, token);
+    sessionStorage.setItem(STORAGE_KEY_GLOBAL, token);
   }
 
   function clearSessionToken(){
-    sessionStorage.removeItem(STORAGE_KEY);
+    sessionStorage.removeItem(STORAGE_KEY_PAGE);
+    sessionStorage.removeItem(STORAGE_KEY_GLOBAL);
+    localStorage.removeItem(STORAGE_KEY_PAGE);
+    localStorage.removeItem(STORAGE_KEY_GLOBAL);
   }
 
   function goToLogin(){
-    clearSessionToken();
-    window.location.href = "login.html?p=" + PAGE_NAME;
+    window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
   }
 
   async function apiPost(payload){
@@ -576,7 +593,7 @@
     try{
       return JSON.parse(text);
     }catch(err){
-      throw new Error(text);
+      throw new Error(text || "Invalid JSON response");
     }
   }
 
@@ -596,7 +613,9 @@
       });
 
       if(result && result.ok){
-        currentUserName = result.user || "مخول غير معروف";
+        setSessionToken(token);
+
+        currentUserName = result.user || result.userName || "مخول غير معروف";
 
         const w = document.getElementById("welcomeUser");
         if(currentUserName && currentUserName !== "مخول غير معروف"){
@@ -607,10 +626,15 @@
 
         document.getElementById("pageWrap").classList.add("show");
       }else{
+        clearSessionToken();
         goToLogin();
       }
     }catch(error){
-      goToLogin();
+      showMsg("❌ تعذر التحقق من الجلسة", "err");
+      setTimeout(function(){
+        clearSessionToken();
+        goToLogin();
+      }, 900);
     }
   }
 
@@ -661,9 +685,16 @@
       document.getElementById("fetchBtn").disabled = false;
 
       if(d && d.ok === false && d.message){
-        if(d.message.indexOf("انتهت الجلسة") !== -1 || d.message.indexOf("غير صالح") !== -1 || d.message.indexOf("غير مصرح") !== -1){
+        if(
+          d.message.indexOf("انتهت الجلسة") !== -1 ||
+          d.message.indexOf("غير صالح") !== -1 ||
+          d.message.indexOf("غير مصرح") !== -1
+        ){
           showMsg("❌ انتهت الجلسة", "err");
-          setTimeout(goToLogin, 800);
+          setTimeout(function(){
+            clearSessionToken();
+            goToLogin();
+          }, 800);
           return;
         }
 
@@ -694,7 +725,7 @@
         orderNo: id
       });
 
-      testType = (t && t.found) ? t.testType : "";
+      testType = (t && t.found) ? (t.testType || "") : "";
 
       document.getElementById("hintBox").style.display = "flex";
       document.getElementById("hintType").innerText = testType || "---";
