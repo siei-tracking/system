@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="watermark.css">
-  <title>الكتاب الرسمي - منصة تتبع أوامر العمل</title>
+  <title>قسم التخطيط / الكتاب الرسمي - منصة تتبع أوامر العمل</title>
 
   <link rel="icon" href="https://siei-tracking.github.io/system/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
@@ -37,12 +37,8 @@
       color:#111;
     }
 
-    #pageWrap{
-      display:none;
-    }
-    #pageWrap.show{
-      display:block;
-    }
+    #pageWrap{ display:none; }
+    #pageWrap.show{ display:block; }
 
     .company-header{
       background-image:
@@ -421,7 +417,7 @@
 
           <p>
             <i class="fas fa-file-signature"></i>
-            منصة تتبع اوامر العمل - الكتاب الرسمي
+            منصة تتبع اوامر العمل - قسم التخطيط / الكتاب الرسمي
           </p>
 
           <div id="welcomeUser" class="user-pill"></div>
@@ -628,10 +624,10 @@
 
     try{
       const data = await apiPost({
-        action: "getOfficialDetails",
+        action: "trackingDataFromTrackingOnly",
         token: token,
         page: PAGE_NAME,
-        orderNo: id
+        order: id
       });
 
       document.getElementById("loader").style.display = "none";
@@ -657,13 +653,20 @@
 
       if(data && data.found){
         document.getElementById("cName").innerText = data.clientName || "---";
-        lastStatus = String(data.officialStatus || "").trim();
 
-        const isDone = lastStatus.includes("استلام") || lastStatus.includes("✅");
+        const officialStatus = String(data.official || "").trim();
+        const testResultsStatus = String(data.testResults || "").trim();
 
-        if(isDone){
+        const officialDone = officialStatus.includes("استلام") || officialStatus.includes("✅");
+        const resultsDone = testResultsStatus.includes("استلام") || testResultsStatus.includes("✅");
+
+        lastStatus = officialStatus;
+
+        if(officialDone){
           setReceiveButtonDisabled('<i class="fas fa-lock"></i> مثبتة مسبقاً');
-        } else {
+        }else if(!resultsDone){
+          setReceiveButtonDisabled('<i class="fas fa-ban"></i> يجب استلام نتائج الفحص أولاً');
+        }else{
           setReceiveButtonEnabled();
         }
 
@@ -724,11 +727,11 @@
         }
 
         showMsg(msg || "❌ تعذر الحفظ", "err");
-        setReceiveButtonEnabled();
+        fetchData();
       }
     }catch(err){
       showMsg("❌ خطأ في الاتصال", "err");
-      setReceiveButtonEnabled();
+      fetchData();
     }
   }
 
