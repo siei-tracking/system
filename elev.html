@@ -665,9 +665,8 @@
         const testType = String(data.testType || "").trim();
 
         if(testType === "مختبرات"){
-          setReceiveButtonStateDisabled('<i class="fas fa-ban"></i> لا يمكن من هنا (مختبرات)');
+          setReceiveButtonStateDisabled('<i class="fas fa-ban"></i> هذه المعامبة تحص المحتبرات');
           document.getElementById("resPanel").style.display = "block";
-          showMsg("⚠️ هذه المعاملة تخص المختبرات", "warn");
           return;
         }
 
