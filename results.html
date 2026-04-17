@@ -596,9 +596,9 @@
                   </div>
                 </div>
 
-                <button id="receiveBtn" class="main-btn" type="button" style="background:#bdc3c7;" onclick="receive()" disabled>
-                  <i class="fas fa-lock"></i>
-                  جلب بيانات المعاملة أولاً
+                <button id="receiveBtn" class="main-btn" type="button" style="background:linear-gradient(180deg,#2ebf68,#26a65b);" onclick="receive()">
+                  <i class="fas fa-check-double"></i>
+                  توثيق تسليم النتائج وإغلاق المعاملة
                 </button>
               </div>
 
@@ -624,7 +624,7 @@
 <div id="toast"></div>
 
 <script>
-  const API_BASE = "https://script.google.com/macros/s/AKfycbwBO1c0kN94d38bY6Yi5grXTW3pkXOr64TN6EiaFKzBCNh2i04THGq67P45CTIyjaLv/exec";
+  const API_BASE = "https://script.google.com/macros/s/AKfycbwdowfVEXfRGHcWt_2Xjne085KE-dtz6SbObxFnHGPeJSeIASRYvj8Lg22kpwi3KzPn/exec";
   const PAGE_NAME = "results";
   const STORAGE_KEY_PAGE = "tracking_session_token_" + PAGE_NAME;
   const STORAGE_KEY_GLOBAL = "tracking_session_token";
@@ -632,8 +632,6 @@
   let currentUserName = "";
   let lastStatus = "";
   let currentBarcodeLink = "";
-  let hasPayment = false;
-  let hasEmail = false;
 
   function getSessionToken(){
     return (
@@ -806,7 +804,7 @@
     const btn = document.getElementById('receiveBtn');
     btn.disabled = false;
     btn.style.background = "linear-gradient(180deg,#2ebf68,#26a65b)";
-    btn.innerHTML = '<i class="fas fa-check-double"></i> توثيق استلام النتائج وإغلاق المعاملة';
+    btn.innerHTML = '<i class="fas fa-check-double"></i> توثيق تسليم النتائج وإغلاق المعاملة';
   }
 
   function setReceiveButtonDisabled(html){
@@ -814,21 +812,6 @@
     btn.disabled = true;
     btn.style.background = "#bdc3c7";
     btn.innerHTML = html;
-  }
-
-  async function fetchTrackingDetails(orderNo, token){
-    try{
-      const data = await apiPost({
-        action: "trackingDataFromTrackingOnly",
-        token: token,
-        page: PAGE_NAME,
-        order: orderNo
-      });
-
-      return data || {};
-    }catch(e){
-      return {};
-    }
   }
 
   async function fetchData(){
@@ -848,8 +831,6 @@
     document.getElementById('loader').style.display = 'block';
     document.getElementById('resPanel').style.display = 'none';
     showBarcodePreview("");
-    hasPayment = false;
-    hasEmail = false;
 
     try{
       const data = await apiPost({
@@ -858,8 +839,6 @@
         page: PAGE_NAME,
         orderNo: id
       });
-
-      const tracking = await fetchTrackingDetails(id, token);
 
       document.getElementById('loader').style.display = 'none';
       document.getElementById('fetchBtn').disabled = false;
@@ -884,7 +863,14 @@
 
       if(data && data.found){
         document.getElementById('cName').innerText = data.clientName || "---";
-        lastStatus = String(data.resultsStatus || "").trim();
+
+        const paymentStatus  = String(data.paymentStatus || "").trim();
+        const officialStatus = String(data.officialStatus || "").trim();
+        const barcodeStatus  = String(data.barcodeStatus || "").trim();
+        const emailStatus    = String(data.emailStatus || "").trim();
+        const resultsStatus  = String(data.resultsStatus || "").trim();
+
+        lastStatus = resultsStatus;
 
         if(data.barcodeFileUrl){
           showBarcodePreview(data.barcodeFileUrl);
@@ -892,20 +878,23 @@
           showBarcodePreview("");
         }
 
-        const isDone = lastStatus.includes("استلام") || lastStatus.includes("✅");
-        const paymentText = String((tracking && tracking.payment) || "");
-        const emailText = String((tracking && tracking.email) || "");
-
-        hasPayment = paymentText.includes("✅");
-        hasEmail = emailText.includes("✅");
+        const isPaymentDone  = paymentStatus.includes("✅");
+        const isOfficialDone = officialStatus.includes("✅");
+        const isBarcodeDone  = barcodeStatus.includes("✅");
+        const isEmailDone    = emailStatus.includes("✅");
+        const isDone         = resultsStatus.includes("استلام") || resultsStatus.includes("✅");
 
         if(isDone){
           setReceiveButtonDisabled('<i class="fas fa-lock"></i> مستلمة مسبقاً');
-        }else if(!hasPayment){
-          setReceiveButtonDisabled('<i class="fas fa-lock"></i> يجب التسديد أولاً');
-        }else if(!hasEmail){
-          setReceiveButtonDisabled('<i class="fas fa-lock"></i> يجب ارسال الايميل أولاً');
-        }else{
+        } else if(!isPaymentDone){
+          setReceiveButtonDisabled('<i class="fas fa-lock"></i> يجب التسديد اولا');
+        } else if(!isOfficialDone){
+          setReceiveButtonDisabled('<i class="fas fa-lock"></i> يجب اصدار الكتاب الرسمي اولا');
+        } else if(!isBarcodeDone){
+          setReceiveButtonDisabled('<i class="fas fa-lock"></i> يجب تثبيت الباركود اولا');
+        } else if(!isEmailDone){
+          setReceiveButtonDisabled('<i class="fas fa-lock"></i> يجب ارسال الايميل اولا');
+        } else {
           setReceiveButtonEnabled();
         }
 
@@ -926,9 +915,6 @@
       showMsg("⚠️ يرجى إدخال رقم أمر العمل", "warn");
       return;
     }
-
-    const btnCheck = document.getElementById('receiveBtn');
-    if(btnCheck.disabled) return;
 
     const token = getSessionToken();
     if(!token){
@@ -969,25 +955,11 @@
         }
 
         showMsg(msg || "❌ فشل التوثيق", "err");
-
-        if(!hasPayment){
-          setReceiveButtonDisabled('<i class="fas fa-lock"></i> يجب التسديد أولاً');
-        }else if(!hasEmail){
-          setReceiveButtonDisabled('<i class="fas fa-lock"></i> يجب ارسال الايميل أولاً');
-        }else{
-          setReceiveButtonEnabled();
-        }
+        setReceiveButtonEnabled();
       }
     }catch(err){
       showMsg("❌ خطأ في الاتصال", "err");
-
-      if(!hasPayment){
-        setReceiveButtonDisabled('<i class="fas fa-lock"></i> يجب التسديد أولاً');
-      }else if(!hasEmail){
-        setReceiveButtonDisabled('<i class="fas fa-lock"></i> يجب ارسال الايميل أولاً');
-      }else{
-        setReceiveButtonEnabled();
-      }
+      setReceiveButtonEnabled();
     }
   }
 
@@ -1001,18 +973,15 @@
     document.getElementById('cName').innerText = "---";
 
     showBarcodePreview("");
-    setReceiveButtonDisabled('<i class="fas fa-lock"></i> جلب بيانات المعاملة أولاً');
+    setReceiveButtonEnabled();
 
     document.getElementById('fetchBtn').disabled = false;
     lastStatus = "";
-    hasPayment = false;
-    hasEmail = false;
     document.getElementById('orderID').focus();
   }
 
   window.addEventListener("load", function(){
     ensurePageSession();
-    setReceiveButtonDisabled('<i class="fas fa-lock"></i> جلب بيانات المعاملة أولاً');
 
     document.getElementById("orderID").addEventListener("keydown", function(e){
       if(e.key === "Enter"){
