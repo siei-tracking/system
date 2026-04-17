@@ -490,7 +490,7 @@
 <div id="toast"></div>
 
 <script>
-  const API_BASE = "https://script.google.com/macros/s/AKfycbwwGBtF0D06wp4E1-VN3bE5P-xRbr_eHVumuPWp0H8TtUteXLKFdibExCY0M9juqMq5/exec";
+  const API_BASE = "https://script.google.com/macros/s/AKfycbwCatN7XvkF3fCqYQjtLUncz8YsbXhAmHQ69KMW8qrsRbglI30B4GE832syicVPtTaA/exec";
   const PAGE_NAME = "workshop";
   const STORAGE_KEY_PAGE = "tracking_session_token_" + PAGE_NAME;
   const STORAGE_KEY_GLOBAL = "tracking_session_token";
@@ -500,7 +500,6 @@
   let testType = "";
   let labPath = "";
   let lab1Status = "";
-  let pricingText = "";
   let alreadyReceived = false;
 
   function getSessionToken(){
@@ -645,10 +644,10 @@
       return;
     }
 
-    if(!isDoneCell(pricingText)){
+    if(!isDoneCell(lab1Status)){
       disableReceiveButton(
         "",
-        '<i class="fas fa-lock"></i> ثبت التسعيرة أولاً'
+        '<i class="fas fa-lock"></i> استلام المختبرات أولاً'
       );
       return;
     }
@@ -716,7 +715,6 @@
         testType = String(data.testType || "").trim();
         labPath = String(data.labPath || "").trim();
         lab1Status = String(data.lab1Status || "").trim();
-        pricingText = String(data.pricing || "").trim();
 
         alreadyReceived =
           data.alreadyReceived === true ||
@@ -745,18 +743,18 @@
       return;
     }
 
-    if(alreadyReceived){
+    if(!isDoneCell(lab1Status)){
       disableReceiveButton(
         "",
-        '<i class="fas fa-lock"></i> مستلمة مسبقاً'
+        '<i class="fas fa-lock"></i> استلام المختبرات أولاً'
       );
       return;
     }
 
-    if(!isDoneCell(pricingText)){
+    if(alreadyReceived){
       disableReceiveButton(
         "",
-        '<i class="fas fa-lock"></i> ثبت التسعيرة أولاً'
+        '<i class="fas fa-lock"></i> مستلمة مسبقاً'
       );
       return;
     }
@@ -808,7 +806,6 @@
     testType = "";
     labPath = "";
     lab1Status = "";
-    pricingText = "";
     alreadyReceived = false;
 
     enableReceiveButton();
