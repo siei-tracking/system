@@ -282,6 +282,11 @@
       transform:none;
     }
 
+    .btn-disabled{
+      background:var(--disabled) !important;
+      box-shadow:none !important;
+    }
+
     #loader{
       display:none;
       text-align:center;
@@ -485,13 +490,14 @@
 <div id="toast"></div>
 
 <script>
-  const API_BASE = "https://script.google.com/macros/s/AKfycbwCatN7XvkF3fCqYQjtLUncz8YsbXhAmHQ69KMW8qrsRbglI30B4GE832syicVPtTaA/exec";
+  const API_BASE = "https://script.google.com/macros/s/AKfycby909VbEY8jvWTBao0Iwll0S5D5SHXNy8aCGXTLzNOH33XDB_IyyYg8rk9ervSJECrL/exec";
   const PAGE_NAME = "elev";
   const STORAGE_KEY_PAGE = "tracking_session_token_" + PAGE_NAME;
   const STORAGE_KEY_GLOBAL = "tracking_session_token";
 
   let currentUserName = "";
   let lastStatus = "";
+  let pricingText = "";
 
   function getSessionToken(){
     return (
@@ -597,18 +603,44 @@
     }, 2500);
   }
 
+  function isDoneCell(v){
+    return String(v || "").includes("✅");
+  }
+
   function setReceiveButtonStateDisabled(textHtml){
     const btn = document.getElementById("receiveBtn");
     btn.disabled = true;
-    btn.style.background = "#bdc3c7";
+    btn.className = "main-btn btn-disabled";
+    btn.style.background = "";
     btn.innerHTML = textHtml;
   }
 
   function setReceiveButtonStateEnabled(){
     const btn = document.getElementById("receiveBtn");
     btn.disabled = false;
+    btn.className = "main-btn";
     btn.style.background = "linear-gradient(180deg,#2ebf68,#26a65b)";
     btn.innerHTML = '<i class="fas fa-check-double"></i> توثيق استلام المصاعد';
+  }
+
+  function setupButtonState(testType){
+    if(testType === "مختبرات"){
+      setReceiveButtonStateDisabled('<i class="fas fa-ban"></i> هذه المعاملة تخص المختبرات');
+      return;
+    }
+
+    if(!isDoneCell(pricingText)){
+      setReceiveButtonStateDisabled('<i class="fas fa-lock"></i> يجب تثبيت التسعيرة أولاً');
+      return;
+    }
+
+    const isDone = lastStatus.includes("استلام") || lastStatus.includes("✅");
+    if(isDone){
+      setReceiveButtonStateDisabled('<i class="fas fa-lock"></i> مستلمة مسبقاً');
+      return;
+    }
+
+    setReceiveButtonStateEnabled();
   }
 
   async function fetchData(){
@@ -660,22 +692,10 @@
       if(data && data.found){
         document.getElementById("cName").innerText = data.clientName || "---";
         lastStatus = String(data.elevStatus || "").trim();
+        pricingText = String(data.pricing || "").trim();
 
-        const isDone = lastStatus.includes("استلام") || lastStatus.includes("✅");
         const testType = String(data.testType || "").trim();
-
-        if(testType === "مختبرات"){
-          setReceiveButtonStateDisabled('<i class="fas fa-ban"></i> هذه المعاملة تخص المختبرات');
-          document.getElementById("resPanel").style.display = "block";
-          return;
-        }
-
-        if(isDone){
-          setReceiveButtonStateDisabled('<i class="fas fa-lock"></i> مستلمة مسبقاً');
-          showMsg("⚠️ هذه المرحلة موثقة مسبقاً", "warn");
-        } else {
-          setReceiveButtonStateEnabled();
-        }
+        setupButtonState(testType);
 
         document.getElementById("resPanel").style.display = "block";
       } else {
@@ -692,6 +712,11 @@
     const id = document.getElementById("orderID").value.trim();
     if(!id){
       showMsg("⚠️ يرجى إدخال رقم أمر العمل", "warn");
+      return;
+    }
+
+    if(!isDoneCell(pricingText)){
+      setReceiveButtonStateDisabled('<i class="fas fa-lock"></i> يجب تثبيت التسعيرة أولاً');
       return;
     }
 
@@ -739,6 +764,7 @@
 
     setReceiveButtonStateEnabled();
     lastStatus = "";
+    pricingText = "";
     document.getElementById("fetchBtn").disabled = false;
     document.getElementById("orderID").focus();
   }
