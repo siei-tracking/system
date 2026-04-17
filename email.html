@@ -281,6 +281,11 @@
       transform:none;
     }
 
+    .btn-disabled{
+      background:var(--disabled) !important;
+      box-shadow:none !important;
+    }
+
     #loader{
       display:none;
       text-align:center;
@@ -484,13 +489,14 @@
 <div id="toast"></div>
 
 <script>
-  const API_BASE = "https://script.google.com/macros/s/AKfycbzrJ_toRYNrx4iDQ14Q4I2B2s3aMM3fXEd2jNh4xiBkWNrq4zLvStXHXbTiG1k-aSIx/exec";
+  const API_BASE = "https://script.google.com/macros/s/AKfycbwoAr7pMS8L5QLFV2eH92I3BE_GFRhRV9Vja63qUwH2a6uJeEJKSaV5ssD1vyMi2umn/exec";
   const PAGE_NAME = "email";
   const STORAGE_KEY_PAGE = "tracking_session_token_" + PAGE_NAME;
   const STORAGE_KEY_GLOBAL = "tracking_session_token";
 
   let currentUserName = "";
   let lastStatus = "";
+  let barcodeStatus = "";
 
   function getSessionToken(){
     return (
@@ -594,9 +600,14 @@
     }, 2500);
   }
 
+  function isDoneCell(v){
+    return String(v || "").includes("✅");
+  }
+
   function setReceiveButtonEnabled(){
     const btn = document.getElementById('receiveBtn');
     btn.disabled = false;
+    btn.className = "main-btn";
     btn.style.background = "linear-gradient(180deg,#2ebf68,#26a65b)";
     btn.innerHTML = '<i class="fas fa-check-double"></i> توثيق ارسال الايميل';
   }
@@ -604,8 +615,23 @@
   function setReceiveButtonDisabled(html){
     const btn = document.getElementById('receiveBtn');
     btn.disabled = true;
-    btn.style.background = "#bdc3c7";
+    btn.className = "main-btn btn-disabled";
+    btn.style.background = "";
     btn.innerHTML = html;
+  }
+
+  function setupButtonState(){
+    if(isDoneCell(lastStatus)){
+      setReceiveButtonDisabled('<i class="fas fa-lock"></i> مثبتة مسبقاً');
+      return;
+    }
+
+    if(!isDoneCell(barcodeStatus)){
+      setReceiveButtonDisabled('<i class="fas fa-lock"></i> تثبيت الباركود أولاً');
+      return;
+    }
+
+    setReceiveButtonEnabled();
   }
 
   async function fetchData(){
@@ -657,15 +683,9 @@
       if(data && data.found){
         document.getElementById('cName').innerText = data.clientName || "---";
         lastStatus = String(data.emailStatus || "").trim();
+        barcodeStatus = String(data.barcodeStatus || "").trim();
 
-        const isDone = lastStatus.includes("استلام") || lastStatus.includes("✅");
-
-        if(isDone){
-          setReceiveButtonDisabled('<i class="fas fa-lock"></i> مثبتة مسبقاً');
-        } else {
-          setReceiveButtonEnabled();
-        }
-
+        setupButtonState();
         document.getElementById('resPanel').style.display = 'block';
       } else {
         showMsg("⚠️ الرقم غير موجود", "warn");
@@ -681,6 +701,10 @@
     const id = document.getElementById('orderID').value.trim();
     if(!id){
       showMsg("⚠️ يرجى إدخال رقم أمر العمل", "warn");
+      return;
+    }
+
+    if(document.getElementById('receiveBtn').disabled){
       return;
     }
 
@@ -723,11 +747,11 @@
         }
 
         showMsg(msg || "❌ تعذر الحفظ", "err");
-        setReceiveButtonEnabled();
+        setupButtonState();
       }
     }catch(err){
       showMsg("❌ خطأ في الاتصال", "err");
-      setReceiveButtonEnabled();
+      setupButtonState();
     }
   }
 
@@ -743,6 +767,7 @@
     setReceiveButtonEnabled();
     document.getElementById('fetchBtn').disabled = false;
     lastStatus = "";
+    barcodeStatus = "";
     document.getElementById('orderID').focus();
   }
 

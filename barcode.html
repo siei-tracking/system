@@ -311,6 +311,11 @@
       transform:none;
     }
 
+    .btn-disabled{
+      background:var(--disabled) !important;
+      box-shadow:none !important;
+    }
+
     #loader{
       display:none;
       text-align:center;
@@ -602,12 +607,14 @@
 <div id="toast"></div>
 
 <script>
-  const API_BASE = "https://script.google.com/macros/s/AKfycbzrJ_toRYNrx4iDQ14Q4I2B2s3aMM3fXEd2jNh4xiBkWNrq4zLvStXHXbTiG1k-aSIx/exec";
+  const API_BASE = "https://script.google.com/macros/s/AKfycbwoAr7pMS8L5QLFV2eH92I3BE_GFRhRV9Vja63qUwH2a6uJeEJKSaV5ssD1vyMi2umn/exec";
   const PAGE_NAME = "barcode";
   const STORAGE_KEY_PAGE = "tracking_session_token_" + PAGE_NAME;
   const STORAGE_KEY_GLOBAL = "tracking_session_token";
 
   let currentUserName = "";
+  let barcodeStatus = "";
+  let officialStatus = "";
 
   function getSessionToken(){
     return (
@@ -730,14 +737,40 @@
     const el = document.getElementById('msgBad');
     el.textContent = msg;
     el.style.display = 'block';
+    el.style.fontSize = "15px";
+    el.style.fontWeight = "900";
+  }
 
-    if(msg.includes("يجب إصدار الكتاب الرسمي أولاً") || msg.includes("يجب اصدار الكتاب الرسمي اولاً")){
-      el.style.fontSize = "20px";
-      el.style.fontWeight = "900";
-    }else{
-      el.style.fontSize = "15px";
-      el.style.fontWeight = "900";
+  function isDoneCell(v){
+    return String(v || "").includes("✅");
+  }
+
+  function setUploadButtonEnabled(){
+    const btn = document.getElementById('uploadBtn');
+    btn.disabled = false;
+    btn.className = "main-btn";
+    btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> رفع وتوثيق الباركود';
+  }
+
+  function setUploadButtonDisabled(html){
+    const btn = document.getElementById('uploadBtn');
+    btn.disabled = true;
+    btn.className = "main-btn btn-disabled";
+    btn.innerHTML = html;
+  }
+
+  function setupUploadButtonState(){
+    if(isDoneCell(barcodeStatus)){
+      setUploadButtonDisabled('<i class="fas fa-lock"></i> مثبتة مسبقاً');
+      return;
     }
+
+    if(!isDoneCell(officialStatus)){
+      setUploadButtonDisabled('<i class="fas fa-lock"></i> إصدار الكتاب الرسمي أولاً');
+      return;
+    }
+
+    setUploadButtonEnabled();
   }
 
   async function fetchData(){
@@ -792,6 +825,8 @@
       if(data && data.found){
         document.getElementById('resPanel').style.display = 'block';
         document.getElementById('cName').innerText = data.clientName || "---";
+        barcodeStatus = String(data.barcodeStatus || "").trim();
+        officialStatus = String(data.officialStatus || "").trim();
 
         if(data.barcodeFileUrl){
           document.getElementById('fileBox').innerHTML =
@@ -809,6 +844,8 @@
           document.getElementById('fileBox').innerHTML =
             '<div class="fileLink no-file">لا يوجد ملف باركود مرفوع حالياً</div>';
         }
+
+        setupUploadButtonState();
       }else{
         showToast("⚠️ الرقم غير موجود", "warn");
       }
@@ -822,6 +859,10 @@
   async function uploadAndConfirm(){
     const id = document.getElementById('orderID').value.trim();
     const file = document.getElementById('barcodeFile').files[0];
+
+    if(document.getElementById('uploadBtn').disabled){
+      return;
+    }
 
     if(!id){
       showToast("⚠️ أدخل رقم المعاملة", "warn");
@@ -884,15 +925,13 @@
               clearSessionToken();
               goToLogin();
             }, 800);
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> رفع وتوثيق الباركود';
+            setupUploadButtonState();
             return;
           }
         }
 
         if(!(res && res.ok)){
-          btn.disabled = false;
-          btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> رفع وتوثيق الباركود';
+          setupUploadButtonState();
           showBad((res && (res.error || res.message)) ? (res.error || res.message) : "فشل رفع الملف");
           return;
         }
@@ -908,9 +947,6 @@
         });
 
         const msg = String((confirmRes && (confirmRes.message || confirmRes.result)) || "");
-
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> رفع وتوثيق الباركود';
 
         if(confirmRes && confirmRes.ok){
           document.getElementById('cardForm').style.display = 'none';
@@ -929,10 +965,10 @@
             return;
           }
           showBad(msg || "فشل التوثيق");
+          setupUploadButtonState();
         }
       }catch(err){
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> رفع وتوثيق الباركود';
+        setupUploadButtonState();
         showBad("خطأ في الاتصال");
       }
     };
@@ -954,9 +990,12 @@
 
     const btn = document.getElementById('uploadBtn');
     btn.disabled = false;
+    btn.className = "main-btn";
     btn.innerHTML = '<i class="fas fa-cloud-upload-alt"></i> رفع وتوثيق الباركود';
 
     document.getElementById('fetchBtn').disabled = false;
+    barcodeStatus = "";
+    officialStatus = "";
     hideMsgs();
     document.getElementById('orderID').focus();
   }
