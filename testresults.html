@@ -282,6 +282,11 @@
       transform:none;
     }
 
+    .btn-disabled{
+      background:var(--disabled) !important;
+      box-shadow:none !important;
+    }
+
     #loader{
       display:none;
       text-align:center;
@@ -485,13 +490,18 @@
 <div id="toast"></div>
 
 <script>
-  const API_BASE = "https://script.google.com/macros/s/AKfycbzrJ_toRYNrx4iDQ14Q4I2B2s3aMM3fXEd2jNh4xiBkWNrq4zLvStXHXbTiG1k-aSIx/exec";
+  const API_BASE = "https://script.google.com/macros/s/AKfycbzRhERGdJZgvfiWtCpGS8ScV3CKfBI2YEoxO9fH_P3DNAraS1DWAzlUpQoZiKL2llfC/exec";
   const PAGE_NAME = "testresults";
   const STORAGE_KEY_PAGE = "tracking_session_token_" + PAGE_NAME;
   const STORAGE_KEY_GLOBAL = "tracking_session_token";
 
   let currentUserName = "";
   let lastStatus = "";
+  let testType = "";
+  let labPath = "";
+  let labStatus = "";
+  let lab2Status = "";
+  let elevStatus = "";
 
   function getSessionToken(){
     return (
@@ -595,9 +605,14 @@
     }, 2500);
   }
 
+  function isDoneCell(v){
+    return String(v || "").includes("✅");
+  }
+
   function setReceiveButtonEnabled(){
     const btn = document.getElementById("receiveBtn");
     btn.disabled = false;
+    btn.className = "main-btn";
     btn.style.background = "linear-gradient(180deg,#2ebf68,#26a65b)";
     btn.innerHTML = '<i class="fas fa-check-double"></i> توثيق نتائج الفحص';
   }
@@ -605,8 +620,47 @@
   function setReceiveButtonDisabled(html){
     const btn = document.getElementById("receiveBtn");
     btn.disabled = true;
-    btn.style.background = "#bdc3c7";
+    btn.className = "main-btn btn-disabled";
+    btn.style.background = "";
     btn.innerHTML = html;
+  }
+
+  function setupButtonState(){
+    if(isDoneCell(lastStatus)){
+      setReceiveButtonDisabled('<i class="fas fa-lock"></i> مستلمة مسبقاً');
+      return;
+    }
+
+    if(testType === "مصاعد"){
+      if(!isDoneCell(elevStatus)){
+        setReceiveButtonDisabled('<i class="fas fa-lock"></i> استلام المصاعد أولاً');
+        return;
+      }
+      setReceiveButtonEnabled();
+      return;
+    }
+
+    if(testType === "مختبرات"){
+      if(labPath === "مختبرات فقط"){
+        if(!isDoneCell(labStatus)){
+          setReceiveButtonDisabled('<i class="fas fa-lock"></i> استلام المختبرات أولاً');
+          return;
+        }
+        setReceiveButtonEnabled();
+        return;
+      }
+
+      if(labPath === "ورشة"){
+        if(!isDoneCell(lab2Status)){
+          setReceiveButtonDisabled('<i class="fas fa-lock"></i> استلام المختبرات بعد الورشة أولاً');
+          return;
+        }
+        setReceiveButtonEnabled();
+        return;
+      }
+    }
+
+    setReceiveButtonDisabled('<i class="fas fa-lock"></i> تعذر تحديد المرحلة السابقة');
   }
 
   async function fetchData(){
@@ -658,15 +712,13 @@
       if(data && data.found){
         document.getElementById("cName").innerText = data.clientName || "---";
         lastStatus = String(data.testResultsStatus || "").trim();
+        testType = String(data.testType || "").trim();
+        labPath = String(data.labPath || "").trim();
+        labStatus = String(data.labStatus || "").trim();
+        lab2Status = String(data.lab2Status || "").trim();
+        elevStatus = String(data.elevStatus || "").trim();
 
-        const isDone = lastStatus.includes("استلام") || lastStatus.includes("✅");
-
-        if(isDone){
-          setReceiveButtonDisabled('<i class="fas fa-lock"></i> مستلمة مسبقاً');
-        } else {
-          setReceiveButtonEnabled();
-        }
-
+        setupButtonState();
         document.getElementById("resPanel").style.display = "block";
       } else {
         showMsg("⚠️ الرقم غير موجود", "warn");
@@ -682,6 +734,10 @@
     const id = document.getElementById("orderID").value.trim();
     if(!id){
       showMsg("⚠️ يرجى إدخال رقم أمر العمل", "warn");
+      return;
+    }
+
+    if(document.getElementById("receiveBtn").disabled){
       return;
     }
 
@@ -724,11 +780,11 @@
         }
 
         showMsg(msg || "❌ تعذر الحفظ", "err");
-        setReceiveButtonEnabled();
+        setupButtonState();
       }
     }catch(err){
       showMsg("❌ خطأ في الاتصال", "err");
-      setReceiveButtonEnabled();
+      setupButtonState();
     }
   }
 
@@ -744,6 +800,11 @@
     setReceiveButtonEnabled();
     document.getElementById("fetchBtn").disabled = false;
     lastStatus = "";
+    testType = "";
+    labPath = "";
+    labStatus = "";
+    lab2Status = "";
+    elevStatus = "";
     document.getElementById("orderID").focus();
   }
 
