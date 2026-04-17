@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="watermark.css">
-  <title>ارسال الايميل - منصة تتبع أوامر العمل</title>
+  <title>قسم نقتية المعلومات / ارسال الايميل - منصة تتبع أوامر العمل</title>
 
   <link rel="icon" href="https://siei-tracking.github.io/system/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
@@ -427,7 +427,7 @@
 
           <p>
             <i class="fas fa-paper-plane"></i>
-            منصة تتبع اوامر العمل - ارسال الايميل
+            منصة تتبع اوامر العمل - قسم نقتية المعلومات / ارسال الايميل
           </p>
 
           <div id="welcomeUser" class="user-pill"></div>
@@ -489,7 +489,7 @@
 <div id="toast"></div>
 
 <script>
-  const API_BASE = "https://script.google.com/macros/s/AKfycbxImZKJY45l7yU5wGVdJvIsQ7RN0vRV-lAy3uoUpm1eUg8AJzwpBHunCaz9FzmkATC2/exec";
+  const API_BASE = "https://script.google.com/macros/s/AKfycbyZ1Nbh2DM29-nUa-m51z4TWzWPAg4bEWjWE9Nn7QJ149k54PQg2VIzqZZ_GtOxMdLL/exec";
   const PAGE_NAME = "email";
   const STORAGE_KEY_PAGE = "tracking_session_token_" + PAGE_NAME;
   const STORAGE_KEY_GLOBAL = "tracking_session_token";
@@ -627,7 +627,7 @@
     }
 
     if(!isDoneCell(barcodeStatus)){
-      setReceiveButtonDisabled('<i class="fas fa-lock"></i> تثبيت الباركود أولاً');
+      setReceiveButtonDisabled('<i class="fas fa-lock"></i> يجب تثبيت الباركود أولاً');
       return;
     }
 
