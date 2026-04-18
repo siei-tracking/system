@@ -657,19 +657,19 @@
     #toast.err{ background:#e74c3c; }
 
     #qDone{
-      flex:1;
-      min-width:100px;
-      height:50px;
-      font-size:18px;
-      line-height:50px;
-      padding:0 12px;
-    }
+  flex:1;
+  min-width:100px;
+  height:50px;
+  font-size:clamp(13px, 1vw, 16px);
+  line-height:50px;
+  padding:0 12px;
+}
 
-    #qDone::placeholder{
-      font-size:15px;
-      line-height:50px;
-      padding:0 12px;
-    }
+#qDone::placeholder{
+  font-size:clamp(12px, 0.9vw, 15px);
+  line-height:50px;
+  padding:0 12px;
+}
 
     #sheetSelect{
       flex:1;
