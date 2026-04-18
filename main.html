@@ -522,23 +522,25 @@
       word-break:break-word;
     }
 
+    /* =========================
+       STEPper - Desktop ثابت على 11 موقع
+    ========================= */
+
     .stepper-scroll{
       overflow:visible;
       width:100%;
     }
 
     .stepper{
-      display:flex;
       width:100%;
-      min-width:0;
-      justify-content:space-between;
+      display:grid;
+      grid-template-columns:repeat(11, minmax(0, 1fr));
       align-items:flex-start;
       padding:4px 0 8px;
       direction:rtl;
     }
 
     .node{
-      flex:1 1 0;
       min-width:0;
       text-align:center;
       font-weight:900;
@@ -547,12 +549,16 @@
       user-select:none;
     }
 
-    .node:not(:first-child)::before{
+    .node.ghost{
+      visibility:hidden;
+      pointer-events:none;
+    }
+
+    .node:not(.ghost):not(:first-child)::before{
       content:"";
       position:absolute;
       top:25px;
-      right:50%;
-      transform:translateX(50%);
+      right:calc(100% - 11px);
       width:22px;
       height:3px;
       background:#dfe5ec;
@@ -567,16 +573,23 @@
       display:flex;
       align-items:center;
       justify-content:center;
-      color:white;
+      color:#fff;
       margin:auto;
       box-shadow:0 6px 14px rgba(0,0,0,0.12);
     }
 
     .circle i{ font-size:16px; }
+
     .node.done .circle{ background:var(--ok); }
     .node.next .circle{ background:var(--accent); transform:scale(1.04); }
-    .node.done:not(:first-child)::before{ background:var(--ok); }
-    .node.next:not(:first-child)::before{ background:var(--accent); }
+
+    .node.done:not(.ghost):not(:first-child)::before{
+      background:var(--ok);
+    }
+
+    .node.next:not(.ghost):not(:first-child)::before{
+      background:var(--accent);
+    }
 
     .label{
       margin-top:5px;
@@ -810,13 +823,15 @@
         -webkit-overflow-scrolling:touch;
       }
 
-      .stepper-scroll::-webkit-scrollbar{ display:none; }
+      .stepper-scroll::-webkit-scrollbar{
+        display:none;
+      }
 
       .stepper{
         width:max-content;
         min-width:100%;
         display:flex;
-        gap:8px;
+        gap:11px;
         justify-content:flex-start;
         align-items:flex-start;
       }
@@ -828,12 +843,15 @@
         scroll-snap-align:center;
       }
 
+      .node.ghost{
+        display:none;
+      }
+
       .node:not(:first-child)::before{
         top:25px;
-        right:-10px;
-        width:10px;
+        right:-16.5px;
+        width:22px;
         height:3px;
-        transform:none;
       }
 
       .circle{
@@ -1401,6 +1419,7 @@
     function renderStepper(it){
       var steps = buildSteps(it);
       var firstPending = false;
+      var TOTAL_SLOTS = 11;
 
       var pricingDone = isDoneAny(it.pricing);
       var type = inferType(it);
@@ -1429,6 +1448,14 @@
              +    '<div class="circle"><i class="fas ' + s.icon + '"></i></div>'
              +    '<div class="label">' + escapeHtml(s.label) + '</div>'
              +    '<div class="sub">' + sub + '</div>'
+             +  '</div>';
+      }
+
+      for(var j = steps.length; j < TOTAL_SLOTS; j++){
+        html += '<div class="node ghost" aria-hidden="true">'
+             +    '<div class="circle"></div>'
+             +    '<div class="label"></div>'
+             +    '<div class="sub"></div>'
              +  '</div>';
       }
 
