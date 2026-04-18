@@ -6,6 +6,7 @@
 
   <title>المعاملات - منصة تتبع أوامر العمل</title>
   <link rel="icon" href="https://siei-tracking.github.io/system/logo.png">
+  <link rel="stylesheet" href="watermark.css">
 
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -13,1841 +14,1683 @@
   <style>
     :root{
       --primary:#223243;
+      --primary-2:#1b2835;
       --accent:#f5a623;
       --accent-dark:#e59712;
       --bg:#eef2f6;
-      --card:rgba(255,255,255,0.88);
+      --card:rgba(255,255,255,0.92);
       --line:#e5ebf1;
       --muted:#758292;
       --ok:#27ae60;
       --danger:#e74c3c;
+      --warn:#f39c12;
+      --info:#3498db;
       --disabled:#bdc3c7;
       --soft:#f8fafc;
-      --warn:#f39c12;
       --admin:#6f42c1;
+      --shadow:0 12px 30px rgba(20,34,51,.08);
+      --radius:22px;
     }
 
-    *{ box-sizing:border-box; }
+    *{
+      box-sizing:border-box;
+    }
 
-    html, body{
-      width:100%;
-      overflow-x:hidden;
+    html,body{
+      margin:0;
+      padding:0;
+      font-family:'Cairo',sans-serif;
+      background:linear-gradient(180deg,#f6f8fb 0%, #eef2f6 100%);
+      color:var(--primary);
+      min-height:100%;
     }
 
     body{
-      margin:0;
-      font-family:'Cairo',sans-serif;
-      background:
-        radial-gradient(circle at top right, rgba(245,166,35,.08), transparent 24%),
-        radial-gradient(circle at top left, rgba(34,50,67,.05), transparent 30%),
-        var(--bg);
-      color:#111;
+      padding:18px;
     }
 
-    #pageWrap{ display:none; }
-    #pageWrap.show{ display:block; }
+    .container{
+      width:min(1500px, 100%);
+      margin:0 auto;
+    }
 
-    .company-header{
-      background-image:
-        linear-gradient(rgba(34,50,67,.3), rgba(34,50,67,.3)),
-        url('https://siei-tracking.github.io/system/company.jpg');
+    .hero{
+      position:relative;
+      overflow:hidden;
+      border-radius:28px;
+      background:
+        linear-gradient(rgba(34,50,67,.82), rgba(34,50,67,.88)),
+        url('https://drive.google.com/thumbnail?id=1kGABjKDT_tHkUbce1CWMVVFfrbfJ1_P7&sz=w1600');
       background-size:cover;
       background-position:center;
-      padding:clamp(28px, 4vw, 64px) 5% clamp(34px, 4vw, 60px);
-      display:flex;
-      align-items:center;
-      gap:clamp(10px, 1.8vw, 16px);
+      box-shadow:var(--shadow);
       color:#fff;
-      flex-wrap:wrap;
-      justify-content:center;
-      text-align:center;
-      box-shadow:0 12px 28px rgba(0,0,0,.18);
-      position:relative;
-      overflow:hidden;
+      padding:26px 24px 20px;
+      margin-bottom:16px;
     }
 
-    .company-logo{
-      width:clamp(72px, 8vw, 100px);
-      height:clamp(72px, 8vw, 100px);
-      background:#fff;
-      border-radius:50%;
-      padding:5px;
-      object-fit:contain;
-      display:block;
-      flex-shrink:0;
-      box-shadow:
-        -1px -1px 0 rgba(0,0,0,0.1),
-         1px -1px 0 rgba(0,0,0,0.1),
-        -1px  1px 0 rgba(0,0,0,0.1),
-         1px  1px 0 rgba(0,0,0,0.1),
-         0 1px 4px rgba(0,0,0,0.1) !important;
-    }
-
-    .header-text{
+    .hero-top{
       display:flex;
-      flex-direction:column;
       align-items:center;
-      gap:6px;
-      max-width:100%;
-    }
-
-    .header-text h1{
-      color:#fff !important;
-      margin:0;
-      font-size:clamp(20px, 2.2vw, 30px) !important;
-      font-weight:900 !important;
-      line-height:1.45;
-      text-shadow:
-        -1px -1px 0 rgba(0,0,0,0.9),
-         1px -1px 0 rgba(0,0,0,0.9),
-        -1px  1px 0 rgba(0,0,0,0.9),
-         1px  1px 0 rgba(0,0,0,0.9),
-         0 4px 10px rgba(0,0,0,0.8) !important;
-    }
-
-    .header-text p{
-      color:#fff !important;
-      margin:0;
-      font-size:clamp(13px, 1.3vw, 18px) !important;
-      font-weight:900 !important;
-      line-height:1.5;
-      text-shadow:
-        -1px -1px 0 rgba(0,0,0,0.9),
-         1px -1px 0 rgba(0,0,0,0.9),
-        -1px  1px 0 rgba(0,0,0,0.9),
-         1px  1px 0 rgba(0,0,0,0.9),
-         0 4px 10px rgba(0,0,0,0.8) !important;
-    }
-
-    .user-pill{
-      margin-top:6px;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
-      padding:2px 14px;
-      border-radius:999px;
-      background:rgba(128,0,32,0.4);
-      border:1px solid rgba(231,76,60,0.45);
-      color:#fff;
-      font-weight:900;
-      font-size:13px;
-      box-shadow:0 4px 12px rgba(231,76,60,.25);
-      text-shadow:
-        -1px -1px 0 rgba(0,0,0,0.9),
-         1px -1px 0 rgba(0,0,0,0.9),
-        -1px  1px 0 rgba(0,0,0,0.9),
-         1px  1px 0 rgba(0,0,0,0.9),
-         0 4px 10px rgba(0,0,0,0.8) !important;
-      max-width:100%;
-      word-break:break-word;
-    }
-
-    .wrap{
-      padding:0 clamp(10px, 3vw, 5%) 30px;
-      display:flex;
-      justify-content:center;
-      position:relative;
-      margin-top:clamp(-40px, -3vw, -18px);
-    }
-
-    .panel{
-      width:min(100%, 1400px);
-      margin-top:13px;
-      background:rgba(255,255,255,0.88);
-      border-radius:22px;
-      padding:0;
-      box-shadow:
-        0 20px 50px rgba(0,0,0,.12),
-        0 6px 18px rgba(0,0,0,.06);
-      position:relative;
-      z-index:2;
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      transition:.25s;
-      border:1px solid rgba(255,255,255,.65);
-      overflow:hidden;
-    }
-
-    .panel:hover{
-      transform:translateY(-3px);
-      box-shadow:
-        0 26px 60px rgba(0,0,0,.16),
-        0 8px 22px rgba(0,0,0,.08);
-    }
-
-    .panel::before{
-      content:"";
-      position:absolute;
-      top:0;
-      left:0;
-      right:0;
-      height:60px;
-      background:linear-gradient(to bottom, rgba(255,255,255,.55), transparent);
-      border-radius:22px 22px 0 0;
-      pointer-events:none;
-    }
-
-    .panel-head{
-      padding:clamp(12px, 1.4vw, 18px);
-      border-bottom:1px solid var(--line);
-      display:flex;
       justify-content:space-between;
+      gap:16px;
       flex-wrap:wrap;
-      gap:12px;
-      align-items:center;
-      position:relative;
-      z-index:2;
-      background:linear-gradient(180deg, rgba(243,156,18,0.08), transparent);
     }
 
-    .title{
-      font-weight:900;
-      color:var(--primary);
+    .brand{
       display:flex;
       align-items:center;
-      gap:10px;
-      font-size:clamp(16px, 1.35vw, 20px);
-    }
-
-    .controls{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      flex-wrap:wrap;
-      position:relative;
-      z-index:10;
-      width:100%;
-    }
-
-    input, select{
-      padding:12px 12px;
-      border-radius:10px;
-      border:1.5px solid var(--line);
-      font-family:'Cairo',sans-serif;
-      font-weight:900;
-      text-align:center;
-      min-width:150px;
-      outline:none;
-      background:#fff;
-      transition:.2s;
-      color:#1f2d3a;
-      font-size:clamp(14px, 1vw, 16px);
-    }
-
-    input:focus, select:focus{
-      border-color:#d8b15d;
-      box-shadow:0 0 0 4px rgba(245,166,35,.10);
-    }
-
-    input::placeholder{
-      color:#9aa6b2;
-      font-weight:800;
-    }
-
-    .btn{
-      padding:12px 14px;
-      border:none;
-      border-radius:10px;
-      font-family:'Cairo',sans-serif;
-      font-weight:900;
-      font-size:clamp(14px, 1vw, 17px);
-      cursor:pointer;
-      display:inline-flex;
-      gap:10px;
-      align-items:center;
-      justify-content:center;
-      transition:.2s;
-      white-space:nowrap;
-      touch-action:manipulation;
-      position:relative;
-      overflow:hidden;
+      gap:16px;
       min-width:0;
     }
 
-    .btn::before{
-      content:"";
-      position:absolute;
-      top:0;
-      right:-120%;
-      width:120%;
-      height:100%;
-      background:linear-gradient(
-        120deg,
-        transparent 20%,
-        rgba(255,255,255,.18) 40%,
-        rgba(255,255,255,.35) 50%,
-        rgba(255,255,255,.18) 60%,
-        transparent 80%
-      );
-      transition:.65s;
-    }
-
-    .btn:hover::before{ right:120%; }
-    .btn:hover{ transform:translateY(-1px); opacity:.96; }
-    .btn:disabled{ opacity:.6; cursor:not-allowed; transform:none; }
-
-    .btn-primary{
-      background:linear-gradient(180deg,#1e3c72,#162c52);
-      color:#fff;
-      box-shadow:0 10px 20px rgba(30,60,114,.20);
-    }
-
-    .btn-warn{
-      background:linear-gradient(180deg,#e74c3c,#c0392b);
-      color:#fff;
-      box-shadow:0 10px 20px rgba(231,76,60,.20);
-    }
-
-    .btn-ok{
-      background:linear-gradient(180deg,#2ebf68,#26a65b);
-      color:#fff;
-      box-shadow:0 10px 20px rgba(39,174,96,.20);
-    }
-
-    .btn-ghost{
-      background:#eef2f6;
-      color:#1f2d3a;
-    }
-
-    .btn-admin{
-      background:linear-gradient(180deg,#7b4bd3,#5f35b1);
-      color:#fff;
-      box-shadow:0 10px 20px rgba(111,66,193,.20);
-    }
-
-    .file-btn{
-      border:none;
-      border-radius:10px;
-      padding:12px 14px;
-      font-family:'Cairo',sans-serif;
-      font-weight:900;
-      cursor:pointer;
-      text-decoration:none;
-      display:inline-flex;
+    .logo-wrap{
+      width:78px;
+      height:78px;
+      border-radius:22px;
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.18);
+      display:flex;
       align-items:center;
       justify-content:center;
-      gap:8px;
-      background:linear-gradient(180deg,#2ebf68,#26a65b);
-      color:#fff;
-      box-shadow:0 10px 20px rgba(39,174,96,.20);
-      transition:.2s;
-      white-space:nowrap;
-      width:auto;
-      max-width:100%;
+      flex:0 0 auto;
+      backdrop-filter:blur(6px);
     }
 
-    .file-btn:hover{
-      transform:translateY(-1px);
-      opacity:.96;
+    .logo-wrap img{
+      width:56px;
+      height:56px;
+      object-fit:contain;
+      filter:drop-shadow(0 4px 12px rgba(0,0,0,.2));
     }
 
-    .bar{
-      padding:12px clamp(12px, 1.6vw, 18px);
-      border-bottom:1px solid var(--line);
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-      justify-content:space-between;
-      background:#fafbfc;
+    .titles{
+      min-width:0;
+    }
+
+    .titles h1{
+      margin:0 0 6px;
+      font-size:28px;
+      line-height:1.2;
       font-weight:900;
-      position:relative;
-      z-index:2;
     }
 
-    .bar-right,
-    .bar-left{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:center;
-    }
-
-    .bar-left{
-      justify-content:flex-end;
-    }
-
-    .stat{
-      display:inline-flex;
-      align-items:center;
-      justify-content:flex-start;
-      gap:6px;
-      padding:8px 12px;
-      border-radius:12px;
-      background:#fff;
-      border:1px solid #eef1f4;
-      font-weight:900;
-      color:#111;
-      font-size:clamp(13px, 1vw, 16px);
-    }
-
-    .stat .muted{
-      color:var(--muted);
+    .titles p{
+      margin:0;
+      color:rgba(255,255,255,.88);
       font-size:15px;
-      margin-left:2px;
+      line-height:1.8;
     }
 
-    #count{
-      font-size:18px;
-      margin-right:2px;
-      height:32px;
-      min-width:25px;
-    }
-
-    #at{
-      font-size:18px;
-      margin-right:2px;
-      height:32px;
-      min-width:60px;
-    }
-
-    .date-input{
-      min-width:170px;
-      width:clamp(170px, 14vw, 200px);
-      height:50px;
-      padding:0 14px;
-      border-radius:12px;
-      border:1.5px solid var(--line);
-      font-family:'Cairo',sans-serif;
-      font-weight:900;
-      font-size:clamp(14px, 1vw, 16px);
-      text-align:center;
-      line-height:50px;
-      background:#fff;
-      color:#1f2d3a;
-    }
-
-    #status{
-      padding:10px 18px;
-      border-bottom:1px solid var(--line);
-      font-weight:900;
-      position:relative;
-      z-index:2;
-      word-break:break-word;
-    }
-
-    #status.ok{ color:#1d5e3b; }
-    #status.bad{ color:var(--danger); }
-
-    .list{
-      padding:14px clamp(12px, 1.6vw, 18px) 22px;
-      display:grid;
-      grid-template-columns:1fr;
-      gap:12px;
-      position:relative;
-      z-index:2;
-    }
-
-    .item{
-      border:1px solid #eef1f4;
-      border-radius:16px;
-      padding:clamp(10px, 1.2vw, 14px);
-      background:#fff;
-      box-shadow:0 10px 24px rgba(0,0,0,.04);
-      overflow:hidden;
-    }
-
-    .row1{
+    .session-box{
       display:flex;
+      flex-wrap:wrap;
       gap:10px;
-      flex-wrap:wrap;
-      align-items:flex-start;
-      justify-content:space-between;
-      border-bottom:1px solid #f0f3f6;
-      padding-bottom:10px;
-      margin-bottom:10px;
-    }
-
-    .action-wrap{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      align-items:center;
       justify-content:flex-end;
-      max-width:100%;
-    }
-
-    .idbox{
-      display:flex;
-      font-size:17px;
       align-items:center;
-      gap:10px;
-      font-weight:900;
-      color:var(--primary);
-      flex-wrap:wrap;
-      word-break:break-word;
     }
 
     .pill{
-      padding:6px 10px;
-      border-radius:999px;
-      background:#f6f8fa;
-      border:1px solid #eef1f4;
-      font-weight:900;
-      font-size:15px;
       display:inline-flex;
       align-items:center;
       gap:8px;
-      max-width:100%;
+      padding:10px 14px;
+      border-radius:999px;
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.15);
+      color:#fff;
+      font-size:14px;
+      white-space:nowrap;
+      backdrop-filter:blur(8px);
+    }
+
+    .toolbar{
+      background:var(--card);
+      border:1px solid rgba(255,255,255,.65);
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      padding:16px;
+      margin-bottom:16px;
+    }
+
+    .toolbar-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+    }
+
+    .toolbar-group{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      align-items:center;
+    }
+
+    .btn,
+    .field,
+    .select{
+      font-family:'Cairo',sans-serif;
+      border:none;
+      outline:none;
+      border-radius:16px;
+      transition:.2s ease;
+    }
+
+    .btn{
+      height:46px;
+      padding:0 16px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      font-size:15px;
+      font-weight:800;
+      cursor:pointer;
+      box-shadow:0 6px 18px rgba(0,0,0,.06);
+      white-space:nowrap;
+    }
+
+    .btn:hover{
+      transform:translateY(-1px);
+    }
+
+    .btn:disabled{
+      opacity:.55;
+      cursor:not-allowed;
+      transform:none;
+    }
+
+    .btn-primary{ background:var(--primary); color:#fff; }
+    .btn-warn{ background:var(--warn); color:#fff; }
+    .btn-success{ background:var(--ok); color:#fff; }
+    .btn-info{ background:var(--info); color:#fff; }
+    .btn-ghost{ background:#fff; color:var(--primary); border:1px solid var(--line); }
+    .btn-admin{ background:var(--admin); color:#fff; }
+    .btn-danger{ background:var(--danger); color:#fff; }
+
+    .btn.active{
+      box-shadow:0 0 0 3px rgba(245,166,35,.22), 0 8px 20px rgba(0,0,0,.08);
+      transform:translateY(-1px);
+    }
+
+    .select,
+    .field{
+      height:46px;
+      background:#fff;
+      border:1px solid var(--line);
+      color:var(--primary);
+      padding:0 14px;
+      font-size:15px;
+      min-width:150px;
+    }
+
+    .field{
+      min-width:190px;
+    }
+
+    .field[type="date"]{
+      min-width:160px;
+    }
+
+    .toolbar-note{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:14px;
+      padding-top:14px;
+      border-top:1px dashed var(--line);
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .stats{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:14px;
+      margin-bottom:16px;
+    }
+
+    .stat{
+      background:var(--card);
+      border:1px solid rgba(255,255,255,.65);
+      border-radius:22px;
+      padding:16px;
+      box-shadow:var(--shadow);
+      display:flex;
+      align-items:center;
+      gap:14px;
+      min-width:0;
+    }
+
+    .stat-icon{
+      width:52px;
+      height:52px;
+      border-radius:18px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:#fff;
+      font-size:20px;
+      flex:0 0 auto;
+    }
+
+    .stat.open .stat-icon{ background:var(--primary); }
+    .stat.delay .stat-icon{ background:var(--warn); }
+    .stat.done .stat-icon{ background:var(--ok); }
+    .stat.total .stat-icon{ background:var(--info); }
+
+    .stat h3{
+      margin:0;
+      font-size:13px;
+      color:var(--muted);
+      font-weight:700;
+    }
+
+    .stat strong{
+      display:block;
+      margin-top:4px;
+      font-size:26px;
+      color:var(--primary);
+      line-height:1;
+    }
+
+    .content-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+
+    .content-head h2{
+      margin:0;
+      font-size:22px;
+      color:var(--primary);
+    }
+
+    .content-head .small{
+      color:var(--muted);
+      font-size:14px;
+    }
+
+    .cards{
+      display:grid;
+      gap:14px;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid rgba(255,255,255,.7);
+      border-radius:26px;
+      padding:18px;
+      box-shadow:var(--shadow);
+      overflow:hidden;
+    }
+
+    .card-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+
+    .order-meta{
+      min-width:0;
+      flex:1 1 480px;
+    }
+
+    .order-title{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-bottom:10px;
+    }
+
+    .order-no{
+      font-size:22px;
+      font-weight:900;
+      color:var(--primary);
+      line-height:1.2;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:7px 12px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:800;
+      white-space:nowrap;
+    }
+
+    .badge-open{ background:rgba(34,50,67,.1); color:var(--primary); }
+    .badge-delay{ background:rgba(243,156,18,.12); color:#b86e00; }
+    .badge-done{ background:rgba(39,174,96,.12); color:#1f8d4e; }
+    .badge-type{ background:rgba(52,152,219,.12); color:#1f6ea5; }
+
+    .order-grid{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:10px;
+    }
+
+    .meta-box{
+      background:var(--soft);
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px 14px;
+      min-width:0;
+    }
+
+    .meta-box span{
+      display:block;
+      color:var(--muted);
+      font-size:12px;
+      margin-bottom:4px;
+      font-weight:700;
+    }
+
+    .meta-box strong{
+      display:block;
+      color:var(--primary);
+      font-size:15px;
+      line-height:1.8;
       word-break:break-word;
     }
 
-    .pill.ok{
-      background:rgba(39,174,96,.10);
-      border-color:rgba(39,174,96,.22);
-      color:#1d5e3b;
-    }
-
-    .pill.bad{
-      background:rgba(231,76,60,.10);
-      border-color:rgba(231,76,60,.20);
-      color:#7b1f17;
-    }
-
-    .late{
-      margin-top:8px;
-      font-weight:900;
-      color:var(--danger);
-      display:inline-flex;
-      align-items:center;
+    .card-actions{
+      display:flex;
       gap:8px;
       flex-wrap:wrap;
+      align-items:center;
+      justify-content:flex-end;
     }
 
-    .client{
-      margin-top:8px;
-      font-size:17px;
-      font-weight:900;
-      color:#111;
-      word-break:break-word;
+    .mini-btn{
+      width:42px;
+      height:42px;
+      border-radius:14px;
+      border:none;
+      cursor:pointer;
+      color:#fff;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size:16px;
+      box-shadow:0 8px 20px rgba(0,0,0,.08);
+      transition:.2s ease;
+    }
+
+    .mini-btn:hover{
+      transform:translateY(-1px);
+    }
+
+    .mini-copy{ background:var(--info); }
+    .mini-open{ background:var(--primary); }
+    .mini-print{ background:var(--ok); }
+
+    .path-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-bottom:14px;
+    }
+
+    .path-chip{
+      background:#fff;
+      border:1px dashed #d8e0e8;
+      color:var(--primary);
+      border-radius:999px;
+      padding:7px 12px;
+      font-size:13px;
+      font-weight:800;
+    }
+
+    .stepper-wrap{
+      display:flex;
+      justify-content:flex-end;
+      width:100%;
+      overflow:hidden;
     }
 
     .stepper-scroll{
-  overflow-x:auto;
-  overflow-y:hidden;
-  -webkit-overflow-scrolling:touch;
-  padding:4px 2px 2px;
-  display:flex;
-  justify-content:flex-end;
-}
-
-.stepper{
-  display:flex;
-  gap:12px;
-  width:max-content;
-  min-width:fit-content;
-  align-items:flex-start;
-  justify-content:flex-end;
-  padding:4px 2px 8px;
-  direction:rtl;
-  margin-right:0;
-  margin-left:auto;
-}
-
-    .node{
-      width:98px;
-      min-width:98px;
-      text-align:center;
-      font-weight:900;
-      position:relative;
-      padding:2px 1px 6px;
-      user-select:none;
+      overflow-x:auto;
+      overflow-y:hidden;
+      max-width:100%;
+      margin-left:auto;
+      padding-bottom:4px;
+      scrollbar-width:none;
     }
 
-    .node:not(:first-child)::before{
-      content:"";
-      position:absolute;
-      top:25px;
-      right:-10px;
-      width:10px;
-      height:3px;
-      background:#dfe5ec;
-      border-radius:999px;
-    }
-
-    .circle{
-      width:56px;
-      height:56px;
-      border-radius:50%;
-      background:var(--disabled);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      color:white;
-      margin:auto;
-      box-shadow:0 6px 14px rgba(0,0,0,0.12);
-    }
-
-    .circle i{ font-size:16px; }
-    .node.done .circle{ background:var(--ok); }
-    .node.next .circle{ background:var(--accent); transform:scale(1.04); }
-    .node.done:not(:first-child)::before{ background:var(--ok); }
-    .node.next:not(:first-child)::before{ background:var(--accent); }
-
-    .label{
-      margin-top:5px;
-      font-size:15px;
-    }
-
-    .sub{
-      margin-top:5px;
-      min-height:36px;
-      line-height:1.2;
-    }
-
-    .sub-name{
-      font-size:13px;
-      font-weight:900;
-      display:block;
-      line-height:1.2;
-      margin-top:8px;
-      word-break:break-word;
-    }
-
-    .sub-date{
-      font-size:11px;
-      font-weight:900;
-      direction:ltr;
-      display:block;
-      line-height:1.2;
-      margin-top:2px;
-      word-break:break-word;
-    }
-
-    .empty{
-      padding:26px 18px;
-      text-align:center;
-      font-weight:900;
-      color:var(--muted);
-    }
-
-    #toast{
-      position:fixed;
-      bottom:22px;
-      left:50%;
-      transform:translateX(-50%);
-      min-width:240px;
-      max-width:90%;
-      background:#223243;
-      color:#fff;
-      padding:12px 18px;
-      border-radius:12px;
-      font-weight:900;
-      font-family:'Cairo',sans-serif;
-      font-size:14px;
+    .stepper-scroll::-webkit-scrollbar{
       display:none;
-      z-index:99999;
-      text-align:center;
-      box-shadow:0 10px 25px rgba(0,0,0,.22);
     }
 
-    #toast.ok{ background:#27ae60; }
-    #toast.warn{ background:#f39c12; }
-    #toast.err{ background:#e74c3c; }
-
-    #qDone{
-      flex:1 1 220px;
-      min-width:180px;
-      height:50px;
-      font-size:clamp(14px, 1vw, 16px);
-      line-height:50px;
-      padding:0 12px;
-    }
-
-    #qDone::placeholder{
-      font-size:clamp(13px, .9vw, 15px);
-      line-height:50px;
-      padding:0 12px;
-    }
-
-    #sheetSelect{
-      flex:0 1 140px;
-      min-width:120px;
-      height:50px;
-      font-size:clamp(14px, 1vw, 16px);
-      line-height:50px;
-      padding:0 12px;
-    }
-
-    #btnAdmin{
-      margin-left:20px;
-    }
-
-    #btnSearchDone{
-      height:50px;
-      min-width:106px;
-      padding:0 16px;
-      font-size:clamp(14px, 1vw, 16px);
-      font-weight:900;
-      border-radius:12px;
+    /* مهم: 11 كرة تبقى دائمًا بنهاية الكارت */
+    .stepper{
+      width:max-content;
+      min-width:fit-content;
       display:flex;
-      align-items:center;
-      justify-content:center;
+      gap:8px;
+      justify-content:flex-end;
+      align-items:flex-start;
+      margin-right:0;
       margin-left:auto;
     }
 
-    #btnExport{
-      height:50px;
-      min-width:106px;
-      padding:0 16px;
-      font-size:clamp(14px, 1vw, 16px);
-      font-weight:900;
-      border-radius:12px;
+    .node{
+      width:74px;
+      min-width:74px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:7px;
+      position:relative;
+      flex:0 0 auto;
+    }
+
+    .node:not(:last-child)::before{
+      content:"";
+      position:absolute;
+      top:17px;
+      left:-42px;
+      width:42px;
+      height:3px;
+      border-radius:999px;
+      background:#d8dee6;
+    }
+
+    .node.done:not(:last-child)::before{
+      background:var(--ok);
+    }
+
+    .ball{
+      width:34px;
+      height:34px;
+      border-radius:50%;
       display:flex;
       align-items:center;
       justify-content:center;
-      gap:8px;
+      border:3px solid #d8dee6;
+      background:#fff;
+      color:#9aa7b5;
+      font-size:13px;
+      font-weight:900;
+      box-shadow:0 6px 12px rgba(0,0,0,.05);
+    }
+
+    .node.done .ball{
+      background:var(--ok);
+      border-color:var(--ok);
+      color:#fff;
+    }
+
+    .node.current .ball{
+      background:#fff3df;
+      border-color:var(--accent);
+      color:var(--accent-dark);
+    }
+
+    .node.pending .ball{
+      background:#fff;
+      border-color:#d8dee6;
+      color:#9aa7b5;
+    }
+
+    .node-label{
+      text-align:center;
+      font-size:11px;
+      line-height:1.5;
+      color:var(--muted);
+      font-weight:800;
+      max-width:74px;
+      word-break:break-word;
+    }
+
+    .node.done .node-label{
+      color:var(--ok);
+    }
+
+    .node.current .node-label{
+      color:var(--accent-dark);
+    }
+
+    .empty,
+    .loading{
+      background:var(--card);
+      border-radius:24px;
+      padding:34px 20px;
+      text-align:center;
+      box-shadow:var(--shadow);
+      border:1px solid rgba(255,255,255,.7);
+      color:var(--muted);
+    }
+
+    .empty i,
+    .loading i{
+      font-size:34px;
+      margin-bottom:12px;
+      color:var(--accent);
+      display:block;
+    }
+
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:24px;
+      transform:translateX(-50%) translateY(20px);
+      min-width:260px;
+      max-width:min(92vw, 520px);
+      background:#1f2937;
+      color:#fff;
+      padding:13px 16px;
+      border-radius:16px;
+      box-shadow:0 14px 30px rgba(0,0,0,.18);
+      opacity:0;
+      pointer-events:none;
+      transition:.25s ease;
+      z-index:9999;
+      text-align:center;
+      font-weight:700;
+    }
+
+    .toast.show{
+      opacity:1;
+      transform:translateX(-50%) translateY(0);
+    }
+
+    .footer-space{
+      height:16px;
     }
 
     @media (max-width:1200px){
-      .controls{
-        display:grid;
-        grid-template-columns:repeat(3, minmax(0, 1fr));
-        width:100%;
-        gap:10px;
+      .stats{
+        grid-template-columns:repeat(2,minmax(0,1fr));
       }
 
-      .controls > *{
+      .order-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+      }
+    }
+
+    @media (max-width:768px){
+      body{
+        padding:12px;
+      }
+
+      .hero{
+        border-radius:24px;
+        padding:18px 16px;
+      }
+
+      .logo-wrap{
+        width:64px;
+        height:64px;
+      }
+
+      .logo-wrap img{
+        width:46px;
+        height:46px;
+      }
+
+      .titles h1{
+        font-size:21px;
+      }
+
+      .titles p{
+        font-size:13px;
+      }
+
+      .toolbar{
+        border-radius:20px;
+        padding:12px;
+      }
+
+      .toolbar-row,
+      .toolbar-group{
+        width:100%;
+      }
+
+      .toolbar-group > *{
+        flex:1 1 100%;
+      }
+
+      .btn,
+      .field,
+      .select{
         width:100%;
         min-width:0;
       }
 
-      #btnSearchDone{
-        margin-left:0;
-      }
-    }
-
-    @media (max-width:820px){
-      .company-header{
-        padding:34px 14px 48px;
-        gap:12px;
-      }
-
-      .wrap{
-        padding:0 10px 20px;
-        margin-top:-24px;
-      }
-
-      .panel{
-        border-radius:18px;
-      }
-
-      .panel-head{
-        padding:14px;
-      }
-
-      .title{
-        width:100%;
-        justify-content:center;
-        text-align:center;
-      }
-
-      .controls{
+      .stats{
         grid-template-columns:1fr;
       }
 
-      .bar{
-        padding:12px 14px;
+      .card{
+        padding:14px;
+        border-radius:22px;
       }
 
-      .bar-right,
-      .bar-left{
+      .order-no{
+        font-size:19px;
+      }
+
+      .order-grid{
+        grid-template-columns:1fr;
+      }
+
+      .card-actions{
         width:100%;
+        justify-content:flex-start;
       }
 
-      .bar-right{
-        justify-content:space-between;
-      }
-
-      .bar-left{
-        justify-content:stretch;
-      }
-
-      .date-input,
-      .btn,
-      .file-btn,
-      #qDone,
-      #sheetSelect,
-      #btnSearchDone,
-      #btnExport{
-        width:100%;
-        min-width:0;
-      }
-
-      .stat{
-        flex:1 1 calc(50% - 5px);
-        justify-content:center;
-      }
-
-      .list{
-        padding:12px 12px 18px;
-      }
-
-      .item{
-        padding:12px;
-      }
-
-      .row1{
-        flex-direction:column;
-        align-items:stretch;
-      }
-
-      .action-wrap{
-        width:100%;
-        justify-content:stretch;
-      }
-
-      .action-wrap .btn,
-      .action-wrap .file-btn{
-        width:100%;
+      .stepper-wrap{
+        justify-content:flex-start;
       }
 
       .stepper-scroll{
+        width:100%;
         overflow-x:auto;
-        scroll-behavior:smooth;
-        scroll-snap-type:x mandatory;
-        overflow-y:hidden;
-        -webkit-overflow-scrolling:touch;
-      }
-
-      .stepper-scroll::-webkit-scrollbar{
-        display:none;
       }
 
       .stepper{
-  width:max-content;
-  min-width:fit-content;
-  display:flex;
-  gap:8px;
-  justify-content:flex-end;
-  align-items:flex-start;
-  margin-right:0;
-  margin-left:auto;
-}
+        width:max-content;
+        min-width:fit-content;
+        display:flex;
+        gap:8px;
+        justify-content:flex-end;
+        align-items:flex-start;
+        margin-right:0;
+        margin-left:auto;
+      }
 
       .node{
-        width:98px;
-        min-width:98px;
-        flex:0 0 auto;
-        scroll-snap-align:center;
+        width:72px;
+        min-width:72px;
       }
 
-      #btnAdmin{
-        margin-left:0;
-      }
-    }
-
-    @media (max-width:480px){
-      .company-header{
-        padding:28px 12px 42px;
-      }
-
-      .user-pill{
-        font-size:12px;
-        padding:6px 12px;
-      }
-
-      .wrap{
-        padding:0 8px 16px;
-        margin-top:-18px;
-      }
-
-      .panel-head{
-        padding:12px;
-      }
-
-      .bar{
-        padding:10px 12px;
-      }
-
-      .list{
-        padding:10px 10px 16px;
-      }
-
-      .item{
-        padding:10px;
-        border-radius:14px;
-      }
-
-      .stat{
-        width:100%;
-        flex:1 1 100%;
+      .node-label{
+        max-width:72px;
       }
     }
   </style>
 </head>
-
 <body>
-  <div id="pageWrap">
-    <header class="company-header">
-      <img src="https://siei-tracking.github.io/system/logo.png" class="company-logo" alt="logo">
-      <div class="header-text">
-        <h1>الشركة العامة للفحص والتأهيل الهندسي</h1>
-        <p>
-          <i class="fas fa-layer-group"></i>
-          منصة تتبع اوامر العمل - المعاملات
-        </p>
-        <div id="welcomeUser" class="user-pill"></div>
+  <div class="container">
+
+    <section class="hero">
+      <div class="hero-top">
+        <div class="brand">
+          <div class="logo-wrap">
+            <img src="https://siei-tracking.github.io/system/logo.png" alt="logo">
+          </div>
+          <div class="titles">
+            <h1>الشركة العامة للفحص والتأهيل الهندسي</h1>
+            <p>منصة تتبع أوامر العمل - قائمة المعاملات</p>
+          </div>
+        </div>
+
+        <div class="session-box">
+          <div class="pill"><i class="fas fa-user"></i> <span id="userDisplay">جاري التحقق...</span></div>
+          <div class="pill"><i class="fas fa-calendar-alt"></i> <span id="todayDisplay">--</span></div>
+          <button class="btn btn-danger" id="btnLogout" type="button">
+            <i class="fas fa-right-from-bracket"></i>
+            تسجيل الخروج
+          </button>
+        </div>
       </div>
-    </header>
+    </section>
 
-    <div class="wrap">
-      <div class="panel">
-        <div class="panel-head">
-          <div>
-            <div class="title"><i class="fas fa-list-check"></i> قائمة المعاملات</div>
-          </div>
+    <section class="toolbar">
+      <div class="toolbar-row">
+        <div class="toolbar-group">
+          <button class="btn btn-primary active" id="btnOpen" type="button">
+            <i class="fas fa-folder-open"></i>
+            غير المنجز
+          </button>
 
-          <div class="controls">
-            <button class="btn btn-primary" id="btnOpen" type="button">
-              <i class="fas fa-folder-open"></i> غير المنجز
-            </button>
+          <button class="btn btn-warn" id="btnDelayed" type="button">
+            <i class="fas fa-triangle-exclamation"></i>
+            المتأخر
+          </button>
 
-            <button class="btn btn-warn" id="btnDelayed" type="button">
-              <i class="fas fa-triangle-exclamation"></i> المتأخر
-            </button>
-
-            <button class="btn btn-ghost" id="btnOpenArchive" type="button">
-              <i class="fas fa-table"></i> فتح شيت المعاملات
-            </button>
-
-            <button class="btn btn-admin" id="btnAdmin" type="button" style="display:none;">
-              <i class="fas fa-users-cog"></i> إدارة المستخدمين
-            </button>
-
-            <select id="sheetSelect"></select>
-
-            <input id="qDone" type="text" placeholder="بحث: رقم أمر العمل" />
-
-            <button class="btn btn-primary" id="btnSearchDone" type="button">
-              <i class="fas fa-magnifying-glass"></i> بحث
-            </button>
-          </div>
+          <button class="btn btn-success" id="btnDone" type="button">
+            <i class="fas fa-circle-check"></i>
+            المنجز
+          </button>
         </div>
 
-        <div class="bar">
-          <div class="bar-right">
-            <div class="stat"><i class="fas fa-list"></i> <span class="muted">العدد:</span> <span id="count">0</span></div>
-            <div class="stat"><i class="fas fa-clock"></i> <span class="muted">آخر تحديث:</span> <span id="at">—</span></div>
-          </div>
+        <div class="toolbar-group">
+          <button class="btn btn-ghost" id="btnOpenArchive" type="button">
+            <i class="fas fa-table"></i>
+            فتح شيت المعاملات
+          </button>
 
-          <div class="bar-left">
-            <input type="date" id="dateFrom" class="date-input">
-            <input type="date" id="dateTo" class="date-input">
+          <button class="btn btn-admin" id="btnAdmin" type="button" disabled>
+            <i class="fas fa-users-cog"></i>
+            إدارة المستخدمين
+          </button>
+        </div>
+      </div>
 
-            <button class="btn btn-ok" id="btnDone" type="button">
-              <i class="fas fa-check-circle"></i> الإنجاز
-            </button>
+      <div class="toolbar-row" style="margin-top:10px;">
+        <div class="toolbar-group">
+          <select class="select" id="sheetSelect"></select>
 
-            <button class="btn btn-primary" id="btnExport" type="button">
-              <i class="fas fa-file-excel"></i> تصدير
-            </button>
-          </div>
+          <input class="field" id="qSearch" type="text" placeholder="بحث: رقم أمر العمل">
+
+          <button class="btn btn-info" id="btnSearch" type="button">
+            <i class="fas fa-search"></i>
+            بحث
+          </button>
         </div>
 
-        <div id="status" class="ok">جاري التحقق من الجلسة...</div>
-        <div id="list" class="list"></div>
+        <div class="toolbar-group">
+          <input class="field" id="dateFrom" type="date" title="من تاريخ">
+          <input class="field" id="dateTo" type="date" title="إلى تاريخ">
+
+          <button class="btn btn-ghost" id="btnApplyDate" type="button">
+            <i class="fas fa-filter"></i>
+            تطبيق التاريخ
+          </button>
+
+          <button class="btn btn-ghost" id="btnResetDate" type="button">
+            <i class="fas fa-rotate-left"></i>
+            تصفير
+          </button>
+
+          <button class="btn btn-ghost" id="btnExport" type="button">
+            <i class="fas fa-file-export"></i>
+            تصدير
+          </button>
+        </div>
+      </div>
+
+      <div class="toolbar-note">
+        <div>
+          <i class="fas fa-circle-info"></i>
+          <span id="currentModeText">الوضع الحالي: غير المنجز</span>
+        </div>
+        <div>
+          عدد النتائج المعروضة:
+          <strong id="resultCount">0</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats">
+      <div class="stat open">
+        <div class="stat-icon"><i class="fas fa-folder-open"></i></div>
+        <div>
+          <h3>غير المنجز</h3>
+          <strong id="statOpen">0</strong>
+        </div>
+      </div>
+
+      <div class="stat delay">
+        <div class="stat-icon"><i class="fas fa-triangle-exclamation"></i></div>
+        <div>
+          <h3>المتأخر</h3>
+          <strong id="statDelayed">0</strong>
+        </div>
+      </div>
+
+      <div class="stat done">
+        <div class="stat-icon"><i class="fas fa-circle-check"></i></div>
+        <div>
+          <h3>المنجز</h3>
+          <strong id="statDone">0</strong>
+        </div>
+      </div>
+
+      <div class="stat total">
+        <div class="stat-icon"><i class="fas fa-layer-group"></i></div>
+        <div>
+          <h3>إجمالي المعروض</h3>
+          <strong id="statTotal">0</strong>
+        </div>
+      </div>
+    </section>
+
+    <div class="content-head">
+      <h2 id="sectionTitle">قائمة المعاملات</h2>
+      <div class="small" id="sectionSubTitle">جاهز للتحميل</div>
+    </div>
+
+    <div id="contentArea">
+      <div class="loading">
+        <i class="fas fa-spinner fa-spin"></i>
+        جاري التحميل...
       </div>
     </div>
+
+    <div class="footer-space"></div>
   </div>
 
-  <div id="toast"></div>
+  <div class="toast" id="toast"></div>
 
   <script>
-    const API_BASE = "https://script.google.com/macros/s/AKfycbyZ1Nbh2DM29-nUa-m51z4TWzWPAg4bEWjWE9Nn7QJ149k54PQg2VIzqZZ_GtOxMdLL/exec";
+    /* =========================
+       إعدادات أساسية
+    ========================= */
+    const API_BASE = "ضع_هنا_رابط_exec_الخاص_بـ_Apps_Script";
     const PAGE_NAME = "main";
-    const STORAGE_KEY_PAGE = "tracking_session_token_" + PAGE_NAME;
-    const STORAGE_KEY_GLOBAL = "tracking_session_token";
+    const SESSION_KEYS = ["tracking_session_token_main", "tracking_session_token"];
+    const TZ = "Asia/Baghdad";
 
-    let CURRENT_MODE = "open";
-    let CURRENT_ITEMS = [];
-    let CURRENT_USER_ROLE = "";
-    let CURRENT_USER_NAME = "";
-    let CURRENT_USERNAME = "";
+    /* =========================
+       الحالة العامة
+    ========================= */
+    const state = {
+      sessionToken: "",
+      userName: "",
+      role: "",
+      pages: [],
+      mode: "open", // open | delayed | done
+      sheet: "",
+      orders: [],
+      filteredOrders: [],
+      allStats: { open: 0, delayed: 0, done: 0 }
+    };
 
-    function getSessionToken(){
-      return (
-        sessionStorage.getItem(STORAGE_KEY_PAGE) ||
-        sessionStorage.getItem(STORAGE_KEY_GLOBAL) ||
-        localStorage.getItem(STORAGE_KEY_PAGE) ||
-        localStorage.getItem(STORAGE_KEY_GLOBAL) ||
-        ""
-      );
+    const els = {
+      userDisplay: document.getElementById("userDisplay"),
+      todayDisplay: document.getElementById("todayDisplay"),
+
+      btnOpen: document.getElementById("btnOpen"),
+      btnDelayed: document.getElementById("btnDelayed"),
+      btnDone: document.getElementById("btnDone"),
+      btnOpenArchive: document.getElementById("btnOpenArchive"),
+      btnAdmin: document.getElementById("btnAdmin"),
+      btnLogout: document.getElementById("btnLogout"),
+
+      btnSearch: document.getElementById("btnSearch"),
+      btnApplyDate: document.getElementById("btnApplyDate"),
+      btnResetDate: document.getElementById("btnResetDate"),
+      btnExport: document.getElementById("btnExport"),
+
+      qSearch: document.getElementById("qSearch"),
+      sheetSelect: document.getElementById("sheetSelect"),
+      dateFrom: document.getElementById("dateFrom"),
+      dateTo: document.getElementById("dateTo"),
+
+      currentModeText: document.getElementById("currentModeText"),
+      resultCount: document.getElementById("resultCount"),
+
+      statOpen: document.getElementById("statOpen"),
+      statDelayed: document.getElementById("statDelayed"),
+      statDone: document.getElementById("statDone"),
+      statTotal: document.getElementById("statTotal"),
+
+      sectionTitle: document.getElementById("sectionTitle"),
+      sectionSubTitle: document.getElementById("sectionSubTitle"),
+      contentArea: document.getElementById("contentArea"),
+      toast: document.getElementById("toast")
+    };
+
+    /* =========================
+       أدوات مساعدة
+    ========================= */
+    function showToast(message, ok = true){
+      els.toast.textContent = message;
+      els.toast.style.background = ok ? "#1f2937" : "#8b1e1e";
+      els.toast.classList.add("show");
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => els.toast.classList.remove("show"), 2500);
     }
 
-    function setSessionToken(token){
-      if(!token) return;
-      sessionStorage.setItem(STORAGE_KEY_PAGE, token);
-      sessionStorage.setItem(STORAGE_KEY_GLOBAL, token);
+    function setLoading(text = "جاري التحميل..."){
+      els.contentArea.innerHTML = `
+        <div class="loading">
+          <i class="fas fa-spinner fa-spin"></i>
+          ${text}
+        </div>
+      `;
     }
 
-    function clearSessionToken(){
-      sessionStorage.removeItem(STORAGE_KEY_PAGE);
-      sessionStorage.removeItem(STORAGE_KEY_GLOBAL);
-      localStorage.removeItem(STORAGE_KEY_PAGE);
-      localStorage.removeItem(STORAGE_KEY_GLOBAL);
+    function setEmpty(text = "لا توجد بيانات"){
+      els.contentArea.innerHTML = `
+        <div class="empty">
+          <i class="fas fa-inbox"></i>
+          ${text}
+        </div>
+      `;
     }
 
-    function isAdminUser(){
-      return String(CURRENT_USERNAME || "").trim().toLowerCase() === "admin";
+    function safeText(v, fallback = "—"){
+      if(v === null || v === undefined) return fallback;
+      const s = String(v).trim();
+      return s ? s : fallback;
     }
 
-    async function apiPost(payload){
-      const response = await fetch(API_BASE, {
-        method: "POST",
-        headers: {
-          "Content-Type": "text/plain;charset=utf-8"
-        },
-        body: JSON.stringify(payload)
-      });
-
-      const text = await response.text();
-
-      try{
-        return JSON.parse(text);
-      }catch(err){
-        throw new Error(text || "Invalid JSON response");
-      }
-    }
-
-    async function ensurePageSession(){
-      const token = getSessionToken();
-
-      if(!token){
-        window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
-        return;
-      }
-
-      try{
-        const result = await apiPost({
-          action: "checkSession",
-          token: token,
-          page: PAGE_NAME
-        });
-
-        if(result && result.ok){
-          setSessionToken(token);
-
-          CURRENT_USER_NAME = result.user || result.userName || "مخول غير معروف";
-          CURRENT_USERNAME = result.username || "";
-          CURRENT_USER_ROLE = isAdminUser() ? "admin" : "user";
-
-          const w = document.getElementById("welcomeUser");
-          w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: ' + escapeHtml(CURRENT_USER_NAME);
-
-          document.getElementById("pageWrap").classList.add("show");
-          showAdminButton();
-          await loadSheetOptions();
-          await loadOpen();
-        }else{
-          clearSessionToken();
-          window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
-        }
-      }catch(error){
-        showMsg("❌ تعذر التحقق من الجلسة", "err");
-        setTimeout(function(){
-          clearSessionToken();
-          window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
-        }, 900);
-      }
-    }
-
-    function safeErr(err){
-      try{
-        if(!err) return "Unknown error";
-        if(typeof err === "string") return err;
-        if(err.message) return err.message;
-        return JSON.stringify(err);
-      }catch(e){
-        return String(err);
-      }
-    }
-
-    function showMsg(text, type){
-      var t = document.getElementById("toast");
-      t.className = "";
-
-      if(type === "ok") t.classList.add("ok");
-      else if(type === "warn") t.classList.add("warn");
-      else if(type === "err") t.classList.add("err");
-
-      t.textContent = text || "";
-      t.style.display = "block";
-
-      clearTimeout(window.__toastTimer);
-      window.__toastTimer = setTimeout(function(){
-        t.style.display = "none";
-      }, 2500);
-    }
-
-    function setStatus(msg, ok){
-      var el = document.getElementById("status");
-      el.className = ok ? "ok" : "bad";
-      el.textContent = msg;
-    }
-
-    function setLoading(on){
-      document.getElementById("btnOpen").disabled = on;
-      document.getElementById("btnDelayed").disabled = on;
-      document.getElementById("btnDone").disabled = on;
-      document.getElementById("btnSearchDone").disabled = on;
-      document.getElementById("sheetSelect").disabled = on;
-      document.getElementById("dateFrom").disabled = on;
-      document.getElementById("dateTo").disabled = on;
-      document.getElementById("qDone").disabled = on;
-
-      var btnExport = document.getElementById("btnExport");
-      if(btnExport) btnExport.disabled = on;
-
-      var btnOpenArchive = document.getElementById("btnOpenArchive");
-      if(btnOpenArchive){
-        btnOpenArchive.disabled = on || !isAdminUser();
-      }
-
-      var btnAdmin = document.getElementById("btnAdmin");
-      if(btnAdmin){
-        btnAdmin.disabled = on || !isAdminUser();
-      }
-
-      if(on) setStatus("جاري التحميل...", true);
-    }
-
-    async function loadSheetOptions(){
-      const token = getSessionToken();
-      if(!token) return;
-
-      try{
-        const res = await apiPost({
-          action: "getMainSearchSheets",
-          token: token,
-          page: PAGE_NAME
-        });
-
-        var sheets = Array.isArray(res && res.items) ? res.items : (Array.isArray(res) ? res : []);
-        var select = document.getElementById("sheetSelect");
-        if(!select) return;
-
-        select.innerHTML = "";
-
-        if(!sheets || !sheets.length){
-          var opt = document.createElement("option");
-          opt.value = "";
-          opt.textContent = "لا توجد سنوات";
-          select.appendChild(opt);
-          return;
-        }
-
-        sheets.forEach(function(name){
-          var opt = document.createElement("option");
-          opt.value = name;
-          opt.textContent = name;
-          select.appendChild(opt);
-        });
-
-        var currentYear = new Date().getFullYear().toString();
-        if(sheets.indexOf(currentYear) !== -1){
-          select.value = currentYear;
-        }else{
-          select.value = sheets[0];
-        }
-      }catch(err){
-        console.log("sheet options error:", safeErr(err));
-      }
-    }
-
-    function showAdminButton(){
-      var btnAdmin = document.getElementById("btnAdmin");
-      var btnSheet = document.getElementById("btnOpenArchive");
-      var admin = isAdminUser();
-
-      if(btnAdmin){
-        btnAdmin.style.display = "inline-flex";
-        btnAdmin.disabled = !admin;
-        btnAdmin.title = admin ? "" : "متاح لمدير النظام فقط";
-        btnAdmin.style.opacity = admin ? "1" : "0.6";
-        btnAdmin.style.cursor = admin ? "pointer" : "not-allowed";
-      }
-
-      if(btnSheet){
-        btnSheet.style.display = "inline-flex";
-        btnSheet.disabled = !admin;
-        btnSheet.title = admin ? "" : "متاح لمدير النظام فقط";
-        btnSheet.style.opacity = admin ? "1" : "0.6";
-        btnSheet.style.cursor = admin ? "pointer" : "not-allowed";
-      }
-    }
-
-    function openAdminPage(){
-      if(!isAdminUser()){
-        showMsg("⚠️ متاح لمدير النظام فقط", "warn");
-        return;
-      }
-
-      const token = getSessionToken();
-
-      if(!token){
-        window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
-        return;
-      }
-
-      sessionStorage.setItem("tracking_session_token_admin", token);
-      sessionStorage.setItem("tracking_session_token", token);
-      window.location.href = "admin.html";
-    }
-
-    function isDoneAny(v){
-      return String(v || "").indexOf("✅") !== -1;
-    }
-
-    function formatSub(val, done, cls, stepKey){
-      if(!done){
-        return (cls.indexOf("next") !== -1)
-          ? '<div class="sub-date">الخطوة الحالية</div>'
-          : '<div class="sub-date">بانتظار</div>';
-      }
-
-      val = String(val || "");
-      val = val.replace("✅", "").replace("استلام -", "").replace("استلام", "").trim();
-
-      var name = "";
-      var date = "";
-
-      var userMatch = val.match(/\((.*?)\)/);
-      if(userMatch && userMatch[1]){
-        name = userMatch[1].trim();
-        date = val.replace(userMatch[0], "").trim();
-      } else {
-        var dt = val.match(/(\d{4}-\d{2}-\d{2}\s*\|\s*\d{2}:\d{2})/);
-        if(dt){
-          date = dt[1].trim();
-          name = val.replace(dt[1], "").trim();
-        } else {
-          var parts = val.split(/\s*\|\s*/);
-          if(parts.length >= 2){
-            name = parts[0].trim();
-            date = parts.slice(1).join(" | ").trim();
-          } else {
-            date = val.trim();
-          }
-        }
-      }
-
-      if(stepKey === "pricing"){
-        var dt2 = val.match(/(\d{4}-\d{2}-\d{2}\s*\|\s*\d{2}:\d{2})/);
-
-        if(dt2){
-          date = dt2[1].trim();
-        } else {
-          date = "";
-        }
-
-        var userMatch2 = val.match(/\((.*?)\)/);
-        if(userMatch2 && userMatch2[1]){
-          name = userMatch2[1].trim();
-        } else {
-          name = "";
-        }
-
-        name = name.replace(/^[\-\–—\s]+/, "").replace(/[\-\–—\s]+$/, "").trim();
-        date = date.replace(/^[\-\–—\s]+/, "").replace(/[\-\–—\s]+$/, "").trim();
-      }
-
-      if(stepKey === "payment"){
-        name = name.replace("تم التسديد", "").trim();
-        date = date.replace("تم التسديد", "").trim();
-      }
-
-      name = name.replace(/^[\-\–—\s]+/, "").replace(/[\-\–—\s]+$/, "").trim();
-      date = date.replace(/^[\-\–—\s]+/, "").replace(/[\-\–—\s]+$/, "").trim();
-
-      return ''
-        + '<div class="sub-name">' + escapeHtml(name || "") + '</div>'
-        + '<div class="sub-date">' + escapeHtml(date || "") + '</div>';
-    }
-
-    function inferType(it){
-      var pricingDone = isDoneAny(it.pricing);
-      if(!pricingDone) return "";
-
-      var t = String(it.testType || "").trim();
-      if(t === "مصاعد" || t === "مختبرات") return t;
-
-      var elev = String(it.elev || "").trim();
-      var lab1 = String(it.lab1 || "").trim();
-      var workshop = String(it.workshop || "").trim();
-      var lab2 = String(it.lab2 || "").trim();
-
-      if(elev && elev !== "-" && elev !== "—") return "مصاعد";
-      if(lab1 || workshop || lab2) return "مختبرات";
-
-      return "";
-    }
-
-    function inferLabPath(it){
-      var pricingDone = isDoneAny(it.pricing);
-      if(!pricingDone) return "";
-
-      var labPath = String(it.labPath || "").trim();
-      if(labPath) return labPath;
-
-      var workshop = String(it.workshop || "").trim();
-      var lab2 = String(it.lab2 || "").trim();
-
-      if(workshop || lab2) return "ورشة";
-      return "مختبرات فقط";
-    }
-
-    function buildSteps(it){
-      var type = inferType(it);
-      var labPath = inferLabPath(it);
-
-      var pricingDone = isDoneAny(it.pricing);
-      var workflowReady = pricingDone && !!type;
-
-      var steps = [
-        {key:"inspection",  label:"استلام",  icon:"fa-handshake"},
-        {key:"pricing",     label:"تسعيرة",  icon:"fa-receipt"}
-      ];
-
-      if(!workflowReady){
-        return steps;
-      }
-
-      steps.push({key:"payment", label:"تسديد", icon:"fa-sack-dollar"});
-
-      if(type === "مصاعد"){
-        steps.push({key:"elev", label:"مصاعد", icon:"fa-elevator"});
-      }else{
-        steps.push({key:"lab1", label:"مختبرات", icon:"fa-microscope"});
-        if(labPath !== "مختبرات فقط"){
-          steps.push({key:"workshop", label:"ورشة", icon:"fa-screwdriver-wrench"});
-          steps.push({key:"lab2", label:"مختبرات", icon:"fa-flask"});
-        }
-      }
-
-      steps.push({key:"testResults", label:"نتائج", icon:"fa-clipboard-check"});
-      steps.push({key:"official",    label:"كتاب",  icon:"fa-file"});
-      steps.push({key:"barcode",     label:"باركود", icon:"fa-qrcode"});
-      steps.push({key:"email",       label:"ايميل", icon:"fa-paper-plane"});
-      steps.push({key:"final",       label:"استلام", icon:"fa-flag-checkered"});
-
-      return steps;
-    }
-
-    function typePills(it){
-      var pricingDone = isDoneAny(it.pricing);
-      var type = inferType(it);
-      var labPath = inferLabPath(it);
-
-      if(!pricingDone || !type){
-        return '<span class="pill bad"><i class="fas fa-hourglass-half"></i>بانتظار التسعيرة</span>';
-      }
-
-      var typePill = '<span class="pill bad"><i class="fas fa-triangle-exclamation"></i> غير محدد</span>';
-
-      if(type === "مصاعد"){
-        typePill = '<span class="pill ok"><i class="fas fa-elevator"></i> مصاعد</span>';
-      } else if(type === "مختبرات"){
-        typePill = '<span class="pill ok"><i class="fas fa-microscope"></i> مختبرات</span>';
-      }
-
-      var showPathPill =
-        type === "مختبرات" &&
-        labPath &&
-        labPath !== "مختبرات فقط";
-
-      var pathPill = showPathPill
-        ? '<span class="pill"><i class="fas fa-route"></i> ' + escapeHtml(labPath) + '</span>'
-        : "";
-
-      return typePill + (pathPill ? " " + pathPill : "");
-    }
-
-    function renderStepper(it){
-      var steps = buildSteps(it);
-      var firstPending = false;
-
-      var pricingDone = isDoneAny(it.pricing);
-      var type = inferType(it);
-      var workflowReady = pricingDone && !!type;
-
-      var html = '<div class="stepper-scroll"><div class="stepper">';
-
-      for(var i = 0; i < steps.length; i++){
-        var s = steps[i];
-        var val = String(it[s.key] || "");
-        var done = isDoneAny(val);
-
-        var cls = "node";
-        if(done){
-          cls += " done";
-        }else if(!firstPending){
-          cls += " next";
-          firstPending = true;
-        }else{
-          cls += " locked";
-        }
-
-        var sub = formatSub(val, done, cls, s.key);
-
-        html += '<div class="' + cls + '">'
-             +    '<div class="circle"><i class="fas ' + s.icon + '"></i></div>'
-             +    '<div class="label">' + escapeHtml(s.label) + '</div>'
-             +    '<div class="sub">' + sub + '</div>'
-             +  '</div>';
-      }
-
-      html += '</div></div>';
-
-      if(!workflowReady){
-        html += ''
-          + '<div class="empty" style="padding-top:8px;">'
-          +   '<i class="fas fa-circle-info"></i> '
-          +   'تظهر بقية المراحل بعد تثبيت التسعيرة ونوع الفحص'
-          + '</div>';
-      }
-
-      return html;
-    }
-
-    function escapeHtml(s){
-      return String(s == null ? "" : s)
+    function escapeHtml(str){
+      return String(str ?? "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
+        .replace(/'/g, "&#039;");
     }
 
-    function getExportTitleByMode(mode){
-      if(mode === "open") return "تقرير المعاملات غير المنجزة";
-      if(mode === "delayed") return "تقرير المعاملات المتأخرة";
-      if(mode === "done") return "تقرير المعاملات المنجزة";
-      if(mode === "search") return "تقرير نتائج البحث";
-      return "تقرير المعاملات";
+    function formatDate(v){
+      if(!v) return "—";
+      try{
+        const d = new Date(v);
+        if(isNaN(d.getTime())) return String(v);
+        return new Intl.DateTimeFormat("ar-IQ", {
+          timeZone: TZ,
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit"
+        }).format(d);
+      }catch{
+        return String(v);
+      }
     }
 
-    function exportCurrentTable(){
-      if(!CURRENT_ITEMS || !CURRENT_ITEMS.length){
-        setStatus("⚠️ لا توجد بيانات معروضة للتصدير", false);
-        showMsg("⚠️ لا توجد بيانات للتصدير", "warn");
-        return;
+    function formatDateTime(v){
+      if(!v) return "—";
+      try{
+        const d = new Date(v);
+        if(isNaN(d.getTime())) return String(v);
+        return new Intl.DateTimeFormat("ar-IQ", {
+          timeZone: TZ,
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit"
+        }).format(d);
+      }catch{
+        return String(v);
       }
-
-      var rows = [];
-      for(var i = 0; i < CURRENT_ITEMS.length; i++){
-        var it = CURRENT_ITEMS[i] || {};
-        rows.push({
-          orderNo: String(it.orderNo || "").trim() || "—",
-          orderDate: String(it.orderDate || "").trim() || "—",
-          clientName: String(it.clientName || "").trim() || "—",
-          lastStage: String(it.lastStage || "").trim() || "—"
-        });
-      }
-
-      var title = getExportTitleByMode(CURRENT_MODE);
-      var now = new Date();
-      var yyyy = now.getFullYear();
-      var mm = String(now.getMonth() + 1).padStart(2, "0");
-      var dd = String(now.getDate()).padStart(2, "0");
-      var hh = String(now.getHours()).padStart(2, "0");
-      var mi = String(now.getMinutes()).padStart(2, "0");
-      var fileName = title + "_" + yyyy + "-" + mm + "-" + dd + "_" + hh + "-" + mi + ".xls";
-
-      var html = ''
-        + '<html dir="rtl" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">'
-        + '<head><meta charset="UTF-8"></head>'
-        + '<body>'
-        + '<table border="1" style="border-collapse:collapse;font-family:Cairo,Arial,sans-serif;text-align:center;">'
-        + '<tr>'
-        +   '<th colspan="4" style="background:#223243;color:#fff;font-size:18px;padding:10px;">' + escapeHtml(title) + '</th>'
-        + '</tr>'
-        + '<tr>'
-        +   '<th style="background:#f5a623;color:#111;padding:8px;">رقم أمر العمل</th>'
-        +   '<th style="background:#f5a623;color:#111;padding:8px;">تاريخ أمر العمل</th>'
-        +   '<th style="background:#f5a623;color:#111;padding:8px;">الجهة المستفيدة</th>'
-        +   '<th style="background:#f5a623;color:#111;padding:8px;">آخر مرحلة</th>'
-        + '</tr>';
-
-      for(var j = 0; j < rows.length; j++){
-        html += '<tr>'
-          + '<td style="padding:8px;">' + escapeHtml(rows[j].orderNo) + '</td>'
-          + '<td style="padding:8px;">' + escapeHtml(rows[j].orderDate) + '</td>'
-          + '<td style="padding:8px;">' + escapeHtml(rows[j].clientName) + '</td>'
-          + '<td style="padding:8px;">' + escapeHtml(rows[j].lastStage) + '</td>'
-          + '</tr>';
-      }
-
-      html += '</table></body></html>';
-
-      var blob = new Blob(['\ufeff' + html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement("a");
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      showMsg("✅ تم تصدير الجدول بنجاح", "ok");
     }
 
-    function computeLastStage(item){
-      const steps = [
-        { key: "final", label: "استلام النتائج" },
-        { key: "email", label: "ارسال الايميل" },
-        { key: "barcode", label: "الباركود" },
-        { key: "official", label: "الكتاب الرسمي" },
-        { key: "testResults", label: "نتائج الفحص" },
-        { key: "lab2", label: "المختبرات بعد الورشة" },
-        { key: "workshop", label: "الورشة" },
-        { key: "elev", label: "المصاعد" },
-        { key: "lab1", label: "المختبرات" },
-        { key: "payment", label: "التسديد" },
-        { key: "pricing", label: "التسعيرة" },
-        { key: "inspection", label: "استلام المعاملة" }
-      ];
-
-      for(let i = 0; i < steps.length; i++){
-        if(isDoneAny(item[steps[i].key])) return steps[i].label;
-      }
-      return "لم تبدأ";
+    function isDoneValue(v){
+      return String(v ?? "").includes("✅");
     }
 
-    function normalizeItemsForRender(items){
-      return (items || []).map(function(it){
-        const item = Object.assign({}, it);
+    function daysBetween(fromDate, toDate = new Date()){
+      try{
+        const a = new Date(fromDate);
+        const b = new Date(toDate);
+        if(isNaN(a) || isNaN(b)) return null;
+        const diff = b.setHours(0,0,0,0) - a.setHours(0,0,0,0);
+        return Math.floor(diff / 86400000);
+      }catch{
+        return null;
+      }
+    }
 
-        if(!item.orderDate){
-          let src = String(item.inspection || "");
-          let dt = src.match(/(\d{4}-\d{2}-\d{2})/);
-          item.orderDate = dt ? dt[1] : "—";
+    function getSessionToken(){
+      for(const key of SESSION_KEYS){
+        const token = sessionStorage.getItem(key);
+        if(token) return token;
+      }
+      return "";
+    }
+
+    function clearSession(){
+      SESSION_KEYS.forEach(k => sessionStorage.removeItem(k));
+    }
+
+    function redirectToLogin(){
+      window.location.href = `login.html?p=${encodeURIComponent(PAGE_NAME)}`;
+    }
+
+    async function apiGet(params = {}){
+      const url = new URL(API_BASE);
+      Object.entries(params).forEach(([k,v]) => {
+        if(v !== undefined && v !== null && v !== ""){
+          url.searchParams.set(k, v);
         }
+      });
 
-        if(!item.lastStage){
-          item.lastStage = computeLastStage(item);
+      const res = await fetch(url.toString(), {
+        method: "GET",
+        cache: "no-store"
+      });
+
+      if(!res.ok){
+        throw new Error("فشل الاتصال بالخادم");
+      }
+      return res.json();
+    }
+
+    async function apiPost(payload = {}){
+      const res = await fetch(API_BASE, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload)
+      });
+
+      if(!res.ok){
+        throw new Error("فشل الاتصال بالخادم");
+      }
+      return res.json();
+    }
+
+    function normalizeOrders(data){
+      if(!Array.isArray(data)) return [];
+
+      return data.map((item, idx) => {
+        if(Array.isArray(item)){
+          return fromArrayRow(item, idx);
         }
-
-        return item;
+        return fromObjectRow(item, idx);
       });
     }
 
-    function renderList(res, mode){
-      if(res && res.error){
-        CURRENT_MODE = mode || "open";
-        CURRENT_ITEMS = [];
+    function fromArrayRow(row, idx){
+      return {
+        _id: `arr-${idx}-${row[1] || ""}`,
+        createdAt: row[0] || "",
+        orderNo: safeText(row[1]),
+        client: safeText(row[2]),
+        receive: row[3] || "",
+        planning: row[4] || "",
+        pricing: row[5] || "",
+        days: safeText(row[6], ""),
+        payment: row[7] || "",
+        lab1: row[8] || "",
+        elev: row[9] || "",
+        workshop: row[10] || "",
+        lab2: row[11] || "",
+        results: row[12] || "",
+        official: row[13] || "",
+        barcode: row[14] || "",
+        email: row[15] || "",
+        delivered: row[16] || "",
+        raw: row
+      };
+    }
 
-        document.getElementById("count").textContent = "0";
-        document.getElementById("at").textContent = res.at || "—";
-        document.getElementById("list").innerHTML = "";
-        setStatus("❌ خطأ من السيرفر: " + res.error, false);
-        showMsg("❌ خطأ من السيرفر", "err");
+    function fromObjectRow(o, idx){
+      return {
+        _id: `obj-${idx}-${o.orderNo || o["رقم أمر العمل"] || ""}`,
+        createdAt: o.createdAt || o.date || o.created_at || o["التاريخ"] || "",
+        orderNo: safeText(o.orderNo || o.orderNumber || o["رقم أمر العمل"]),
+        client: safeText(o.client || o.beneficiary || o.customer || o["الجهة المستفيدة"]),
+        receive: o.receive || o.received || o["استلام المعاملة"] || "",
+        planning: o.planning || o["التخطيط"] || "",
+        pricing: o.pricing || o["التسعيرة"] || "",
+        days: safeText(o.days || o["الايام"], ""),
+        payment: o.payment || o["التسديد"] || "",
+        lab1: o.lab1 || o["المختبرات 1"] || "",
+        elev: o.elev || o["المصاعد"] || "",
+        workshop: o.workshop || o["الورشة"] || "",
+        lab2: o.lab2 || o["المختبرات 2"] || "",
+        results: o.results || o["نتائج الفحص"] || "",
+        official: o.official || o["الكتاب الرسمي"] || "",
+        barcode: o.barcode || o["الباركود"] || "",
+        email: o.email || o["ارسال الايميل"] || "",
+        delivered: o.delivered || o.resultReceived || o["استلام النتائج"] || "",
+        raw: o
+      };
+    }
+
+    function getInspectionTypeText(order){
+      const p = String(order.planning || "");
+      if(p.includes("مصاعد")) return "مصاعد";
+      if(p.includes("مختبرات")) return "مختبرات";
+      return "غير محدد";
+    }
+
+    function getRouteText(order){
+      const p = String(order.planning || "");
+      if(p.includes("ورشة")) return "ورشة";
+      if(p.includes("مختبرات فقط")) return "مختبرات فقط";
+      if(p.includes("مصاعد")) return "مصاعد";
+      return "—";
+    }
+
+    function getStatusLabel(order){
+      if(isDoneValue(order.delivered)) return { cls:"badge-done", text:"منجز", icon:"fa-circle-check" };
+
+      const age = daysBetween(order.createdAt);
+      if(age !== null && age > 7) return { cls:"badge-delay", text:"متأخر", icon:"fa-triangle-exclamation" };
+
+      return { cls:"badge-open", text:"غير منجز", icon:"fa-folder-open" };
+    }
+
+    function getLastCompletedStage(order){
+      const stages = [
+        ["استلام المعاملة", order.receive],
+        ["التخطيط", order.planning],
+        ["التسعيرة", order.pricing],
+        ["التسديد", order.payment],
+        ["المختبرات 1", order.lab1],
+        ["المصاعد", order.elev],
+        ["الورشة", order.workshop],
+        ["نتائج الفحص", order.results],
+        ["الكتاب الرسمي", order.official],
+        ["الباركود", order.barcode],
+        ["استلام النتائج", order.delivered]
+      ];
+
+      let last = "لم يبدأ";
+      for(const [name, val] of stages){
+        if(isDoneValue(val) || (name === "التخطيط" && String(val).trim()) || (name === "التسعيرة" && String(val).trim())){
+          last = name;
+        }
+      }
+      return last;
+    }
+
+    function get11Steps(order){
+      return [
+        { key:"receive", label:"استلام", done:isDoneValue(order.receive) },
+        { key:"planning", label:"تخطيط", done:Boolean(String(order.planning).trim()) },
+        { key:"pricing", label:"تسعيرة", done:Boolean(String(order.pricing).trim()) },
+        { key:"payment", label:"تسديد", done:isDoneValue(order.payment) },
+        { key:"lab1", label:"مختبرات", done:isDoneValue(order.lab1) || isDoneValue(order.lab2) },
+        { key:"elev", label:"مصاعد", done:isDoneValue(order.elev) },
+        { key:"workshop", label:"ورشة", done:isDoneValue(order.workshop) },
+        { key:"results", label:"نتائج", done:isDoneValue(order.results) },
+        { key:"official", label:"رسمي", done:isDoneValue(order.official) },
+        { key:"barcode", label:"باركود", done:isDoneValue(order.barcode) || isDoneValue(order.email) },
+        { key:"delivered", label:"استلام النتائج", done:isDoneValue(order.delivered) }
+      ];
+    }
+
+    function decorateStepStates(steps){
+      const firstPendingIndex = steps.findIndex(s => !s.done);
+      return steps.map((s, i) => ({
+        ...s,
+        state: s.done ? "done" : (i === firstPendingIndex ? "current" : "pending")
+      }));
+    }
+
+    function renderStepper(order){
+      const steps = decorateStepStates(get11Steps(order));
+      return `
+        <div class="stepper-wrap">
+          <div class="stepper-scroll">
+            <div class="stepper">
+              ${steps.map((s, idx) => `
+                <div class="node ${s.state}">
+                  <div class="ball">${s.done ? '<i class="fas fa-check"></i>' : (idx + 1)}</div>
+                  <div class="node-label">${escapeHtml(s.label)}</div>
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderCard(order){
+      const status = getStatusLabel(order);
+      const orderType = getInspectionTypeText(order);
+      const route = getRouteText(order);
+      const lastStage = getLastCompletedStage(order);
+
+      return `
+        <article class="card">
+          <div class="card-top">
+            <div class="order-meta">
+              <div class="order-title">
+                <div class="order-no">أمر العمل: ${escapeHtml(order.orderNo)}</div>
+                <span class="badge ${status.cls}">
+                  <i class="fas ${status.icon}"></i>
+                  ${escapeHtml(status.text)}
+                </span>
+                <span class="badge badge-type">
+                  <i class="fas fa-sitemap"></i>
+                  ${escapeHtml(orderType)}
+                </span>
+              </div>
+
+              <div class="order-grid">
+                <div class="meta-box">
+                  <span>الجهة المستفيدة</span>
+                  <strong>${escapeHtml(order.client)}</strong>
+                </div>
+                <div class="meta-box">
+                  <span>تاريخ الإدخال</span>
+                  <strong>${escapeHtml(formatDateTime(order.createdAt))}</strong>
+                </div>
+                <div class="meta-box">
+                  <span>آخر مرحلة مكتملة</span>
+                  <strong>${escapeHtml(lastStage)}</strong>
+                </div>
+                <div class="meta-box">
+                  <span>الأيام</span>
+                  <strong>${escapeHtml(order.days || "—")}</strong>
+                </div>
+              </div>
+            </div>
+
+            <div class="card-actions">
+              <button class="mini-btn mini-copy" type="button" title="نسخ رقم أمر العمل" onclick="copyOrderNo('${escapeHtml(order.orderNo)}')">
+                <i class="fas fa-copy"></i>
+              </button>
+              <button class="mini-btn mini-open" type="button" title="بحث سريع" onclick="quickSearch('${escapeHtml(order.orderNo)}')">
+                <i class="fas fa-magnifying-glass"></i>
+              </button>
+              <button class="mini-btn mini-print" type="button" title="طباعة الكارت" onclick="printCard(this)">
+                <i class="fas fa-print"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="path-row">
+            <div class="path-chip"><i class="fas fa-diagram-project"></i> نوع الفحص: ${escapeHtml(orderType)}</div>
+            <div class="path-chip"><i class="fas fa-route"></i> التوجيه: ${escapeHtml(route)}</div>
+            <div class="path-chip"><i class="fas fa-calendar-days"></i> حالة الأيام: ${escapeHtml(order.days || "—")}</div>
+          </div>
+
+          ${renderStepper(order)}
+        </article>
+      `;
+    }
+
+    function renderOrders(list){
+      if(!list.length){
+        setEmpty("لا توجد معاملات مطابقة للبحث الحالي");
         return;
       }
 
-      var rawItems = (res && res.items) ? res.items : [];
-      var items = normalizeItemsForRender(rawItems);
+      els.contentArea.innerHTML = `
+        <div class="cards">
+          ${list.map(renderCard).join("")}
+        </div>
+      `;
+    }
 
-      CURRENT_MODE = mode || "open";
-      CURRENT_ITEMS = items.slice();
+    function setModeButtons(){
+      [els.btnOpen, els.btnDelayed, els.btnDone].forEach(btn => btn.classList.remove("active"));
 
-      document.getElementById("count").textContent = String(items.length);
-      document.getElementById("at").textContent = (res && res.at) ? res.at : "—";
+      if(state.mode === "open"){
+        els.btnOpen.classList.add("active");
+        els.currentModeText.textContent = "الوضع الحالي: غير المنجز";
+        els.sectionTitle.textContent = "قائمة المعاملات غير المنجزة";
+      }else if(state.mode === "delayed"){
+        els.btnDelayed.classList.add("active");
+        els.currentModeText.textContent = "الوضع الحالي: المتأخر";
+        els.sectionTitle.textContent = "قائمة المعاملات المتأخرة";
+      }else{
+        els.btnDone.classList.add("active");
+        els.currentModeText.textContent = "الوضع الحالي: المنجز";
+        els.sectionTitle.textContent = "قائمة المعاملات المنجزة";
+      }
+    }
 
-      if(!items.length){
-        document.getElementById("list").innerHTML =
-          '<div class="empty"><i class="fas fa-check-circle"></i> لا توجد معاملات</div>';
-        setStatus("تم التحميل — items=0", true);
-        return;
+    function updateStatsDisplay(){
+      els.statOpen.textContent = state.allStats.open;
+      els.statDelayed.textContent = state.allStats.delayed;
+      els.statDone.textContent = state.allStats.done;
+      els.statTotal.textContent = state.filteredOrders.length;
+      els.resultCount.textContent = state.filteredOrders.length;
+      els.sectionSubTitle.textContent = `السنة الحالية: ${state.sheet || "—"} | عدد النتائج: ${state.filteredOrders.length}`;
+    }
+
+    function applyClientSideFilters(){
+      const q = els.qSearch.value.trim();
+      const from = els.dateFrom.value;
+      const to = els.dateTo.value;
+
+      let list = [...state.orders];
+
+      if(q){
+        list = list.filter(o => String(o.orderNo).includes(q));
       }
 
-      var html = "";
+      if(from || to){
+        list = list.filter(o => {
+          const d = new Date(o.createdAt);
+          if(isNaN(d.getTime())) return false;
 
-      for(var i = 0; i < items.length; i++){
-        var it = items[i] || {};
-        var orderNo = escapeHtml(it.orderNo || "");
-        var client  = escapeHtml(it.clientName || "—");
-        var lateDays = Number(it.lateDays || 0);
-        var fileUrl = String(it.barcodeFileUrl || it.barcodeLink || it.fileUrl || it.fileLink || "").trim();
+          const ymd = d.toISOString().slice(0,10);
+          if(from && ymd < from) return false;
+          if(to && ymd > to) return false;
+          return true;
+        });
+      }
 
-        html += '<div class="item">';
-        html +=   '<div class="row1">';
-        html +=     '<div>';
-        html +=       '<div class="idbox">أمر العمل : <span>' + orderNo + '</span> ' + typePills(it) + '</div>';
-        html +=       '<div class="client"><i class="fas fa-building"></i> ' + client + '</div>';
+      state.filteredOrders = list;
+      renderOrders(state.filteredOrders);
+      updateStatsDisplay();
+    }
 
-        if(mode === "delayed"){
-          html += '<div class="late"><i class="fas fa-hourglass-half"></i> متأخر ' + lateDays + ' يوم</div>';
+    async function loadSheets(){
+      try{
+        const res = await apiGet({ action:"getMainSearchSheets" });
+        const list = Array.isArray(res?.sheets) ? res.sheets : (Array.isArray(res) ? res : []);
+
+        els.sheetSelect.innerHTML = "";
+
+        if(!list.length){
+          const currentYear = String(new Date().getFullYear());
+          els.sheetSelect.innerHTML = `<option value="${currentYear}">${currentYear}</option>`;
+          state.sheet = currentYear;
+          return;
         }
 
-        html +=     '</div>';
-        html +=     '<div class="action-wrap">';
+        list.forEach(name => {
+          const opt = document.createElement("option");
+          opt.value = name;
+          opt.textContent = name;
+          els.sheetSelect.appendChild(opt);
+        });
 
-        if(mode === "done" || mode === "search"){
-          if(fileUrl){
-            html += '<a href="' + escapeHtml(fileUrl) + '" target="_blank" rel="noopener noreferrer" class="file-btn">'
-                 +    '<i class="fas fa-up-right-from-square"></i> فتح الملف'
-                 +  '</a>';
-          } else {
-            html += '<button class="btn btn-ghost" type="button" disabled>'
-                 +    '<i class="fas fa-ban"></i> لا يوجد ملف'
-                 +  '</button>';
+        const currentYear = String(new Date().getFullYear());
+        const defaultValue = list.includes(currentYear) ? currentYear : String(list[0]);
+        els.sheetSelect.value = defaultValue;
+        state.sheet = defaultValue;
+      }catch{
+        const currentYear = String(new Date().getFullYear());
+        els.sheetSelect.innerHTML = `<option value="${currentYear}">${currentYear}</option>`;
+        state.sheet = currentYear;
+      }
+    }
+
+    async function loadStats(){
+      try{
+        const [openRes, delayedRes, doneRes] = await Promise.all([
+          apiGet({ action:"getOpenOrders", sheet: state.sheet }),
+          apiGet({ action:"getDelayedOrders", sheet: state.sheet }),
+          apiGet({ action:"getCompletedOrders", sheet: state.sheet })
+        ]);
+
+        state.allStats.open = normalizeOrders(openRes?.orders || openRes?.data || openRes).length;
+        state.allStats.delayed = normalizeOrders(delayedRes?.orders || delayedRes?.data || delayedRes).length;
+        state.allStats.done = normalizeOrders(doneRes?.orders || doneRes?.data || doneRes).length;
+
+        updateStatsDisplay();
+      }catch{
+        state.allStats = { open:0, delayed:0, done:0 };
+        updateStatsDisplay();
+      }
+    }
+
+    async function loadOrders(){
+      try{
+        setModeButtons();
+        setLoading("جاري تحميل المعاملات...");
+
+        let res;
+
+        if(state.mode === "open"){
+          res = await apiGet({ action:"getOpenOrders", sheet: state.sheet });
+        }else if(state.mode === "delayed"){
+          res = await apiGet({ action:"getDelayedOrders", sheet: state.sheet });
+        }else{
+          const from = els.dateFrom.value;
+          const to = els.dateTo.value;
+
+          if(from || to){
+            res = await apiGet({
+              action:"getCompletedOrdersByDateRange",
+              sheet: state.sheet,
+              from,
+              to
+            });
+          }else{
+            res = await apiGet({ action:"getCompletedOrders", sheet: state.sheet });
           }
         }
 
-        html +=     '</div>';
-        html +=   '</div>';
-        html +=   renderStepper(it);
-        html += '</div>';
+        state.orders = normalizeOrders(res?.orders || res?.data || res);
+        state.filteredOrders = [...state.orders];
+        applyClientSideFilters();
+      }catch(err){
+        console.error(err);
+        setEmpty("تعذر تحميل البيانات من الخادم");
+        showToast("تعذر تحميل البيانات", false);
       }
-
-      document.getElementById("list").innerHTML = html;
-      setStatus("تم التحميل بنجاح", true);
     }
 
-    async function loadOpen(){
-      const token = getSessionToken();
-      if(!token){
-        window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
-        return;
+    async function verifySession(){
+      state.sessionToken = getSessionToken();
+      if(!state.sessionToken){
+        redirectToLogin();
+        return false;
       }
-
-      setLoading(true);
 
       try{
         const res = await apiPost({
-          action: "getOpenOrders",
-          token: token,
+          action: "checkSession",
+          token: state.sessionToken,
           page: PAGE_NAME
         });
 
-        setLoading(false);
-        renderList(res, "open");
+        const ok = Boolean(res?.ok || res?.success || res?.authorized);
+        if(!ok){
+          clearSession();
+          redirectToLogin();
+          return false;
+        }
+
+        const user = res?.user || res?.session || res?.data || res || {};
+        state.userName = user.userName || user.name || user.username || "مستخدم النظام";
+        state.role = user.role || user.userRole || "";
+        state.pages = Array.isArray(user.pages) ? user.pages : [];
+
+        els.userDisplay.textContent = state.userName;
+
+        const isAdmin =
+          state.role === "admin" ||
+          state.userName === "مدير النظام" ||
+          state.pages.includes("admin");
+
+        els.btnAdmin.disabled = !isAdmin;
+
+        return true;
       }catch(err){
-        setLoading(false);
-        setStatus("❌ open error: " + safeErr(err), false);
-        showMsg("❌ فشل تحميل غير المنجز", "err");
+        console.error(err);
+        clearSession();
+        redirectToLogin();
+        return false;
       }
     }
 
-    async function loadDelayed(){
-      const token = getSessionToken();
-      if(!token){
-        window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
-        return;
-      }
-
-      setLoading(true);
-
+    async function logout(){
       try{
-        const res = await apiPost({
-          action: "getDelayedOrders",
-          token: token,
-          page: PAGE_NAME
-        });
-
-        setLoading(false);
-        renderList(res, "delayed");
-      }catch(err){
-        setLoading(false);
-        setStatus("❌ delayed error: " + safeErr(err), false);
-        showMsg("❌ فشل تحميل المتأخر", "err");
-      }
-    }
-
-    async function loadDone(){
-      const token = getSessionToken();
-      if(!token){
-        window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
-        return;
-      }
-
-      var from = String(document.getElementById("dateFrom").value || "").trim();
-      var to   = String(document.getElementById("dateTo").value || "").trim();
-
-      setLoading(true);
-
-      try{
-        let res;
-
-        if(from && to){
-          res = await apiPost({
-            action: "getCompletedOrdersByDateRange",
-            token: token,
-            page: PAGE_NAME,
-            fromDate: from,
-            toDate: to,
-            limit: 5000
+        if(state.sessionToken){
+          await apiPost({
+            action:"logout",
+            token: state.sessionToken
           });
-
-          setLoading(false);
-          renderList(res, "done");
-          setStatus("✅ تم تحميل الإنجاز ضمن التاريخ المحدد", true);
-          showMsg("✅ تم تحميل النتائج حسب التاريخ", "ok");
-          return;
         }
-
-        res = await apiPost({
-          action: "getCompletedOrders",
-          token: token,
-          page: PAGE_NAME,
-          limit: 5000
-        });
-
-        setLoading(false);
-        renderList(res, "done");
       }catch(err){
-        setLoading(false);
-        setStatus("❌ done error: " + safeErr(err), false);
-        showMsg("❌ فشل تحميل الإنجاز", "err");
-      }
-    }
-
-    async function searchAny(){
-      const token = getSessionToken();
-      if(!token){
-        window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
-        return;
-      }
-
-      var id = String(document.getElementById("qDone").value || "").trim();
-      var sheetName = String(document.getElementById("sheetSelect").value || "").trim();
-
-      if(!id){
-        setStatus("⚠️ أدخل رقم أمر العمل", false);
-        showMsg("⚠️ أدخل رقم أمر العمل", "warn");
-        return;
-      }
-
-      if(!sheetName){
-        setStatus("⚠️ لا توجد سنة محددة للبحث", false);
-        showMsg("⚠️ لا توجد سنة محددة", "warn");
-        return;
-      }
-
-      setLoading(true);
-
-      try{
-        const res = await apiPost({
-          action: "searchOrderAnywhere",
-          token: token,
-          page: PAGE_NAME,
-          orderNo: id,
-          sheetName: sheetName
-        });
-
-        setLoading(false);
-
-        if(res && res.error){
-          setStatus("❌ خطأ: " + res.error, false);
-          showMsg("❌ خطأ من السيرفر", "err");
-          return;
-        }
-
-        if(!res || !res.found){
-          CURRENT_MODE = "search";
-          CURRENT_ITEMS = [];
-          document.getElementById("count").textContent = "0";
-          document.getElementById("at").textContent = "—";
-          document.getElementById("list").innerHTML =
-            '<div class="empty"><i class="fas fa-circle-xmark"></i> لا توجد معاملة بهذا الرقم داخل السنة المحددة</div>';
-          setStatus("❌ لم يتم العثور على أمر العمل " + escapeHtml(id) + " داخل السنة المحددة", false);
-          showMsg("⚠️ غير موجود", "warn");
-          return;
-        }
-
-        var item = res.item ? res.item : res;
-        item = Object.assign({}, item, {
-          orderNo: item.orderNo || id
-        });
-
-        renderList({
-          at: (res.at || "—"),
-          items: [item]
-        }, "search");
-
-        setStatus("✅ تم العثور على أمر العمل " + escapeHtml(id) + " داخل " + escapeHtml(item.sourceSheet || sheetName), true);
-        showMsg("✅ تم العثور على المعاملة", "ok");
-      }catch(err){
-        setLoading(false);
-        setStatus("❌ search error: " + safeErr(err), false);
-        showMsg("❌ فشل البحث", "err");
+        console.warn("logout warning", err);
+      }finally{
+        clearSession();
+        redirectToLogin();
       }
     }
 
     async function openArchiveSheet(){
-      if(!isAdminUser()){
-        showMsg("⚠️ متاح لمدير النظام فقط", "warn");
-        return;
-      }
-
-      const token = getSessionToken();
-      if(!token){
-        window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
-        return;
-      }
-
       try{
-        const res = await apiPost({
-          action: "getArchiveSheetUrl",
-          token: token,
-          page: PAGE_NAME
-        });
+        const res = await apiGet({ action:"getArchiveSheetUrl", sheet: state.sheet });
+        const url = res?.url || res?.sheetUrl || res?.archiveUrl;
 
-        if(!res || !res.ok){
-          setStatus("❌ " + (res && (res.error || res.message) ? (res.error || res.message) : "لا يمكن فتح الشيت"), false);
-          showMsg("❌ لا يمكن فتح الشيت", "err");
+        if(url){
+          window.open(url, "_blank");
           return;
         }
-        window.open(res.url, "_blank", "noopener");
-      }catch(err){
-        setStatus("❌ خطأ: " + safeErr(err), false);
-        showMsg("❌ خطأ في فتح الشيت", "err");
+
+        showToast("لم يتم العثور على رابط الشيت", false);
+      }catch{
+        showToast("تعذر فتح الشيت", false);
       }
     }
 
-    window.addEventListener("load", function(){
-      var openSheetBtn = document.getElementById("btnOpenArchive");
-      var adminBtn = document.getElementById("btnAdmin");
-
-      (function setDefaultDates(){
-        const today = new Date();
-        const toDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-        const fromDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-
-        const formatLocal = function(d){
-          const y = d.getFullYear();
-          const m = String(d.getMonth() + 1).padStart(2, "0");
-          const day = String(d.getDate()).padStart(2, "0");
-          return y + "-" + m + "-" + day;
-        };
-
-        document.getElementById("dateFrom").value = formatLocal(fromDate);
-        document.getElementById("dateTo").value = formatLocal(toDate);
-      })();
-
-      document.getElementById("btnOpen").addEventListener("click", loadOpen);
-      document.getElementById("btnDelayed").addEventListener("click", loadDelayed);
-      document.getElementById("btnDone").addEventListener("click", loadDone);
-      document.getElementById("btnSearchDone").addEventListener("click", searchAny);
-      document.getElementById("btnExport").addEventListener("click", exportCurrentTable);
-
-      if(openSheetBtn){
-        openSheetBtn.addEventListener("click", openArchiveSheet);
+    function exportCurrentView(){
+      if(!state.filteredOrders.length){
+        showToast("لا توجد بيانات للتصدير", false);
+        return;
       }
 
-      if(adminBtn){
-        adminBtn.addEventListener("click", openAdminPage);
-      }
+      const rows = state.filteredOrders.map(o => ({
+        "رقم أمر العمل": o.orderNo,
+        "تاريخ الأمر": formatDate(o.createdAt),
+        "الجهة المستفيدة": o.client,
+        "آخر مرحلة مكتملة": getLastCompletedStage(o)
+      }));
 
-      document.getElementById("qDone").addEventListener("keypress", function(e){
-        if(e.key === "Enter") searchAny();
+      let csv = "\uFEFF";
+      const headers = Object.keys(rows[0]);
+      csv += headers.join(",") + "\n";
+      rows.forEach(r => {
+        csv += headers.map(h => `"${String(r[h] ?? "").replace(/"/g, '""')}"`).join(",") + "\n";
       });
 
-      ensurePageSession();
-    });
+      const blob = new Blob([csv], { type:"text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `main-${state.mode}-${state.sheet || "sheet"}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      showToast("تم إنشاء ملف التصدير");
+    }
+
+    function setTodayText(){
+      const now = new Date();
+      els.todayDisplay.textContent = new Intl.DateTimeFormat("ar-IQ", {
+        timeZone: TZ,
+        year:"numeric",
+        month:"long",
+        day:"numeric"
+      }).format(now);
+    }
+
+    function bindEvents(){
+      els.btnOpen.addEventListener("click", async () => {
+        state.mode = "open";
+        await loadOrders();
+        await loadStats();
+      });
+
+      els.btnDelayed.addEventListener("click", async () => {
+        state.mode = "delayed";
+        await loadOrders();
+        await loadStats();
+      });
+
+      els.btnDone.addEventListener("click", async () => {
+        state.mode = "done";
+        await loadOrders();
+        await loadStats();
+      });
+
+      els.sheetSelect.addEventListener("change", async (e) => {
+        state.sheet = e.target.value;
+        await loadOrders();
+        await loadStats();
+      });
+
+      els.btnSearch.addEventListener("click", applyClientSideFilters);
+      els.qSearch.addEventListener("keydown", (e) => {
+        if(e.key === "Enter") applyClientSideFilters();
+      });
+
+      els.btnApplyDate.addEventListener("click", async () => {
+        if(state.mode === "done"){
+          await loadOrders();
+        }else{
+          applyClientSideFilters();
+        }
+      });
+
+      els.btnResetDate.addEventListener("click", async () => {
+        els.dateFrom.value = "";
+        els.dateTo.value = "";
+        els.qSearch.value = "";
+        if(state.mode === "done"){
+          await loadOrders();
+        }else{
+          applyClientSideFilters();
+        }
+      });
+
+      els.btnExport.addEventListener("click", exportCurrentView);
+      els.btnOpenArchive.addEventListener("click", openArchiveSheet);
+
+      els.btnAdmin.addEventListener("click", () => {
+        if(els.btnAdmin.disabled){
+          showToast("هذه الصفحة متاحة فقط لمدير النظام", false);
+          return;
+        }
+        window.location.href = "admin.html";
+      });
+
+      els.btnLogout.addEventListener("click", logout);
+    }
+
+    /* =========================
+       دوال عامة للأزرار داخل الكارت
+    ========================= */
+    window.copyOrderNo = async function(orderNo){
+      try{
+        await navigator.clipboard.writeText(orderNo);
+        showToast("تم نسخ رقم أمر العمل");
+      }catch{
+        showToast("تعذر النسخ", false);
+      }
+    };
+
+    window.quickSearch = function(orderNo){
+      els.qSearch.value = orderNo;
+      applyClientSideFilters();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    };
+
+    window.printCard = function(btn){
+      const card = btn.closest(".card");
+      if(!card) return;
+
+      const html = `
+        <html dir="rtl" lang="ar">
+        <head>
+          <meta charset="UTF-8">
+          <title>طباعة معاملة</title>
+          <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+          <style>
+            body{font-family:'Cairo',sans-serif;padding:20px;background:#fff;color:#223243}
+            .card{border:1px solid #ddd;border-radius:20px;padding:18px}
+          </style>
+        </head>
+        <body>${card.outerHTML}</body>
+        </html>
+      `;
+
+      const w = window.open("", "_blank");
+      w.document.open();
+      w.document.write(html);
+      w.document.close();
+      w.focus();
+      setTimeout(() => w.print(), 300);
+    };
+
+    /* =========================
+       التشغيل
+    ========================= */
+    async function init(){
+      setTodayText();
+      bindEvents();
+
+      const ok = await verifySession();
+      if(!ok) return;
+
+      await loadSheets();
+      await loadOrders();
+      await loadStats();
+    }
+
+    init();
   </script>
 </body>
 </html>
