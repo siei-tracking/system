@@ -1,11 +1,8 @@
-﻿/* =========================
-   Watermark System - SIEI
-   ========================= */
-<style>
+﻿<style>
 .page-shell{
   position:relative;
   min-height:100vh;
-  isolation:isolate; /* مهم لمنع تداخل الطبقات */
+  isolation:isolate;
 }
 
 .page-shell::before{
@@ -14,61 +11,44 @@
   left:50%;
   top:52%;
   transform:translate(-50%, -50%);
-
-  /* الحجم الأساسي */
-  width:min(50vw, 600px);
-  height:min(50vw, 600px);
-
-  /* صورة الشعار */
-  background-image: url('https://siei-tracking.github.io/system/logo.png');
+  width:min(60vw, 700px);
+  height:min(60vw, 700px);
+  background-image:url('https://siei-tracking.github.io/system/logo.png');
   background-size:contain;
   background-repeat:no-repeat;
   background-position:center;
-
-  /* تأثير watermark احترافي */
   opacity:0.065;
-  filter: grayscale(100%) contrast(105%);
-
+  filter:grayscale(100%) contrast(105%);
   pointer-events:none;
   z-index:0;
 }
 
-/* محتوى الصفحة فوق watermark */
 .page-content{
   position:relative;
   z-index:1;
 }
 
-/* =========================
-   Mobile
-   ========================= */
 @media (max-width:600px){
   .page-shell::before{
-    width:min(58vw, 240px);
-    height:min(58vw, 240px);
+    width:min(75vw, 320px);
+    height:min(75vw, 320px);
     top:54%;
     opacity:0.055;
   }
 }
 
-/* =========================
-   Tablet
-   ========================= */
 @media (min-width:601px) and (max-width:1024px){
   .page-shell::before{
-    width:min(42vw, 340px);
-    height:min(42vw, 340px);
+    width:min(58vw, 460px);
+    height:min(58vw, 460px);
     top:53%;
   }
 }
 
-/* =========================
-   Large Screens
-   ========================= */
 @media (min-width:1400px){
   .page-shell::before{
-    width:430px;
-    height:430px;
+    width:700px;
+    height:700px;
     top:51%;
   }
 }
