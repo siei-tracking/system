@@ -523,43 +523,46 @@
       word-break:break-word;
     }
 
+    /* =========================
+       STEPPRER المعدل فقط
+       نفس الشكل - توزيع مبني على 11
+    ========================= */
     .stepper-scroll{
-  overflow:visible;
-  padding:4px 0 2px;
-}
+      width:100%;
+      overflow:hidden;
+      padding:4px 2px 2px;
+    }
 
-.stepper{
-  display:flex;
-  width:100%;
-  min-width:0;
-  gap:0;
-  justify-content:space-between;
-  align-items:flex-start;
-  padding:4px 0 8px;
-  direction:rtl;
-}
+    .stepper{
+      display:grid;
+      grid-template-columns:repeat(11, minmax(0, 1fr));
+      width:100%;
+      min-width:0;
+      align-items:flex-start;
+      padding:4px 2px 8px;
+      direction:rtl;
+    }
 
-.node{
-  flex:1 1 0;
-  min-width:0;
-  width:auto;
-  text-align:center;
-  font-weight:900;
-  position:relative;
-  padding:2px 0 6px;
-  user-select:none;
-}
+    .node{
+      text-align:center;
+      font-weight:900;
+      position:relative;
+      padding:2px 1px 6px;
+      user-select:none;
+      min-width:0;
+      width:100%;
+    }
 
-.node:not(:first-child)::before{
-  content:"";
-  position:absolute;
-  top:25px;
-  right:calc(50% + 28px);
-  width:calc(100% - 56px);
-  height:3px;
-  background:#dfe5ec;
-  border-radius:999px;
-}
+    .node.has-line::before{
+      content:"";
+      position:absolute;
+      top:25px;
+      right:calc(50% + 28px);
+      width:calc(100% - 56px);
+      height:3px;
+      background:#dfe5ec;
+      border-radius:999px;
+    }
 
     .circle{
       width:56px;
@@ -572,13 +575,15 @@
       color:white;
       margin:auto;
       box-shadow:0 6px 14px rgba(0,0,0,0.12);
+      position:relative;
+      z-index:1;
     }
 
     .circle i{ font-size:16px; }
     .node.done .circle{ background:var(--ok); }
     .node.next .circle{ background:var(--accent); transform:scale(1.04); }
-    .node.done:not(:first-child)::before{ background:var(--ok); }
-    .node.next:not(:first-child)::before{ background:var(--accent); }
+    .node.done.has-line::before{ background:var(--ok); }
+    .node.next.has-line::before{ background:var(--accent); }
 
     .label{
       margin-top:5px;
@@ -799,31 +804,21 @@
       }
 
       .stepper-scroll{
-        overflow-x:auto;
-        scroll-behavior:smooth;
-        scroll-snap-type:x mandatory;
-        overflow-y:hidden;
-        -webkit-overflow-scrolling:touch;
-      }
-
-      .stepper-scroll::-webkit-scrollbar{
-        display:none;
+        width:100%;
+        overflow:hidden;
       }
 
       .stepper{
-        width:max-content;
-        min-width:100%;
-        display:flex;
-        gap:8px;
-        justify-content:flex-start;
+        width:100%;
+        min-width:0;
+        display:grid;
+        grid-template-columns:repeat(11, minmax(0, 1fr));
         align-items:flex-start;
       }
 
       .node{
-        width:98px;
-        min-width:98px;
-        flex:0 0 auto;
-        scroll-snap-align:center;
+        width:100%;
+        min-width:0;
       }
 
       #btnAdmin{
@@ -927,6 +922,7 @@
 
           <div class="bar-left">
             <input type="date" id="dateFrom" class="date-input">
+
             <input type="date" id="dateTo" class="date-input">
 
             <button class="btn btn-ok" id="btnDone" type="button">
@@ -1357,6 +1353,37 @@
       return typePill + (pathPill ? " " + pathPill : "");
     }
 
+    function getStepSlots(count){
+      count = Number(count || 0);
+      if(count <= 0) return [];
+      if(count === 1) return [11];
+
+      var totalSlots = 11;
+      var arr = [];
+
+      for(var i = 0; i < count; i++){
+        var pos = 1 + Math.round((i * (totalSlots - 1)) / (count - 1));
+        if(arr.length && pos <= arr[arr.length - 1]){
+          pos = arr[arr.length - 1] + 1;
+        }
+        if(pos > totalSlots){
+          pos = totalSlots;
+        }
+        arr.push(pos);
+      }
+
+      arr[0] = 1;
+      arr[arr.length - 1] = 11;
+
+      for(var j = 1; j < arr.length; j++){
+        if(arr[j] <= arr[j - 1]){
+          arr[j] = Math.min(11, arr[j - 1] + 1);
+        }
+      }
+
+      return arr;
+    }
+
     function renderStepper(it){
       var steps = buildSteps(it);
       var firstPending = false;
@@ -1365,6 +1392,7 @@
       var type = inferType(it);
       var workflowReady = pricingDone && !!type;
 
+      var slots = getStepSlots(steps.length);
       var html = '<div class="stepper-scroll"><div class="stepper">';
 
       for(var i = 0; i < steps.length; i++){
@@ -1382,9 +1410,17 @@
           cls += " locked";
         }
 
+        var currentSlot = slots[i];
+        var nextSlot = (i < steps.length - 1) ? slots[i + 1] : null;
+        var span = nextSlot ? (nextSlot - currentSlot + 1) : 1;
+
+        if(nextSlot){
+          cls += " has-line";
+        }
+
         var sub = formatSub(val, done, cls, s.key);
 
-        html += '<div class="' + cls + '">'
+        html += '<div class="' + cls + '" style="grid-column:' + currentSlot + ' / span ' + span + ';">'
              +    '<div class="circle"><i class="fas ' + s.icon + '"></i></div>'
              +    '<div class="label">' + escapeHtml(s.label) + '</div>'
              +    '<div class="sub">' + sub + '</div>'
