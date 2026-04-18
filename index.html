@@ -4,11 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <link rel="stylesheet" href="watermark.css">
-
   <title>منصة تتبع أوامر العمل</title>
   <link rel="icon" href="https://siei-tracking.github.io/system/logo.png">
 
+  <link rel="stylesheet" href="watermark.css">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -23,12 +22,16 @@
       --muted:#758292;
       --ok:#27ae60;
       --danger:#e74c3c;
+      --warn:#f39c12;
+      --disabled:#bdc3c7;
       --soft:#f8fafc;
-      --shadow:0 12px 30px rgba(34,50,67,.12);
+      --shadow:0 10px 30px rgba(17,24,39,.10);
       --radius:22px;
     }
 
-    *{ box-sizing:border-box; }
+    *{
+      box-sizing:border-box;
+    }
 
     html,body{
       margin:0;
@@ -43,118 +46,106 @@
     }
 
     .page-shell{
-      position:relative;
       min-height:100vh;
-      isolation:isolate;
+      position:relative;
       padding:24px 14px 40px;
     }
 
-    .page-content{
-      position:relative;
-      z-index:1;
-      width:min(1100px,100%);
-      margin:0 auto;
-    }
-
     .company-header{
-      position:relative;
-      overflow:hidden;
-      border-radius:28px;
-      padding:26px 20px;
-      margin-bottom:20px;
-      color:#fff;
+      max-width:1150px;
+      margin:0 auto 18px;
       background:
-        linear-gradient(135deg, rgba(34,50,67,.94), rgba(34,50,67,.84)),
+        linear-gradient(rgba(34,50,67,.90), rgba(34,50,67,.86)),
         url('https://drive.google.com/thumbnail?id=1kGABjKDT_tHkUbce1CWMVVFfrbfJ1_P7&sz=w1400');
       background-size:cover;
       background-position:center;
+      background-repeat:no-repeat;
+      border-radius:28px;
+      padding:28px 22px;
       box-shadow:var(--shadow);
+      color:#fff;
+      position:relative;
+      overflow:hidden;
     }
 
-    .company-header::after{
+    .company-header::before{
       content:"";
       position:absolute;
       inset:0;
-      background:linear-gradient(120deg, rgba(245,166,35,.16), transparent 40%);
+      background:linear-gradient(135deg, rgba(245,166,35,.16), transparent 55%);
       pointer-events:none;
     }
 
-    .brand-wrap{
+    .brand{
       position:relative;
       z-index:1;
       display:flex;
       align-items:center;
       gap:16px;
+      justify-content:center;
+      text-align:center;
       flex-wrap:wrap;
     }
 
-    .brand-logo{
-      width:72px;
-      height:72px;
-      border-radius:18px;
-      background:rgba(255,255,255,.12);
-      backdrop-filter:blur(3px);
-      border:1px solid rgba(255,255,255,.18);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      flex:0 0 auto;
-    }
-
-    .brand-logo img{
-      width:56px;
-      height:56px;
+    .brand img{
+      width:78px;
+      height:78px;
       object-fit:contain;
-    }
-
-    .brand-text{
-      min-width:0;
+      filter:drop-shadow(0 8px 18px rgba(0,0,0,.18));
+      background:rgba(255,255,255,.08);
+      border-radius:18px;
+      padding:8px;
     }
 
     .brand-text h1{
-      margin:0 0 4px;
-      font-size:clamp(20px,3vw,30px);
+      margin:0;
+      font-size:clamp(22px, 3.2vw, 34px);
+      line-height:1.35;
       font-weight:900;
-      line-height:1.4;
+      letter-spacing:.2px;
     }
 
-    .brand-text p{
-      margin:0;
-      font-size:clamp(14px,2vw,18px);
-      opacity:.95;
+    .brand-text h2{
+      margin:6px 0 0;
+      font-size:clamp(16px, 2.1vw, 22px);
       font-weight:700;
+      color:#f6d28b;
+    }
+
+    .content-wrap{
+      max-width:1150px;
+      margin:0 auto;
     }
 
     .panel{
       background:var(--card);
-      backdrop-filter:blur(10px);
+      backdrop-filter:blur(8px);
       border:1px solid rgba(255,255,255,.65);
       border-radius:var(--radius);
       box-shadow:var(--shadow);
-      padding:18px;
+      overflow:hidden;
     }
 
     .panel-head{
       display:flex;
-      align-items:flex-end;
+      align-items:center;
       justify-content:space-between;
       gap:16px;
+      padding:20px 20px 10px;
       flex-wrap:wrap;
-      margin-bottom:16px;
     }
 
     .panel-title{
-      font-size:clamp(20px,2.5vw,28px);
+      font-size:clamp(20px,2.4vw,28px);
       font-weight:900;
       color:var(--primary);
       display:flex;
       align-items:center;
       gap:10px;
-      line-height:1.3;
     }
 
     .hint{
-      margin-top:6px;
+      margin-top:4px;
       color:var(--muted);
       font-size:15px;
       font-weight:700;
@@ -165,50 +156,53 @@
       align-items:center;
       gap:10px;
       flex-wrap:wrap;
-      width:100%;
-      justify-content:flex-end;
     }
 
     .search input{
-      flex:1 1 280px;
-      min-width:240px;
-      height:52px;
+      width:260px;
+      max-width:100%;
+      height:50px;
       border-radius:14px;
       border:1px solid var(--line);
       background:#fff;
       padding:0 16px;
       font-family:'Cairo',sans-serif;
-      font-size:18px;
-      font-weight:800;
+      font-size:16px;
+      font-weight:700;
       color:var(--primary);
       outline:none;
-      transition:.2s ease;
+      transition:.18s ease;
     }
 
     .search input:focus{
       border-color:var(--accent);
-      box-shadow:0 0 0 4px rgba(245,166,35,.14);
+      box-shadow:0 0 0 4px rgba(245,166,35,.16);
     }
 
     .btn{
       border:none;
-      border-radius:14px;
-      height:52px;
-      padding:0 18px;
-      font-family:'Cairo',sans-serif;
-      font-size:16px;
-      font-weight:900;
+      outline:none;
       cursor:pointer;
-      transition:.2s ease;
+      height:50px;
+      padding:0 18px;
+      border-radius:14px;
+      font-family:'Cairo',sans-serif;
+      font-size:15px;
+      font-weight:800;
       display:inline-flex;
       align-items:center;
       justify-content:center;
-      gap:8px;
+      gap:9px;
+      transition:.18s ease;
       white-space:nowrap;
     }
 
+    .btn i{
+      font-size:15px;
+    }
+
     .btn-primary{
-      background:linear-gradient(135deg,var(--accent),var(--accent-dark));
+      background:linear-gradient(135deg, var(--accent), var(--accent-dark));
       color:#fff;
       box-shadow:0 8px 18px rgba(245,166,35,.28);
     }
@@ -224,303 +218,254 @@
     }
 
     .btn-ghost:hover{
-      background:#f9fbfd;
+      background:#f8fafc;
     }
 
     .info{
       display:flex;
-      flex-wrap:wrap;
+      align-items:center;
       gap:12px;
-      margin-bottom:18px;
+      flex-wrap:wrap;
+      padding:8px 20px 0;
     }
 
     .chip,
     .status-badge{
-      min-height:46px;
-      padding:10px 14px;
-      border-radius:14px;
-      display:flex;
+      min-height:44px;
+      display:inline-flex;
       align-items:center;
       gap:10px;
-      font-weight:800;
-      border:1px solid var(--line);
+      padding:10px 14px;
+      border-radius:14px;
       background:#fff;
+      border:1px solid var(--line);
       color:var(--primary);
+      font-weight:800;
+      box-shadow:0 4px 12px rgba(15,23,42,.04);
     }
 
-    .status-badge{
-      background:#fffaf0;
-      border-color:#fde2a7;
-      color:#9a6700;
-    }
-
-    .muted{
+    .chip .muted{
       color:var(--muted);
       font-weight:700;
     }
 
-    .stepper-card{
+    #stepperArea{
+      padding:18px 20px 24px;
+    }
+
+    .empty-state{
       background:#fff;
-      border:1px solid var(--line);
-      border-radius:20px;
-      padding:18px 16px;
-      box-shadow:0 8px 20px rgba(34,50,67,.06);
+      border:1px dashed #d6dee7;
+      border-radius:18px;
+      padding:34px 20px;
+      text-align:center;
+      color:var(--muted);
+      font-weight:800;
     }
 
-    .stepper-scroll{
+    .empty-state i{
+      font-size:36px;
+      margin-bottom:10px;
+      color:#b6c2cf;
+      display:block;
+    }
+
+    .stepper-wrap{
       overflow-x:auto;
-      overflow-y:hidden;
-      -webkit-overflow-scrolling:touch;
-      padding-bottom:6px;
-    }
-
-    .stepper-scroll::-webkit-scrollbar{
-      height:7px;
-    }
-
-    .stepper-scroll::-webkit-scrollbar-thumb{
-      background:#d8e0e8;
-      border-radius:999px;
+      padding-bottom:4px;
     }
 
     .stepper{
       display:flex;
       align-items:flex-start;
-      gap:14px;
+      gap:8px;
       min-width:max-content;
-      padding:6px 2px;
     }
 
     .node{
-      position:relative;
-      width:110px;
-      min-width:110px;
+      width:98px;
+      min-width:98px;
       text-align:center;
+      position:relative;
       flex:0 0 auto;
     }
 
-    .node:not(:last-child)::before{
+    .node:not(:last-child)::after{
       content:"";
       position:absolute;
-      top:23px;
-      right:-63px;
-      width:112px;
+      top:18px;
+      left:-53px;
+      width:98px;
       height:4px;
       border-radius:999px;
-      background:#dbe4ec;
+      background:#dfe6ee;
       z-index:0;
     }
 
-    .node.done:not(:last-child)::before{
-      background:linear-gradient(90deg,var(--ok),#7ad6a5);
+    .node.done:not(:last-child)::after{
+      background:var(--ok);
     }
 
     .ball{
-      position:relative;
-      z-index:1;
-      width:46px;
-      height:46px;
-      margin:0 auto 10px;
+      width:36px;
+      height:36px;
       border-radius:50%;
+      margin:0 auto 10px;
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size:18px;
-      border:3px solid #dbe4ec;
-      background:#fff;
-      color:#8b98a7;
+      font-size:14px;
       font-weight:900;
+      position:relative;
+      z-index:1;
+      border:3px solid #dfe6ee;
+      background:#fff;
+      color:#94a3b8;
     }
 
     .node.done .ball{
       background:var(--ok);
-      border-color:var(--ok);
       color:#fff;
-      box-shadow:0 10px 20px rgba(39,174,96,.2);
+      border-color:var(--ok);
+      box-shadow:0 8px 18px rgba(39,174,96,.22);
     }
 
     .node.current .ball{
       background:var(--accent);
-      border-color:var(--accent);
       color:#fff;
-      box-shadow:0 10px 20px rgba(245,166,35,.22);
+      border-color:var(--accent);
+      box-shadow:0 8px 18px rgba(245,166,35,.25);
     }
 
-    .node-label{
+    .node.pending .ball{
+      background:#fff;
+      color:#94a3b8;
+      border-color:#dfe6ee;
+    }
+
+    .label{
       font-size:13px;
-      font-weight:900;
       line-height:1.5;
+      font-weight:800;
       color:var(--primary);
     }
 
-    .node-meta{
-      margin-top:4px;
-      font-size:11px;
+    .node.pending .label{
       color:var(--muted);
-      font-weight:700;
-      line-height:1.4;
-      word-break:break-word;
     }
 
-    .empty-state{
-      padding:22px 16px;
-      text-align:center;
-      color:var(--muted);
-      font-weight:800;
-      background:#fff;
-      border:1px dashed #cfd9e3;
-      border-radius:18px;
-    }
-
-    .toast-alert{
+    .toast{
       position:fixed;
-      top:22px;
+      top:18px;
       left:50%;
       transform:translateX(-50%) translateY(-20px);
-      background:#e74c3c;
-      color:#fff;
-      padding:14px 18px;
-      border-radius:14px;
-      font-weight:900;
+      min-width:280px;
+      max-width:min(92vw, 560px);
+      background:#fff;
+      border-right:6px solid var(--warn);
+      color:var(--primary);
+      box-shadow:0 16px 36px rgba(15,23,42,.18);
+      border-radius:16px;
+      padding:14px 16px;
       display:flex;
-      align-items:center;
-      gap:10px;
-      box-shadow:0 10px 25px rgba(231,76,60,.28);
+      align-items:flex-start;
+      gap:12px;
+      z-index:9999;
       opacity:0;
       pointer-events:none;
-      z-index:99999;
-      transition:all .3s ease;
-      font-size:15px;
-      min-width:240px;
-      justify-content:center;
+      transition:.25s ease;
     }
 
-    .toast-alert.show{
+    .toast.show{
       opacity:1;
+      pointer-events:auto;
       transform:translateX(-50%) translateY(0);
     }
 
-    .toast-alert i{
-      font-size:18px;
+    .toast i{
+      color:var(--warn);
+      font-size:20px;
+      margin-top:2px;
+    }
+
+    .toast-title{
+      font-weight:900;
+      font-size:15px;
+      margin-bottom:2px;
+    }
+
+    .toast-msg{
+      font-weight:700;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.6;
     }
 
     @media (max-width:768px){
       .page-shell{
-        padding:16px 10px 30px;
+        padding:14px 10px 28px;
       }
 
       .company-header{
         border-radius:22px;
-        padding:20px 14px;
+        padding:22px 14px;
       }
 
-      .brand-wrap{
-        align-items:center;
-        justify-content:center;
-        text-align:center;
+      .brand{
+        gap:10px;
       }
 
-      .brand-logo{
+      .brand img{
         width:64px;
         height:64px;
       }
 
-      .brand-logo img{
-        width:48px;
-        height:48px;
-      }
-
-      .panel{
-        padding:14px;
-        border-radius:20px;
-      }
-
       .panel-head{
-        align-items:stretch;
+        padding:16px 14px 8px;
+      }
+
+      .info{
+        padding:8px 14px 0;
+      }
+
+      #stepperArea{
+        padding:16px 14px 18px;
       }
 
       .search{
-        flex-direction:column;
-        align-items:stretch;
-      }
-
-      .search input,
-      .btn{
         width:100%;
       }
 
       .search input{
-        min-width:0;
-        font-size:20px;
-        height:54px;
+        width:100%;
+        flex:1 1 100%;
       }
 
       .btn{
-        height:52px;
-        font-size:17px;
-      }
-
-      .panel-title{
-        font-size:22px;
-      }
-
-      .hint{
-        font-size:14px;
-      }
-
-      .info{
-        flex-direction:column;
+        flex:1 1 calc(50% - 5px);
       }
 
       .chip,
       .status-badge{
         width:100%;
-      }
-
-      .node{
-        width:98px;
-        min-width:98px;
-      }
-
-      .node:not(:last-child)::before{
-        right:-56px;
-        width:100px;
-      }
-
-      .ball{
-        width:42px;
-        height:42px;
-        font-size:16px;
-      }
-
-      .toast-alert{
-        width:calc(100% - 24px);
-        max-width:430px;
-        top:14px;
+        justify-content:flex-start;
       }
     }
   </style>
 </head>
 <body>
-  <div id="toastAlert" class="toast-alert">
-    <i class="fas fa-triangle-exclamation"></i>
-    يرجى إدخال رقم أمر العمل
-  </div>
-
   <div class="page-shell">
-    <div class="page-content">
-      <header class="company-header">
-        <div class="brand-wrap">
-          <div class="brand-logo">
-            <img src="https://siei-tracking.github.io/system/logo.png" alt="logo">
-          </div>
-          <div class="brand-text">
-            <h1>الشركة العامة للفحص والتأهيل الهندسي</h1>
-            <p>منصة تتبع أوامر العمل</p>
-          </div>
+    <header class="company-header">
+      <div class="brand">
+        <img src="https://siei-tracking.github.io/system/logo.png" alt="logo">
+        <div class="brand-text">
+          <h1>الشركة العامة للفحص والتأهيل الهندسي</h1>
+          <h2>منصة تتبع اوامر العمل</h2>
         </div>
-      </header>
+      </div>
+    </header>
 
+    <div class="content-wrap">
       <div class="panel">
         <div class="panel-head">
           <div>
@@ -554,6 +499,7 @@
 
         <div id="stepperArea">
           <div class="empty-state">
+            <i class="fas fa-arrow-pointer"></i>
             أدخل رقم أمر العمل لعرض حالة التتبع
           </div>
         </div>
@@ -561,32 +507,40 @@
     </div>
   </div>
 
-  <script>
-    const API_BASE = "PUT_YOUR_WEBAPP_URL_HERE";
+  <div class="toast" id="toast">
+    <i class="fas fa-circle-exclamation"></i>
+    <div>
+      <div class="toast-title" id="toastTitle">تنبيه</div>
+      <div class="toast-msg" id="toastMsg">يرجى إدخال أمر العمل</div>
+    </div>
+  </div>
 
-    const STEPS = [
-      { key:"receive", label:"استلام المعاملة", icon:"fa-inbox" },
-      { key:"plan", label:"التخطيط", icon:"fa-diagram-project" },
-      { key:"price", label:"التسعيرة", icon:"fa-money-bill-wave" },
-      { key:"payment", label:"التسديد", icon:"fa-cash-register" },
-      { key:"lab1", label:"المختبرات 1", icon:"fa-flask" },
-      { key:"elev", label:"المصاعد", icon:"fa-elevator" },
-      { key:"workshop", label:"الورشة", icon:"fa-screwdriver-wrench" },
-      { key:"lab2", label:"المختبرات 2", icon:"fa-vials" },
-      { key:"results", label:"نتائج الفحص", icon:"fa-file-lines" },
-      { key:"official", label:"الكتاب الرسمي", icon:"fa-file-signature" },
-      { key:"barcode", label:"الباركود", icon:"fa-barcode" },
-      { key:"email", label:"إرسال الإيميل", icon:"fa-envelope" },
-      { key:"receiveResults", label:"استلام النتائج", icon:"fa-clipboard-check" }
+  <script>
+    const API_BASE = "ضع_رابط_الويب_آب_هنا";
+
+    const STEP_LABELS = [
+      "استلام المعاملة",
+      "التخطيط",
+      "التسعيرة",
+      "التسديد",
+      "المختبرات 1",
+      "المصاعد",
+      "الورشة",
+      "المختبرات 2",
+      "نتائج الفحص",
+      "الكتاب الرسمي",
+      "الباركود",
+      "ارسال الايميل",
+      "استلام النتائج"
     ];
 
-    function showToast(){
-      const toast = document.getElementById("toastAlert");
+    function showToast(message, title = "تنبيه"){
+      const toast = document.getElementById("toast");
+      document.getElementById("toastTitle").textContent = title;
+      document.getElementById("toastMsg").textContent = message;
       toast.classList.add("show");
-      clearTimeout(window.__toastTimer);
-      window.__toastTimer = setTimeout(() => {
-        toast.classList.remove("show");
-      }, 3000);
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => toast.classList.remove("show"), 2800);
     }
 
     function clearOrder(){
@@ -595,108 +549,83 @@
       document.getElementById("testTypeText").textContent = "—";
       document.getElementById("stepperArea").innerHTML = `
         <div class="empty-state">
+          <i class="fas fa-arrow-pointer"></i>
           أدخل رقم أمر العمل لعرض حالة التتبع
         </div>
       `;
       document.getElementById("orderID").focus();
     }
 
-    function isDone(val){
-      return String(val || "").trim().startsWith("✅");
-    }
+    function buildStepper(completedIndex = -1){
+      return `
+        <div class="stepper-wrap">
+          <div class="stepper">
+            ${STEP_LABELS.map((label, i) => {
+              let cls = "pending";
+              if(i < completedIndex) cls = "done";
+              else if(i === completedIndex) cls = "current";
 
-    function getCurrentIndex(statuses){
-      const firstPending = statuses.findIndex(s => !s.done);
-      return firstPending === -1 ? statuses.length - 1 : firstPending;
-    }
-
-    function renderStepper(statuses){
-      const currentIndex = getCurrentIndex(statuses);
-
-      const html = `
-        <div class="stepper-card">
-          <div class="stepper-scroll">
-            <div class="stepper">
-              ${statuses.map((step, index) => `
-                <div class="node ${step.done ? 'done' : ''} ${!step.done && index === currentIndex ? 'current' : ''}">
-                  <div class="ball">
-                    ${step.done ? '<i class="fas fa-check"></i>' : `<i class="fas ${step.icon}"></i>`}
-                  </div>
-                  <div class="node-label">${step.label}</div>
-                  <div class="node-meta">${step.meta || ''}</div>
+              return `
+                <div class="node ${cls}">
+                  <div class="ball">${i < completedIndex ? '<i class="fas fa-check"></i>' : (i + 1)}</div>
+                  <div class="label">${label}</div>
                 </div>
-              `).join("")}
-            </div>
+              `;
+            }).join("")}
           </div>
         </div>
       `;
-
-      document.getElementById("stepperArea").innerHTML = html;
     }
 
     async function loadTracking(){
       const orderID = document.getElementById("orderID").value.trim();
 
+      /* التعديل المطلوب فقط: تنبيه عند عدم إدخال رقم أمر العمل */
       if(!orderID){
-        showToast();
+        showToast("يرجى إدخال أمر العمل", "تنبيه");
+        document.getElementById("orderID").focus();
         return;
       }
 
-      const btn = document.getElementById("btnTrack");
-      const oldHTML = btn.innerHTML;
-
-      btn.disabled = true;
-      btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> جاري التتبع`;
+      const stepperArea = document.getElementById("stepperArea");
+      stepperArea.innerHTML = `
+        <div class="empty-state">
+          <i class="fas fa-spinner fa-spin"></i>
+          جاري تحميل بيانات التتبع...
+        </div>
+      `;
 
       try{
-        const url = `${API_BASE}?action=trackingDataTrackingOnly&orderID=${encodeURIComponent(orderID)}`;
-        const res = await fetch(url);
+        const res = await fetch(`${API_BASE}?action=trackingData&orderID=${encodeURIComponent(orderID)}`);
         const data = await res.json();
 
         if(!data || data.success === false || !data.row){
-          document.getElementById("clientName").textContent = "غير موجود";
+          document.getElementById("clientName").textContent = "—";
           document.getElementById("testTypeText").textContent = "—";
-          document.getElementById("stepperArea").innerHTML = `
+          stepperArea.innerHTML = `
             <div class="empty-state">
-              لا توجد بيانات مطابقة لرقم أمر العمل المدخل
+              <i class="fas fa-circle-info"></i>
+              لم يتم العثور على أمر العمل
             </div>
           `;
           return;
         }
 
         const row = data.row;
+        const clientName = row.clientName || row.client || row.beneficiary || "—";
+        const testType = row.testType || row.type || "—";
+        const completedIndex = Number.isInteger(row.completedIndex) ? row.completedIndex : -1;
 
-        document.getElementById("clientName").textContent = row.clientName || row.client || "—";
-        document.getElementById("testTypeText").textContent = row.testType || "—";
-
-        const statuses = [
-          { label:"استلام المعاملة", icon:"fa-inbox", done:isDone(row.receive), meta:row.receive || "" },
-          { label:"التخطيط", icon:"fa-diagram-project", done:isDone(row.plan), meta:row.plan || "" },
-          { label:"التسعيرة", icon:"fa-money-bill-wave", done:isDone(row.price), meta:row.price || "" },
-          { label:"التسديد", icon:"fa-cash-register", done:isDone(row.payment), meta:row.payment || "" },
-          { label:"المختبرات 1", icon:"fa-flask", done:isDone(row.lab1), meta:row.lab1 || "" },
-          { label:"المصاعد", icon:"fa-elevator", done:isDone(row.elev), meta:row.elev || "" },
-          { label:"الورشة", icon:"fa-screwdriver-wrench", done:isDone(row.workshop), meta:row.workshop || "" },
-          { label:"المختبرات 2", icon:"fa-vials", done:isDone(row.lab2), meta:row.lab2 || "" },
-          { label:"نتائج الفحص", icon:"fa-file-lines", done:isDone(row.results), meta:row.results || "" },
-          { label:"الكتاب الرسمي", icon:"fa-file-signature", done:isDone(row.official), meta:row.official || "" },
-          { label:"الباركود", icon:"fa-barcode", done:isDone(row.barcode), meta:row.barcode || "" },
-          { label:"إرسال الإيميل", icon:"fa-envelope", done:isDone(row.email), meta:row.email || "" },
-          { label:"استلام النتائج", icon:"fa-clipboard-check", done:isDone(row.receiveResults), meta:row.receiveResults || "" }
-        ];
-
-        renderStepper(statuses);
-      }catch(error){
-        document.getElementById("clientName").textContent = "خطأ";
-        document.getElementById("testTypeText").textContent = "—";
-        document.getElementById("stepperArea").innerHTML = `
+        document.getElementById("clientName").textContent = clientName;
+        document.getElementById("testTypeText").textContent = testType;
+        stepperArea.innerHTML = buildStepper(completedIndex);
+      }catch(err){
+        stepperArea.innerHTML = `
           <div class="empty-state">
-            حدث خطأ أثناء تحميل البيانات
+            <i class="fas fa-triangle-exclamation"></i>
+            حدث خطأ أثناء جلب البيانات
           </div>
         `;
-      }finally{
-        btn.disabled = false;
-        btn.innerHTML = oldHTML;
       }
     }
 
