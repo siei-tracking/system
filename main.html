@@ -53,10 +53,10 @@
         url('https://siei-tracking.github.io/system/company.jpg');
       background-size:cover;
       background-position:center;
-      padding:64px 5% 60px;
+      padding:clamp(28px, 4vw, 64px) 5% clamp(34px, 4vw, 60px);
       display:flex;
       align-items:center;
-      gap:16px;
+      gap:clamp(10px, 1.8vw, 16px);
       color:#fff;
       flex-wrap:wrap;
       justify-content:center;
@@ -67,8 +67,8 @@
     }
 
     .company-logo{
-      width:100px;
-      height:100px;
+      width:clamp(72px, 8vw, 100px);
+      height:clamp(72px, 8vw, 100px);
       background:#fff;
       border-radius:50%;
       padding:5px;
@@ -94,7 +94,7 @@
     .header-text h1{
       color:#fff !important;
       margin:0;
-      font-size:30px !important;
+      font-size:clamp(20px, 2.2vw, 30px) !important;
       font-weight:900 !important;
       line-height:1.45;
       text-shadow:
@@ -108,7 +108,7 @@
     .header-text p{
       color:#fff !important;
       margin:0;
-      font-size:18px !important;
+      font-size:clamp(13px, 1.3vw, 18px) !important;
       font-weight:900 !important;
       line-height:1.5;
       text-shadow:
@@ -144,16 +144,15 @@
     }
 
     .wrap{
-      padding:0 5% 30px;
+      padding:0 clamp(10px, 3vw, 5%) 30px;
       display:flex;
       justify-content:center;
       position:relative;
-      margin-top:-40px;
+      margin-top:clamp(-40px, -3vw, -18px);
     }
 
     .panel{
-      width:100%;
-      max-width:1275px;
+      width:min(100%, 1400px);
       margin-top:13px;
       background:rgba(255,255,255,0.88);
       border-radius:22px;
@@ -190,7 +189,7 @@
     }
 
     .panel-head{
-      padding:16px 18px;
+      padding:clamp(12px, 1.4vw, 18px);
       border-bottom:1px solid var(--line);
       display:flex;
       justify-content:space-between;
@@ -208,7 +207,7 @@
       display:flex;
       align-items:center;
       gap:10px;
-      font-size:18px;
+      font-size:clamp(16px, 1.35vw, 20px);
     }
 
     .controls{
@@ -228,11 +227,12 @@
       font-family:'Cairo',sans-serif;
       font-weight:900;
       text-align:center;
-      min-width:180px;
+      min-width:150px;
       outline:none;
       background:#fff;
       transition:.2s;
       color:#1f2d3a;
+      font-size:clamp(14px, 1vw, 16px);
     }
 
     input:focus, select:focus{
@@ -251,7 +251,7 @@
       border-radius:10px;
       font-family:'Cairo',sans-serif;
       font-weight:900;
-      font-size:18px;
+      font-size:clamp(14px, 1vw, 17px);
       cursor:pointer;
       display:inline-flex;
       gap:10px;
@@ -343,7 +343,7 @@
     }
 
     .bar{
-      padding:12px 18px;
+      padding:12px clamp(12px, 1.6vw, 18px);
       border-bottom:1px solid var(--line);
       display:flex;
       gap:10px;
@@ -379,6 +379,7 @@
       border:1px solid #eef1f4;
       font-weight:900;
       color:#111;
+      font-size:clamp(13px, 1vw, 16px);
     }
 
     .stat .muted{
@@ -402,15 +403,15 @@
     }
 
     .date-input{
-      min-width:181px;
-      width:181px;
+      min-width:170px;
+      width:clamp(170px, 14vw, 200px);
       height:50px;
       padding:0 14px;
       border-radius:12px;
       border:1.5px solid var(--line);
       font-family:'Cairo',sans-serif;
       font-weight:900;
-      font-size:16px;
+      font-size:clamp(14px, 1vw, 16px);
       text-align:center;
       line-height:50px;
       background:#fff;
@@ -430,7 +431,7 @@
     #status.bad{ color:var(--danger); }
 
     .list{
-      padding:14px 18px 22px;
+      padding:14px clamp(12px, 1.6vw, 18px) 22px;
       display:grid;
       grid-template-columns:1fr;
       gap:12px;
@@ -441,7 +442,7 @@
     .item{
       border:1px solid #eef1f4;
       border-radius:16px;
-      padding:14px;
+      padding:clamp(10px, 1.2vw, 14px);
       background:#fff;
       box-shadow:0 10px 24px rgba(0,0,0,.04);
       overflow:hidden;
@@ -641,25 +642,25 @@
     #toast.err{ background:#e74c3c; }
 
     #qDone{
-      flex:1;
-      min-width:100px;
+      flex:1 1 220px;
+      min-width:180px;
       height:50px;
-      font-size:18px;
+      font-size:clamp(14px, 1vw, 16px);
       line-height:50px;
       padding:0 12px;
     }
 
     #qDone::placeholder{
-      font-size:15px;
+      font-size:clamp(13px, .9vw, 15px);
       line-height:50px;
       padding:0 12px;
     }
 
     #sheetSelect{
-      flex:1;
-      min-width:100px;
+      flex:0 1 140px;
+      min-width:120px;
       height:50px;
-      font-size:18px;
+      font-size:clamp(14px, 1vw, 16px);
       line-height:50px;
       padding:0 12px;
     }
@@ -669,10 +670,10 @@
     }
 
     #btnSearchDone{
-      height:57px;
+      height:50px;
       min-width:106px;
       padding:0 16px;
-      font-size:16px;
+      font-size:clamp(14px, 1vw, 16px);
       font-weight:900;
       border-radius:12px;
       display:flex;
@@ -682,10 +683,10 @@
     }
 
     #btnExport{
-      height:57px;
+      height:50px;
       min-width:106px;
       padding:0 16px;
-      font-size:16px;
+      font-size:clamp(14px, 1vw, 16px);
       font-weight:900;
       border-radius:12px;
       display:flex;
@@ -694,22 +695,20 @@
       gap:8px;
     }
 
-    @media (max-width:1100px){
+    @media (max-width:1200px){
       .controls{
         display:grid;
         grid-template-columns:repeat(3, minmax(0, 1fr));
-        align-items:center;
+        width:100%;
         gap:10px;
       }
 
-      input, select{ min-width:0; width:100%; }
-      .btn{ width:100%; }
-
-      #qDone,
-      #sheetSelect,
-      #btnSearchDone{
+      .controls > *{
         width:100%;
         min-width:0;
+      }
+
+      #btnSearchDone{
         margin-left:0;
       }
     }
@@ -720,36 +719,47 @@
         gap:12px;
       }
 
-      .company-logo{
-        width:78px;
-        height:78px;
-      }
-
-      .header-text h1{ font-size:22px !important; }
-      .header-text p{ font-size:14px !important; }
-
       .wrap{
         padding:0 10px 20px;
         margin-top:-24px;
       }
 
-      .panel{ border-radius:18px; }
-      .panel-head{ padding:14px; }
+      .panel{
+        border-radius:18px;
+      }
+
+      .panel-head{
+        padding:14px;
+      }
 
       .title{
         width:100%;
         justify-content:center;
         text-align:center;
-        font-size:17px;
       }
 
       .controls{
-        display:grid;
         grid-template-columns:1fr;
+      }
+
+      .bar{
+        padding:12px 14px;
+      }
+
+      .bar-right,
+      .bar-left{
         width:100%;
       }
 
-      input, select,
+      .bar-right{
+        justify-content:space-between;
+      }
+
+      .bar-left{
+        justify-content:stretch;
+      }
+
+      .date-input,
       .btn,
       .file-btn,
       #qDone,
@@ -760,29 +770,18 @@
         min-width:0;
       }
 
-      .bar{ padding:12px 14px; }
-
-      .bar-right,
-      .bar-left{
-        width:100%;
-      }
-
-      .bar-right{ justify-content:space-between; }
-      .bar-left{ justify-content:stretch; }
-
-      .date-input{
-        width:100%;
-        min-width:0;
-        height:50px;
-      }
-
       .stat{
         flex:1 1 calc(50% - 5px);
         justify-content:center;
       }
 
-      .list{ padding:12px 12px 18px; }
-      .item{ padding:12px; }
+      .list{
+        padding:12px 12px 18px;
+      }
+
+      .item{
+        padding:12px;
+      }
 
       .row1{
         flex-direction:column;
@@ -799,10 +798,6 @@
         width:100%;
       }
 
-      .idbox{ font-size:15px; }
-      .client{ font-size:15px; }
-      .pill{ font-size:13px; }
-
       .stepper-scroll{
         overflow-x:auto;
         scroll-behavior:smooth;
@@ -811,7 +806,9 @@
         -webkit-overflow-scrolling:touch;
       }
 
-      .stepper-scroll::-webkit-scrollbar{ display:none; }
+      .stepper-scroll::-webkit-scrollbar{
+        display:none;
+      }
 
       .stepper{
         width:max-content;
@@ -829,41 +826,15 @@
         scroll-snap-align:center;
       }
 
-      .circle{
-        width:50px;
-        height:50px;
-      }
-
-      .label{ font-size:13px; }
-      .sub-name{ font-size:12px; }
-      .sub-date{ font-size:10px; }
-
-      #status{
-        font-size:14px;
-        padding:10px 14px;
-      }
-
-      #btnAdmin{ margin-left:0; }
-
-      #btnSearchDone,
-      #btnExport{
-        height:50px;
-        font-size:15px;
-      }
-
-      #qDone,
-      #sheetSelect,
-      input,
-      select{
-        font-size:15px;
+      #btnAdmin{
+        margin-left:0;
       }
     }
 
     @media (max-width:480px){
-      .company-header{ padding:28px 12px 42px; }
-      .company-logo{ width:68px; height:68px; }
-      .header-text h1{ font-size:19px !important; }
-      .header-text p{ font-size:13px !important; }
+      .company-header{
+        padding:28px 12px 42px;
+      }
 
       .user-pill{
         font-size:12px;
@@ -875,9 +846,17 @@
         margin-top:-18px;
       }
 
-      .panel-head{ padding:12px; }
-      .bar{ padding:10px 12px; }
-      .list{ padding:10px 10px 16px; }
+      .panel-head{
+        padding:12px;
+      }
+
+      .bar{
+        padding:10px 12px;
+      }
+
+      .list{
+        padding:10px 10px 16px;
+      }
 
       .item{
         padding:10px;
@@ -887,19 +866,6 @@
       .stat{
         width:100%;
         flex:1 1 100%;
-      }
-
-      .btn,
-      #btnSearchDone,
-      #btnExport{
-        font-size:15px;
-      }
-
-      #qDone,
-      #sheetSelect,
-      input,
-      select{
-        font-size:15px;
       }
     }
   </style>
