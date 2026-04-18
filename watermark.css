@@ -16,8 +16,8 @@
   transform:translate(-50%, -50%);
 
   /* الحجم الأساسي */
-  width:min(42vw, 530px);
-  height:min(42vw, 530px);
+  width:min(45vw, 530px);
+  height:min(45vw, 530px);
 
   /* صورة الشعار */
   background-image: url('https://siei-tracking.github.io/system/logo.png');
