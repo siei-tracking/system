@@ -20,7 +20,7 @@
   height:min(42vw, 430px);
 
   /* صورة الشعار */
-  background-image: url('https://siei-tracking.github.io/system/bg.jpg');
+  background-image: url('https://siei-tracking.github.io/system/logo.png');
   background-size:contain;
   background-repeat:no-repeat;
   background-position:center;
