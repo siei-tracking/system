@@ -554,15 +554,19 @@
       pointer-events:none;
     }
 
-    .node:not(.ghost):not(:first-child)::before{
+    .node:not(.ghost)::after{
       content:"";
       position:absolute;
       top:25px;
-      right:calc(100% - 11px);
+      left:calc(100% - 11px);
       width:22px;
       height:3px;
       background:#dfe5ec;
       border-radius:999px;
+    }
+
+    .stepper .node.last-real::after{
+      display:none;
     }
 
     .circle{
@@ -583,11 +587,11 @@
     .node.done .circle{ background:var(--ok); }
     .node.next .circle{ background:var(--accent); transform:scale(1.04); }
 
-    .node.done:not(.ghost):not(:first-child)::before{
+    .node.done:not(.ghost)::after{
       background:var(--ok);
     }
 
-    .node.next:not(.ghost):not(:first-child)::before{
+    .node.next:not(.ghost)::after{
       background:var(--accent);
     }
 
@@ -847,11 +851,15 @@
         display:none;
       }
 
-      .node:not(:first-child)::before{
+      .node:not(.ghost)::after{
         top:25px;
-        right:-16.5px;
+        left:-16.5px;
         width:22px;
         height:3px;
+      }
+
+      .stepper .node.last-real::after{
+        display:none;
       }
 
       .circle{
@@ -1440,6 +1448,10 @@
           firstPending = true;
         }else{
           cls += " locked";
+        }
+
+        if(i === steps.length - 1){
+          cls += " last-real";
         }
 
         var sub = formatSub(val, done, cls, s.key);
