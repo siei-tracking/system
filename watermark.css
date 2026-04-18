@@ -1,63 +1,48 @@
-﻿/* =========================
-   Watermark System - SIEI (FINAL RESPONSIVE)
-   ========================= */
-<style>
-
+﻿<style>
 .page-shell{
   position:relative;
   min-height:100vh;
   isolation:isolate;
 }
 
-/* Watermark */
 .page-shell::before{
   content:"";
   position:fixed;
   left:50%;
   top:52%;
   transform:translate(-50%, -50%);
-
-  /* الحل الحقيقي للتوافق */
-  width:clamp(260px, 45vmin, 700px);
-  height:clamp(260px, 45vmin, 700px);
-
+  width:600px;
+  height:600px;
   background-image:url('https://siei-tracking.github.io/system/logo.png');
   background-size:contain;
   background-repeat:no-repeat;
   background-position:center;
-
   opacity:0.06;
   filter:grayscale(100%) contrast(105%);
   pointer-events:none;
   z-index:0;
 }
 
-/* محتوى الصفحة */
 .page-content{
   position:relative;
   z-index:1;
 }
 
+@media (max-width:768px){
+  .page-shell::before{
+    width:380px;
+    height:380px;
+    top:54%;
+    opacity:0.055;
+  }
+}
 
-/* =========================
-   تحسينات إضافية دقيقة
-   ========================= */
-
-/* موبايل صغير */
 @media (max-width:480px){
   .page-shell::before{
+    width:280px;
+    height:280px;
     top:55%;
     opacity:0.05;
   }
 }
-
-/* شاشات كبيرة جدًا */
-@media (min-width:1600px){
-  .page-shell::before{
-    width:650px;
-    height:650px;
-    top:50%;
-  }
-}
-
 </style>
