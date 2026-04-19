@@ -522,10 +522,6 @@
       word-break:break-word;
     }
 
-    /* =========================
-       STEPper - Desktop ثابت على 11 موقع
-    ========================= */
-
     .stepper-scroll{
       overflow:visible;
       width:100%;
@@ -657,19 +653,19 @@
     #toast.err{ background:#e74c3c; }
 
     #qDone{
-  flex:1;
-  min-width:100px;
-  height:50px;
-  font-size:clamp(13px, 1vw, 16px);
-  line-height:50px;
-  padding:0 12px;
-}
+      flex:1;
+      min-width:100px;
+      height:50px;
+      font-size:clamp(13px, 1vw, 16px);
+      line-height:50px;
+      padding:0 12px;
+    }
 
-#qDone::placeholder{
-  font-size:clamp(12px, 0.9vw, 15px);
-  line-height:50px;
-  padding:0 12px;
-}
+    #qDone::placeholder{
+      font-size:clamp(12px, 0.9vw, 15px);
+      line-height:50px;
+      padding:0 12px;
+    }
 
     #sheetSelect{
       flex:1;
@@ -708,6 +704,51 @@
       align-items:center;
       justify-content:center;
       gap:8px;
+    }
+
+    .export-menu-wrap{
+      position:relative;
+      display:inline-block;
+    }
+
+    .export-menu{
+      position:absolute;
+      top:calc(100% + 8px);
+      right:0;
+      min-width:190px;
+      background:#fff;
+      border:1px solid #e5ebf1;
+      border-radius:14px;
+      box-shadow:0 14px 30px rgba(0,0,0,.12);
+      padding:8px;
+      display:none;
+      z-index:9999;
+    }
+
+    .export-menu.show{
+      display:block;
+    }
+
+    .export-option{
+      width:100%;
+      border:none;
+      background:#fff;
+      border-radius:10px;
+      padding:12px 14px;
+      font-family:'Cairo',sans-serif;
+      font-weight:900;
+      font-size:15px;
+      text-align:right;
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      gap:10px;
+      color:#223243;
+      transition:.2s;
+    }
+
+    .export-option:hover{
+      background:#f8fafc;
     }
 
     @media (max-width:1100px){
@@ -884,6 +925,15 @@
         font-size:15px;
       }
 
+      .export-menu-wrap{
+        width:100%;
+      }
+
+      .export-menu{
+        width:100%;
+        right:0;
+      }
+
       #qDone,
       #sheetSelect,
       input,
@@ -1000,9 +1050,21 @@
               <i class="fas fa-check-circle"></i> الإنجاز
             </button>
 
-            <button class="btn btn-primary" id="btnExport" type="button">
-              <i class="fas fa-file-excel"></i> تصدير
-            </button>
+            <div class="export-menu-wrap">
+              <button class="btn btn-primary" id="btnExport" type="button">
+                <i class="fas fa-file-export"></i> تصدير
+              </button>
+
+              <div class="export-menu" id="exportMenu">
+                <button class="export-option" id="btnExportExcel" type="button">
+                  <i class="fas fa-file-excel"></i> تصدير Excel
+                </button>
+
+                <button class="export-option" id="btnExportPDF" type="button">
+                  <i class="fas fa-file-pdf"></i> تصدير PDF
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -1160,6 +1222,12 @@
       var btnExport = document.getElementById("btnExport");
       if(btnExport) btnExport.disabled = on;
 
+      var btnExportExcel = document.getElementById("btnExportExcel");
+      if(btnExportExcel) btnExportExcel.disabled = on;
+
+      var btnExportPDF = document.getElementById("btnExportPDF");
+      if(btnExportPDF) btnExportPDF.disabled = on;
+
       var btnOpenArchive = document.getElementById("btnOpenArchive");
       if(btnOpenArchive){
         btnOpenArchive.disabled = on || !isAdminUser();
@@ -1170,6 +1238,7 @@
         btnAdmin.disabled = on || !isAdminUser();
       }
 
+      if(on) closeExportMenu();
       if(on) setStatus("جاري التحميل...", true);
     }
 
@@ -1501,6 +1570,18 @@
       return "تقرير المعاملات";
     }
 
+    function toggleExportMenu(){
+      var menu = document.getElementById("exportMenu");
+      if(!menu) return;
+      menu.classList.toggle("show");
+    }
+
+    function closeExportMenu(){
+      var menu = document.getElementById("exportMenu");
+      if(!menu) return;
+      menu.classList.remove("show");
+    }
+
     function exportCurrentTable(){
       if(!CURRENT_ITEMS || !CURRENT_ITEMS.length){
         setStatus("⚠️ لا توجد بيانات معروضة للتصدير", false);
@@ -1564,7 +1645,60 @@
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      showMsg("✅ تم تصدير الجدول بنجاح", "ok");
+      showMsg("✅ تم تصدير Excel بنجاح", "ok");
+    }
+
+    function exportCurrentPDF(){
+      if(!CURRENT_ITEMS || !CURRENT_ITEMS.length){
+        setStatus("⚠️ لا توجد بيانات معروضة للتصدير", false);
+        showMsg("⚠️ لا توجد بيانات للتصدير", "warn");
+        return;
+      }
+
+      const token = getSessionToken();
+      if(!token){
+        window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
+        return;
+      }
+
+      const rows = CURRENT_ITEMS.map(function(it){
+        return {
+          orderNo: String(it.orderNo || "").trim() || "—",
+          orderDate: String(it.orderDate || "").trim() || "—",
+          clientName: String(it.clientName || "").trim() || "—",
+          lastStage: String(it.lastStage || "").trim() || "—"
+        };
+      });
+
+      const payload = {
+        action: "exportPDF",
+        token: token,
+        page: PAGE_NAME,
+        title: getExportTitleByMode(CURRENT_MODE),
+        mode: CURRENT_MODE,
+        rows: rows
+      };
+
+      setLoading(true);
+
+      apiPost(payload)
+        .then(function(res){
+          setLoading(false);
+
+          if(!res || !res.ok || !res.url){
+            setStatus("❌ فشل إنشاء PDF", false);
+            showMsg("❌ فشل إنشاء PDF", "err");
+            return;
+          }
+
+          window.open(res.url, "_blank");
+          showMsg("✅ تم إنشاء PDF بنجاح", "ok");
+        })
+        .catch(function(err){
+          setLoading(false);
+          setStatus("❌ export pdf error: " + safeErr(err), false);
+          showMsg("❌ فشل تصدير PDF", "err");
+        });
     }
 
     function computeLastStage(item){
@@ -1905,7 +2039,29 @@
       document.getElementById("btnDelayed").addEventListener("click", loadDelayed);
       document.getElementById("btnDone").addEventListener("click", loadDone);
       document.getElementById("btnSearchDone").addEventListener("click", searchAny);
-      document.getElementById("btnExport").addEventListener("click", exportCurrentTable);
+
+      document.getElementById("btnExport").addEventListener("click", function(e){
+        e.stopPropagation();
+        toggleExportMenu();
+      });
+
+      document.getElementById("btnExportExcel").addEventListener("click", function(){
+        closeExportMenu();
+        exportCurrentTable();
+      });
+
+      document.getElementById("btnExportPDF").addEventListener("click", function(){
+        closeExportMenu();
+        exportCurrentPDF();
+      });
+
+      document.addEventListener("click", function(e){
+        var wrap = document.querySelector(".export-menu-wrap");
+        if(!wrap) return;
+        if(!wrap.contains(e.target)){
+          closeExportMenu();
+        }
+      });
 
       if(openSheetBtn){
         openSheetBtn.addEventListener("click", openArchiveSheet);
