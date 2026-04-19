@@ -706,16 +706,10 @@
       gap:8px;
     }
 
-    .export-menu-wrap{
-      position:relative;
-      display:inline-flex;
-      z-index:5000;
-    }
-
-    .export-menu{
-      position:absolute;
-      top:calc(100% + 10px);
-      right:0;
+    .export-menu-fixed{
+      position:fixed;
+      top:0;
+      left:0;
       min-width:220px;
       background:#fff;
       border:1px solid #dfe7ef;
@@ -723,10 +717,10 @@
       box-shadow:0 18px 35px rgba(0,0,0,.16);
       padding:8px;
       display:none;
-      z-index:99999;
+      z-index:999999;
     }
 
-    .export-menu.show{
+    .export-menu-fixed.show{
       display:block;
     }
 
@@ -935,23 +929,16 @@
         font-size:15px;
       }
 
-      .export-menu-wrap{
-        width:100%;
-        display:block;
-      }
-
-      .export-menu{
-        width:100%;
-        right:0;
-        left:0;
-        min-width:0;
-      }
-
       #qDone,
       #sheetSelect,
       input,
       select{
         font-size:15px;
+      }
+
+      .export-menu-fixed{
+        min-width:180px;
+        max-width:calc(100vw - 20px);
       }
     }
 
@@ -1063,21 +1050,9 @@
               <i class="fas fa-check-circle"></i> الإنجاز
             </button>
 
-            <div class="export-menu-wrap">
-              <button class="btn btn-primary" id="btnExport" type="button">
-                <i class="fas fa-file-export"></i> تصدير
-              </button>
-
-              <div class="export-menu" id="exportMenu">
-                <button class="export-option" id="btnExportExcel" type="button">
-                  <i class="fas fa-file-excel"></i> تصدير Excel
-                </button>
-
-                <button class="export-option" id="btnExportPDF" type="button">
-                  <i class="fas fa-file-pdf"></i> تصدير PDF
-                </button>
-              </div>
-            </div>
+            <button class="btn btn-primary" id="btnExport" type="button">
+              <i class="fas fa-file-export"></i> تصدير
+            </button>
           </div>
         </div>
 
@@ -1088,6 +1063,16 @@
   </div>
 
   <div id="toast"></div>
+
+  <div class="export-menu-fixed" id="exportMenu">
+    <button class="export-option" id="btnExportExcel" type="button">
+      <i class="fas fa-file-excel"></i> تصدير Excel
+    </button>
+
+    <button class="export-option" id="btnExportPDF" type="button">
+      <i class="fas fa-file-pdf"></i> تصدير PDF
+    </button>
+  </div>
 
   <script>
     const API_BASE = "https://script.google.com/macros/s/AKfycbyZ1Nbh2DM29-nUa-m51z4TWzWPAg4bEWjWE9Nn7QJ149k54PQg2VIzqZZ_GtOxMdLL/exec";
@@ -1583,16 +1568,32 @@
       return "تقرير المعاملات";
     }
 
-    function toggleExportMenu(){
+    function openExportMenu(anchorEl){
       var menu = document.getElementById("exportMenu");
-      if(!menu) return;
-      menu.classList.toggle("show");
+      if(!menu || !anchorEl) return;
+
+      var rect = anchorEl.getBoundingClientRect();
+      menu.style.display = "block";
+      menu.classList.add("show");
+
+      var menuWidth = menu.offsetWidth || 220;
+      var left = rect.right - menuWidth;
+      var top = rect.bottom + 10;
+
+      if(left < 10) left = 10;
+      if((left + menuWidth) > (window.innerWidth - 10)){
+        left = window.innerWidth - menuWidth - 10;
+      }
+
+      menu.style.left = left + "px";
+      menu.style.top = top + "px";
     }
 
     function closeExportMenu(){
       var menu = document.getElementById("exportMenu");
       if(!menu) return;
       menu.classList.remove("show");
+      menu.style.display = "none";
     }
 
     function exportCurrentTable(){
@@ -2056,7 +2057,13 @@
       document.getElementById("btnExport").addEventListener("click", function(e){
         e.preventDefault();
         e.stopPropagation();
-        toggleExportMenu();
+
+        var menu = document.getElementById("exportMenu");
+        if(menu.classList.contains("show")){
+          closeExportMenu();
+        }else{
+          openExportMenu(this);
+        }
       });
 
       document.getElementById("btnExportExcel").addEventListener("click", function(e){
@@ -2078,12 +2085,22 @@
       });
 
       document.addEventListener("click", function(e){
-        var wrap = document.querySelector(".export-menu-wrap");
-        if(!wrap) return;
-        if(!wrap.contains(e.target)){
+        var menu = document.getElementById("exportMenu");
+        var btn = document.getElementById("btnExport");
+        if(!menu || !btn) return;
+
+        if(!menu.contains(e.target) && !btn.contains(e.target)){
           closeExportMenu();
         }
       });
+
+      window.addEventListener("resize", function(){
+        closeExportMenu();
+      });
+
+      window.addEventListener("scroll", function(){
+        closeExportMenu();
+      }, true);
 
       if(openSheetBtn){
         openSheetBtn.addEventListener("click", openArchiveSheet);
