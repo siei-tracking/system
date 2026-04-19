@@ -167,7 +167,7 @@
       -webkit-backdrop-filter: blur(10px);
       transition:.25s;
       border:1px solid rgba(255,255,255,.65);
-      overflow:hidden;
+      overflow:visible;
     }
 
     .panel:hover{
@@ -708,21 +708,22 @@
 
     .export-menu-wrap{
       position:relative;
-      display:inline-block;
+      display:inline-flex;
+      z-index:5000;
     }
 
     .export-menu{
       position:absolute;
-      top:calc(100% + 8px);
+      top:calc(100% + 10px);
       right:0;
-      min-width:190px;
+      min-width:220px;
       background:#fff;
-      border:1px solid #e5ebf1;
+      border:1px solid #dfe7ef;
       border-radius:14px;
-      box-shadow:0 14px 30px rgba(0,0,0,.12);
+      box-shadow:0 18px 35px rgba(0,0,0,.16);
       padding:8px;
       display:none;
-      z-index:9999;
+      z-index:99999;
     }
 
     .export-menu.show{
@@ -732,6 +733,7 @@
     .export-option{
       width:100%;
       border:none;
+      outline:none;
       background:#fff;
       border-radius:10px;
       padding:12px 14px;
@@ -742,13 +744,21 @@
       cursor:pointer;
       display:flex;
       align-items:center;
+      justify-content:flex-start;
       gap:10px;
       color:#223243;
       transition:.2s;
+      white-space:nowrap;
     }
 
     .export-option:hover{
-      background:#f8fafc;
+      background:#f4f7fb;
+    }
+
+    .export-option i{
+      width:20px;
+      text-align:center;
+      flex:0 0 20px;
     }
 
     @media (max-width:1100px){
@@ -927,11 +937,14 @@
 
       .export-menu-wrap{
         width:100%;
+        display:block;
       }
 
       .export-menu{
         width:100%;
         right:0;
+        left:0;
+        min-width:0;
       }
 
       #qDone,
@@ -2041,18 +2054,27 @@
       document.getElementById("btnSearchDone").addEventListener("click", searchAny);
 
       document.getElementById("btnExport").addEventListener("click", function(e){
+        e.preventDefault();
         e.stopPropagation();
         toggleExportMenu();
       });
 
-      document.getElementById("btnExportExcel").addEventListener("click", function(){
+      document.getElementById("btnExportExcel").addEventListener("click", function(e){
+        e.preventDefault();
+        e.stopPropagation();
         closeExportMenu();
-        exportCurrentTable();
+        setTimeout(function(){
+          exportCurrentTable();
+        }, 50);
       });
 
-      document.getElementById("btnExportPDF").addEventListener("click", function(){
+      document.getElementById("btnExportPDF").addEventListener("click", function(e){
+        e.preventDefault();
+        e.stopPropagation();
         closeExportMenu();
-        exportCurrentPDF();
+        setTimeout(function(){
+          exportCurrentPDF();
+        }, 50);
       });
 
       document.addEventListener("click", function(e){
