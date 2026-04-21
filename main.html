@@ -1075,7 +1075,7 @@
   </div>
 
   <script>
-    const API_BASE = "https://script.google.com/macros/s/AKfycbxEJr_dQ99hPzbVhYicaIInEp3sSLtbKNVdBgaohoI2xfh46FMSyEocXlqCwn2t7gJp/exec";
+    const API_BASE = "https://script.google.com/macros/s/AKfycbzaoVhRt0xtRdFV-SebyAKAZjS8aM4s42zi_kIK7ErrMAj9c3GZphwSzRLSZrr7gYo-/exec";
     const PAGE_NAME = "main";
     const STORAGE_KEY_PAGE = "tracking_session_token_" + PAGE_NAME;
     const STORAGE_KEY_GLOBAL = "tracking_session_token";
@@ -1662,7 +1662,7 @@
       showMsg("✅ تم تصدير Excel بنجاح", "ok");
     }
 
-    function exportCurrentPDF(){
+    async function exportCurrentPDF(){
       if(!CURRENT_ITEMS || !CURRENT_ITEMS.length){
         setStatus("⚠️ لا توجد بيانات معروضة للتصدير", false);
         showMsg("⚠️ لا توجد بيانات للتصدير", "warn");
@@ -1695,29 +1695,43 @@
 
       setLoading(true);
 
-      apiPost(payload)
-        .then(function(res){
-          setLoading(false);
+      try{
+        const res = await apiPost(payload);
+        setLoading(false);
 
-          if(!res || !res.ok || !res.url){
-            setStatus("❌ فشل إنشاء PDF", false);
-            showMsg("❌ فشل إنشاء PDF", "err");
-            return;
-          }
+        if(!res || !res.ok || !res.base64){
+          setStatus("❌ فشل إنشاء PDF", false);
+          showMsg((res && res.message) || "❌ فشل إنشاء PDF", "err");
+          return;
+        }
 
-          const a = document.createElement("a");
-a.href = blobUrl;
-a.target = "_blank";
-a.click();
+        const byteCharacters = atob(res.base64);
+        const byteNumbers = new Array(byteCharacters.length);
 
+        for(let i = 0; i < byteCharacters.length; i++){
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
 
-          showMsg("✅ تم إنشاء PDF بنجاح", "ok");
-        })
-        .catch(function(err){
-          setLoading(false);
-          setStatus("❌ export pdf error: " + safeErr(err), false);
-          showMsg("❌ فشل تصدير PDF", "err");
-        });
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: "application/pdf" });
+        const blobUrl = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = blobUrl;
+        a.target = "_blank";
+        a.click();
+
+        setTimeout(function(){
+          URL.revokeObjectURL(blobUrl);
+        }, 10000);
+
+        showMsg("✅ تم إنشاء PDF بنجاح", "ok");
+
+      }catch(err){
+        setLoading(false);
+        setStatus("❌ export pdf error: " + safeErr(err), false);
+        showMsg("❌ فشل تصدير PDF", "err");
+      }
     }
 
     function computeLastStage(item){
@@ -2121,53 +2135,6 @@ a.click();
 
       ensurePageSession();
     });
-
-
-<script>
-
-// كل دوالك الحالية هنا...
-
-async function exportPdf() {
-  try {
-    const token = getSessionToken();
-
-    const res = await apiPost({
-      action: "exportPDF",
-      token: token,
-      page: "main",
-      title: "تقرير المعاملات",
-      mode: "open",
-      rows: rowsToExport
-    });
-
-    if (!res || !res.ok) {
-      showToast((res && res.message) || "فشل إنشاء التقرير", "err");
-      return;
-    }
-
-    const byteCharacters = atob(res.base64);
-    const byteNumbers = new Array(byteCharacters.length);
-
-    for (let i = 0; i < byteCharacters.length; i++) {
-      byteNumbers[i] = byteCharacters.charCodeAt(i);
-    }
-
-    const byteArray = new Uint8Array(byteNumbers);
-    const blob = new Blob([byteArray], { type: "application/pdf" });
-    const blobUrl = URL.createObjectURL(blob);
-
-    window.open(blobUrl, "_blank");
-
-    setTimeout(() => {
-      URL.revokeObjectURL(blobUrl);
-    }, 10000);
-
-  } catch (err) {
-    showToast("خطأ في إنشاء التقرير", "err");
-  }
-}
-
-</script>
   </script>
 </body>
 </html>
