@@ -1705,7 +1705,12 @@
             return;
           }
 
-          window.open(res.url, "_blank");
+          const a = document.createElement("a");
+a.href = blobUrl;
+a.target = "_blank";
+a.click();
+
+
           showMsg("✅ تم إنشاء PDF بنجاح", "ok");
         })
         .catch(function(err){
@@ -2116,6 +2121,53 @@
 
       ensurePageSession();
     });
+
+
+<script>
+
+// كل دوالك الحالية هنا...
+
+async function exportPdf() {
+  try {
+    const token = getSessionToken();
+
+    const res = await apiPost({
+      action: "exportPDF",
+      token: token,
+      page: "main",
+      title: "تقرير المعاملات",
+      mode: "open",
+      rows: rowsToExport
+    });
+
+    if (!res || !res.ok) {
+      showToast((res && res.message) || "فشل إنشاء التقرير", "err");
+      return;
+    }
+
+    const byteCharacters = atob(res.base64);
+    const byteNumbers = new Array(byteCharacters.length);
+
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: "application/pdf" });
+    const blobUrl = URL.createObjectURL(blob);
+
+    window.open(blobUrl, "_blank");
+
+    setTimeout(() => {
+      URL.revokeObjectURL(blobUrl);
+    }, 10000);
+
+  } catch (err) {
+    showToast("خطأ في إنشاء التقرير", "err");
+  }
+}
+
+</script>
   </script>
 </body>
 </html>
