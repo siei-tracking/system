@@ -1091,7 +1091,7 @@
   </div>
 
   <script>
-    const API_BASE = "https://script.google.com/macros/s/AKfycbyrvod9RAnQyosQIJQcR4D18wEwm9sC6cjRu43acZRoerqoj4C3gRbT1fuNUBq8WI5F/exec";
+    const API_BASE = "https://script.google.com/macros/s/AKfycbwt5prB1LmElyl0c_PShFCD2vsgPyBVFJJVpF5JRVisc2VVsjqFVMfu5wMMFlJAGUnk/exec";
     const PAGE_NAME = "main";
     const STORAGE_KEY_PAGE = "tracking_session_token_" + PAGE_NAME;
     const STORAGE_KEY_GLOBAL = "tracking_session_token";
@@ -2245,7 +2245,7 @@ ensurePageSession();
       }
 
       if (!("serviceWorker" in navigator)) {
-        window.showMsg("❌ المتصفح لا يدعم Service Worker", "err");
+        window.showMsg("❌ هذا المتصفح لا يدعم Service Worker", "err");
         return;
       }
 
@@ -2282,10 +2282,12 @@ ensurePageSession();
       });
 
       if (res && res.ok) {
-        window.showMsg("✅ تم تفعيل الإشعارات بنجاح", "ok");
+        console.log("Push token saved:", currentToken);
+        window.showMsg("✅ تم تفعيل الإشعارات وحفظ التوكن", "ok");
       } else {
         window.showMsg((res && res.message) || "❌ فشل حفظ توكن الإشعارات", "err");
       }
+
     } catch (err) {
       console.error("Notification setup error:", err);
       window.showMsg("❌ فشل تفعيل الإشعارات", "err");
@@ -2298,12 +2300,21 @@ ensurePageSession();
   }
 
   onMessage(messaging, (payload) => {
+    console.log("Foreground message:", payload);
+
     const title = payload?.notification?.title || "إشعار جديد";
     const body = payload?.notification?.body || "";
+
+    if (Notification.permission === "granted") {
+      new Notification(title, {
+        body: body,
+        icon: "/system/logo.png"
+      });
+    }
+
     window.showMsg(title + (body ? " - " + body : ""), "ok");
   });
 </script>
-
 
 </body>
 </html>
