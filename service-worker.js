@@ -61,11 +61,50 @@ self.addEventListener("fetch", function(event){
 self.addEventListener("notificationclick", function(event){
   event.notification.close();
 
-  const targetUrl =
-    (event.notification &&
-      event.notification.data &&
-      event.notification.data.url) ||
-    "/system/main.html";
+  const data = event.notification.data || {};
+  const targetUrl = data.url || "/system/main.html";
 
   event.waitUntil(
-    clients.matchAll({ type: "window", include
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then(function(clientList){
+      for (let i = 0; i < clientList.length; i++) {
+        const client = clientList[i];
+        if ("focus" in client) {
+          client.navigate(targetUrl);
+          return client.focus();
+        }
+      }
+      if (clients.openWindow) {
+        return clients.openWindow(targetUrl);
+      }
+    })
+  );
+});
+
+importScripts("https://www.gstatic.com/firebasejs/12.12.1/firebase-app-compat.js");
+importScripts("https://www.gstatic.com/firebasejs/12.12.1/firebase-messaging-compat.js");
+
+firebase.initializeApp({
+  apiKey: "AIzaSyBhWJtOWJKlBk04Ii7mm93rhfECuQLKRbM",
+  authDomain: "tracking-web-218e8.firebaseapp.com",
+  projectId: "tracking-web-218e8",
+  storageBucket: "tracking-web-218e8.firebasestorage.app",
+  messagingSenderId: "107177409442",
+  appId: "1:107177409442:web:c66ec3f1ad72e5fad610fb",
+  measurementId: "G-PCJX55XGQS"
+});
+
+const messaging = firebase.messaging();
+
+messaging.onBackgroundMessage(function(payload) {
+  const title = (payload.notification && payload.notification.title) || "إشعار جديد";
+  const options = {
+    body: (payload.notification && payload.notification.body) || "",
+    icon: "/system/logo-192.png",
+    badge: "/system/logo-192.png",
+    data: {
+      url: "/system/main.html"
+    }
+  };
+
+  self.registration.showNotification(title, options);
+});
