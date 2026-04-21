@@ -10,6 +10,12 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
+
+<link rel="manifest" href="/system/manifest.webmanifest">
+<meta name="theme-color" content="#223243">
+<meta name="mobile-web-app-capable" content="yes">
+
+
   <style>
     :root{
       --primary:#223243;
@@ -2048,93 +2054,104 @@
       }
     }
 
-    window.addEventListener("load", function(){
-      var openSheetBtn = document.getElementById("btnOpenArchive");
-      var adminBtn = document.getElementById("btnAdmin");
+   window.addEventListener("load", function(){
+  var openSheetBtn = document.getElementById("btnOpenArchive");
+  var adminBtn = document.getElementById("btnAdmin");
 
-      (function setDefaultDates(){
-        const today = new Date();
-        const toDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-        const fromDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  (function setDefaultDates(){
+    const today = new Date();
+    const toDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const fromDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
-        const formatLocal = function(d){
-          const y = d.getFullYear();
-          const m = String(d.getMonth() + 1).padStart(2, "0");
-          const day = String(d.getDate()).padStart(2, "0");
-          return y + "-" + m + "-" + day;
-        };
+    const formatLocal = function(d){
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return y + "-" + m + "-" + day;
+    };
 
-        document.getElementById("dateFrom").value = formatLocal(fromDate);
-        document.getElementById("dateTo").value = formatLocal(toDate);
-      })();
+    document.getElementById("dateFrom").value = formatLocal(fromDate);
+    document.getElementById("dateTo").value = formatLocal(toDate);
+  })();
 
-      document.getElementById("btnOpen").addEventListener("click", loadOpen);
-      document.getElementById("btnDelayed").addEventListener("click", loadDelayed);
-      document.getElementById("btnDone").addEventListener("click", loadDone);
-      document.getElementById("btnSearchDone").addEventListener("click", searchAny);
+  document.getElementById("btnOpen").addEventListener("click", loadOpen);
+  document.getElementById("btnDelayed").addEventListener("click", loadDelayed);
+  document.getElementById("btnDone").addEventListener("click", loadDone);
+  document.getElementById("btnSearchDone").addEventListener("click", searchAny);
 
-      document.getElementById("btnExport").addEventListener("click", function(e){
-        e.preventDefault();
-        e.stopPropagation();
+  document.getElementById("btnExport").addEventListener("click", function(e){
+    e.preventDefault();
+    e.stopPropagation();
 
-        var menu = document.getElementById("exportMenu");
-        if(menu.classList.contains("show")){
-          closeExportMenu();
-        }else{
-          openExportMenu(this);
-        }
+    var menu = document.getElementById("exportMenu");
+    if(menu.classList.contains("show")){
+      closeExportMenu();
+    }else{
+      openExportMenu(this);
+    }
+  });
+
+  document.getElementById("btnExportExcel").addEventListener("click", function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    closeExportMenu();
+    setTimeout(function(){
+      exportCurrentTable();
+    }, 50);
+  });
+
+  document.getElementById("btnExportPDF").addEventListener("click", function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    closeExportMenu();
+    setTimeout(function(){
+      exportCurrentPDF();
+    }, 50);
+  });
+
+  document.addEventListener("click", function(e){
+    var menu = document.getElementById("exportMenu");
+    var btn = document.getElementById("btnExport");
+    if(!menu || !btn) return;
+
+    if(!menu.contains(e.target) && !btn.contains(e.target)){
+      closeExportMenu();
+    }
+  });
+
+  window.addEventListener("resize", function(){
+    closeExportMenu();
+  });
+
+  window.addEventListener("scroll", function(){
+    closeExportMenu();
+  }, true);
+
+  if(openSheetBtn){
+    openSheetBtn.addEventListener("click", openArchiveSheet);
+  }
+
+  if(adminBtn){
+    adminBtn.addEventListener("click", openAdminPage);
+  }
+
+  document.getElementById("qDone").addEventListener("keypress", function(e){
+    if(e.key === "Enter") searchAny();
+  });
+
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("/system/service-worker.js")
+      .then(function(reg){
+        console.log("Service Worker registered:", reg.scope);
+      })
+      .catch(function(err){
+        console.error("Service Worker registration failed:", err);
       });
+  }
 
-      document.getElementById("btnExportExcel").addEventListener("click", function(e){
-        e.preventDefault();
-        e.stopPropagation();
-        closeExportMenu();
-        setTimeout(function(){
-          exportCurrentTable();
-        }, 50);
-      });
+  ensurePageSession();
+});
 
-      document.getElementById("btnExportPDF").addEventListener("click", function(e){
-        e.preventDefault();
-        e.stopPropagation();
-        closeExportMenu();
-        setTimeout(function(){
-          exportCurrentPDF();
-        }, 50);
-      });
-
-      document.addEventListener("click", function(e){
-        var menu = document.getElementById("exportMenu");
-        var btn = document.getElementById("btnExport");
-        if(!menu || !btn) return;
-
-        if(!menu.contains(e.target) && !btn.contains(e.target)){
-          closeExportMenu();
-        }
-      });
-
-      window.addEventListener("resize", function(){
-        closeExportMenu();
-      });
-
-      window.addEventListener("scroll", function(){
-        closeExportMenu();
-      }, true);
-
-      if(openSheetBtn){
-        openSheetBtn.addEventListener("click", openArchiveSheet);
-      }
-
-      if(adminBtn){
-        adminBtn.addEventListener("click", openAdminPage);
-      }
-
-      document.getElementById("qDone").addEventListener("keypress", function(e){
-        if(e.key === "Enter") searchAny();
-      });
-
-      ensurePageSession();
-    });
   </script>
 </body>
 </html>
