@@ -7,13 +7,11 @@ const APP_SHELL = [
   "/system/main.html",
   "/system/plan.html",
   "/system/admin.html",
-
-  "/system/manifest.webmanifest", // 👈 هنا تضيفه
-
   "/system/watermark.css",
   "/system/logo.png",
   "/system/logo-192.png",
-  "/system/logo-512.png"
+  "/system/logo-512.png",
+  "/system/manifest.webmanifest"
 ];
 
 /* =========================
@@ -88,60 +86,56 @@ self.addEventListener("fetch", function (event) {
 });
 
 /* =========================
-   PUSH
+   Firebase Messaging SW
 ========================= */
-self.addEventListener("push", function (event) {
-  let payload = {};
+importScripts("https://www.gstatic.com/firebasejs/12.12.1/firebase-app-compat.js");
+importScripts("https://www.gstatic.com/firebasejs/12.12.1/firebase-messaging-compat.js");
 
-  try {
-    payload = event.data ? event.data.json() : {};
-  } catch (e) {
-    payload = {};
-  }
+firebase.initializeApp({
+  apiKey: "AIzaSyBhWJtOWJKlBk04Ii7mm93rhfECuQLKRbM",
+  authDomain: "tracking-web-218e8.firebaseapp.com",
+  projectId: "tracking-web-218e8",
+  storageBucket: "tracking-web-218e8.firebasestorage.app",
+  messagingSenderId: "107177409442",
+  appId: "1:107177409442:web:c66ec3f1ad72e5fad610fb",
+  measurementId: "G-PCJX55XGQS"
+});
 
+const messaging = firebase.messaging();
+
+/* =========================
+   BACKGROUND MESSAGE
+========================= */
+messaging.onBackgroundMessage(function (payload) {
   const title =
     (payload.notification && payload.notification.title) ||
-    payload.title ||
     "إشعار جديد";
 
   const body =
     (payload.notification && payload.notification.body) ||
-    payload.body ||
     "لديك إشعار جديد من النظام";
 
-  const icon =
-    (payload.notification && payload.notification.icon) ||
-    "/system/logo-192.png";
-
-  const badge =
-    (payload.notification && payload.notification.badge) ||
-    "/system/logo-192.png";
-
   const targetUrl =
-    (payload.fcmOptions && payload.fcmOptions.link) ||
     (payload.data && payload.data.url) ||
     "/system/main.html";
 
-  const data = {
-    url: targetUrl,
-    rawData: payload.data || {}
-  };
-
-  event.waitUntil(
-    self.registration.showNotification(title, {
-      body: body,
-      icon: icon,
-      badge: badge,
-      data: data,
-      dir: "rtl",
-      lang: "ar",
-      renotify: true,
-      requireInteraction: false,
-      tag: (payload.data && payload.data.orderNo)
-        ? "order-" + payload.data.orderNo
-        : "tracking-notification"
-    })
-  );
+  self.registration.showNotification(title, {
+    body: body,
+    icon: "/system/logo-192.png",
+    badge: "/system/logo-192.png",
+    data: {
+      url: targetUrl,
+      orderNo: (payload.data && payload.data.orderNo) || "",
+      page: (payload.data && payload.data.page) || "main"
+    },
+    dir: "rtl",
+    lang: "ar",
+    renotify: true,
+    requireInteraction: false,
+    tag: (payload.data && payload.data.orderNo)
+      ? "order-" + payload.data.orderNo
+      : "tracking-notification"
+  });
 });
 
 /* =========================
@@ -179,8 +173,8 @@ self.addEventListener("notificationclick", function (event) {
 /* =========================
    NOTIFICATION CLOSE
 ========================= */
-self.addEventListener("notificationclose", function (event) {
-  // اختياري: يمكن إضافة log مستقبلاً
+self.addEventListener("notificationclose", function () {
+  // يمكن إضافة تتبع لاحقاً عند الحاجة
 });
 
 /* =========================
