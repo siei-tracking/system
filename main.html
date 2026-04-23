@@ -7,14 +7,6 @@
   <title>المعاملات - منصة تتبع أوامر العمل</title>
   <link rel="icon" href="https://siei-tracking.github.io/system/logo.png">
 
-<div id="notifIcon" onclick="toggleNotif()">
-  🔔 <span id="notifCount">0</span>
-</div>
-
-<div id="notifBox" style="display:none;">
-  <div id="notifList"></div>
-</div>
-
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="manifest" href="/system/manifest.webmanifest">
@@ -717,62 +709,66 @@
       gap:8px;
     }
 
-.company-header{
-  position: relative;
-}
+    #notifWrapper{
+      position:absolute;
+      top:20px;
+      right:20px;
+      z-index:999;
+    }
 
-/* مكان الجرس */
-#notifWrapper{
-  position: absolute;
-  top: 20px;     /* نزوله قليلاً */
-  right: 20px;   /* في الركن الأيمن */
-  z-index: 999;
-}
+    #notifIcon{
+      background:white;
+      border-radius:50%;
+      width:50px;
+      height:50px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:20px;
+      cursor:pointer;
+      box-shadow:0 4px 10px rgba(0,0,0,0.2);
+      position:relative;
+      color:#223243;
+      user-select:none;
+    }
 
-/* شكل الجرس */
-#notifIcon{
-  background: white;
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:20px;
-  cursor:pointer;
-  box-shadow:0 4px 10px rgba(0,0,0,0.2);
-  position: relative;
-}
+    #notifCount{
+      position:absolute;
+      top:-5px;
+      right:-5px;
+      background:red;
+      color:white;
+      font-size:12px;
+      padding:3px 6px;
+      border-radius:50%;
+      min-width:22px;
+      text-align:center;
+      line-height:1.2;
+    }
 
-/* رقم الإشعارات */
-#notifCount{
-  position:absolute;
-  top:-5px;
-  right:-5px;
-  background:red;
-  color:white;
-  font-size:12px;
-  padding:3px 6px;
-  border-radius:50%;
-}
+    #notifBox{
+      display:none;
+      position:absolute;
+      top:60px;
+      right:0;
+      width:260px;
+      background:white;
+      border-radius:10px;
+      box-shadow:0 5px 15px rgba(0,0,0,0.2);
+      max-height:300px;
+      overflow:auto;
+    }
 
-/* القائمة */
-#notifBox{
-  display:none;
-  position:absolute;
-  top:60px;
-  right:0;
-  width:260px;
-  background:white;
-  border-radius:10px;
-  box-shadow:0 5px 15px rgba(0,0,0,0.2);
-  max-height:300px;
-  overflow:auto;
-}
-.notif-item{
-  padding:10px;
-  border-bottom:1px solid #eee;
-}
+    .notif-item{
+      padding:10px;
+      border-bottom:1px solid #eee;
+      color:#223243;
+      text-align:right;
+    }
+
+    .notif-item:last-child{
+      border-bottom:none;
+    }
 
     .export-menu-fixed{
       position:fixed;
@@ -1008,6 +1004,21 @@
         min-width:180px;
         max-width:calc(100vw - 20px);
       }
+
+      #notifWrapper{
+        top:12px;
+        right:12px;
+      }
+
+      #notifIcon{
+        width:44px;
+        height:44px;
+        font-size:18px;
+      }
+
+      #notifBox{
+        width:240px;
+      }
     }
 
     @media (max-width:480px){
@@ -1052,6 +1063,10 @@
       select{
         font-size:15px;
       }
+
+      #notifBox{
+        width:220px;
+      }
     }
   </style>
 </head>
@@ -1059,7 +1074,17 @@
 <body>
   <div id="pageWrap">
     <header class="company-header">
+      <div id="notifWrapper">
+        <div id="notifIcon" title="الإشعارات">
+          🔔 <span id="notifCount">0</span>
+        </div>
+        <div id="notifBox">
+          <div id="notifList"></div>
+        </div>
+      </div>
+
       <img src="https://siei-tracking.github.io/system/logo.png" class="company-logo" alt="logo">
+
       <div class="header-text">
         <h1>الشركة العامة للفحص والتأهيل الهندسي</h1>
         <p>
@@ -1151,7 +1176,7 @@
   </div>
 
   <script>
-    const API_BASE = "https://script.google.com/macros/s/AKfycbzFXThy50fiOdGNQuONAYi0JGUtEix9TFmxFFfxoTTAHUTPZGlVmwaRcVVkdLCn-F4/exec";
+    const API_BASE = "https://script.google.com/macros/s/AKfycbx9b7VfjKjGmL-o-g_7lv4vstpojMXdYN3jj4PAt8b-ncyzWMjRCw4SHuEZpqOrmt8_/exec";
     const PAGE_NAME = "main";
     const STORAGE_KEY_PAGE = "tracking_session_token_" + PAGE_NAME;
     const STORAGE_KEY_GLOBAL = "tracking_session_token";
@@ -1237,6 +1262,7 @@
           showAdminButton();
           await loadSheetOptions();
           await loadOpen();
+          await loadNotifications();
         }else{
           clearSessionToken();
           window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
@@ -1673,6 +1699,34 @@
       menu.style.display = "none";
     }
 
+    async function toggleNotif(){
+  const box = document.getElementById("notifBox");
+  if(!box) return;
+
+  const willOpen = box.style.display !== "block";
+  box.style.display = willOpen ? "block" : "none";
+
+  if (willOpen) {
+    try {
+      await apiPost({
+        action: "markAllNotificationsRead",
+        token: getSessionToken(),
+        page: PAGE_NAME
+      });
+
+      await loadNotifications();
+    } catch (err) {
+      console.log("mark notifications read error:", err);
+    }
+  }
+}
+
+    function closeNotif(){
+      const box = document.getElementById("notifBox");
+      if(!box) return;
+      box.style.display = "none";
+    }
+
     function exportCurrentTable(){
       if(!CURRENT_ITEMS || !CURRENT_ITEMS.length){
         setStatus("⚠️ لا توجد بيانات معروضة للتصدير", false);
@@ -1803,7 +1857,6 @@
         }, 10000);
 
         showMsg("✅ تم إنشاء PDF بنجاح", "ok");
-
       }catch(err){
         setLoading(false);
         setStatus("❌ export pdf error: " + safeErr(err), false);
@@ -2126,6 +2179,51 @@
       }
     }
 
+    async function loadNotifications(){
+      try{
+        const sessionToken = getSessionToken();
+        if(!sessionToken) return;
+
+        const res = await apiPost({
+          action: "getNotifications",
+          token: sessionToken,
+          page: PAGE_NAME
+        });
+
+        const list = document.getElementById("notifList");
+        const count = document.getElementById("notifCount");
+
+        if(!list || !count) return;
+
+        const items = Array.isArray(res && res.items) ? res.items : [];
+        let unread = 0;
+
+        list.innerHTML = "";
+
+        if(!items.length){
+          list.innerHTML = '<div class="notif-item">لا توجد إشعارات</div>';
+          count.textContent = "0";
+          return;
+        }
+
+        items.forEach(function(n){
+          if(!n.isRead) unread++;
+
+          const div = document.createElement("div");
+          div.className = "notif-item";
+          div.innerHTML =
+            '<div style="font-weight:900;">' + escapeHtml(n.message || "إشعار جديد") + '</div>' +
+            '<div style="font-size:12px;color:#758292;margin-top:4px;">' + escapeHtml(n.createdAt || "") + '</div>';
+
+          list.appendChild(div);
+        });
+
+        count.textContent = unread > 99 ? "99+" : String(unread);
+      }catch(err){
+        console.log("notifications error:", err);
+      }
+    }
+
     window.showMsg = showMsg;
     window.apiPost = apiPost;
     window.getSessionToken = getSessionToken;
@@ -2134,6 +2232,8 @@
     window.addEventListener("load", function(){
       var openSheetBtn = document.getElementById("btnOpenArchive");
       var adminBtn = document.getElementById("btnAdmin");
+      var notifIcon = document.getElementById("notifIcon");
+      var notifWrapper = document.getElementById("notifWrapper");
 
       (function setDefaultDates(){
         const today = new Date();
@@ -2189,10 +2289,13 @@
       document.addEventListener("click", function(e){
         var menu = document.getElementById("exportMenu");
         var btn = document.getElementById("btnExport");
-        if(!menu || !btn) return;
 
-        if(!menu.contains(e.target) && !btn.contains(e.target)){
+        if(menu && btn && !menu.contains(e.target) && !btn.contains(e.target)){
           closeExportMenu();
+        }
+
+        if(notifWrapper && !notifWrapper.contains(e.target)){
+          closeNotif();
         }
       });
 
@@ -2210,6 +2313,13 @@
 
       if(adminBtn){
         adminBtn.addEventListener("click", openAdminPage);
+      }
+
+      if(notifIcon){
+        notifIcon.addEventListener("click", function(e){
+          e.stopPropagation();
+          toggleNotif();
+        });
       }
 
       document.getElementById("qDone").addEventListener("keypress", function(e){
@@ -2267,6 +2377,7 @@
       }
 
       ensurePageSession();
+      setInterval(loadNotifications, 30000);
     });
   </script>
 
@@ -2368,22 +2479,14 @@
       const title = payload?.notification?.title || "إشعار جديد";
       const body = payload?.notification?.body || "";
 
-      if (Notification.permission === "granted") {
-        new Notification(title, {
-          body: body,
-          icon: "/system/logo-192.png"
-        });
-      }
-
       if (window.showMsg) {
         window.showMsg(title + (body ? " - " + body : ""), "ok");
       }
+
+      if (typeof loadNotifications === "function") {
+        loadNotifications();
+      }
     });
-
-loadNotifications();
-
-// تحديث كل 30 ثانية
-setInterval(loadNotifications, 30000);
   </script>
 </body>
 </html>
