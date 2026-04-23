@@ -1176,7 +1176,7 @@
   </div>
 
   <script>
-    const API_BASE = "https://script.google.com/macros/s/AKfycbx9b7VfjKjGmL-o-g_7lv4vstpojMXdYN3jj4PAt8b-ncyzWMjRCw4SHuEZpqOrmt8_/exec";
+    const API_BASE = "https://script.google.com/macros/s/AKfycbyOmzPtZS_GUv2KjpkYV2VD9N3f63m5_TJiBHrg1b-GubDcbW0tAmwz8ftfP7u3dZJ9/exec";
     const PAGE_NAME = "main";
     const STORAGE_KEY_PAGE = "tracking_session_token_" + PAGE_NAME;
     const STORAGE_KEY_GLOBAL = "tracking_session_token";
@@ -1187,6 +1187,7 @@
     let CURRENT_USER_NAME = "";
     let CURRENT_USERNAME = "";
     let deferredInstallPrompt = null;
+    let lastNotificationIds = [];
 
     function getSessionToken(){
       return (
@@ -2180,54 +2181,74 @@
     }
 
     async function loadNotifications(){
-      try{
-        const sessionToken = getSessionToken();
-        if(!sessionToken) return;
+  try{
+    const sessionToken = getSessionToken();
+    if(!sessionToken) return;
 
-        const res = await apiPost({
-          action: "getNotifications",
-          token: sessionToken,
-          page: PAGE_NAME
-        });
+    const res = await apiPost({
+      action: "getNotifications",
+      token: sessionToken,
+      page: PAGE_NAME
+    });
 
-        const list = document.getElementById("notifList");
-        const count = document.getElementById("notifCount");
+    const list = document.getElementById("notifList");
+    const count = document.getElementById("notifCount");
 
-        if(!list || !count) return;
+    if(!list || !count) return;
 
-        const items = Array.isArray(res && res.items) ? res.items : [];
-        let unread = 0;
+    const items = Array.isArray(res && res.items) ? res.items : [];
+    let unread = 0;
 
-        list.innerHTML = "";
+    list.innerHTML = "";
 
-        if(!items.length){
-          list.innerHTML = '<div class="notif-item">لا توجد إشعارات</div>';
-          count.textContent = "0";
-          return;
-        }
-
-        items.forEach(function(n){
-          if(!n.isRead) unread++;
-
-          const div = document.createElement("div");
-          div.className = "notif-item";
-          div.innerHTML =
-            '<div style="font-weight:900;">' + escapeHtml(n.message || "إشعار جديد") + '</div>' +
-            '<div style="font-size:12px;color:#758292;margin-top:4px;">' + escapeHtml(n.createdAt || "") + '</div>';
-
-          list.appendChild(div);
-        });
-
-        count.textContent = unread > 99 ? "99+" : String(unread);
-      }catch(err){
-        console.log("notifications error:", err);
-      }
+    if(!items.length){
+      list.innerHTML = '<div class="notif-item">لا توجد إشعارات</div>';
+      count.textContent = "0";
+      lastNotificationIds = [];
+      return;
     }
+
+    const currentIds = items.map(function(n){
+      return String(n.id || "");
+    });
+
+    const newItems = items.filter(function(n){
+      return String(n.id || "") && lastNotificationIds.indexOf(String(n.id || "")) === -1;
+    });
+
+    items.forEach(function(n){
+      if(!n.isRead) unread++;
+
+      const div = document.createElement("div");
+      div.className = "notif-item";
+      div.innerHTML =
+        '<div style="font-weight:900;">' + escapeHtml(n.message || "إشعار جديد") + '</div>' +
+        '<div style="font-size:12px;color:#758292;margin-top:4px;">' + escapeHtml(n.createdAt || "") + '</div>';
+
+      list.appendChild(div);
+    });
+
+    count.textContent = unread > 99 ? "99+" : String(unread);
+
+    if(lastNotificationIds.length > 0 && newItems.length > 0){
+      try{
+        const msg = newItems[0].message || "لديك إشعار جديد";
+        window.showBrowserNotification("إشعار جديد", msg);
+      }catch(e){}
+    }
+
+    lastNotificationIds = currentIds;
+
+  }catch(err){
+    console.log("notifications error:", err);
+  }
+}
 
     window.showMsg = showMsg;
     window.apiPost = apiPost;
     window.getSessionToken = getSessionToken;
     window.PAGE_NAME = PAGE_NAME;
+    window.loadNotifications = loadNotifications;
 
     window.addEventListener("load", function(){
       var openSheetBtn = document.getElementById("btnOpenArchive");
@@ -2377,116 +2398,148 @@
       }
 
       ensurePageSession();
-      setInterval(loadNotifications, 30000);
+      setInterval(loadNotifications, 5000);
     });
   </script>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-    import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-messaging.js";
+ <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+  import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-messaging.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBhWJtOWJKlBk04Ii7mm93rhfECuQLKRbM",
-      authDomain: "tracking-web-218e8.firebaseapp.com",
-      projectId: "tracking-web-218e8",
-      storageBucket: "tracking-web-218e8.firebasestorage.app",
-      messagingSenderId: "107177409442",
-      appId: "1:107177409442:web:c66ec3f1ad72e5fad610fb",
-      measurementId: "G-PCJX55XGQS"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyBhWJtOWJKlBk04Ii7mm93rhfECuQLKRbM",
+    authDomain: "tracking-web-218e8.firebaseapp.com",
+    projectId: "tracking-web-218e8",
+    storageBucket: "tracking-web-218e8.firebasestorage.app",
+    messagingSenderId: "107177409442",
+    appId: "1:107177409442:web:c66ec3f1ad72e5fad610fb",
+    measurementId: "G-PCJX55XGQS"
+  };
 
-    const VAPID_KEY = "BCVh972jCSmGqdWe7nDcWtepOrPGq7CwKdFNjT2gJ8IsMmhE1T0CEgOk9t5g8NQOlMNCW9peG67kUzrui6pFgFU";
+  const VAPID_KEY = "BCVh972jCSmGqdWe7nDcWtepOrPGq7CwKdFNjT2gJ8IsMmhE1T0CEgOk9t5g8NQOlMNCW9peG67kUzrui6pFgFU";
 
-    const app = initializeApp(firebaseConfig);
-    const messaging = getMessaging(app);
+  const app = initializeApp(firebaseConfig);
+  const messaging = getMessaging(app);
 
-    async function registerServiceWorkerForPush() {
+  async function registerServiceWorkerForPush() {
+    if (!("serviceWorker" in navigator)) {
+      throw new Error("Service Worker غير مدعوم");
+    }
+
+    const existing = await navigator.serviceWorker.getRegistration("/system/");
+    if (existing) return existing;
+
+    const registration = await navigator.serviceWorker.register("/system/service-worker.js");
+    return registration;
+  }
+
+  async function enableNotifications() {
+    try {
+      if (!("Notification" in window)) {
+        window.showMsg("❌ هذا المتصفح لا يدعم الإشعارات", "err");
+        return;
+      }
+
       if (!("serviceWorker" in navigator)) {
-        throw new Error("Service Worker غير مدعوم");
+        window.showMsg("❌ هذا المتصفح لا يدعم Service Worker", "err");
+        return;
       }
 
-      const existing = await navigator.serviceWorker.getRegistration("/system/");
-      if (existing) return existing;
+      const permission = await Notification.requestPermission();
 
-      const registration = await navigator.serviceWorker.register("/system/service-worker.js");
-      return registration;
+      if (permission !== "granted") {
+        window.showMsg("⚠️ لم يتم منح إذن الإشعارات", "warn");
+        return;
+      }
+
+      const registration = await registerServiceWorkerForPush();
+
+      const currentToken = await getToken(messaging, {
+        vapidKey: VAPID_KEY,
+        serviceWorkerRegistration: registration
+      });
+
+      if (!currentToken) {
+        window.showMsg("⚠️ تعذر إنشاء توكن الإشعارات", "warn");
+        return;
+      }
+
+      const sessionToken = window.getSessionToken();
+      if (!sessionToken) {
+        window.showMsg("⚠️ الجلسة غير موجودة", "warn");
+        return;
+      }
+
+      const res = await window.apiPost({
+        action: "savePushToken",
+        token: sessionToken,
+        page: window.PAGE_NAME,
+        pushToken: currentToken
+      });
+
+      if (res && res.ok) {
+        console.log("Push token saved:", currentToken);
+        window.showMsg("✅ تم تفعيل الإشعارات وحفظ التوكن", "ok");
+      } else {
+        window.showMsg((res && res.message) || "❌ فشل حفظ توكن الإشعارات", "err");
+      }
+    } catch (err) {
+      console.error("Notification setup error:", err);
+      window.showMsg("❌ فشل تفعيل الإشعارات", "err");
+    }
+  }
+
+  const btnEnableNotifications = document.getElementById("btnEnableNotifications");
+  if (btnEnableNotifications) {
+    btnEnableNotifications.addEventListener("click", enableNotifications);
+  }
+
+  onMessage(messaging, (payload) => {
+    console.log("Foreground message:", payload);
+
+    const title = payload?.notification?.title || "إشعار جديد";
+    const body = payload?.notification?.body || "";
+
+    if (window.showMsg) {
+      window.showMsg(title + (body ? " - " + body : ""), "ok");
     }
 
-    async function enableNotifications() {
-      try {
-        if (!("Notification" in window)) {
-          window.showMsg("❌ هذا المتصفح لا يدعم الإشعارات", "err");
-          return;
-        }
-
-        if (!("serviceWorker" in navigator)) {
-          window.showMsg("❌ هذا المتصفح لا يدعم Service Worker", "err");
-          return;
-        }
-
-        const permission = await Notification.requestPermission();
-
-        if (permission !== "granted") {
-          window.showMsg("⚠️ لم يتم منح إذن الإشعارات", "warn");
-          return;
-        }
-
-        const registration = await registerServiceWorkerForPush();
-
-        const currentToken = await getToken(messaging, {
-          vapidKey: VAPID_KEY,
-          serviceWorkerRegistration: registration
-        });
-
-        if (!currentToken) {
-          window.showMsg("⚠️ تعذر إنشاء توكن الإشعارات", "warn");
-          return;
-        }
-
-        const sessionToken = window.getSessionToken();
-        if (!sessionToken) {
-          window.showMsg("⚠️ الجلسة غير موجودة", "warn");
-          return;
-        }
-
-        const res = await window.apiPost({
-          action: "savePushToken",
-          token: sessionToken,
-          page: window.PAGE_NAME,
-          pushToken: currentToken
-        });
-
-        if (res && res.ok) {
-          console.log("Push token saved:", currentToken);
-          window.showMsg("✅ تم تفعيل الإشعارات وحفظ التوكن", "ok");
-        } else {
-          window.showMsg((res && res.message) || "❌ فشل حفظ توكن الإشعارات", "err");
-        }
-      } catch (err) {
-        console.error("Notification setup error:", err);
-        window.showMsg("❌ فشل تفعيل الإشعارات", "err");
-      }
+    if (typeof window.showBrowserNotification === "function") {
+      window.showBrowserNotification(title, body);
     }
 
-    const btnEnableNotifications = document.getElementById("btnEnableNotifications");
-    if (btnEnableNotifications) {
-      btnEnableNotifications.addEventListener("click", enableNotifications);
+    if (typeof window.loadNotifications === "function") {
+      window.loadNotifications();
     }
+  });
+</script>
 
-    onMessage(messaging, (payload) => {
-      console.log("Foreground message:", payload);
+<script>
+async function requestBrowserNotificationPermission(){
+  if (!("Notification" in window)) return;
+  if (Notification.permission === "default") {
+    try {
+      await Notification.requestPermission();
+    } catch(e){}
+  }
+}
 
-      const title = payload?.notification?.title || "إشعار جديد";
-      const body = payload?.notification?.body || "";
+function showBrowserNotification(title, body){
+  if (!("Notification" in window)) return;
+  if (Notification.permission !== "granted") return;
 
-      if (window.showMsg) {
-        window.showMsg(title + (body ? " - " + body : ""), "ok");
-      }
+  new Notification(title || "إشعار جديد", {
+    body: body || "",
+    icon: "https://siei-tracking.github.io/system/logo-192.png"
+  });
+}
 
-      if (typeof loadNotifications === "function") {
-        loadNotifications();
-      }
-    });
-  </script>
+window.showBrowserNotification = showBrowserNotification;
+
+window.addEventListener("load", function(){
+  requestBrowserNotificationPermission();
+});
+</script>
+
 </body>
 </html>
