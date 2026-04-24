@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = "tracking-pwa-v4";
+﻿const CACHE_NAME = "tracking-pwa-v5";
 
 const APP_SHELL = [
   "/system/",
@@ -85,6 +85,9 @@ self.addEventListener("fetch", function (event) {
   );
 });
 
+
+
+
 /* =========================
    Firebase Messaging SW
 ========================= */
@@ -108,12 +111,12 @@ const messaging = firebase.messaging();
 ========================= */
 messaging.onBackgroundMessage(function (payload) {
   const title =
-    (payload.notification && payload.notification.title) ||
-    "إشعار جديد";
+  (payload.data && payload.data.title) ||
+  "إشعار جديد";
 
-  const body =
-    (payload.notification && payload.notification.body) ||
-    "لديك إشعار جديد من النظام";
+const body =
+  (payload.data && payload.data.body) ||
+  "لديك إشعار جديد من النظام";
 
   const targetUrl =
     (payload.data && payload.data.url) ||
