@@ -1176,7 +1176,7 @@
   </div>
 
   <script>
-    const API_BASE = "https://script.google.com/macros/s/AKfycbyelPvq1wGqvqEDm7Q37tGkiS4xrs0ldHYFD3k8IS0oqttDq6kDq98K6q8UpPAI7l8d/exec";
+    const API_BASE = "https://script.google.com/macros/s/AKfycbzeiVsufDzuc_MKpg796kxoHT0vKeu8crcwlEQ3c7-l0ZFSZK_BxRmYwygTYMejHd8/exec";
     const PAGE_NAME = "main";
     const STORAGE_KEY_PAGE = "tracking_session_token_" + PAGE_NAME;
     const STORAGE_KEY_GLOBAL = "tracking_session_token";
@@ -1188,6 +1188,7 @@
     let CURRENT_USERNAME = "";
     let deferredInstallPrompt = null;
     let lastNotificationIds = [];
+    let notificationsInitialized = false;
 
     function getSessionToken(){
       return (
@@ -1700,38 +1701,8 @@
       menu.style.display = "none";
     }
 
-    async function toggleNotif(){
-  const box = document.getElementById("notifBox");
-  if(!box) return;
-
-  const willOpen = box.style.display !== "block";
-  box.style.display = willOpen ? "block" : "none";
-
-  if (willOpen) {
-    try {
-      async function toggleNotif(){
-  const box = document.getElementById("notifBox");
-  if(!box) return;
-
-  const willOpen = box.style.display !== "block";
-  box.style.display = willOpen ? "block" : "none";
-
-  if (willOpen) {
-    await loadNotifications();
-  }
-}
-    } catch (err) {
-      console.log("mark notifications read error:", err);
-    }
-  }
-}
-
-    function closeNotif(){
-      const box = document.getElementById("notifBox");
-      if(!box) return;
-      box.style.display = "none";
-    }
-
+   
+    
     function exportCurrentTable(){
       if(!CURRENT_ITEMS || !CURRENT_ITEMS.length){
         setStatus("⚠️ لا توجد بيانات معروضة للتصدير", false);
@@ -2184,7 +2155,25 @@
       }
     }
 
-    async function loadNotifications(){
+    async function toggleNotif(){
+  const box = document.getElementById("notifBox");
+  if(!box) return;
+
+  const willOpen = box.style.display !== "block";
+  box.style.display = willOpen ? "block" : "none";
+
+  if(willOpen){
+    await loadNotifications();
+  }
+}
+
+function closeNotif(){
+  const box = document.getElementById("notifBox");
+  if(!box) return;
+  box.style.display = "none";
+}
+
+async function loadNotifications(){
   try{
     const sessionToken = getSessionToken();
     if(!sessionToken) return;
@@ -2223,8 +2212,17 @@
     items.forEach(function(n){
       if(String(n.isRead).toLowerCase() !== "true") unread++;
 
+      const id = String(n.id || "").trim();
+
       const div = document.createElement("div");
       div.className = "notif-item";
+      div.setAttribute("data-id", id);
+      div.style.cursor = "pointer";
+
+      div.onclick = function(){
+        markNotificationRead(id);
+      };
+
       div.innerHTML =
         '<div style="font-weight:900;">' + escapeHtml(n.message || "إشعار جديد") + '</div>' +
         '<div style="font-size:12px;color:#758292;margin-top:4px;">' + escapeHtml(n.createdAt || "") + '</div>';
@@ -2234,12 +2232,14 @@
 
     count.textContent = unread > 99 ? "99+" : String(unread);
 
-    if(lastNotificationIds.length > 0 && newItems.length > 0){
-      try{
-        const msg = newItems[0].message || "لديك إشعار جديد";
-        window.showBrowserNotification("إشعار جديد", msg);
-      }catch(e){}
-    }
+    if(notificationsInitialized && newItems.length > 0){
+  try{
+    const msg = newItems[0].message || "لديك إشعار جديد";
+    window.showBrowserNotification("إشعار جديد", msg);
+  }catch(e){}
+}
+
+notificationsInitialized = true;
 
     lastNotificationIds = currentIds;
 
@@ -2248,6 +2248,34 @@
   }
 }
 
+async function markNotificationRead(notificationId){
+  try{
+    const id = String(notificationId || "").trim();
+    if(!id) return;
+
+    const sessionToken = getSessionToken();
+    if(!sessionToken) return;
+
+    const res = await apiPost({
+      action: "markNotificationRead",
+      token: sessionToken,
+      page: PAGE_NAME,
+      notificationId: id
+    });
+
+    if(res && res.ok){
+      const el = document.querySelector('.notif-item[data-id="' + id.replace(/"/g, '\\"') + '"]');
+      if(el) el.remove();
+
+      await loadNotifications();
+    }
+
+  }catch(err){
+    console.log("markNotificationRead error:", err);
+  }
+}
+
+    window.markNotificationRead = markNotificationRead;
     window.showMsg = showMsg;
     window.apiPost = apiPost;
     window.getSessionToken = getSessionToken;
