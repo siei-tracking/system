@@ -1709,13 +1709,17 @@
 
   if (willOpen) {
     try {
-      await apiPost({
-        action: "markAllNotificationsRead",
-        token: getSessionToken(),
-        page: PAGE_NAME
-      });
+      async function toggleNotif(){
+  const box = document.getElementById("notifBox");
+  if(!box) return;
 
-      await loadNotifications();
+  const willOpen = box.style.display !== "block";
+  box.style.display = willOpen ? "block" : "none";
+
+  if (willOpen) {
+    await loadNotifications();
+  }
+}
     } catch (err) {
       console.log("mark notifications read error:", err);
     }
@@ -2217,7 +2221,7 @@
     });
 
     items.forEach(function(n){
-      if(!n.isRead) unread++;
+      if(String(n.isRead).toLowerCase() !== "true") unread++;
 
       const div = document.createElement("div");
       div.className = "notif-item";
