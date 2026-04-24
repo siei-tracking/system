@@ -143,7 +143,7 @@
   </div>
 
 <script>
-const API_BASE = "https://script.google.com/macros/s/AKfycbz046nBwqOtZrAvHzB8quYwQ5vOV-alVvFNJBkJbGXCVXdgQNDXJiu6qRcJAxwko2R5/exec";
+const API_BASE = "https://script.google.com/macros/s/AKfycbwaFWIe_d1zdEa9VzBFrFFMCQU-jubOD9VkeNvCNoRbCBtObR8qiKd0eBfatM60q19l/exec";
 
 const params = new URLSearchParams(window.location.search);
 const PAGE = String(params.get("p") || "main").trim().toLowerCase();
@@ -177,17 +177,23 @@ function saveSessionAndGo(token){
   const safeToken = String(token || "").trim();
 
   if(!safeToken){
-    setMsg("❌ لم يتم استلام رمز الجلسة");
+    setMsg("لم يتم استلام رمز الجلسة !");
     return;
   }
 
   clearAllSessionTokens();
 
+  // تخزين مؤقت
   sessionStorage.setItem(STORAGE_KEY_PAGE, safeToken);
   sessionStorage.setItem(STORAGE_KEY_GLOBAL, safeToken);
 
+  // تخزين دائم (المهم 👇)
+  localStorage.setItem(STORAGE_KEY_PAGE, safeToken);
+  localStorage.setItem(STORAGE_KEY_GLOBAL, safeToken);
+
   window.location.href = PAGE + ".html";
 }
+
 
 async function login(){
   const usernameEl = document.getElementById("username");

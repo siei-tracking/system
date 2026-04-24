@@ -1176,7 +1176,7 @@
   </div>
 
   <script>
-    const API_BASE = "https://script.google.com/macros/s/AKfycbwp_4M5O55zWaPOZCkFonMTCxqENHpdLfuqNfSNZN2Pd8uxyzPfsDgVedo1l1GRcq0j/exec";
+    const API_BASE = "https://script.google.com/macros/s/AKfycbwaFWIe_d1zdEa9VzBFrFFMCQU-jubOD9VkeNvCNoRbCBtObR8qiKd0eBfatM60q19l/exec";
     const PAGE_NAME = "main";
     const STORAGE_KEY_PAGE = "tracking_session_token_" + PAGE_NAME;
     const STORAGE_KEY_GLOBAL = "tracking_session_token";
@@ -1200,11 +1200,16 @@
       );
     }
 
-    function setSessionToken(token){
-      if(!token) return;
-      sessionStorage.setItem(STORAGE_KEY_PAGE, token);
-      sessionStorage.setItem(STORAGE_KEY_GLOBAL, token);
-    }
+function setSessionToken(token){
+  if(!token) return;
+
+  sessionStorage.setItem(STORAGE_KEY_PAGE, token);
+  sessionStorage.setItem(STORAGE_KEY_GLOBAL, token);
+
+  // 👇 هذا هو الحل
+  localStorage.setItem(STORAGE_KEY_PAGE, token);
+  localStorage.setItem(STORAGE_KEY_GLOBAL, token);
+}
 
     function clearSessionToken(){
       sessionStorage.removeItem(STORAGE_KEY_PAGE);
