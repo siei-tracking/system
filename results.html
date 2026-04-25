@@ -526,6 +526,33 @@
     <div class="container">
 
       <header class="company-header">
+
+<div id="notifIcon" style="
+  position:absolute;
+  top:20px;
+  right:20px;
+  cursor:pointer;
+  font-size:22px;
+">
+  🔔 <span id="notifCount" style="color:red;font-weight:bold;">0</span>
+</div>
+
+<div id="notifBox" style="
+  display:none;
+  position:absolute;
+  top:60px;
+  right:20px;
+  width:300px;
+  max-height:400px;
+  overflow:auto;
+  background:#fff;
+  border-radius:12px;
+  box-shadow:0 10px 25px rgba(0,0,0,.2);
+  z-index:9999;
+">
+  <div id="notifList"></div>
+</div>
+
         <img class="logo" src="https://siei-tracking.github.io/system/logo.png" alt="logo">
 
         <div class="header-text">
@@ -538,6 +565,36 @@
 
           <div id="welcomeUser" class="user-pill"></div>
         </div>
+<div style="position:absolute;top:20px;left:20px;display:flex;gap:10px;z-index:9999">
+
+  <button id="btnEnableNotifications" style="
+    background:#27ae60;
+    color:#fff;
+    border:none;
+    padding:8px 12px;
+    border-radius:10px;
+    font-weight:900;
+    cursor:pointer;
+  ">
+    🔔 تفعيل الإشعارات
+  </button>
+
+  <button id="btnInstallApp" style="
+    background:#223243;
+    color:#fff;
+    border:none;
+    padding:8px 12px;
+    border-radius:10px;
+    font-weight:900;
+    cursor:pointer;
+    display:none;
+  ">
+    📲 تثبيت التطبيق
+  </button>
+
+</div>
+
+
       </header>
 
       <div class="page-content">
@@ -995,5 +1052,28 @@ function setSessionToken(token){
     });
   });
 </script>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-messaging-compat.js"></script>
+
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyBhWJtOWJKlBk04Ii7mm93rhfECuQLKRbM",
+  authDomain: "tracking-web-218e8.firebaseapp.com",
+  projectId: "tracking-web-218e8",
+  messagingSenderId: "107177409442",
+  appId: "1:107177409442:web:c66ec3f1ad72e5fad610fb"
+});
+</script>
+
+<script>
+window.PAGE_NAME = PAGE_NAME;
+window.apiPost = apiPost;
+window.getSessionToken = getSessionToken;
+window.showMsg = showMsg;
+</script>
+
+<script src="/system/notifications.js"></script>
+
 </body>
 </html>
