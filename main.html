@@ -1176,7 +1176,7 @@
   </div>
 
   <script>
-    const API_BASE = "https://script.google.com/macros/s/AKfycbzN6WkLy7Dt8oQWy5VLb5XL9KPROMJd0_ju5m1zxzx3CH94AggW-KRKEoDVHg9Hw64/exec";
+    const API_BASE = "https://script.google.com/macros/s/AKfycbynblM19U7GXBhqu6-ostKDQ_oE5e-tEgXDFjDIqyEtTX8SzMuUbODPQfhCWlWABOw/exec";
     const PAGE_NAME = "main";
     const STORAGE_KEY_PAGE = "tracking_session_token_" + PAGE_NAME;
     const STORAGE_KEY_GLOBAL = "tracking_session_token";
@@ -2424,15 +2424,26 @@ async function markNotificationRead(notificationId){
         }
       });
 
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("/system/service-worker.js")
-          .then(function(reg){
-            console.log("Service Worker registered:", reg.scope);
-          })
-          .catch(function(err){
-            console.error("Service Worker registration failed:", err);
-          });
-      }
+     let SW_REGISTRATION = null;
+
+async function registerMainServiceWorker(){
+  if (!("serviceWorker" in navigator)) return null;
+
+  try{
+    SW_REGISTRATION = await navigator.serviceWorker.register(
+      "/system/firebase-messaging-sw.js",
+      { scope: "/system/" }
+    );
+
+    await navigator.serviceWorker.ready;
+
+    console.log("Service Worker registered:", SW_REGISTRATION.scope);
+    return SW_REGISTRATION;
+  }catch(err){
+    console.error("Service Worker registration failed:", err);
+    return null;
+  }
+}
 
       ensurePageSession();
       setInterval(loadNotifications, 5000);
@@ -2458,17 +2469,33 @@ async function markNotificationRead(notificationId){
   const app = initializeApp(firebaseConfig);
   const messaging = getMessaging(app);
 
-  async function registerServiceWorkerForPush() {
-    if (!("serviceWorker" in navigator)) {
-      throw new Error("Service Worker غير مدعوم");
-    }
+  async function showBrowserNotification(title, body){
+  if (!("Notification" in window)) return;
+  if (Notification.permission !== "granted") return;
 
-    const existing = await navigator.serviceWorker.getRegistration("/system/");
-    if (existing) return existing;
+  let reg = SW_REGISTRATION;
 
-    const registration = await navigator.serviceWorker.register("/system/service-worker.js");
-    return registration;
+  if (!reg && "serviceWorker" in navigator) {
+    reg = await navigator.serviceWorker.getRegistration("/system/");
   }
+
+  if (!reg && "serviceWorker" in navigator) {
+    reg = await registerMainServiceWorker();
+  }
+
+  if (reg && reg.showNotification) {
+    reg.showNotification(title || "إشعار جديد", {
+      body: body || "",
+      icon: "/system/logo-192.png",
+      badge: "/system/logo-192.png",
+      dir: "rtl",
+      lang: "ar",
+      data: {
+        url: "/system/main.html"
+      }
+    });
+  }
+}
 
   async function enableNotifications() {
     try {
@@ -2561,14 +2588,32 @@ async function requestBrowserNotificationPermission(){
   }
 }
 
-function showBrowserNotification(title, body){
+async function showBrowserNotification(title, body){
   if (!("Notification" in window)) return;
   if (Notification.permission !== "granted") return;
 
-  new Notification(title || "إشعار جديد", {
-    body: body || "",
-    icon: "https://siei-tracking.github.io/system/logo-192.png"
-  });
+  let reg = SW_REGISTRATION;
+
+  if (!reg && "serviceWorker" in navigator) {
+    reg = await navigator.serviceWorker.getRegistration("/system/");
+  }
+
+  if (!reg && "serviceWorker" in navigator) {
+    reg = await registerMainServiceWorker();
+  }
+
+  if (reg && reg.showNotification) {
+    reg.showNotification(title || "إشعار جديد", {
+      body: body || "",
+      icon: "/system/logo-192.png",
+      badge: "/system/logo-192.png",
+      dir: "rtl",
+      lang: "ar",
+      data: {
+        url: "/system/main.html"
+      }
+    });
+  }
 }
 
 window.showBrowserNotification = showBrowserNotification;
