@@ -65,7 +65,7 @@
       text-align:center;
       box-shadow:0 12px 28px rgba(0,0,0,.18);
       position:relative;
-      overflow:hidden;
+      overflow:visible;
     }
 
     .logo{
@@ -630,7 +630,7 @@
 <div id="toast"></div>
 
 <script>
-  const API_BASE = "https://script.google.com/macros/s/AKfycbwJLNSc3bOeNHA0VN64YBnLI21SMFtadDRPWJKUfJNSHX4F2yfAd7WKOS0UvV3-D6kK/exec";
+  const API_BASE = "https://script.google.com/macros/s/AKfycbyvyIoe0LSGBY0BEKVSj8Aw0Alb_kjCI839lnydVBmvb0jvLSbPWaqC1ymebzm6_MFS/exec";
   const PAGE_NAME = "results";
   const STORAGE_KEY_PAGE = "tracking_session_token_" + PAGE_NAME;
   const STORAGE_KEY_GLOBAL = "tracking_session_token";
@@ -975,30 +975,40 @@ function setSessionToken(token){
   }
 
   function resetPage(){
-    document.getElementById('orderID').value = "";
-    document.getElementById('cardForm').style.display = 'block';
-    document.getElementById('successMessage').style.display = 'none';
-    document.getElementById('inputForm').style.display = 'block';
-    document.getElementById('resPanel').style.display = 'none';
-    document.getElementById('loader').style.display = 'none';
-    document.getElementById('cName').innerText = "---";
+  document.getElementById('orderID').value = "";
+  document.getElementById('cardForm').style.display = 'block';
+  document.getElementById('successMessage').style.display = 'none';
+  document.getElementById('inputForm').style.display = 'block';
+  document.getElementById('resPanel').style.display = 'none';
+  document.getElementById('loader').style.display = 'none';
+  document.getElementById('cName').innerText = "---";
 
-    showBarcodePreview("");
-    setReceiveButtonEnabled();
+  showBarcodePreview("");
+  setReceiveButtonEnabled();
 
-    document.getElementById('fetchBtn').disabled = false;
-    lastStatus = "";
-    document.getElementById('orderID').focus();
-  }
+  document.getElementById('fetchBtn').disabled = false;
+  lastStatus = "";
+  document.getElementById('orderID').focus();
+}
+
+</script>
 
  <script>
 window.PAGE_NAME = PAGE_NAME;
 window.apiPost = apiPost;
 window.getSessionToken = getSessionToken;
 window.showMsg = showMsg;
+</script>
 
+<script src="/system/notifications-widget.js"></script>
+
+<script>
 window.addEventListener("load", function(){
   ensurePageSession();
+
+  if(typeof initNotificationsWidget === "function"){
+    initNotificationsWidget();
+  }
 
   document.getElementById("orderID").addEventListener("keydown", function(e){
     if(e.key === "Enter"){
