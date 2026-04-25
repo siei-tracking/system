@@ -527,32 +527,6 @@
 
       <header class="company-header">
 
-<div id="notifIcon" style="
-  position:absolute;
-  top:20px;
-  right:20px;
-  cursor:pointer;
-  font-size:22px;
-">
-  🔔 <span id="notifCount" style="color:red;font-weight:bold;">0</span>
-</div>
-
-<div id="notifBox" style="
-  display:none;
-  position:absolute;
-  top:60px;
-  right:20px;
-  width:300px;
-  max-height:400px;
-  overflow:auto;
-  background:#fff;
-  border-radius:12px;
-  box-shadow:0 10px 25px rgba(0,0,0,.2);
-  z-index:9999;
-">
-  <div id="notifList"></div>
-</div>
-
         <img class="logo" src="https://siei-tracking.github.io/system/logo.png" alt="logo">
 
         <div class="header-text">
@@ -565,35 +539,6 @@
 
           <div id="welcomeUser" class="user-pill"></div>
         </div>
-<div style="position:absolute;top:20px;left:20px;display:flex;gap:10px;z-index:9999">
-
-  <button id="btnEnableNotifications" style="
-    background:#27ae60;
-    color:#fff;
-    border:none;
-    padding:8px 12px;
-    border-radius:10px;
-    font-weight:900;
-    cursor:pointer;
-  ">
-    🔔 تفعيل الإشعارات
-  </button>
-
-  <button id="btnInstallApp" style="
-    background:#223243;
-    color:#fff;
-    border:none;
-    padding:8px 12px;
-    border-radius:10px;
-    font-weight:900;
-    cursor:pointer;
-    display:none;
-  ">
-    📲 تثبيت التطبيق
-  </button>
-
-</div>
-
 
       </header>
 
@@ -1043,16 +988,17 @@ function setSessionToken(token){
   }
 
   window.addEventListener("load", function(){
-    ensurePageSession();
+  ensurePageSession();
 
-    document.getElementById("orderID").addEventListener("keydown", function(e){
-      if(e.key === "Enter"){
-        fetchData();
-      }
-    });
+  document.getElementById("orderID").addEventListener("keydown", function(e){
+    if(e.key === "Enter"){
+      fetchData();
+    }
   });
+});
+</script>
 
-
+<!-- نظام الإشعارات -->
 <script src="/system/notifications-widget.js"></script>
 
 <script>
@@ -1062,7 +1008,6 @@ window.getSessionToken = getSessionToken;
 window.showMsg = showMsg;
 </script>
 
-<script src="/system/notifications.js"></script>
 
 </body>
 </html>
