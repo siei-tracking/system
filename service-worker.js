@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = "tracking-pwa-v5";
+﻿const CACHE_NAME = "tracking-pwa-v6";
 
 const APP_SHELL = [
   "/system/",
@@ -19,12 +19,15 @@ const APP_SHELL = [
 ========================= */
 self.addEventListener("install", function (event) {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(function (cache) {
-      return cache.addAll(APP_SHELL);
-    }).catch(function (err) {
-      console.log("Cache install error:", err);
-    })
+    caches.open(CACHE_NAME)
+      .then(function (cache) {
+        return cache.addAll(APP_SHELL);
+      })
+      .catch(function (err) {
+        console.log("Cache install error:", err);
+      })
   );
+
   self.skipWaiting();
 });
 
@@ -33,19 +36,21 @@ self.addEventListener("install", function (event) {
 ========================= */
 self.addEventListener("activate", function (event) {
   event.waitUntil(
-    caches.keys().then(function (keys) {
-      return Promise.all(
-        keys
-          .filter(function (key) {
-            return key !== CACHE_NAME;
-          })
-          .map(function (key) {
-            return caches.delete(key);
-          })
-      );
-    }).then(function () {
-      return self.clients.claim();
-    })
+    caches.keys()
+      .then(function (keys) {
+        return Promise.all(
+          keys
+            .filter(function (key) {
+              return key !== CACHE_NAME;
+            })
+            .map(function (key) {
+              return caches.delete(key);
+            })
+        );
+      })
+      .then(function () {
+        return self.clients.claim();
+      })
   );
 });
 
@@ -85,9 +90,6 @@ self.addEventListener("fetch", function (event) {
   );
 });
 
-
-
-
 /* =========================
    Firebase Messaging SW
 ========================= */
@@ -111,12 +113,12 @@ const messaging = firebase.messaging();
 ========================= */
 messaging.onBackgroundMessage(function (payload) {
   const title =
-  (payload.data && payload.data.title) ||
-  "إشعار جديد";
+    (payload.data && payload.data.title) ||
+    "إشعار جديد";
 
-const body =
-  (payload.data && payload.data.body) ||
-  "لديك إشعار جديد من النظام";
+  const body =
+    (payload.data && payload.data.body) ||
+    "لديك إشعار جديد من النظام";
 
   const targetUrl =
     (payload.data && payload.data.url) ||
@@ -154,15 +156,16 @@ self.addEventListener("notificationclick", function (event) {
     "/system/main.html";
 
   event.waitUntil(
-    clients.matchAll({ type: "window", includeUncontrolled: true }).then(function (clientList) {
+    clients.matchAll({
+      type: "window",
+      includeUncontrolled: true
+    }).then(function (clientList) {
       for (let i = 0; i < clientList.length; i++) {
         const client = clientList[i];
 
-        if ("focus" in client) {
-          if (client.url.includes("/system/")) {
-            client.navigate(targetUrl);
-            return client.focus();
-          }
+        if ("focus" in client && client.url.includes("/system/")) {
+          client.navigate(targetUrl);
+          return client.focus();
         }
       }
 
