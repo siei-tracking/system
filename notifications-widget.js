@@ -1,429 +1,243 @@
-﻿/* notifications-widget.js */
-
+﻿/* =========================================================
+   notifications-widget.js
+   نظام إشعارات موحد لكل الصفحات
+========================================================= */
 (function(){
+  "use strict";
+
   const FIREBASE_CONFIG = {
     apiKey: "AIzaSyBhWJtOWJKlBk04Ii7mm93rhfECuQLKRbM",
     authDomain: "tracking-web-218e8.firebaseapp.com",
     projectId: "tracking-web-218e8",
+    storageBucket: "tracking-web-218e8.firebasestorage.app",
     messagingSenderId: "107177409442",
-    appId: "1:107177409442:web:c66ec3f1ad72e5fad610fb"
+    appId: "1:107177409442:web:c66ec3f1ad72e5fad610fb",
+    measurementId: "G-PCJX55XGQS"
   };
 
   const VAPID_KEY = "BCVh972jCSmGqdWe7nDcWtepOrPGq7CwKdFNjT2gJ8IsMmhE1T0CEgOk9t5g8NQOlMNCW9peG67kUzrui6pFgFU";
+  const SW_PATH = "/system/firebase-messaging-sw.js";
+  const SW_SCOPE = "/system/";
 
-  let deferredPrompt = null;
+  let messaging = null;
+  let swRegistration = null;
+  let initialized = false;
+  let deferredInstallPrompt = null;
+  let lastNotificationIds = [];
+  let notificationsTimer = null;
 
-  function addStyle(){
-    if(document.getElementById("notifWidgetStyle")) return;
+  function $(id){ return document.getElementById(id); }
+  function safePageName(){ return String(window.PAGE_NAME || "main").trim().toLowerCase(); }
 
-    const style = document.createElement("style");
-    style.id = "notifWidgetStyle";
-    style.textContent = `
-      #notifWidget{
-        position:absolute;
-        top:16px;
-        right:16px;
-        z-index:9999;
-        display:flex;
-        gap:8px;
-        align-items:center;
-        font-family:'Cairo',sans-serif;
-      }
-
-      #notifIcon{
-        background:#fff;
-        border-radius:50%;
-        width:48px;
-        height:48px;
-        display:flex;
-        align-items:center;
-        justify-content:center;
-        font-size:20px;
-        cursor:pointer;
-        box-shadow:0 4px 10px rgba(0,0,0,.22);
-        position:relative;
-        color:#223243;
-        user-select:none;
-      }
-
-      #notifCount{
-        position:absolute;
-        top:-6px;
-        right:-6px;
-        background:#e74c3c;
-        color:#fff;
-        font-size:12px;
-        padding:3px 6px;
-        border-radius:999px;
-        min-width:22px;
-        text-align:center;
-        line-height:1.2;
-        font-weight:900;
-      }
-
-      #notifBox{
-        display:none;
-        position:absolute;
-        top:58px;
-        right:0;
-        width:280px;
-        max-height:330px;
-        overflow:auto;
-        background:#fff;
-        border-radius:12px;
-        box-shadow:0 10px 25px rgba(0,0,0,.22);
-        color:#223243;
-      }
-
-      .notif-item{
-        padding:10px;
-        border-bottom:1px solid #eee;
-        text-align:right;
-        cursor:pointer;
-        font-weight:800;
-        line-height:1.6;
-      }
-
-      .notif-item:hover{
-        background:#f5f7fa;
-      }
-
-      .notif-item:last-child{
-        border-bottom:none;
-      }
-
-      .notif-time{
-        font-size:11px;
-        color:#758292;
-        margin-top:4px;
-        font-weight:700;
-      }
-
-      #notifActions{
-        position:absolute;
-        top:16px;
-        left:16px;
-        z-index:9999;
-        display:flex;
-        gap:8px;
-        align-items:center;
-        font-family:'Cairo',sans-serif;
-      }
-
-      .notif-action-btn{
-        border:none;
-        border-radius:10px;
-        padding:9px 12px;
-        font-family:'Cairo',sans-serif;
-        font-weight:900;
-        cursor:pointer;
-        color:#fff;
-        box-shadow:0 6px 14px rgba(0,0,0,.16);
-      }
-
-      #btnEnableNotifications{
-        background:#27ae60;
-      }
-
-      #btnInstallApp{
-        background:#223243;
-        display:none;
-      }
-
-      @media(max-width:600px){
-        #notifWidget{
-          top:10px;
-          right:10px;
-        }
-
-        #notifActions{
-          top:10px;
-          left:10px;
-          flex-direction:column;
-          align-items:flex-start;
-        }
-
-        .notif-action-btn{
-          padding:7px 9px;
-          font-size:12px;
-        }
-
-        #notifIcon{
-          width:42px;
-          height:42px;
-          font-size:18px;
-        }
-
-        #notifBox{
-          width:240px;
-        }
-      }
-    `;
-    document.head.appendChild(style);
+  function toast(msg, type){
+    if(typeof window.showMsg === "function") window.showMsg(msg, type || "ok");
+    else console.log(msg);
   }
 
-  function createWidget(){
-    if(document.getElementById("notifWidget")) return;
-
-    const header = document.querySelector(".company-header") || document.body;
-    if(getComputedStyle(header).position === "static"){
-      header.style.position = "relative";
-    }
-
-    const bell = document.createElement("div");
-    bell.id = "notifWidget";
-    bell.innerHTML = `
-      <div id="notifIcon" title="الإشعارات">
-        🔔 <span id="notifCount">0</span>
-      </div>
-      <div id="notifBox">
-        <div id="notifList">
-          <div class="notif-item">لا توجد إشعارات</div>
-        </div>
-      </div>
-    `;
-
-    const actions = document.createElement("div");
-    actions.id = "notifActions";
-    actions.innerHTML = `
-      <button id="btnEnableNotifications" class="notif-action-btn" type="button">🔔 تفعيل الإشعارات</button>
-      <button id="btnInstallApp" class="notif-action-btn" type="button">📲 تثبيت التطبيق</button>
-    `;
-
-    header.appendChild(bell);
-    header.appendChild(actions);
-  }
-
-  function pageName(){
-    return window.PAGE_NAME || "main";
-  }
-
-  async function loadNotifications(){
-    try{
-      if(!window.apiPost || !window.getSessionToken) return;
-
-      const token = window.getSessionToken();
-      if(!token) return;
-
-      const res = await window.apiPost({
-        action:"getNotifications",
-        token:token,
-        page:pageName()
-      });
-
-      const list = document.getElementById("notifList");
-      const count = document.getElementById("notifCount");
-      if(!list || !count) return;
-
-      const items = Array.isArray(res && res.items) ? res.items : [];
-      const unread = Number((res && res.unread) || items.length || 0);
-
-      list.innerHTML = "";
-
-      if(!items.length){
-        list.innerHTML = '<div class="notif-item">لا توجد إشعارات</div>';
-        count.textContent = "0";
-        return;
-      }
-
-      items.forEach(function(n){
-        const div = document.createElement("div");
-        div.className = "notif-item";
-        div.innerHTML =
-          '<div>' + escapeHtml(n.message || "إشعار جديد") + '</div>' +
-          '<div class="notif-time">' + escapeHtml(n.createdAt || "") + '</div>';
-
-        div.onclick = async function(){
-          try{
-            await window.apiPost({
-              action:"markNotificationRead",
-              token:token,
-              page:pageName(),
-              notificationId:n.id
-            });
-
-            if(n.page){
-              window.location.href = "/system/" + n.page + ".html";
-            }else{
-              loadNotifications();
-            }
-          }catch(e){}
-        };
-
-        list.appendChild(div);
-      });
-
-      count.textContent = unread > 99 ? "99+" : String(unread);
-
-    }catch(err){
-      console.error("loadNotifications error:", err);
-    }
-  }
-
-  function initBell(){
-    const icon = document.getElementById("notifIcon");
-    const box = document.getElementById("notifBox");
-    if(!icon || !box) return;
-
-    icon.addEventListener("click", function(e){
-      e.stopPropagation();
-      box.style.display = box.style.display === "block" ? "none" : "block";
-      if(box.style.display === "block") loadNotifications();
-    });
-
-    document.addEventListener("click", function(e){
-      if(!box.contains(e.target) && !icon.contains(e.target)){
-        box.style.display = "none";
-      }
-    });
+  function hasRequiredPageFunctions(){
+    return typeof window.apiPost === "function" && typeof window.getSessionToken === "function";
   }
 
   function loadScript(src){
     return new Promise(function(resolve, reject){
-      if(document.querySelector('script[src="' + src + '"]')){
-        resolve();
-        return;
-      }
-
+      if(document.querySelector('script[src="' + src + '"]')) return resolve();
       const s = document.createElement("script");
       s.src = src;
+      s.async = true;
       s.onload = resolve;
-      s.onerror = reject;
+      s.onerror = function(){ reject(new Error("فشل تحميل: " + src)); };
       document.head.appendChild(s);
     });
   }
 
-  async function initFirebase(){
-    await loadScript("https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js");
-    await loadScript("https://www.gstatic.com/firebasejs/9.22.2/firebase-messaging-compat.js");
-
-    if(!window.firebase.apps.length){
+  async function ensureFirebase(){
+    if(!window.firebase){
+      await loadScript("https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js");
+      await loadScript("https://www.gstatic.com/firebasejs/9.22.2/firebase-messaging-compat.js");
+    }
+    if(!window.firebase.apps || !window.firebase.apps.length){
       window.firebase.initializeApp(FIREBASE_CONFIG);
     }
+    messaging = window.firebase.messaging();
+    return messaging;
+  }
 
-    return window.firebase.messaging();
+  async function registerServiceWorker(){
+    if(!("serviceWorker" in navigator)) throw new Error("هذا المتصفح لا يدعم Service Worker");
+    swRegistration = await navigator.serviceWorker.register(SW_PATH, { scope: SW_SCOPE });
+    await navigator.serviceWorker.ready;
+    return swRegistration;
+  }
+
+  function createWidget(){
+    if($("notifWidgetRoot")) return;
+
+    const root = document.createElement("div");
+    root.id = "notifWidgetRoot";
+    root.innerHTML = `
+      <style>
+        #notifWidgetRoot{position:absolute;top:16px;right:16px;z-index:999999;font-family:'Cairo',Arial,sans-serif;direction:rtl;}
+        #notifWidgetRoot .nw-row{display:flex;gap:8px;align-items:center;}
+        #notifIcon{width:48px;height:48px;border-radius:50%;background:#fff;color:#223243;box-shadow:0 5px 14px rgba(0,0,0,.22);display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;position:relative;font-size:20px;}
+        #notifCount{position:absolute;top:-6px;right:-6px;min-width:22px;height:22px;padding:0 5px;border-radius:999px;background:#e74c3c;color:#fff;font-size:12px;font-weight:900;display:flex;align-items:center;justify-content:center;line-height:1;}
+        #btnEnableNotifications,#btnInstallApp{border:none;border-radius:12px;padding:10px 12px;font-family:'Cairo',Arial,sans-serif;font-weight:900;cursor:pointer;box-shadow:0 5px 14px rgba(0,0,0,.18);color:#fff;white-space:nowrap;}
+        #btnEnableNotifications{background:#1e3c72;} #btnInstallApp{background:#27ae60;display:none;}
+        #notifBox{display:none;position:absolute;top:58px;right:0;width:320px;max-width:calc(100vw - 24px);max-height:380px;overflow:auto;background:#fff;border-radius:14px;box-shadow:0 14px 30px rgba(0,0,0,.25);border:1px solid #e6edf4;color:#223243;}
+        .notif-item{padding:12px;border-bottom:1px solid #eef2f6;cursor:pointer;text-align:right;font-weight:800;}.notif-item:hover{background:#f6f8fb;}.notif-date{font-size:12px;color:#758292;margin-top:5px;font-weight:700;}.notif-empty{padding:16px;color:#758292;font-weight:900;text-align:center;}
+        @media(max-width:700px){#notifWidgetRoot{top:10px;right:10px;}#btnEnableNotifications,#btnInstallApp{padding:8px 10px;font-size:12px;}#notifIcon{width:42px;height:42px;font-size:18px;}#notifBox{width:280px;top:52px;}}
+      </style>
+      <div class="nw-row">
+        <div id="notifIcon" title="الإشعارات">🔔<span id="notifCount">0</span></div>
+        <button id="btnEnableNotifications" type="button">تفعيل الإشعارات</button>
+        <button id="btnInstallApp" type="button">تثبيت التطبيق</button>
+      </div>
+      <div id="notifBox"><div id="notifList"><div class="notif-empty">جاري التحميل...</div></div></div>`;
+
+    const header = document.querySelector(".company-header") || document.body;
+    if(getComputedStyle(header).position === "static") header.style.position = "relative";
+    header.appendChild(root);
+
+    $("notifIcon").addEventListener("click", function(e){ e.stopPropagation(); toggleNotificationsBox(); });
+    $("btnEnableNotifications").addEventListener("click", enableNotifications);
+    $("btnInstallApp").addEventListener("click", installApp);
+
+    document.addEventListener("click", function(e){
+      const rootEl = $("notifWidgetRoot");
+      if(rootEl && !rootEl.contains(e.target)) closeNotificationsBox();
+    });
+  }
+
+  async function installApp(){
+    if(!deferredInstallPrompt){ toast("ℹ️ خيار التثبيت غير متاح الآن", "warn"); return; }
+    deferredInstallPrompt.prompt();
+    const choice = await deferredInstallPrompt.userChoice;
+    toast(choice && choice.outcome === "accepted" ? "✅ تم قبول تثبيت التطبيق" : "ℹ️ تم إلغاء التثبيت", choice && choice.outcome === "accepted" ? "ok" : "warn");
+    deferredInstallPrompt = null;
+    if($("btnInstallApp")) $("btnInstallApp").style.display = "none";
+  }
+
+  function setupInstallPrompt(){
+    window.addEventListener("beforeinstallprompt", function(e){
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      if($("btnInstallApp")) $("btnInstallApp").style.display = "inline-flex";
+    });
+    window.addEventListener("appinstalled", function(){
+      deferredInstallPrompt = null;
+      if($("btnInstallApp")) $("btnInstallApp").style.display = "none";
+      toast("✅ تم تثبيت التطبيق بنجاح", "ok");
+    });
   }
 
   async function enableNotifications(){
     try{
-      if(!("Notification" in window)){
-        window.showMsg && window.showMsg("❌ المتصفح لا يدعم الإشعارات", "err");
-        return;
-      }
-
-      if(!("serviceWorker" in navigator)){
-        window.showMsg && window.showMsg("❌ المتصفح لا يدعم Service Worker", "err");
-        return;
-      }
-
+      if(!hasRequiredPageFunctions()){ toast("❌ دوال الصفحة غير معرفة قبل تحميل الإشعارات", "err"); return; }
+      if(!("Notification" in window)){ toast("❌ هذا المتصفح لا يدعم الإشعارات", "err"); return; }
       const permission = await Notification.requestPermission();
-      if(permission !== "granted"){
-        window.showMsg && window.showMsg("⚠️ لم يتم منح إذن الإشعارات", "warn");
-        return;
-      }
+      if(permission !== "granted"){ toast("⚠️ لم يتم منح إذن الإشعارات", "warn"); return; }
 
-      const registration = await navigator.serviceWorker.register(
-        "/system/firebase-messaging-sw.js",
-        { scope:"/system/" }
-      );
+      await ensureFirebase();
+      const registration = await registerServiceWorker();
+      const pushToken = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: registration });
+      if(!pushToken){ toast("⚠️ تعذر إنشاء توكن الإشعارات", "warn"); return; }
 
-      const messaging = await initFirebase();
+      const sessionToken = window.getSessionToken();
+      if(!sessionToken){ toast("⚠️ الجلسة غير موجودة", "warn"); return; }
 
-      const pushToken = await messaging.getToken({
-        vapidKey: VAPID_KEY,
-        serviceWorkerRegistration: registration
-      });
-
-      if(!pushToken){
-        window.showMsg && window.showMsg("❌ فشل الحصول على توكن الإشعارات", "err");
-        return;
-      }
-
-      const sessionToken = window.getSessionToken ? window.getSessionToken() : "";
-      if(!sessionToken){
-        window.showMsg && window.showMsg("⚠️ الجلسة غير موجودة", "warn");
-        return;
-      }
-
-      const res = await window.apiPost({
-        action:"savePushToken",
-        token:sessionToken,
-        page:pageName(),
-        pushToken:pushToken
-      });
-
-      if(res && res.ok){
-        window.showMsg && window.showMsg("✅ تم تفعيل الإشعارات", "ok");
-      }else{
-        window.showMsg && window.showMsg((res && res.message) || "❌ فشل حفظ التوكن", "err");
-      }
-
+      const res = await window.apiPost({ action:"savePushToken", token:sessionToken, page:safePageName(), pushToken:pushToken });
+      if(res && res.ok) toast("✅ تم تفعيل الإشعارات بنجاح", "ok");
+      else toast((res && (res.message || res.error)) || "❌ فشل حفظ توكن الإشعارات", "err");
     }catch(err){
-      console.error("Notification setup error:", err);
-      window.showMsg && window.showMsg("❌ فشل تفعيل الإشعارات | " + (err.message || err), "err");
+      console.error("enableNotifications error:", err);
+      toast("❌ فشل تفعيل الإشعارات", "err");
     }
   }
 
-  function initPWA(){
-    const btn = document.getElementById("btnInstallApp");
-    if(!btn) return;
+  async function loadNotifications(){
+    try{
+      if(!hasRequiredPageFunctions()) return;
+      const sessionToken = window.getSessionToken();
+      if(!sessionToken) return;
+      const res = await window.apiPost({ action:"getNotifications", token:sessionToken, page:safePageName() });
+      const list = $("notifList"), count = $("notifCount");
+      if(!list || !count) return;
+      const items = Array.isArray(res && res.items) ? res.items : [];
+      if(!items.length){ list.innerHTML = '<div class="notif-empty">لا توجد إشعارات</div>'; count.textContent = "0"; lastNotificationIds = []; return; }
 
-    window.addEventListener("beforeinstallprompt", function(e){
-      e.preventDefault();
-      deferredPrompt = e;
-      btn.style.display = "inline-block";
-    });
-
-    btn.addEventListener("click", async function(){
-      if(!deferredPrompt){
-        window.showMsg && window.showMsg("ℹ️ خيار التثبيت غير متاح الآن", "warn");
-        return;
-      }
-
-      deferredPrompt.prompt();
-      const choice = await deferredPrompt.userChoice;
-
-      if(choice && choice.outcome === "accepted"){
-        window.showMsg && window.showMsg("✅ تم قبول تثبيت التطبيق", "ok");
-      }else{
-        window.showMsg && window.showMsg("ℹ️ تم إلغاء التثبيت", "warn");
-      }
-
-      deferredPrompt = null;
-      btn.style.display = "none";
-    });
+      const currentIds = items.map(n => String(n.id || ""));
+      const newItems = items.filter(n => String(n.id || "") && lastNotificationIds.length && lastNotificationIds.indexOf(String(n.id || "")) === -1);
+      let unread = 0;
+      list.innerHTML = "";
+      items.forEach(function(n){
+        if(String(n.isRead).toLowerCase() !== "true") unread++;
+        const id = String(n.id || "").trim();
+        const div = document.createElement("div");
+        div.className = "notif-item";
+        div.innerHTML = '<div>' + escapeHtml(n.message || "إشعار جديد") + '</div><div class="notif-date">' + escapeHtml(n.createdAt || "") + '</div>';
+        div.addEventListener("click", function(){ markNotificationRead(id); });
+        list.appendChild(div);
+      });
+      count.textContent = unread > 99 ? "99+" : String(unread);
+      if(newItems.length > 0) showBrowserNotification("إشعار جديد", newItems[0].message || "لديك إشعار جديد");
+      lastNotificationIds = currentIds;
+    }catch(err){ console.log("loadNotifications error:", err); }
   }
 
-  function escapeHtml(s){
-    return String(s == null ? "" : s)
-      .replace(/&/g,"&amp;")
-      .replace(/</g,"&lt;")
-      .replace(/>/g,"&gt;")
-      .replace(/"/g,"&quot;")
-      .replace(/'/g,"&#39;");
+  async function markNotificationRead(notificationId){
+    try{
+      const id = String(notificationId || "").trim();
+      if(!id || !hasRequiredPageFunctions()) return;
+      const sessionToken = window.getSessionToken();
+      if(!sessionToken) return;
+      await window.apiPost({ action:"markNotificationRead", token:sessionToken, page:safePageName(), notificationId:id });
+      await loadNotifications();
+    }catch(err){ console.log("markNotificationRead error:", err); }
   }
 
-  function init(){
-    addStyle();
+  function toggleNotificationsBox(){ const box = $("notifBox"); if(!box) return; const open = box.style.display !== "block"; box.style.display = open ? "block" : "none"; if(open) loadNotifications(); }
+  function closeNotificationsBox(){ const box = $("notifBox"); if(box) box.style.display = "none"; }
+
+  async function showBrowserNotification(title, body){
+    try{
+      if(!("Notification" in window) || Notification.permission !== "granted") return;
+      let reg = swRegistration;
+      if(!reg && "serviceWorker" in navigator) reg = await navigator.serviceWorker.getRegistration(SW_SCOPE);
+      if(!reg && "serviceWorker" in navigator) reg = await registerServiceWorker();
+      if(reg && reg.showNotification){
+        reg.showNotification(title || "إشعار جديد", { body:body || "", icon:"/system/logo-192.png", badge:"/system/logo-192.png", dir:"rtl", lang:"ar", data:{ url:"/system/" + safePageName() + ".html" } });
+      }
+    }catch(err){ console.log("showBrowserNotification error:", err); }
+  }
+
+  function setupForegroundMessages(){
+    try{
+      if(!messaging) return;
+      messaging.onMessage(function(payload){
+        const title = payload?.notification?.title || payload?.data?.title || "إشعار جديد";
+        const body = payload?.notification?.body || payload?.data?.body || "";
+        toast(title + (body ? " - " + body : ""), "ok");
+        showBrowserNotification(title, body);
+        loadNotifications();
+      });
+    }catch(err){ console.log("foreground setup error:", err); }
+  }
+
+  function escapeHtml(s){ return String(s == null ? "" : s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;"); }
+
+  async function initNotificationsWidget(){
+    if(initialized) return;
+    initialized = true;
     createWidget();
-    initBell();
-    initPWA();
-
-    const btn = document.getElementById("btnEnableNotifications");
-    if(btn){
-      btn.addEventListener("click", enableNotifications);
-    }
-
-    setTimeout(loadNotifications, 1000);
-    setInterval(loadNotifications, 30000);
-
-    window.loadNotifications = loadNotifications;
-    window.enableNotifications = enableNotifications;
+    setupInstallPrompt();
+    try{ await ensureFirebase(); setupForegroundMessages(); }catch(err){ console.log("Firebase init warning:", err); }
+    loadNotifications();
+    if(notificationsTimer) clearInterval(notificationsTimer);
+    notificationsTimer = setInterval(loadNotifications, 30000);
   }
 
-  if(document.readyState === "loading"){
-    document.addEventListener("DOMContentLoaded", init);
-  }else{
-    init();
-  }
+  window.initNotificationsWidget = initNotificationsWidget;
+  window.loadNotifications = loadNotifications;
+  window.enableNotifications = enableNotifications;
+  window.showBrowserNotification = showBrowserNotification;
+  window.addEventListener("load", function(){ setTimeout(initNotificationsWidget, 200); });
 })();

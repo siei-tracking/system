@@ -1006,10 +1006,7 @@ window.showMsg = showMsg;
 window.addEventListener("load", function(){
   ensurePageSession();
 
-  if(typeof initNotificationsWidget === "function"){
-    initNotificationsWidget();
-  }
-
+  
   document.getElementById("orderID").addEventListener("keydown", function(e){
     if(e.key === "Enter"){
       fetchData();
@@ -1017,8 +1014,6 @@ window.addEventListener("load", function(){
   });
 });
 </script>
-
-<script src="/system/notifications-widget.js"></script>
 
 </body>
 </html>
