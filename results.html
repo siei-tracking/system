@@ -630,7 +630,7 @@
 <div id="toast"></div>
 
 <script>
-  const API_BASE = "https://script.google.com/macros/s/AKfycbxRSD6_z-wVVhcgOWrPvMJCdpIWoTM8o5oi4nkrD1ArgkCRfE1ECE3Bi2nAaMtrud_3/exec";
+  const API_BASE = "https://script.google.com/macros/s/AKfycbwIh3zFn3Qq2QEndj9XG_MDqrrg5HZUTk4eD8bXkyaw63x_XN2o0wUq6MuE44bSdmWj/exec";
   const PAGE_NAME = "results";
   const STORAGE_KEY_PAGE = "tracking_session_token_" + PAGE_NAME;
   const STORAGE_KEY_GLOBAL = "tracking_session_token";
@@ -690,46 +690,47 @@ function setSessionToken(token){
   }
 }
 
-  async function ensurePageSession(){
-    const token = getSessionToken();
+      async function ensurePageSession(){
+  const token = getSessionToken();
 
-    if(!token){
-      goToLogin();
-      return;
-    }
-
-    try{
-      const result = await apiPost({
-        action: "checkSession",
-        token: token,
-        page: PAGE_NAME
-      });
-
-      if(result && result.ok){
-        setSessionToken(token);
-
-        currentUserName = result.user || result.userName || "مخول غير معروف";
-
-        const w = document.getElementById("welcomeUser");
-        if(currentUserName && currentUserName !== "مخول غير معروف"){
-          w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: ' + currentUserName;
-        } else {
-          w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: مخول غير معروف';
-        }
-
-        document.getElementById("pageWrap").classList.add("show");
-      }else{
-        clearSessionToken();
-        goToLogin();
-      }
-    }catch(error){
-      showMsg("❌ تعذر التحقق من الجلسة", "err");
-      setTimeout(function(){
-        clearSessionToken();
-        goToLogin();
-      }, 900);
-    }
+  if(!token){
+    goToLogin();
+    return;
   }
+
+  try{
+    const result = await apiPost({
+      action: "checkSession",
+      token: token,
+      page: PAGE_NAME
+    });
+
+    if(result && result.ok){
+      setSessionToken(token);
+
+      currentUserName = result.user || result.userName || "مخول غير معروف";
+
+      const w = document.getElementById("welcomeUser");
+      w.innerHTML = '<i class="fas fa-user-shield"></i> المستخدم: ' + currentUserName;
+
+      document.getElementById("pageWrap").classList.add("show");
+
+      if(typeof window.loadNotifications === "function"){
+        window.loadNotifications();
+      }
+
+    }else{
+      clearSessionToken();
+      goToLogin();
+    }
+  }catch(error){
+    showMsg("❌ تعذر التحقق من الجلسة", "err");
+    setTimeout(function(){
+      clearSessionToken();
+      goToLogin();
+    }, 900);
+  }
+}
 
   function showMsg(text, type){
     var t = document.getElementById("toast");
