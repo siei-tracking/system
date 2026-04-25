@@ -1176,7 +1176,7 @@
   </div>
 
   <script>
-    const API_BASE = "https://script.google.com/macros/s/AKfycbynblM19U7GXBhqu6-ostKDQ_oE5e-tEgXDFjDIqyEtTX8SzMuUbODPQfhCWlWABOw/exec";
+    const API_BASE = "https://script.google.com/macros/s/AKfycbyANCxpBVy59VqImQJsQDGBGAYfsPHKU5CeMflIkIInvA4zfLWFfKNcvVt0e9QsT9fZ/exec";
     const PAGE_NAME = "main";
     const STORAGE_KEY_PAGE = "tracking_session_token_" + PAGE_NAME;
     const STORAGE_KEY_GLOBAL = "tracking_session_token";
@@ -1709,473 +1709,383 @@ function setSessionToken(token){
    
     
     function exportCurrentTable(){
-      if(!CURRENT_ITEMS || !CURRENT_ITEMS.length){
-        setStatus("⚠️ لا توجد بيانات معروضة للتصدير", false);
-        showMsg("⚠️ لا توجد بيانات للتصدير", "warn");
-        return;
-      }
+  if(!CURRENT_ITEMS || !CURRENT_ITEMS.length){
+    setStatus("⚠️ لا توجد بيانات معروضة للتصدير", false);
+    showMsg("⚠️ لا توجد بيانات للتصدير", "warn");
+    return;
+  }
 
-      var rows = [];
-      for(var i = 0; i < CURRENT_ITEMS.length; i++){
-        var it = CURRENT_ITEMS[i] || {};
-        rows.push({
-          orderNo: String(it.orderNo || "").trim() || "—",
-          orderDate: String(it.orderDate || "").trim() || "—",
-          clientName: String(it.clientName || "").trim() || "—",
-          lastStage: String(it.lastStage || "").trim() || "—"
-        });
-      }
+  var rows = [];
+  for(var i = 0; i < CURRENT_ITEMS.length; i++){
+    var it = CURRENT_ITEMS[i] || {};
+    rows.push({
+      orderNo: String(it.orderNo || "").trim() || "—",
+      orderDate: String(it.orderDate || "").trim() || "—",
+      clientName: String(it.clientName || "").trim() || "—",
+      lastStage: String(it.lastStage || "").trim() || "—"
+    });
+  }
 
-      var title = getExportTitleByMode(CURRENT_MODE);
-      var now = new Date();
-      var yyyy = now.getFullYear();
-      var mm = String(now.getMonth() + 1).padStart(2, "0");
-      var dd = String(now.getDate()).padStart(2, "0");
-      var hh = String(now.getHours()).padStart(2, "0");
-      var mi = String(now.getMinutes()).padStart(2, "0");
-      var fileName = title + "_" + yyyy + "-" + mm + "-" + dd + "_" + hh + "-" + mi + ".xls";
+  var title = getExportTitleByMode(CURRENT_MODE);
+  var now = new Date();
+  var yyyy = now.getFullYear();
+  var mm = String(now.getMonth() + 1).padStart(2, "0");
+  var dd = String(now.getDate()).padStart(2, "0");
+  var hh = String(now.getHours()).padStart(2, "0");
+  var mi = String(now.getMinutes()).padStart(2, "0");
+  var fileName = title + "_" + yyyy + "-" + mm + "-" + dd + "_" + hh + "-" + mi + ".xls";
 
-      var html = ''
-        + '<html dir="rtl" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">'
-        + '<head><meta charset="UTF-8"></head>'
-        + '<body>'
-        + '<table border="1" style="border-collapse:collapse;font-family:Cairo,Arial,sans-serif;text-align:center;">'
-        + '<tr>'
-        +   '<th colspan="4" style="background:#223243;color:#fff;font-size:18px;padding:10px;">' + escapeHtml(title) + '</th>'
-        + '</tr>'
-        + '<tr>'
-        +   '<th style="background:#f5a623;color:#111;padding:8px;">رقم أمر العمل</th>'
-        +   '<th style="background:#f5a623;color:#111;padding:8px;">تاريخ أمر العمل</th>'
-        +   '<th style="background:#f5a623;color:#111;padding:8px;">الجهة المستفيدة</th>'
-        +   '<th style="background:#f5a623;color:#111;padding:8px;">آخر مرحلة</th>'
-        + '</tr>';
+  var html = ''
+    + '<html dir="rtl" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">'
+    + '<head><meta charset="UTF-8"></head>'
+    + '<body>'
+    + '<table border="1" style="border-collapse:collapse;font-family:Cairo,Arial,sans-serif;text-align:center;">'
+    + '<tr>'
+    +   '<th colspan="4" style="background:#223243;color:#fff;font-size:18px;padding:10px;">' + escapeHtml(title) + '</th>'
+    + '</tr>'
+    + '<tr>'
+    +   '<th style="background:#f5a623;color:#111;padding:8px;">رقم أمر العمل</th>'
+    +   '<th style="background:#f5a623;color:#111;padding:8px;">تاريخ أمر العمل</th>'
+    +   '<th style="background:#f5a623;color:#111;padding:8px;">الجهة المستفيدة</th>'
+    +   '<th style="background:#f5a623;color:#111;padding:8px;">آخر مرحلة</th>'
+    + '</tr>';
 
-      for(var j = 0; j < rows.length; j++){
-        html += '<tr>'
-          + '<td style="padding:8px;">' + escapeHtml(rows[j].orderNo) + '</td>'
-          + '<td style="padding:8px;">' + escapeHtml(rows[j].orderDate) + '</td>'
-          + '<td style="padding:8px;">' + escapeHtml(rows[j].clientName) + '</td>'
-          + '<td style="padding:8px;">' + escapeHtml(rows[j].lastStage) + '</td>'
-          + '</tr>';
-      }
+  for(var j = 0; j < rows.length; j++){
+    html += '<tr>'
+      + '<td style="padding:8px;">' + escapeHtml(rows[j].orderNo) + '</td>'
+      + '<td style="padding:8px;">' + escapeHtml(rows[j].orderDate) + '</td>'
+      + '<td style="padding:8px;">' + escapeHtml(rows[j].clientName) + '</td>'
+      + '<td style="padding:8px;">' + escapeHtml(rows[j].lastStage) + '</td>'
+      + '</tr>';
+  }
 
-      html += '</table></body></html>';
+  html += '</table></body></html>';
 
-      var blob = new Blob(['\ufeff' + html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement("a");
-      a.href = url;
-      a.download = fileName;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+  var blob = new Blob(['\ufeff' + html], { type: 'application/vnd.ms-excel;charset=utf-8;' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement("a");
+  a.href = url;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 
-      showMsg("✅ تم تصدير Excel بنجاح", "ok");
+  showMsg("✅ تم تصدير Excel بنجاح", "ok");
+}
+
+async function exportCurrentPDF(){
+  if(!CURRENT_ITEMS || !CURRENT_ITEMS.length){
+    setStatus("⚠️ لا توجد بيانات معروضة للتصدير", false);
+    showMsg("⚠️ لا توجد بيانات للتصدير", "warn");
+    return;
+  }
+
+  const token = getSessionToken();
+  if(!token){
+    window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
+    return;
+  }
+
+  const rows = CURRENT_ITEMS.map(function(it){
+    return {
+      orderNo: String(it.orderNo || "").trim() || "—",
+      orderDate: String(it.orderDate || "").trim() || "—",
+      clientName: String(it.clientName || "").trim() || "—",
+      lastStage: String(it.lastStage || "").trim() || "—"
+    };
+  });
+
+  const payload = {
+    action: "exportPDF",
+    token: token,
+    page: PAGE_NAME,
+    title: getExportTitleByMode(CURRENT_MODE),
+    mode: CURRENT_MODE,
+    rows: rows
+  };
+
+  setLoading(true);
+
+  try{
+    const res = await apiPost(payload);
+    setLoading(false);
+
+    if(!res || !res.ok || !res.base64){
+      setStatus("❌ فشل إنشاء PDF", false);
+      showMsg((res && res.message) || "❌ فشل إنشاء PDF", "err");
+      return;
     }
 
-    async function exportCurrentPDF(){
-      if(!CURRENT_ITEMS || !CURRENT_ITEMS.length){
-        setStatus("⚠️ لا توجد بيانات معروضة للتصدير", false);
-        showMsg("⚠️ لا توجد بيانات للتصدير", "warn");
-        return;
-      }
+    const byteCharacters = atob(res.base64);
+    const byteNumbers = new Array(byteCharacters.length);
 
-      const token = getSessionToken();
-      if(!token){
-        window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
-        return;
-      }
-
-      const rows = CURRENT_ITEMS.map(function(it){
-        return {
-          orderNo: String(it.orderNo || "").trim() || "—",
-          orderDate: String(it.orderDate || "").trim() || "—",
-          clientName: String(it.clientName || "").trim() || "—",
-          lastStage: String(it.lastStage || "").trim() || "—"
-        };
-      });
-
-      const payload = {
-        action: "exportPDF",
-        token: token,
-        page: PAGE_NAME,
-        title: getExportTitleByMode(CURRENT_MODE),
-        mode: CURRENT_MODE,
-        rows: rows
-      };
-
-      setLoading(true);
-
-      try{
-        const res = await apiPost(payload);
-        setLoading(false);
-
-        if(!res || !res.ok || !res.base64){
-          setStatus("❌ فشل إنشاء PDF", false);
-          showMsg((res && res.message) || "❌ فشل إنشاء PDF", "err");
-          return;
-        }
-
-        const byteCharacters = atob(res.base64);
-        const byteNumbers = new Array(byteCharacters.length);
-
-        for(let i = 0; i < byteCharacters.length; i++){
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-
-        const byteArray = new Uint8Array(byteNumbers);
-        const blob = new Blob([byteArray], { type: "application/pdf" });
-        const blobUrl = URL.createObjectURL(blob);
-
-        const a = document.createElement("a");
-        a.href = blobUrl;
-        a.target = "_blank";
-        a.click();
-
-        setTimeout(function(){
-          URL.revokeObjectURL(blobUrl);
-        }, 10000);
-
-        showMsg("✅ تم إنشاء PDF بنجاح", "ok");
-      }catch(err){
-        setLoading(false);
-        setStatus("❌ export pdf error: " + safeErr(err), false);
-        showMsg("❌ فشل تصدير PDF", "err");
-      }
+    for(let i = 0; i < byteCharacters.length; i++){
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
     }
 
-    function computeLastStage(item){
-      const steps = [
-        { key: "final", label: "استلام النتائج" },
-        { key: "email", label: "ارسال الايميل" },
-        { key: "barcode", label: "الباركود" },
-        { key: "official", label: "الكتاب الرسمي" },
-        { key: "testResults", label: "نتائج الفحص" },
-        { key: "lab2", label: "المختبرات بعد الورشة" },
-        { key: "workshop", label: "الورشة" },
-        { key: "elev", label: "المصاعد" },
-        { key: "lab1", label: "المختبرات" },
-        { key: "payment", label: "التسديد" },
-        { key: "pricing", label: "التسعيرة" },
-        { key: "inspection", label: "استلام المعاملة" }
-      ];
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: "application/pdf" });
+    const blobUrl = URL.createObjectURL(blob);
 
-      for(let i = 0; i < steps.length; i++){
-        if(isDoneAny(item[steps[i].key])) return steps[i].label;
-      }
-      return "لم تبدأ";
+    const a = document.createElement("a");
+    a.href = blobUrl;
+    a.target = "_blank";
+    a.click();
+
+    setTimeout(function(){
+      URL.revokeObjectURL(blobUrl);
+    }, 10000);
+
+    showMsg("✅ تم إنشاء PDF بنجاح", "ok");
+  }catch(err){
+    setLoading(false);
+    setStatus("❌ export pdf error: " + safeErr(err), false);
+    showMsg("❌ فشل تصدير PDF", "err");
+  }
+}
+
+function computeLastStage(item){
+  const steps = [
+    { key: "final", label: "استلام النتائج" },
+    { key: "email", label: "ارسال الايميل" },
+    { key: "barcode", label: "الباركود" },
+    { key: "official", label: "الكتاب الرسمي" },
+    { key: "testResults", label: "نتائج الفحص" },
+    { key: "lab2", label: "المختبرات بعد الورشة" },
+    { key: "workshop", label: "الورشة" },
+    { key: "elev", label: "المصاعد" },
+    { key: "lab1", label: "المختبرات" },
+    { key: "payment", label: "التسديد" },
+    { key: "pricing", label: "التسعيرة" },
+    { key: "inspection", label: "استلام المعاملة" }
+  ];
+
+  for(let i = 0; i < steps.length; i++){
+    if(isDoneAny(item[steps[i].key])) return steps[i].label;
+  }
+  return "لم تبدأ";
+}
+
+function normalizeItemsForRender(items){
+  return (items || []).map(function(it){
+    const item = Object.assign({}, it);
+
+    if(!item.orderDate){
+      let src = String(item.inspection || "");
+      let dt = src.match(/(\d{4}-\d{2}-\d{2})/);
+      item.orderDate = dt ? dt[1] : "—";
     }
 
-    function normalizeItemsForRender(items){
-      return (items || []).map(function(it){
-        const item = Object.assign({}, it);
-
-        if(!item.orderDate){
-          let src = String(item.inspection || "");
-          let dt = src.match(/(\d{4}-\d{2}-\d{2})/);
-          item.orderDate = dt ? dt[1] : "—";
-        }
-
-        if(!item.lastStage){
-          item.lastStage = computeLastStage(item);
-        }
-
-        return item;
-      });
+    if(!item.lastStage){
+      item.lastStage = computeLastStage(item);
     }
 
-    function renderList(res, mode){
-      if(res && res.error){
-        CURRENT_MODE = mode || "open";
-        CURRENT_ITEMS = [];
+    return item;
+  });
+}
 
-        document.getElementById("count").textContent = "0";
-        document.getElementById("at").textContent = res.at || "—";
-        document.getElementById("list").innerHTML = "";
-        setStatus("❌ خطأ من السيرفر: " + res.error, false);
-        showMsg("❌ خطأ من السيرفر", "err");
-        return;
-      }
+function renderList(res, mode){
+  if(res && res.error){
+    CURRENT_MODE = mode || "open";
+    CURRENT_ITEMS = [];
 
-      var rawItems = (res && res.items) ? res.items : [];
-      var items = normalizeItemsForRender(rawItems);
+    document.getElementById("count").textContent = "0";
+    document.getElementById("at").textContent = res.at || "—";
+    document.getElementById("list").innerHTML = "";
+    setStatus("❌ خطأ من السيرفر: " + res.error, false);
+    showMsg("❌ خطأ من السيرفر", "err");
+    return;
+  }
 
-      CURRENT_MODE = mode || "open";
-      CURRENT_ITEMS = items.slice();
+  var rawItems = (res && res.items) ? res.items : [];
+  var items = normalizeItemsForRender(rawItems);
 
-      document.getElementById("count").textContent = String(items.length);
-      document.getElementById("at").textContent = (res && res.at) ? res.at : "—";
+  CURRENT_MODE = mode || "open";
+  CURRENT_ITEMS = items.slice();
 
-      if(!items.length){
-        document.getElementById("list").innerHTML =
-          '<div class="empty"><i class="fas fa-check-circle"></i> لا توجد معاملات</div>';
-        setStatus("تم التحميل — items=0", true);
-        return;
-      }
+  document.getElementById("count").textContent = String(items.length);
+  document.getElementById("at").textContent = (res && res.at) ? res.at : "—";
 
-      var html = "";
+  if(!items.length){
+    document.getElementById("list").innerHTML =
+      '<div class="empty"><i class="fas fa-check-circle"></i> لا توجد معاملات</div>';
+    setStatus("تم التحميل — items=0", true);
+    return;
+  }
 
-      for(var i = 0; i < items.length; i++){
-        var it = items[i] || {};
-        var orderNo = escapeHtml(it.orderNo || "");
-        var client  = escapeHtml(it.clientName || "—");
-        var lateDays = Number(it.lateDays || 0);
-        var fileUrl = String(it.barcodeFileUrl || it.barcodeLink || it.fileUrl || it.fileLink || "").trim();
+  var html = "";
 
-        html += '<div class="item">';
-        html +=   '<div class="row1">';
-        html +=     '<div>';
-        html +=       '<div class="idbox">أمر العمل : <span>' + orderNo + '</span> ' + typePills(it) + '</div>';
-        html +=       '<div class="client"><i class="fas fa-building"></i> ' + client + '</div>';
+  for(var i = 0; i < items.length; i++){
+    var it = items[i] || {};
+    var orderNo = escapeHtml(it.orderNo || "");
+    var client  = escapeHtml(it.clientName || "—");
+    var lateDays = Number(it.lateDays || 0);
+    var fileUrl = String(it.barcodeFileUrl || it.barcodeLink || it.fileUrl || it.fileLink || "").trim();
 
-        if(mode === "delayed"){
-          html += '<div class="late"><i class="fas fa-hourglass-half"></i> متأخر ' + lateDays + ' يوم</div>';
-        }
+    html += '<div class="item">';
+    html +=   '<div class="row1">';
+    html +=     '<div>';
+    html +=       '<div class="idbox">أمر العمل : <span>' + orderNo + '</span> ' + typePills(it) + '</div>';
+    html +=       '<div class="client"><i class="fas fa-building"></i> ' + client + '</div>';
 
-        html +=     '</div>';
-        html +=     '<div class="action-wrap">';
-
-        if(mode === "done" || mode === "search"){
-          if(fileUrl){
-            html += '<a href="' + escapeHtml(fileUrl) + '" target="_blank" rel="noopener noreferrer" class="file-btn">'
-                 +    '<i class="fas fa-up-right-from-square"></i> فتح الملف'
-                 +  '</a>';
-          } else {
-            html += '<button class="btn btn-ghost" type="button" disabled>'
-                 +    '<i class="fas fa-ban"></i> لا يوجد ملف'
-                 +  '</button>';
-          }
-        }
-
-        html +=     '</div>';
-        html +=   '</div>';
-        html +=   renderStepper(it);
-        html += '</div>';
-      }
-
-      document.getElementById("list").innerHTML = html;
-      setStatus("تم التحميل بنجاح", true);
+    if(mode === "delayed"){
+      html += '<div class="late"><i class="fas fa-hourglass-half"></i> متأخر ' + lateDays + ' يوم</div>';
     }
 
-    async function loadOpen(){
-      const token = getSessionToken();
-      if(!token){
-        window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
-        return;
-      }
+    html +=     '</div>';
+    html +=     '<div class="action-wrap">';
 
-      setLoading(true);
-
-      try{
-        const res = await apiPost({
-          action: "getOpenOrders",
-          token: token,
-          page: PAGE_NAME
-        });
-
-        setLoading(false);
-        renderList(res, "open");
-      }catch(err){
-        setLoading(false);
-        setStatus("❌ open error: " + safeErr(err), false);
-        showMsg("❌ فشل تحميل غير المنجز", "err");
+    if(mode === "done" || mode === "search"){
+      if(fileUrl){
+        html += '<a href="' + escapeHtml(fileUrl) + '" target="_blank" rel="noopener noreferrer" class="file-btn">'
+             +    '<i class="fas fa-up-right-from-square"></i> فتح الملف'
+             +  '</a>';
+      } else {
+        html += '<button class="btn btn-ghost" type="button" disabled>'
+             +    '<i class="fas fa-ban"></i> لا يوجد ملف'
+             +  '</button>';
       }
     }
 
-    async function loadDelayed(){
-      const token = getSessionToken();
-      if(!token){
-        window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
-        return;
-      }
+    html +=     '</div>';
+    html +=   '</div>';
+    html +=   renderStepper(it);
+    html += '</div>';
+  }
 
-      setLoading(true);
+  document.getElementById("list").innerHTML = html;
+  setStatus("تم التحميل بنجاح", true);
+}
 
-      try{
-        const res = await apiPost({
-          action: "getDelayedOrders",
-          token: token,
-          page: PAGE_NAME
-        });
+async function loadOpen(){
+  const token = getSessionToken();
+  if(!token){ window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME); return; }
+  setLoading(true);
+  try{
+    const res = await apiPost({ action:"getOpenOrders", token:token, page:PAGE_NAME });
+    setLoading(false);
+    renderList(res, "open");
+  }catch(err){
+    setLoading(false);
+    setStatus("❌ open error: " + safeErr(err), false);
+    showMsg("❌ فشل تحميل غير المنجز", "err");
+  }
+}
 
-        setLoading(false);
-        renderList(res, "delayed");
-      }catch(err){
-        setLoading(false);
-        setStatus("❌ delayed error: " + safeErr(err), false);
-        showMsg("❌ فشل تحميل المتأخر", "err");
-      }
+async function loadDelayed(){
+  const token = getSessionToken();
+  if(!token){ window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME); return; }
+  setLoading(true);
+  try{
+    const res = await apiPost({ action:"getDelayedOrders", token:token, page:PAGE_NAME });
+    setLoading(false);
+    renderList(res, "delayed");
+  }catch(err){
+    setLoading(false);
+    setStatus("❌ delayed error: " + safeErr(err), false);
+    showMsg("❌ فشل تحميل المتأخر", "err");
+  }
+}
+
+async function loadDone(){
+  const token = getSessionToken();
+  if(!token){ window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME); return; }
+
+  var from = String(document.getElementById("dateFrom").value || "").trim();
+  var to   = String(document.getElementById("dateTo").value || "").trim();
+
+  setLoading(true);
+  try{
+    let res;
+    if(from && to){
+      res = await apiPost({ action:"getCompletedOrdersByDateRange", token:token, page:PAGE_NAME, fromDate:from, toDate:to, limit:5000 });
+      setLoading(false);
+      renderList(res, "done");
+      setStatus("✅ تم تحميل الإنجاز ضمن التاريخ المحدد", true);
+      showMsg("✅ تم تحميل النتائج حسب التاريخ", "ok");
+      return;
+    }
+    res = await apiPost({ action:"getCompletedOrders", token:token, page:PAGE_NAME, limit:5000 });
+    setLoading(false);
+    renderList(res, "done");
+  }catch(err){
+    setLoading(false);
+    setStatus("❌ done error: " + safeErr(err), false);
+    showMsg("❌ فشل تحميل الإنجاز", "err");
+  }
+}
+
+async function searchAny(){
+  const token = getSessionToken();
+  if(!token){ window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME); return; }
+
+  var id = String(document.getElementById("qDone").value || "").trim();
+  var sheetName = String(document.getElementById("sheetSelect").value || "").trim();
+
+  if(!id){ setStatus("⚠️ أدخل رقم أمر العمل", false); showMsg("⚠️ أدخل رقم أمر العمل", "warn"); return; }
+  if(!sheetName){ setStatus("⚠️ لا توجد سنة محددة للبحث", false); showMsg("⚠️ لا توجد سنة محددة", "warn"); return; }
+
+  setLoading(true);
+  try{
+    const res = await apiPost({ action:"searchOrderAnywhere", token:token, page:PAGE_NAME, orderNo:id, sheetName:sheetName });
+    setLoading(false);
+
+    if(res && res.error){ setStatus("❌ خطأ: " + res.error, false); showMsg("❌ خطأ من السيرفر", "err"); return; }
+
+    if(!res || !res.found){
+      CURRENT_MODE = "search";
+      CURRENT_ITEMS = [];
+      document.getElementById("count").textContent = "0";
+      document.getElementById("at").textContent = "—";
+      document.getElementById("list").innerHTML = '<div class="empty"><i class="fas fa-circle-xmark"></i> لا توجد معاملة بهذا الرقم داخل السنة المحددة</div>';
+      setStatus("❌ لم يتم العثور على أمر العمل " + escapeHtml(id) + " داخل السنة المحددة", false);
+      showMsg("⚠️ غير موجود", "warn");
+      return;
     }
 
-    async function loadDone(){
-      const token = getSessionToken();
-      if(!token){
-        window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
-        return;
-      }
+    var item = res.item ? res.item : res;
+    item = Object.assign({}, item, { orderNo: item.orderNo || id });
+    renderList({ at:(res.at || "—"), items:[item] }, "search");
+    setStatus("✅ تم العثور على أمر العمل " + escapeHtml(id) + " داخل " + escapeHtml(item.sourceSheet || sheetName), true);
+    showMsg("✅ تم العثور على المعاملة", "ok");
+  }catch(err){
+    setLoading(false);
+    setStatus("❌ search error: " + safeErr(err), false);
+    showMsg("❌ فشل البحث", "err");
+  }
+}
 
-      var from = String(document.getElementById("dateFrom").value || "").trim();
-      var to   = String(document.getElementById("dateTo").value || "").trim();
+async function openArchiveSheet(){
+  if(!isAdminUser()){ showMsg("⚠️ متاح لمدير النظام فقط", "warn"); return; }
+  const token = getSessionToken();
+  if(!token){ window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME); return; }
 
-      setLoading(true);
-
-      try{
-        let res;
-
-        if(from && to){
-          res = await apiPost({
-            action: "getCompletedOrdersByDateRange",
-            token: token,
-            page: PAGE_NAME,
-            fromDate: from,
-            toDate: to,
-            limit: 5000
-          });
-
-          setLoading(false);
-          renderList(res, "done");
-          setStatus("✅ تم تحميل الإنجاز ضمن التاريخ المحدد", true);
-          showMsg("✅ تم تحميل النتائج حسب التاريخ", "ok");
-          return;
-        }
-
-        res = await apiPost({
-          action: "getCompletedOrders",
-          token: token,
-          page: PAGE_NAME,
-          limit: 5000
-        });
-
-        setLoading(false);
-        renderList(res, "done");
-      }catch(err){
-        setLoading(false);
-        setStatus("❌ done error: " + safeErr(err), false);
-        showMsg("❌ فشل تحميل الإنجاز", "err");
-      }
+  try{
+    const res = await apiPost({ action:"getArchiveSheetUrl", token:token, page:PAGE_NAME });
+    if(!res || !res.ok){
+      setStatus("❌ " + (res && (res.error || res.message) ? (res.error || res.message) : "لا يمكن فتح الشيت"), false);
+      showMsg("❌ لا يمكن فتح الشيت", "err");
+      return;
     }
+    window.open(res.url, "_blank", "noopener");
+  }catch(err){
+    setStatus("❌ خطأ: " + safeErr(err), false);
+    showMsg("❌ خطأ في فتح الشيت", "err");
+  }
+}
 
-    async function searchAny(){
-      const token = getSessionToken();
-      if(!token){
-        window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
-        return;
-      }
-
-      var id = String(document.getElementById("qDone").value || "").trim();
-      var sheetName = String(document.getElementById("sheetSelect").value || "").trim();
-
-      if(!id){
-        setStatus("⚠️ أدخل رقم أمر العمل", false);
-        showMsg("⚠️ أدخل رقم أمر العمل", "warn");
-        return;
-      }
-
-      if(!sheetName){
-        setStatus("⚠️ لا توجد سنة محددة للبحث", false);
-        showMsg("⚠️ لا توجد سنة محددة", "warn");
-        return;
-      }
-
-      setLoading(true);
-
-      try{
-        const res = await apiPost({
-          action: "searchOrderAnywhere",
-          token: token,
-          page: PAGE_NAME,
-          orderNo: id,
-          sheetName: sheetName
-        });
-
-        setLoading(false);
-
-        if(res && res.error){
-          setStatus("❌ خطأ: " + res.error, false);
-          showMsg("❌ خطأ من السيرفر", "err");
-          return;
-        }
-
-        if(!res || !res.found){
-          CURRENT_MODE = "search";
-          CURRENT_ITEMS = [];
-          document.getElementById("count").textContent = "0";
-          document.getElementById("at").textContent = "—";
-          document.getElementById("list").innerHTML =
-            '<div class="empty"><i class="fas fa-circle-xmark"></i> لا توجد معاملة بهذا الرقم داخل السنة المحددة</div>';
-          setStatus("❌ لم يتم العثور على أمر العمل " + escapeHtml(id) + " داخل السنة المحددة", false);
-          showMsg("⚠️ غير موجود", "warn");
-          return;
-        }
-
-        var item = res.item ? res.item : res;
-        item = Object.assign({}, item, {
-          orderNo: item.orderNo || id
-        });
-
-        renderList({
-          at: (res.at || "—"),
-          items: [item]
-        }, "search");
-
-        setStatus("✅ تم العثور على أمر العمل " + escapeHtml(id) + " داخل " + escapeHtml(item.sourceSheet || sheetName), true);
-        showMsg("✅ تم العثور على المعاملة", "ok");
-      }catch(err){
-        setLoading(false);
-        setStatus("❌ search error: " + safeErr(err), false);
-        showMsg("❌ فشل البحث", "err");
-      }
-    }
-
-    async function openArchiveSheet(){
-      if(!isAdminUser()){
-        showMsg("⚠️ متاح لمدير النظام فقط", "warn");
-        return;
-      }
-
-      const token = getSessionToken();
-      if(!token){
-        window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
-        return;
-      }
-
-      try{
-        const res = await apiPost({
-          action: "getArchiveSheetUrl",
-          token: token,
-          page: PAGE_NAME
-        });
-
-        if(!res || !res.ok){
-          setStatus("❌ " + (res && (res.error || res.message) ? (res.error || res.message) : "لا يمكن فتح الشيت"), false);
-          showMsg("❌ لا يمكن فتح الشيت", "err");
-          return;
-        }
-
-        window.open(res.url, "_blank", "noopener");
-      }catch(err){
-        setStatus("❌ خطأ: " + safeErr(err), false);
-        showMsg("❌ خطأ في فتح الشيت", "err");
-      }
-    }
-
-    async function toggleNotif(){
+async function toggleNotif(){
   const box = document.getElementById("notifBox");
   if(!box) return;
-
   const willOpen = box.style.display !== "block";
   box.style.display = willOpen ? "block" : "none";
-
-  if(willOpen){
-    await loadNotifications();
-  }
+  if(willOpen) await loadNotifications();
 }
 
 function closeNotif(){
   const box = document.getElementById("notifBox");
-  if(!box) return;
-  box.style.display = "none";
+  if(box) box.style.display = "none";
 }
 
 async function loadNotifications(){
@@ -2183,71 +2093,50 @@ async function loadNotifications(){
     const sessionToken = getSessionToken();
     if(!sessionToken) return;
 
-    const res = await apiPost({
-      action: "getNotifications",
-      token: sessionToken,
-      page: PAGE_NAME
-    });
-
+    const res = await apiPost({ action:"getNotifications", token:sessionToken, page:PAGE_NAME });
     const list = document.getElementById("notifList");
     const count = document.getElementById("notifCount");
-
     if(!list || !count) return;
 
     const items = Array.isArray(res && res.items) ? res.items : [];
     let unread = 0;
-
     list.innerHTML = "";
 
     if(!items.length){
       list.innerHTML = '<div class="notif-item">لا توجد إشعارات</div>';
       count.textContent = "0";
       lastNotificationIds = [];
+      notificationsInitialized = true;
       return;
     }
 
-    const currentIds = items.map(function(n){
-      return String(n.id || "");
-    });
-
-    const newItems = items.filter(function(n){
-      return String(n.id || "") && lastNotificationIds.indexOf(String(n.id || "")) === -1;
-    });
+    const currentIds = items.map(function(n){ return String(n.id || ""); });
+    const newItems = items.filter(function(n){ return String(n.id || "") && lastNotificationIds.indexOf(String(n.id || "")) === -1; });
 
     items.forEach(function(n){
       if(String(n.isRead).toLowerCase() !== "true") unread++;
-
       const id = String(n.id || "").trim();
-
       const div = document.createElement("div");
       div.className = "notif-item";
       div.setAttribute("data-id", id);
       div.style.cursor = "pointer";
-
-      div.onclick = function(){
-        markNotificationRead(id);
-      };
-
-      div.innerHTML =
-        '<div style="font-weight:900;">' + escapeHtml(n.message || "إشعار جديد") + '</div>' +
-        '<div style="font-size:12px;color:#758292;margin-top:4px;">' + escapeHtml(n.createdAt || "") + '</div>';
-
+      div.onclick = function(){ markNotificationRead(id); };
+      div.innerHTML = '<div style="font-weight:900;">' + escapeHtml(n.message || "إشعار جديد") + '</div>' +
+                      '<div style="font-size:12px;color:#758292;margin-top:4px;">' + escapeHtml(n.createdAt || "") + '</div>';
       list.appendChild(div);
     });
 
     count.textContent = unread > 99 ? "99+" : String(unread);
 
     if(notificationsInitialized && newItems.length > 0){
-  try{
-    const msg = newItems[0].message || "لديك إشعار جديد";
-    window.showBrowserNotification("إشعار جديد", msg);
-  }catch(e){}
-}
+      try{
+        const msg = newItems[0].message || "لديك إشعار جديد";
+        if(window.showBrowserNotification) window.showBrowserNotification("إشعار جديد", msg);
+      }catch(e){}
+    }
 
-notificationsInitialized = true;
-
+    notificationsInitialized = true;
     lastNotificationIds = currentIds;
-
   }catch(err){
     console.log("notifications error:", err);
   }
@@ -2257,371 +2146,238 @@ async function markNotificationRead(notificationId){
   try{
     const id = String(notificationId || "").trim();
     if(!id) return;
-
     const sessionToken = getSessionToken();
     if(!sessionToken) return;
 
-    const res = await apiPost({
-      action: "markNotificationRead",
-      token: sessionToken,
-      page: PAGE_NAME,
-      notificationId: id
-    });
-
+    const res = await apiPost({ action:"markNotificationRead", token:sessionToken, page:PAGE_NAME, notificationId:id });
     if(res && res.ok){
-      const el = document.querySelector('.notif-item[data-id="' + id.replace(/"/g, '\\"') + '"]');
-      if(el) el.remove();
-
       await loadNotifications();
     }
-
   }catch(err){
     console.log("markNotificationRead error:", err);
   }
 }
 
-    window.markNotificationRead = markNotificationRead;
-    window.showMsg = showMsg;
-    window.apiPost = apiPost;
-    window.getSessionToken = getSessionToken;
-    window.PAGE_NAME = PAGE_NAME;
-    window.loadNotifications = loadNotifications;
-
-    window.addEventListener("load", function(){
-      var openSheetBtn = document.getElementById("btnOpenArchive");
-      var adminBtn = document.getElementById("btnAdmin");
-      var notifIcon = document.getElementById("notifIcon");
-      var notifWrapper = document.getElementById("notifWrapper");
-
-      (function setDefaultDates(){
-        const today = new Date();
-        const toDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-        const fromDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-
-        const formatLocal = function(d){
-          const y = d.getFullYear();
-          const m = String(d.getMonth() + 1).padStart(2, "0");
-          const day = String(d.getDate()).padStart(2, "0");
-          return y + "-" + m + "-" + day;
-        };
-
-        document.getElementById("dateFrom").value = formatLocal(fromDate);
-        document.getElementById("dateTo").value = formatLocal(toDate);
-      })();
-
-      document.getElementById("btnOpen").addEventListener("click", loadOpen);
-      document.getElementById("btnDelayed").addEventListener("click", loadDelayed);
-      document.getElementById("btnDone").addEventListener("click", loadDone);
-      document.getElementById("btnSearchDone").addEventListener("click", searchAny);
-
-      document.getElementById("btnExport").addEventListener("click", function(e){
-        e.preventDefault();
-        e.stopPropagation();
-
-        var menu = document.getElementById("exportMenu");
-        if(menu.classList.contains("show")){
-          closeExportMenu();
-        }else{
-          openExportMenu(this);
-        }
-      });
-
-      document.getElementById("btnExportExcel").addEventListener("click", function(e){
-        e.preventDefault();
-        e.stopPropagation();
-        closeExportMenu();
-        setTimeout(function(){
-          exportCurrentTable();
-        }, 50);
-      });
-
-      document.getElementById("btnExportPDF").addEventListener("click", function(e){
-        e.preventDefault();
-        e.stopPropagation();
-        closeExportMenu();
-        setTimeout(function(){
-          exportCurrentPDF();
-        }, 50);
-      });
-
-      document.addEventListener("click", function(e){
-        var menu = document.getElementById("exportMenu");
-        var btn = document.getElementById("btnExport");
-
-        if(menu && btn && !menu.contains(e.target) && !btn.contains(e.target)){
-          closeExportMenu();
-        }
-
-        if(notifWrapper && !notifWrapper.contains(e.target)){
-          closeNotif();
-        }
-      });
-
-      window.addEventListener("resize", function(){
-        closeExportMenu();
-      });
-
-      window.addEventListener("scroll", function(){
-        closeExportMenu();
-      }, true);
-
-      if(openSheetBtn){
-        openSheetBtn.addEventListener("click", openArchiveSheet);
-      }
-
-      if(adminBtn){
-        adminBtn.addEventListener("click", openAdminPage);
-      }
-
-      if(notifIcon){
-        notifIcon.addEventListener("click", function(e){
-          e.stopPropagation();
-          toggleNotif();
-        });
-      }
-
-      document.getElementById("qDone").addEventListener("keypress", function(e){
-        if(e.key === "Enter") searchAny();
-      });
-
-      window.addEventListener("beforeinstallprompt", function(e){
-        e.preventDefault();
-        deferredInstallPrompt = e;
-
-        var installBtn = document.getElementById("btnInstallApp");
-        if(installBtn){
-          installBtn.style.display = "inline-flex";
-        }
-      });
-
-      var installBtn = document.getElementById("btnInstallApp");
-      if(installBtn){
-        installBtn.addEventListener("click", async function(){
-          if(!deferredInstallPrompt){
-            showMsg("ℹ️ خيار التثبيت غير متاح الآن", "warn");
-            return;
-          }
-
-          deferredInstallPrompt.prompt();
-          const choice = await deferredInstallPrompt.userChoice;
-
-          if(choice && choice.outcome === "accepted"){
-            showMsg("✅ تم قبول تثبيت التطبيق", "ok");
-          }else{
-            showMsg("ℹ️ تم إلغاء التثبيت", "warn");
-          }
-
-          deferredInstallPrompt = null;
-          installBtn.style.display = "none";
-        });
-      }
-
-      window.addEventListener("appinstalled", function(){
-        showMsg("✅ تم تثبيت التطبيق بنجاح", "ok");
-        var installBtn = document.getElementById("btnInstallApp");
-        if(installBtn){
-          installBtn.style.display = "none";
-        }
-      });
-
-     let SW_REGISTRATION = null;
-
-async function registerMainServiceWorker(){
-  if (!("serviceWorker" in navigator)) return null;
-
-  try{
-    SW_REGISTRATION = await navigator.serviceWorker.register(
-      "/system/firebase-messaging-sw.js",
-      { scope: "/system/" }
-    );
-
-    await navigator.serviceWorker.ready;
-
-    console.log("Service Worker registered:", SW_REGISTRATION.scope);
-    return SW_REGISTRATION;
-  }catch(err){
-    console.error("Service Worker registration failed:", err);
-    return null;
-  }
-}
-
-      ensurePageSession();
-      setInterval(loadNotifications, 5000);
-    });
-  </script>
-
- <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-  import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-messaging.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyBhWJtOWJKlBk04Ii7mm93rhfECuQLKRbM",
-    authDomain: "tracking-web-218e8.firebaseapp.com",
-    projectId: "tracking-web-218e8",
-    storageBucket: "tracking-web-218e8.firebasestorage.app",
-    messagingSenderId: "107177409442",
-    appId: "1:107177409442:web:c66ec3f1ad72e5fad610fb",
-    measurementId: "G-PCJX55XGQS"
-  };
-
-  const VAPID_KEY = "BCVh972jCSmGqdWe7nDcWtepOrPGq7CwKdFNjT2gJ8IsMmhE1T0CEgOk9t5g8NQOlMNCW9peG67kUzrui6pFgFU";
-
-  const app = initializeApp(firebaseConfig);
-  const messaging = getMessaging(app);
-
-  async function showBrowserNotification(title, body){
-  if (!("Notification" in window)) return;
-  if (Notification.permission !== "granted") return;
-
-  let reg = SW_REGISTRATION;
-
-  if (!reg && "serviceWorker" in navigator) {
-    reg = await navigator.serviceWorker.getRegistration("/system/");
-  }
-
-  if (!reg && "serviceWorker" in navigator) {
-    reg = await registerMainServiceWorker();
-  }
-
-  if (reg && reg.showNotification) {
-    reg.showNotification(title || "إشعار جديد", {
-      body: body || "",
-      icon: "/system/logo-192.png",
-      badge: "/system/logo-192.png",
-      dir: "rtl",
-      lang: "ar",
-      data: {
-        url: "/system/main.html"
-      }
-    });
-  }
-}
-
-  async function enableNotifications() {
-    try {
-      if (!("Notification" in window)) {
-        window.showMsg("❌ هذا المتصفح لا يدعم الإشعارات", "err");
-        return;
-      }
-
-      if (!("serviceWorker" in navigator)) {
-        window.showMsg("❌ هذا المتصفح لا يدعم Service Worker", "err");
-        return;
-      }
-
-      const permission = await Notification.requestPermission();
-
-      if (permission !== "granted") {
-        window.showMsg("⚠️ لم يتم منح إذن الإشعارات", "warn");
-        return;
-      }
-
-      const registration = await registerServiceWorkerForPush();
-
-      const currentToken = await getToken(messaging, {
-        vapidKey: VAPID_KEY,
-        serviceWorkerRegistration: registration
-      });
-
-      if (!currentToken) {
-        window.showMsg("⚠️ تعذر إنشاء توكن الإشعارات", "warn");
-        return;
-      }
-
-      const sessionToken = window.getSessionToken();
-      if (!sessionToken) {
-        window.showMsg("⚠️ الجلسة غير موجودة", "warn");
-        return;
-      }
-
-      const res = await window.apiPost({
-        action: "savePushToken",
-        token: sessionToken,
-        page: window.PAGE_NAME,
-        pushToken: currentToken
-      });
-
-      if (res && res.ok) {
-        console.log("Push token saved:", currentToken);
-        window.showMsg("✅ تم تفعيل الإشعارات وحفظ التوكن", "ok");
-      } else {
-        window.showMsg((res && res.message) || "❌ فشل حفظ توكن الإشعارات", "err");
-      }
-    } catch (err) {
-      console.error("Notification setup error:", err);
-      window.showMsg("❌ فشل تفعيل الإشعارات", "err");
-    }
-  }
-
-  const btnEnableNotifications = document.getElementById("btnEnableNotifications");
-  if (btnEnableNotifications) {
-    btnEnableNotifications.addEventListener("click", enableNotifications);
-  }
-
-  onMessage(messaging, (payload) => {
-    console.log("Foreground message:", payload);
-
-    const title = payload?.notification?.title || "إشعار جديد";
-    const body = payload?.notification?.body || "";
-
-    if (window.showMsg) {
-      window.showMsg(title + (body ? " - " + body : ""), "ok");
-    }
-
-    if (typeof window.showBrowserNotification === "function") {
-      window.showBrowserNotification(title, body);
-    }
-
-    if (typeof window.loadNotifications === "function") {
-      window.loadNotifications();
-    }
-  });
-</script>
-
-<script>
-async function requestBrowserNotificationPermission(){
-  if (!("Notification" in window)) return;
-  if (Notification.permission === "default") {
-    try {
-      await Notification.requestPermission();
-    } catch(e){}
-  }
-}
-
-async function showBrowserNotification(title, body){
-  if (!("Notification" in window)) return;
-  if (Notification.permission !== "granted") return;
-
-  let reg = SW_REGISTRATION;
-
-  if (!reg && "serviceWorker" in navigator) {
-    reg = await navigator.serviceWorker.getRegistration("/system/");
-  }
-
-  if (!reg && "serviceWorker" in navigator) {
-    reg = await registerMainServiceWorker();
-  }
-
-  if (reg && reg.showNotification) {
-    reg.showNotification(title || "إشعار جديد", {
-      body: body || "",
-      icon: "/system/logo-192.png",
-      badge: "/system/logo-192.png",
-      dir: "rtl",
-      lang: "ar",
-      data: {
-        url: "/system/main.html"
-      }
-    });
-  }
-}
-
-window.showBrowserNotification = showBrowserNotification;
+window.markNotificationRead = markNotificationRead;
+window.showMsg = showMsg;
+window.apiPost = apiPost;
+window.getSessionToken = getSessionToken;
+window.PAGE_NAME = PAGE_NAME;
+window.loadNotifications = loadNotifications;
 
 window.addEventListener("load", function(){
-  requestBrowserNotificationPermission();
-});
-</script>
+  var openSheetBtn = document.getElementById("btnOpenArchive");
+  var adminBtn = document.getElementById("btnAdmin");
+  var notifIcon = document.getElementById("notifIcon");
+  var notifWrapper = document.getElementById("notifWrapper");
 
-</body>
+  (function setDefaultDates(){
+    const today = new Date();
+    const formatLocal = function(d){
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return y + "-" + m + "-" + day;
+    };
+    document.getElementById("dateFrom").value = formatLocal(today);
+    document.getElementById("dateTo").value = formatLocal(today);
+  })();
+
+  document.getElementById("btnOpen").addEventListener("click", loadOpen);
+  document.getElementById("btnDelayed").addEventListener("click", loadDelayed);
+  document.getElementById("btnDone").addEventListener("click", loadDone);
+  document.getElementById("btnSearchDone").addEventListener("click", searchAny);
+
+  document.getElementById("btnExport").addEventListener("click", function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    var menu = document.getElementById("exportMenu");
+    if(menu.classList.contains("show")) closeExportMenu();
+    else openExportMenu(this);
+  });
+
+  document.getElementById("btnExportExcel").addEventListener("click", function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    closeExportMenu();
+    setTimeout(exportCurrentTable, 50);
+  });
+
+  document.getElementById("btnExportPDF").addEventListener("click", function(e){
+    e.preventDefault();
+    e.stopPropagation();
+    closeExportMenu();
+    setTimeout(exportCurrentPDF, 50);
+  });
+
+  document.addEventListener("click", function(e){
+    var menu = document.getElementById("exportMenu");
+    var btn = document.getElementById("btnExport");
+    if(menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) closeExportMenu();
+    if(notifWrapper && !notifWrapper.contains(e.target)) closeNotif();
+  });
+
+  window.addEventListener("resize", closeExportMenu);
+  window.addEventListener("scroll", closeExportMenu, true);
+
+  if(openSheetBtn) openSheetBtn.addEventListener("click", openArchiveSheet);
+  if(adminBtn) adminBtn.addEventListener("click", openAdminPage);
+  if(notifIcon){
+    notifIcon.addEventListener("click", function(e){
+      e.stopPropagation();
+      toggleNotif();
+    });
+  }
+
+  document.getElementById("qDone").addEventListener("keypress", function(e){
+    if(e.key === "Enter") searchAny();
+  });
+
+  window.addEventListener("beforeinstallprompt", function(e){
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    var installBtn = document.getElementById("btnInstallApp");
+    if(installBtn) installBtn.style.display = "inline-flex";
+  });
+
+  var installBtn = document.getElementById("btnInstallApp");
+  if(installBtn){
+    installBtn.addEventListener("click", async function(){
+      if(!deferredInstallPrompt){ showMsg("ℹ️ خيار التثبيت غير متاح الآن", "warn"); return; }
+      deferredInstallPrompt.prompt();
+      const choice = await deferredInstallPrompt.userChoice;
+      if(choice && choice.outcome === "accepted") showMsg("✅ تم قبول تثبيت التطبيق", "ok");
+      else showMsg("ℹ️ تم إلغاء التثبيت", "warn");
+      deferredInstallPrompt = null;
+      installBtn.style.display = "none";
+    });
+  }
+
+  window.addEventListener("appinstalled", function(){
+    showMsg("✅ تم تثبيت التطبيق بنجاح", "ok");
+    var installBtn = document.getElementById("btnInstallApp");
+    if(installBtn) installBtn.style.display = "none";
+  });
+
+  ensurePageSession();
+  setInterval(loadNotifications, 5000);
+});
+
+  </script>  <script>
+    window.SW_REGISTRATION = null;
+
+    async function registerMainServiceWorker(){
+      if (!("serviceWorker" in navigator)) return null;
+      try{
+        window.SW_REGISTRATION = await navigator.serviceWorker.register(
+          "/system/firebase-messaging-sw.js",
+          { scope: "/system/" }
+        );
+        await navigator.serviceWorker.ready;
+        console.log("Service Worker registered:", window.SW_REGISTRATION.scope);
+        return window.SW_REGISTRATION;
+      }catch(err){
+        console.error("Service Worker registration failed:", err);
+        return null;
+      }
+    }
+
+    async function registerServiceWorkerForPush(){
+      return await registerMainServiceWorker();
+    }
+
+    async function showBrowserNotification(title, body){
+      if (!("Notification" in window)) return;
+      if (Notification.permission !== "granted") return;
+
+      let reg = window.SW_REGISTRATION;
+      if (!reg && "serviceWorker" in navigator) reg = await navigator.serviceWorker.getRegistration("/system/");
+      if (!reg && "serviceWorker" in navigator) reg = await registerMainServiceWorker();
+
+      if (reg && reg.showNotification) {
+        reg.showNotification(title || "إشعار جديد", {
+          body: body || "",
+          icon: "/system/logo-192.png",
+          badge: "/system/logo-192.png",
+          dir: "rtl",
+          lang: "ar",
+          data: { url: "/system/main.html" }
+        });
+      }
+    }
+
+    window.registerMainServiceWorker = registerMainServiceWorker;
+    window.registerServiceWorkerForPush = registerServiceWorkerForPush;
+    window.showBrowserNotification = showBrowserNotification;
+  </script>  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+    import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-messaging.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBhWJtOWJKlBk04Ii7mm93rhfECuQLKRbM",
+      authDomain: "tracking-web-218e8.firebaseapp.com",
+      projectId: "tracking-web-218e8",
+      storageBucket: "tracking-web-218e8.firebasestorage.app",
+      messagingSenderId: "107177409442",
+      appId: "1:107177409442:web:c66ec3f1ad72e5fad610fb",
+      measurementId: "G-PCJX55XGQS"
+    };
+
+    const VAPID_KEY = "BCVh972jCSmGqdWe7nDcWtepOrPGq7CwKdFNjT2gJ8IsMmhE1T0CEgOk9t5g8NQOlMNCW9peG67kUzrui6pFgFU";
+
+    const app = initializeApp(firebaseConfig);
+    const messaging = getMessaging(app);
+
+    async function enableNotifications(){
+      try{
+        if (!("Notification" in window)) { window.showMsg("❌ هذا المتصفح لا يدعم الإشعارات", "err"); return; }
+        if (!("serviceWorker" in navigator)) { window.showMsg("❌ هذا المتصفح لا يدعم Service Worker", "err"); return; }
+
+        const permission = await Notification.requestPermission();
+        if (permission !== "granted") { window.showMsg("⚠️ لم يتم منح إذن الإشعارات", "warn"); return; }
+
+        const registration = await window.registerServiceWorkerForPush();
+        if (!registration) { window.showMsg("❌ فشل تسجيل Service Worker", "err"); return; }
+
+        const currentToken = await getToken(messaging, {
+          vapidKey: VAPID_KEY,
+          serviceWorkerRegistration: registration
+        });
+
+        if (!currentToken) { window.showMsg("⚠️ تعذر إنشاء توكن الإشعارات", "warn"); return; }
+
+        const sessionToken = window.getSessionToken();
+        if (!sessionToken) { window.showMsg("⚠️ الجلسة غير موجودة", "warn"); return; }
+
+        const res = await window.apiPost({
+          action: "savePushToken",
+          token: sessionToken,
+          page: window.PAGE_NAME,
+          pushToken: currentToken
+        });
+
+        if (res && res.ok) {
+          console.log("Push token saved:", currentToken);
+          window.showMsg("✅ تم تفعيل الإشعارات وحفظ التوكن", "ok");
+        } else {
+          window.showMsg((res && res.message) || "❌ فشل حفظ توكن الإشعارات", "err");
+        }
+      }catch(err){
+        console.error("Notification setup error:", err);
+        window.showMsg("❌ فشل تفعيل الإشعارات", "err");
+      }
+    }
+
+    const btnEnableNotifications = document.getElementById("btnEnableNotifications");
+    if (btnEnableNotifications) btnEnableNotifications.addEventListener("click", enableNotifications);
+
+    onMessage(messaging, function(payload){
+      console.log("Foreground message:", payload);
+      const title = payload && payload.notification && payload.notification.title ? payload.notification.title : "إشعار جديد";
+      const body = payload && payload.notification && payload.notification.body ? payload.notification.body : "";
+      if (window.showMsg) window.showMsg(title + (body ? " - " + body : ""), "ok");
+      if (window.showBrowserNotification) window.showBrowserNotification(title, body);
+      if (window.loadNotifications) window.loadNotifications();
+    });
+  </script></body>
 </html>
