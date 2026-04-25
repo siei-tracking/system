@@ -991,7 +991,13 @@ function setSessionToken(token){
     document.getElementById('orderID').focus();
   }
 
-  window.addEventListener("load", function(){
+ <script>
+window.PAGE_NAME = PAGE_NAME;
+window.apiPost = apiPost;
+window.getSessionToken = getSessionToken;
+window.showMsg = showMsg;
+
+window.addEventListener("load", function(){
   ensurePageSession();
 
   document.getElementById("orderID").addEventListener("keydown", function(e){
@@ -1002,16 +1008,7 @@ function setSessionToken(token){
 });
 </script>
 
-<!-- نظام الإشعارات -->
 <script src="/system/notifications-widget.js"></script>
-
-<script>
-window.PAGE_NAME = PAGE_NAME;
-window.apiPost = apiPost;
-window.getSessionToken = getSessionToken;
-window.showMsg = showMsg;
-</script>
-
 
 </body>
 </html>
