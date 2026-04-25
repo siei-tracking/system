@@ -2363,9 +2363,20 @@ window.addEventListener("load", function(){
           window.showMsg((res && res.message) || "❌ فشل حفظ توكن الإشعارات", "err");
         }
       }catch(err){
-        console.error("Notification setup error:", err);
-        window.showMsg("❌ فشل تفعيل الإشعارات", "err");
-      }
+  console.error("Notification setup error:", err);
+
+  let msg = "❌ فشل تفعيل الإشعارات";
+
+  if(err && err.code){
+    msg += " | " + err.code;
+  }
+
+  if(err && err.message){
+    msg += " | " + err.message;
+  }
+
+  window.showMsg(msg, "err");
+}
     }
 
     const btnEnableNotifications = document.getElementById("btnEnableNotifications");
