@@ -1176,7 +1176,7 @@
   </div>
 
   <script>
-    const API_BASE = "hthttps://script.google.com/macros/s/AKfycbzVtH-DAsWdDWeiMcfzKTorv-pfL3jB7dS_rUuzrtB795kWerOKHZSw4GhBexAD7IpO/exec";
+    const API_BASE = "https://script.google.com/macros/s/AKfycbzVtH-DAsWdDWeiMcfzKTorv-pfL3jB7dS_rUuzrtB795kWerOKHZSw4GhBexAD7IpO/exec";
 
 const PAGE_NAME = "main"; // غير حسب الصفحة
 const STORAGE_KEY = "tracking_session_token_" + PAGE_NAME;
@@ -1191,7 +1191,6 @@ const STORAGE_KEY = "tracking_session_token_" + PAGE_NAME;
     let CURRENT_USER_ROLE = "";
     let CURRENT_USER_NAME = "";
     let CURRENT_USERNAME = "";
-    let deferredInstallPrompt = null;
     let lastNotificationIds = [];
     let notificationsInitialized = false;
 
@@ -2218,6 +2217,14 @@ function hideInstallButton(){
 }
 
 
+let deferredInstallPrompt = null;
+
+window.addEventListener("beforeinstallprompt", function(e){
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  showInstallButton();
+});
+
 window.addEventListener("appinstalled", function(){
   deferredInstallPrompt = null;
   hideInstallButton();
@@ -2460,65 +2467,6 @@ if(installBtn){
     });
   
 
-<button id="btnInstallApp" style="display:none;">
-  📲 تثبيت التطبيق
-</button>
-
-<script>
-/* 🔹 تسجيل Service Worker */
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/system/firebase-messaging-sw.js")
-    .then(() => console.log("✅ Service Worker registered"))
-    .catch(err => console.error("SW error:", err));
-}
-
-/* 🔹 كود التثبيت */
-let deferredInstallPrompt = null;
-
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredInstallPrompt = e;
-
- const btn = document.getElementById("btnInstallApp");
-if (btn && !isAppInstalledMode()) {
-  btn.style.display = "inline-flex";
-}
-
-const installBtn = document.getElementById("btnInstallApp");
-
-if (installBtn) {
-
-  if (isAppInstalledMode()) {
-    installBtn.style.display = "none";
-  }
-
-  installBtn.addEventListener("click", async () => {
-    if (!deferredInstallPrompt) return;
-
-    deferredInstallPrompt.prompt();
-
-    const { outcome } = await deferredInstallPrompt.userChoice;
-
-    if (outcome === "accepted") {
-      if (window.showMsg) showMsg("✅ تم تثبيت التطبيق", "ok");
-      else alert("تم تثبيت التطبيق");
-    } else {
-      if (window.showMsg) showMsg("❌ تم إلغاء التثبيت", "warn");
-      else alert("تم إلغاء التثبيت");
-    }
-
-    deferredInstallPrompt = null;
-    installBtn.style.display = "none";
-  });
-}
-
-function isAppInstalledMode() {
-  return window.matchMedia("(display-mode: standalone)").matches ||
-         window.navigator.standalone === true;
-}
-
-
-</script>
-
+  </script>
 </body>
 </html>
