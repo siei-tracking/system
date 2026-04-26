@@ -1176,7 +1176,7 @@
   </div>
 
   <script>
-    const API_BASE = "https://script.google.com/macros/s/AKfycbw-SdeF2xfIqM8SFe9ElacoeOogkUZl1p-TztO6QtZVpMtR0ryIeK49qFfzzV7bEGJs/exec";
+    const API_BASE = "https://script.google.com/macros/s/AKfycbwF3wjc71_Hcff7ukc2sFXozvApq4jZ0dm9Ar2OgECtL1X19w9r2H6pdZWJGxDpaNNa/exec";
 
 const PAGE_NAME = "main"; // غير حسب الصفحة
 const STORAGE_KEY = "tracking_session_token_" + PAGE_NAME;
@@ -2194,6 +2194,42 @@ window.getSessionToken = getSessionToken;
 window.PAGE_NAME = PAGE_NAME;
 window.loadNotifications = loadNotifications;
 
+
+function isAppInstalled(){
+  return window.matchMedia("(display-mode: standalone)").matches ||
+         window.navigator.standalone === true;
+}
+
+function showInstallButton(){
+  const btn = document.getElementById("btnInstallApp");
+  if(!btn) return;
+
+  if(isAppInstalled()){
+    btn.style.display = "none";
+    return;
+  }
+
+  btn.style.display = "inline-flex";
+}
+
+function hideInstallButton(){
+  const btn = document.getElementById("btnInstallApp");
+  if(btn) btn.style.display = "none";
+}
+
+window.addEventListener("beforeinstallprompt", function(e){
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  showInstallButton();
+});
+
+window.addEventListener("appinstalled", function(){
+  deferredInstallPrompt = null;
+  hideInstallButton();
+  showMsg("✅ تم تثبيت التطبيق بنجاح", "ok");
+});
+
+
 window.addEventListener("load", function(){
   var openSheetBtn = document.getElementById("btnOpenArchive");
   var adminBtn = document.getElementById("btnAdmin");
@@ -2259,41 +2295,45 @@ window.addEventListener("load", function(){
   }
 
   document.getElementById("qDone").addEventListener("keypress", function(e){
-    if(e.key === "Enter") searchAny();
-  });
-
-  window.addEventListener("beforeinstallprompt", function(e){
-    e.preventDefault();
-    deferredInstallPrompt = e;
-    var installBtn = document.getElementById("btnInstallApp");
-    if(installBtn) installBtn.style.display = "inline-flex";
-  });
-
-  var installBtn = document.getElementById("btnInstallApp");
-  if(installBtn){
-    installBtn.addEventListener("click", async function(){
-      if(!deferredInstallPrompt){ showMsg("ℹ️ خيار التثبيت غير متاح الآن", "warn"); return; }
-      deferredInstallPrompt.prompt();
-      const choice = await deferredInstallPrompt.userChoice;
-      if(choice && choice.outcome === "accepted") showMsg("✅ تم قبول تثبيت التطبيق", "ok");
-      else showMsg("ℹ️ تم إلغاء التثبيت", "warn");
-      deferredInstallPrompt = null;
-      installBtn.style.display = "none";
-    });
-  }
-
-  window.addEventListener("appinstalled", function(){
-    showMsg("✅ تم تثبيت التطبيق بنجاح", "ok");
-    var installBtn = document.getElementById("btnInstallApp");
-    if(installBtn) installBtn.style.display = "none";
-  });
-
-  ensurePageSession();
-setInterval(checkLiveSession, 10000);
-setInterval(loadNotifications, 5000);
+  if(e.key === "Enter") searchAny();
 });
 
-  </script>  
+/* زر تثبيت التطبيق */
+const installBtn = document.getElementById("btnInstallApp");
+
+if(installBtn){
+  setTimeout(showInstallButton, 2000);
+
+  installBtn.addEventListener("click", async function(){
+    if(isAppInstalled()){
+      hideInstallButton();
+      return;
+    }
+
+    if(deferredInstallPrompt){
+      deferredInstallPrompt.prompt();
+      const choice = await deferredInstallPrompt.userChoice;
+
+      if(choice && choice.outcome === "accepted"){
+        showMsg("✅ تم قبول التثبيت", "ok");
+        hideInstallButton();
+      }else{
+        showMsg("ℹ️ تم الإلغاء", "warn");
+      }
+
+      deferredInstallPrompt = null;
+    }else{
+      showMsg("ℹ️ من القائمة ⋯ → Apps → Install", "warn");
+    }
+  });
+}
+
+     ensurePageSession();
+     setInterval(checkLiveSession, 10000);
+     setInterval(loadNotifications, 5000);
+  });
+
+</script>  
 
 
 <script>
