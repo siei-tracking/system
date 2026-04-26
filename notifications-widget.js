@@ -314,28 +314,54 @@
     if(btn) btn.style.display = "none";
   }
 
-  function setupInstallPrompt(){
-    window.addEventListener("beforeinstallprompt", function(e){
-      e.preventDefault();
-      deferredInstallPrompt = e;
+  function isAppInstalledMode(){
+  return window.matchMedia("(display-mode: standalone)").matches ||
+         window.navigator.standalone === true;
+}
 
-      const btn = $("btnInstallApp");
-      if(btn){
-        btn.style.display = "inline-flex";
-      }
-    });
+function isPwaMarkedInstalled(){
+  return localStorage.getItem("pwa_installed") === "yes";
+}
 
-    window.addEventListener("appinstalled", function(){
-      deferredInstallPrompt = null;
+function hideInstallButton(){
+  const btn = $("btnInstallApp");
+  if(btn) btn.style.display = "none";
+}
 
-      const btn = $("btnInstallApp");
-      if(btn){
-        btn.style.display = "none";
-      }
+function showInstallButton(){
+  const btn = $("btnInstallApp");
+  if(btn) btn.style.display = "inline-flex";
+}
 
-      toast("✅ تم تثبيت التطبيق بنجاح", "ok");
-    });
+function setupInstallPrompt(){
+  if(isAppInstalledMode() || isPwaMarkedInstalled()){
+    hideInstallButton();
   }
+
+  window.addEventListener("beforeinstallprompt", function(e){
+    e.preventDefault();
+
+    /*
+      إذا المتصفح أرسل beforeinstallprompt فهذا يعني أنه يعتبر التطبيق قابل للتثبيت.
+      إذا كان محفوظ لدينا أنه مثبت سابقاً، نخفي الزر.
+    */
+    if(isAppInstalledMode() || isPwaMarkedInstalled()){
+      deferredInstallPrompt = null;
+      hideInstallButton();
+      return;
+    }
+
+    deferredInstallPrompt = e;
+    showInstallButton();
+  });
+
+  window.addEventListener("appinstalled", function(){
+    deferredInstallPrompt = null;
+    localStorage.setItem("pwa_installed", "yes");
+    hideInstallButton();
+    toast("✅ تم تثبيت التطبيق بنجاح", "ok");
+  });
+}
 
   async function enableNotifications(){
     try{
@@ -576,6 +602,12 @@
 
     createWidget();
     setupInstallPrompt();
+
+    if(isAppInstalledMode() || isPwaMarkedInstalled()){
+  hideInstallButton();
+}
+
+
 
     try{
       await ensureFirebase();
