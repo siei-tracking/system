@@ -1176,7 +1176,7 @@
   </div>
 
   <script>
-    const API_BASE = "https://script.google.com/macros/s/AKfycbx2wZycXe8OFJnW1X51eiGWSiww_PeHQnO6r0FCQBv-fi3886XOh75pAqlkxbPb-Ig/exec";
+    const API_BASE = "hthttps://script.google.com/macros/s/AKfycbzVtH-DAsWdDWeiMcfzKTorv-pfL3jB7dS_rUuzrtB795kWerOKHZSw4GhBexAD7IpO/exec";
 
 const PAGE_NAME = "main"; // غير حسب الصفحة
 const STORAGE_KEY = "tracking_session_token_" + PAGE_NAME;
@@ -2217,11 +2217,6 @@ function hideInstallButton(){
   if(btn) btn.style.display = "none";
 }
 
-window.addEventListener("beforeinstallprompt", function(e){
-  e.preventDefault();
-  deferredInstallPrompt = e;
-  showInstallButton();
-});
 
 window.addEventListener("appinstalled", function(){
   deferredInstallPrompt = null;
@@ -2484,13 +2479,19 @@ window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredInstallPrompt = e;
 
-  const btn = document.getElementById("btnInstallApp");
-  if (btn) btn.style.display = "inline-flex";
-});
+ const btn = document.getElementById("btnInstallApp");
+if (btn && !isAppInstalledMode()) {
+  btn.style.display = "inline-flex";
+}
 
 const installBtn = document.getElementById("btnInstallApp");
 
 if (installBtn) {
+
+  if (isAppInstalledMode()) {
+    installBtn.style.display = "none";
+  }
+
   installBtn.addEventListener("click", async () => {
     if (!deferredInstallPrompt) return;
 
@@ -2510,6 +2511,13 @@ if (installBtn) {
     installBtn.style.display = "none";
   });
 }
+
+function isAppInstalledMode() {
+  return window.matchMedia("(display-mode: standalone)").matches ||
+         window.navigator.standalone === true;
+}
+
+
 </script>
 
 </body>
