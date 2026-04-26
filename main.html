@@ -2263,7 +2263,41 @@ window.addEventListener("load", function(){
   setInterval(loadNotifications, 5000);
 });
 
-  </script>  <script>
+  </script>  
+
+<script>
+const PAGE_NAME = "main"; // غير حسب الصفحة
+const STORAGE_KEY = "tracking_session_token_" + PAGE_NAME;
+
+const token = sessionStorage.getItem(STORAGE_KEY);
+
+if (!token) {
+  window.location.href = "login.html";
+} else {
+  // فحص الجلسة من السيرفر
+  fetch(API_BASE, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({
+      action: "checkSession",
+      token: token
+    })
+  })
+  .then(r => r.json())
+  .then(res => {
+    if (!res.ok) {
+      sessionStorage.removeItem(STORAGE_KEY);
+      window.location.href = "login.html";
+    }
+  })
+  .catch(() => {
+    window.location.href = "login.html";
+  });
+}
+</script>
+
+
+<script>
     window.SW_REGISTRATION = null;
 
     async function registerMainServiceWorker(){
@@ -2390,5 +2424,6 @@ window.addEventListener("load", function(){
       if (window.showBrowserNotification) window.showBrowserNotification(title, body);
       if (window.loadNotifications) window.loadNotifications();
     });
-  </script></body>
+  </script>
+</body>
 </html>
