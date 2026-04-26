@@ -1177,9 +1177,14 @@
 
   <script>
     const API_BASE = "https://script.google.com/macros/s/AKfycbzd_W_zuOMA7wrMRrtn9etfu7SrJlOhAG3lk0NZS76dVYJWIKzrPPQoYWxQF9H8vxEe/exec";
-    const PAGE_NAME = "main";
-    const STORAGE_KEY_PAGE = "tracking_session_token_" + PAGE_NAME;
+
+const PAGE_NAME = "main"; // غير حسب الصفحة
+const STORAGE_KEY = "tracking_session_token_" + PAGE_NAME;
+
+
+
     const STORAGE_KEY_GLOBAL = "tracking_session_token";
+    const STORAGE_KEY_PAGE = STORAGE_KEY;
 
     let CURRENT_MODE = "open";
     let CURRENT_ITEMS = [];
@@ -1217,7 +1222,31 @@ function setSessionToken(token){
       localStorage.removeItem(STORAGE_KEY_PAGE);
       localStorage.removeItem(STORAGE_KEY_GLOBAL);
     }
+async function checkLiveSession(){
+  const token = getSessionToken();
 
+  if(!token){
+    clearSessionToken();
+    window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
+    return;
+  }
+
+  try{
+    const res = await apiPost({
+      action: "checkSession",
+      token: token,
+      page: PAGE_NAME
+    });
+
+    if(!res || !res.ok){
+      clearSessionToken();
+      window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
+    }
+  }catch(e){
+    clearSessionToken();
+    window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
+  }
+}
     function isAdminUser(){
       return String(CURRENT_USERNAME || "").trim().toLowerCase() === "admin";
     }
@@ -2260,41 +2289,11 @@ window.addEventListener("load", function(){
   });
 
   ensurePageSession();
-  setInterval(loadNotifications, 5000);
+setInterval(checkLiveSession, 10000);
+setInterval(loadNotifications, 5000);
 });
 
   </script>  
-
-<script>
-const PAGE_NAME = "main"; // غير حسب الصفحة
-const STORAGE_KEY = "tracking_session_token_" + PAGE_NAME;
-
-const token = sessionStorage.getItem(STORAGE_KEY);
-
-if (!token) {
-  window.location.href = "login.html";
-} else {
-  // فحص الجلسة من السيرفر
-  fetch(API_BASE, {
-    method: "POST",
-    headers: { "Content-Type": "text/plain;charset=utf-8" },
-    body: JSON.stringify({
-      action: "checkSession",
-      token: token
-    })
-  })
-  .then(r => r.json())
-  .then(res => {
-    if (!res.ok) {
-      sessionStorage.removeItem(STORAGE_KEY);
-      window.location.href = "login.html";
-    }
-  })
-  .catch(() => {
-    window.location.href = "login.html";
-  });
-}
-</script>
 
 
 <script>
