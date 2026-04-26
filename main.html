@@ -1176,7 +1176,7 @@
   </div>
 
   <script>
-    const API_BASE = "https://script.google.com/macros/s/AKfycbwF3wjc71_Hcff7ukc2sFXozvApq4jZ0dm9Ar2OgECtL1X19w9r2H6pdZWJGxDpaNNa/exec";
+    const API_BASE = "https://script.google.com/macros/s/AKfycbx2wZycXe8OFJnW1X51eiGWSiww_PeHQnO6r0FCQBv-fi3886XOh75pAqlkxbPb-Ig/exec";
 
 const PAGE_NAME = "main"; // غير حسب الصفحة
 const STORAGE_KEY = "tracking_session_token_" + PAGE_NAME;
@@ -2463,6 +2463,54 @@ if(installBtn){
       if (window.showBrowserNotification) window.showBrowserNotification(title, body);
       if (window.loadNotifications) window.loadNotifications();
     });
-  </script>
+  
+
+<button id="btnInstallApp" style="display:none;">
+  📲 تثبيت التطبيق
+</button>
+
+<script>
+/* 🔹 تسجيل Service Worker */
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/system/firebase-messaging-sw.js")
+    .then(() => console.log("✅ Service Worker registered"))
+    .catch(err => console.error("SW error:", err));
+}
+
+/* 🔹 كود التثبيت */
+let deferredInstallPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+
+  const btn = document.getElementById("btnInstallApp");
+  if (btn) btn.style.display = "inline-flex";
+});
+
+const installBtn = document.getElementById("btnInstallApp");
+
+if (installBtn) {
+  installBtn.addEventListener("click", async () => {
+    if (!deferredInstallPrompt) return;
+
+    deferredInstallPrompt.prompt();
+
+    const { outcome } = await deferredInstallPrompt.userChoice;
+
+    if (outcome === "accepted") {
+      if (window.showMsg) showMsg("✅ تم تثبيت التطبيق", "ok");
+      else alert("تم تثبيت التطبيق");
+    } else {
+      if (window.showMsg) showMsg("❌ تم إلغاء التثبيت", "warn");
+      else alert("تم إلغاء التثبيت");
+    }
+
+    deferredInstallPrompt = null;
+    installBtn.style.display = "none";
+  });
+}
+</script>
+
 </body>
 </html>
