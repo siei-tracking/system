@@ -83,7 +83,7 @@
     try {
       if ("caches" in window) {
         const keys = await caches.keys();
-        for (const k of keys) await caches.delete(k);
+        keys.forEach(function(k){ caches.delete(k); });
       }
     } catch(e) {}
     console.log("[PWA] تنظيف اكتمل ✅");
@@ -736,8 +736,7 @@
     const btnClear = $("btnClearDataWidget");
     if (btnClear && !btnClear._nwBound) {
       btnClear.addEventListener("click", function(){
-        if(confirm("سيتم مسح بيانات المتصفح للموقع وإعادة التحميل.
-هل أنت متأكد؟")){
+        if(confirm("سيتم مسح بيانات المتصفح للموقع وإعادة التحميل.\nهل أنت متأكد؟")){
           clearDataAndReload();
         }
       });
@@ -777,12 +776,12 @@
       /* مسح Cache */
       if ("caches" in window) {
         const keys = await caches.keys();
-        for (const k of keys) await caches.delete(k);
+        keys.forEach(function(k){ caches.delete(k); });
       }
       /* إلغاء SW */
       if ("serviceWorker" in navigator) {
         const regs = await navigator.serviceWorker.getRegistrations();
-        for (const r of regs) await r.unregister();
+        regs.forEach(function(r){ r.unregister(); });
       }
       callShowMsg("✅ تم المسح — جاري إعادة التحميل...", "ok");
       setTimeout(function(){ location.reload(true); }, 800);

@@ -1317,13 +1317,7 @@
   function clearSiteData(){
     /* استخدم دالة الـ widget الموحدة */
     if(typeof window.clearDataAndReload === "function"){
-      if(confirm("⚠️ سيتم مسح:
-• بيانات المتصفح
-• Service Workers
-• Cache
-
-سيُعاد تحميل الصفحة.
-هل أنت متأكد؟")){
+      if(confirm("سيتم مسح بيانات المتصفح. هل أنت متأكد؟")){
         window.clearDataAndReload();
       }
     }
