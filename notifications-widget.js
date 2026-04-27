@@ -274,10 +274,8 @@
     if (window.matchMedia("(display-mode: standalone)").matches) return true;
     if (window.navigator.standalone === true) return true;
 
-    /* 2. Samsung: تحقق من علم "add_to_home" — يُحفظ عند الضغط على الزر */
-    if (IS_SAMSUNG) {
-      return sessionStorage.getItem("samsung_installed") === "yes";
-    }
+    /* 2. Samsung: لا تعتمد على localStorage — standalone فقط */
+    if (IS_SAMSUNG) return false;
 
     /* 3. Chrome / Edge: استخدم localStorage */
     return localStorage.getItem("pwa_installed") === "yes";
@@ -309,10 +307,7 @@
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
         if (outcome === "accepted") {
-          if (IS_SAMSUNG) {
-            /* Samsung: sessionStorage فقط — يُمسح تلقائياً عند إغلاق المتصفح */
-            sessionStorage.setItem("samsung_installed", "yes");
-          } else {
+          if (!IS_SAMSUNG) {
             localStorage.setItem("pwa_installed", "yes");
           }
           hideInstallBtn();
@@ -332,59 +327,9 @@
     if (IS_IOS)  { callShowMsg("📱 افتح الصفحة في Safari ثم أضفها للشاشة الرئيسية", "warn"); return; }
     /* Firefox */
     if (IS_FF)   { callShowMsg("🦊 افتح القائمة ☰ ثم اختر 'تثبيت'", "warn"); return; }
-    /* Samsung Internet بدون prompt */
+    /* Samsung Internet بدون prompt — أظهر تعليمات فقط */
     if (IS_SAMSUNG) {
-      /* انتظر 2 ثانية — قد يصل prompt بتأخير */
-      callShowMsg("⏳ جاري التحقق...", "ok");
-      setTimeout(async function(){
-        /* إذا وصل الـ prompt أثناء الانتظار — استخدمه */
-        if (deferredPrompt) {
-          try {
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            if (outcome === "accepted") {
-              sessionStorage.setItem("samsung_installed", "yes");
-              hideInstallBtn();
-              callShowMsg("✅ تم تثبيت التطبيق بنجاح", "ok");
-            } else {
-              callShowMsg("ℹ️ تم إلغاء التثبيت", "warn");
-            }
-            deferredPrompt = null;
-          } catch(e) {
-            callShowMsg("⚠️ تعذر التثبيت", "warn");
-          }
-          return;
-        }
-
-        /* لم يصل prompt — اعمل clear وأعد التحميل */
-        callShowMsg("🔄 جاري تجهيز التثبيت...", "ok");
-        try {
-          const keep = {}, ssKeep = {};
-          for (let i = 0; i < localStorage.length; i++) {
-            const k = localStorage.key(i);
-            if (k && k.indexOf("tracking_session_token") === 0) keep[k] = localStorage.getItem(k);
-          }
-          for (let i = 0; i < sessionStorage.length; i++) {
-            const k = sessionStorage.key(i);
-            if (k && k.indexOf("tracking_session_token") === 0) ssKeep[k] = sessionStorage.getItem(k);
-          }
-          localStorage.clear();
-          sessionStorage.clear();
-          Object.keys(keep).forEach(function(k){ localStorage.setItem(k, keep[k]); });
-          Object.keys(ssKeep).forEach(function(k){ sessionStorage.setItem(k, ssKeep[k]); });
-          if ("caches" in window) {
-            const keys = await caches.keys();
-            for (const k of keys) await caches.delete(k);
-          }
-          if ("serviceWorker" in navigator) {
-            const regs = await navigator.serviceWorker.getRegistrations();
-            for (const r of regs) await r.unregister();
-          }
-        } catch(e) { console.warn("clear error:", e); }
-
-        callShowMsg("✅ اضغط الزر مجدداً لتثبيت التطبيق", "ok");
-        setTimeout(function(){ location.reload(true); }, 1200);
-      }, 2000);
+      callShowMsg("📲 افتح قائمة ⋮ ثم 'إضافة صفحة إلى' ← 'الشاشة الرئيسية'", "warn");
       return;
     }
 
@@ -419,9 +364,7 @@
 
     window.addEventListener("appinstalled", function () {
       deferredPrompt = null;
-      if (IS_SAMSUNG) {
-        sessionStorage.setItem("samsung_installed", "yes");
-      } else {
+      if (!IS_SAMSUNG) {
         localStorage.setItem("pwa_installed", "yes");
       }
       hideInstallBtn();
@@ -435,65 +378,13 @@
     if (IS_FF) { showInstallBtn("تثبيت التطبيق"); return; }
 
     /* انتظر وصول beforeinstallprompt */
-    setTimeout(async function () {
-      const standalone = window.matchMedia("(display-mode: standalone)").matches
-                      || window.navigator.standalone === true;
-      if (standalone) return;
-
-      if (deferredPrompt) {
-        /* وصل الـ prompt — أظهر الزر */
-        showInstallBtn("تثبيت التطبيق");
-        return;
-      }
-
-      /* لم يصل prompt */
-      if (IS_SAMSUNG) {
-        /* إذا تم التنظيف مسبقاً في هذه الجلسة — لا تكرر، فقط أظهر الزر */
-        if (sessionStorage.getItem("samsung_cleared") === "yes") {
-          console.log("[PWA Samsung] تم التنظيف مسبقاً — أظهر الزر");
-          showInstallBtn("تثبيت التطبيق");
-          return;
-        }
-
-        /* Samsung: اعمل clear مرة واحدة فقط */
-        console.log("[PWA Samsung] لم يصل prompt — جاري التنظيف");
-        try {
-          /* احفظ توكنات الجلسة */
-          const keep = {}, ssKeep = {};
-          for (let i = 0; i < localStorage.length; i++) {
-            const k = localStorage.key(i);
-            if (k && k.indexOf("tracking_session_token") === 0) keep[k] = localStorage.getItem(k);
-          }
-          for (let i = 0; i < sessionStorage.length; i++) {
-            const k = sessionStorage.key(i);
-            if (k && k.indexOf("tracking_session_token") === 0) ssKeep[k] = sessionStorage.getItem(k);
-          }
-          localStorage.clear();
-          sessionStorage.clear();
-          /* أعد الجلسة */
-          Object.keys(keep).forEach(function(k){ localStorage.setItem(k, keep[k]); });
-          Object.keys(ssKeep).forEach(function(k){ sessionStorage.setItem(k, ssKeep[k]); });
-          /* علامة "تم التنظيف" — تبقى في sessionStorage بعد الـ reload */
-          sessionStorage.setItem("samsung_cleared", "yes");
-          /* مسح Cache و SW */
-          if ("caches" in window) {
-            const keys = await caches.keys();
-            for (const k of keys) await caches.delete(k);
-          }
-          if ("serviceWorker" in navigator) {
-            const regs = await navigator.serviceWorker.getRegistrations();
-            for (const r of regs) await r.unregister();
-          }
-        } catch(e) { console.warn("auto clear:", e); }
-
-        /* أعد التحميل مرة واحدة فقط */
-        setTimeout(function(){ location.reload(true); }, 500);
-        return;
-      }
-
-      /* Chrome/Edge بدون prompt — أظهر الزر مع تعليمات */
+    setTimeout(function () {
+      if (isInstalled()) return;
+      /* أظهر زر التثبيت */
       showInstallBtn("تثبيت التطبيق");
-
+      /* أظهر زر مسح البيانات أيضاً */
+      const btnClear = $("btnClearDataWidget");
+      if (btnClear) btnClear.style.display = "inline-flex";
     }, IS_SAMSUNG ? PROMPT_TIMEOUT : 5000);
 
     /* مراقبة standalone */
@@ -763,6 +654,14 @@
           display:none;align-items:center;gap:6px;
         }
         #btnInstallApp:hover{ transform:translateY(-1px);opacity:.92; }
+        #btnClearDataWidget{
+          border:none;border-radius:12px;padding:9px 12px;
+          font-family:'Cairo',Arial,sans-serif;font-weight:900;font-size:14px;
+          cursor:pointer;background:#e74c3c;color:#fff;white-space:nowrap;
+          box-shadow:0 5px 14px rgba(0,0,0,.18);transition:transform .15s,opacity .15s;
+          display:none;align-items:center;gap:6px;
+        }
+        #btnClearDataWidget:hover{ transform:translateY(-1px);opacity:.92; }
         #notifBox{
           display:none;position:absolute;top:56px;right:0;
           width:310px;max-width:calc(100vw - 20px);max-height:360px;overflow:auto;
@@ -798,6 +697,7 @@
         </div>
         <button id="btnEnableNotifications" type="button">🔔 تفعيل الإشعارات</button>
         <button id="btnInstallApp" type="button">📲 تثبيت التطبيق</button>
+        <button id="btnClearDataWidget" type="button">🗑️ مسح البيانات</button>
       </div>
       <div id="notifBox" role="dialog" aria-label="الإشعارات">
         <div class="nw-hdr"><span>الإشعارات</span></div>
@@ -832,6 +732,17 @@
       btnInstall.addEventListener("click", installApp);
       btnInstall._nwBound = true;
     }
+    /* زر مسح البيانات — لجميع المستخدمين */
+    const btnClear = $("btnClearDataWidget");
+    if (btnClear && !btnClear._nwBound) {
+      btnClear.addEventListener("click", function(){
+        if(confirm("سيتم مسح بيانات المتصفح للموقع وإعادة التحميل.
+هل أنت متأكد؟")){
+          clearDataAndReload();
+        }
+      });
+      btnClear._nwBound = true;
+    }
     /* إغلاق عند النقر خارج القائمة */
     if (!window._nwOutsideBound) {
       document.addEventListener("click", function (e) {
@@ -839,6 +750,45 @@
         if (root && !root.contains(e.target)) closeNotifBox();
       });
       window._nwOutsideBound = true;
+    }
+  }
+
+  /* ============================================================
+   * CLEAR DATA — متاح لجميع المستخدمين
+   * ============================================================ */
+  async function clearDataAndReload() {
+    try {
+      /* احفظ توكنات الجلسة */
+      const keep = {}, ssKeep = {};
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.indexOf("tracking_session_token") === 0) keep[k] = localStorage.getItem(k);
+      }
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const k = sessionStorage.key(i);
+        if (k && k.indexOf("tracking_session_token") === 0) ssKeep[k] = sessionStorage.getItem(k);
+      }
+      /* امسح كل شيء */
+      localStorage.clear();
+      sessionStorage.clear();
+      /* أعد الجلسة */
+      Object.keys(keep).forEach(function(k){ localStorage.setItem(k, keep[k]); });
+      Object.keys(ssKeep).forEach(function(k){ sessionStorage.setItem(k, ssKeep[k]); });
+      /* مسح Cache */
+      if ("caches" in window) {
+        const keys = await caches.keys();
+        for (const k of keys) await caches.delete(k);
+      }
+      /* إلغاء SW */
+      if ("serviceWorker" in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        for (const r of regs) await r.unregister();
+      }
+      callShowMsg("✅ تم المسح — جاري إعادة التحميل...", "ok");
+      setTimeout(function(){ location.reload(true); }, 800);
+    } catch(e) {
+      callShowMsg("❌ خطأ في المسح", "err");
+      console.warn("clearDataAndReload:", e);
     }
   }
 
@@ -877,6 +827,7 @@
    * تصدير للـ window (تستخدمها الصفحات مباشرة)
    * ============================================================ */
   window.loadNotifications       = loadNotifications;
+  window.clearDataAndReload      = clearDataAndReload;
   window.enableNotifications     = enableNotifications;
   window.showBrowserNotification = showBrowserNotif;
   window.markNotificationRead    = markRead;
