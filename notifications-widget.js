@@ -41,6 +41,67 @@
   let pollTimer             = null;
 
   /* ============================================================
+   * AUTO CLEAR: إذا التطبيق مُسح يعمل clear تلقائياً
+   * الشروط: standalone=false + pwa_installed=yes + لا يوجد SW
+   * ============================================================ */
+  async function autoClearIfUninstalled() {
+    try {
+      /* Samsung: يستخدم sessionStorage فقط — لا حاجة للفحص */
+      if (IS_SAMSUNG) return;
+
+      /* فقط إذا pwa_installed=yes وليس standalone */
+      if (localStorage.getItem("pwa_installed") !== "yes") return;
+      if (window.matchMedia("(display-mode: standalone)").matches) return;
+      if (window.navigator.standalone === true) return;
+
+      /* تحقق من وجود SW */
+      if (!("serviceWorker" in navigator)) return;
+      const regs = await navigator.serviceWorker.getRegistrations();
+
+      if (regs.length === 0) {
+        /* لا يوجد SW = التطبيق مُسح */
+        console.log("[PWA] اكتُشف مسح التطبيق — جاري التنظيف التلقائي...");
+
+        /* مسح localStorage ما عدا توكنات الجلسة */
+        const keysToKeep = {};
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && k.indexOf("tracking_session_token") === 0) {
+            keysToKeep[k] = localStorage.getItem(k);
+          }
+        }
+        localStorage.clear();
+        Object.keys(keysToKeep).forEach(function(k){
+          localStorage.setItem(k, keysToKeep[k]);
+        });
+
+        /* مسح sessionStorage ما عدا توكنات الجلسة */
+        const ssKeysToKeep = {};
+        for (let i = 0; i < sessionStorage.length; i++) {
+          const k = sessionStorage.key(i);
+          if (k && k.indexOf("tracking_session_token") === 0) {
+            ssKeysToKeep[k] = sessionStorage.getItem(k);
+          }
+        }
+        sessionStorage.clear();
+        Object.keys(ssKeysToKeep).forEach(function(k){
+          sessionStorage.setItem(k, ssKeysToKeep[k]);
+        });
+
+        /* مسح الـ Cache */
+        if ("caches" in window) {
+          const keys = await caches.keys();
+          for (const k of keys) await caches.delete(k);
+        }
+
+        console.log("[PWA] تنظيف تلقائي اكتمل");
+      }
+    } catch (e) {
+      console.warn("[PWA] autoClearIfUninstalled:", e);
+    }
+  }
+
+  /* ============================================================
    * تنظيف تلقائي عند تغيير الإصدار أو إعادة التثبيت
    * يحل مشكلة "التطبيق مثبت مسبقاً" في Chrome
    * ============================================================ */
@@ -156,15 +217,16 @@
    * PWA: هل التطبيق مثبت؟
    * ============================================================ */
   function isInstalled() {
-    /* standalone = مفتوح فعلاً كـ PWA — هذا الوحيد الموثوق */
+    /* 1. مفتوح كـ PWA standalone (Install الحقيقي) */
     if (window.matchMedia("(display-mode: standalone)").matches) return true;
     if (window.navigator.standalone === true) return true;
 
-    /* Samsung Internet: لا تعتمد على localStorage
-       لأنه لا يُمسح عند مسح التطبيق */
-    if (IS_SAMSUNG) return false;
+    /* 2. Samsung: تحقق من علم "add_to_home" — يُحفظ عند الضغط على الزر */
+    if (IS_SAMSUNG) {
+      return sessionStorage.getItem("samsung_installed") === "yes";
+    }
 
-    /* Chrome / Edge: استخدم localStorage */
+    /* 3. Chrome / Edge: استخدم localStorage */
     return localStorage.getItem("pwa_installed") === "yes";
   }
 
@@ -194,8 +256,12 @@
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
         if (outcome === "accepted") {
-          /* Samsung: لا تحفظ في localStorage */
-          if (!IS_SAMSUNG) localStorage.setItem("pwa_installed", "yes");
+          if (IS_SAMSUNG) {
+            /* Samsung: sessionStorage فقط — يُمسح تلقائياً عند إغلاق المتصفح */
+            sessionStorage.setItem("samsung_installed", "yes");
+          } else {
+            localStorage.setItem("pwa_installed", "yes");
+          }
           hideInstallBtn();
           callShowMsg("✅ تم تثبيت التطبيق بنجاح", "ok");
         } else {
@@ -250,8 +316,11 @@
 
     window.addEventListener("appinstalled", function () {
       deferredPrompt = null;
-      /* Samsung: لا تحفظ في localStorage لأنه لا يُمسح عند مسح التطبيق */
-      if (!IS_SAMSUNG) localStorage.setItem("pwa_installed", "yes");
+      if (IS_SAMSUNG) {
+        sessionStorage.setItem("samsung_installed", "yes");
+      } else {
+        localStorage.setItem("pwa_installed", "yes");
+      }
       hideInstallBtn();
       callShowMsg("✅ تم تثبيت التطبيق", "ok");
     });
@@ -262,9 +331,8 @@
     /* Firefox: أظهر الزر دائماً */
     if (IS_FF) { showInstallBtn("تثبيت التطبيق"); return; }
 
-    /* Chrome / Edge / Samsung:
-       إذا لم يصل beforeinstallprompt خلال 5 ثواني أظهر الزر يدوياً
-       يحل مشكلة إعادة التثبيت بعد المسح (Chrome يحجب الحدث لـ 90 يوم) */
+    /* انتظر وصول beforeinstallprompt
+       Samsung: 4 ثواني — Chrome/Edge: 5 ثواني */
     setTimeout(function () {
       if (!deferredPrompt && !isInstalled()) {
         showInstallBtn("تثبيت التطبيق");
@@ -626,6 +694,9 @@
 
     /* تنظيف عند تغيير الإصدار */
     await cleanupOnVersionChange();
+
+    /* تنظيف تلقائي إذا اكتُشف مسح التطبيق */
+    await autoClearIfUninstalled();
 
     /* بناء الـ Widget أو الربط بالعناصر الموجودة */
     buildWidget();
