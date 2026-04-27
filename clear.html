@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إعادة تثبيت التطبيق</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{
+    font-family:'Cairo',sans-serif;
+    min-height:100vh;
+    background:linear-gradient(135deg,#223243,#2f4356);
+    display:flex;align-items:center;justify-content:center;
+    padding:20px;
+  }
+  .card{
+    background:#fff;border-radius:20px;padding:32px 24px;
+    max-width:380px;width:100%;text-align:center;
+    box-shadow:0 20px 60px rgba(0,0,0,.3);
+  }
+  .icon{ font-size:56px;margin-bottom:16px; }
+  h2{ color:#223243;font-size:22px;font-weight:900;margin-bottom:8px; }
+  p{ color:#6b7785;font-size:14px;font-weight:700;line-height:1.7;margin-bottom:24px; }
+  .btn{
+    width:100%;padding:14px;border:none;border-radius:14px;
+    font-family:'Cairo',sans-serif;font-weight:900;font-size:16px;
+    cursor:pointer;margin-bottom:12px;transition:.2s;
+  }
+  .btn:hover{ transform:translateY(-1px);opacity:.92; }
+  .btn-red{ background:#e74c3c;color:#fff; }
+  .btn-blue{ background:#223243;color:#fff; }
+  .btn-gray{ background:#eef2f6;color:#223243; }
+  #msg{
+    margin-top:16px;padding:12px;border-radius:10px;
+    font-weight:900;font-size:14px;display:none;
+  }
+  #msg.ok{ background:#d5f5e3;color:#1e8449; }
+  #msg.err{ background:#fadbd8;color:#c0392b; }
+  #msg.info{ background:#d6eaf8;color:#1a5276; }
+  .steps{
+    text-align:right;background:#f8f9fa;border-radius:12px;
+    padding:14px;margin-bottom:20px;display:none;
+  }
+  .steps p{ color:#223243;margin-bottom:6px; }
+  .step{ display:flex;gap:10px;align-items:flex-start;margin-bottom:8px; }
+  .step-num{
+    background:#223243;color:#fff;border-radius:50%;
+    width:24px;height:24px;display:flex;align-items:center;
+    justify-content:center;font-size:12px;flex-shrink:0;margin-top:2px;
+  }
+  .step-txt{ font-size:14px;font-weight:700;color:#223243;line-height:1.5; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="icon">🔄</div>
+  <h2>إعادة تثبيت التطبيق</h2>
+  <p>إذا اختفى زر التثبيت بعد مسح التطبيق، اضغط الزر أدناه لتنظيف البيانات وإعادة التثبيت.</p>
+
+  <div class="steps" id="manualSteps">
+    <p style="font-weight:900;margin-bottom:10px;">بعد إعادة التحميل:</p>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-txt">افتح صفحة <strong>main.html</strong></div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-txt">انتظر ظهور زر <strong>📲 تثبيت التطبيق</strong></div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-txt">اضغطه وأكمل التثبيت</div>
+    </div>
+  </div>
+
+  <button class="btn btn-red" onclick="doClear()">🗑️ مسح البيانات وإعادة التثبيت</button>
+  <button class="btn btn-blue" onclick="goToMain()">🏠 الذهاب للصفحة الرئيسية</button>
+  <button class="btn btn-gray" onclick="checkStatus()">🔍 فحص الحالة</button>
+
+  <div id="msg"></div>
+</div>
+
+<script>
+  function showMsg(text, type){
+    var el = document.getElementById("msg");
+    el.textContent = text;
+    el.className = type || "info";
+    el.style.display = "block";
+  }
+
+  function goToMain(){
+    window.location.href = "/system/main.html";
+  }
+
+  async function checkStatus(){
+    var standalone = window.matchMedia("(display-mode: standalone)").matches;
+    var pwaInstalled = localStorage.getItem("pwa_installed");
+    var swCount = 0;
+
+    if("serviceWorker" in navigator){
+      var regs = await navigator.serviceWorker.getRegistrations();
+      swCount = regs.length;
+    }
+
+    showMsg(
+      "Standalone: " + (standalone ? "نعم" : "لا") +
+      " | pwa_installed: " + (pwaInstalled || "فارغ") +
+      " | SW: " + swCount,
+      "info"
+    );
+  }
+
+  async function doClear(){
+    showMsg("🔄 جاري المسح...", "info");
+    try{
+      /* احفظ توكنات الجلسة */
+      var keep = {}, ssKeep = {};
+      for(var i = 0; i < localStorage.length; i++){
+        var k = localStorage.key(i);
+        if(k && k.indexOf("tracking_session_token") === 0)
+          keep[k] = localStorage.getItem(k);
+      }
+      for(var i = 0; i < sessionStorage.length; i++){
+        var k = sessionStorage.key(i);
+        if(k && k.indexOf("tracking_session_token") === 0)
+          ssKeep[k] = sessionStorage.getItem(k);
+      }
+
+      /* امسح كل شيء */
+      localStorage.clear();
+      sessionStorage.clear();
+
+      /* أعد الجلسة */
+      Object.keys(keep).forEach(function(k){ localStorage.setItem(k, keep[k]); });
+      Object.keys(ssKeep).forEach(function(k){ sessionStorage.setItem(k, ssKeep[k]); });
+
+      /* مسح Cache */
+      if("caches" in window){
+        var keys = await caches.keys();
+        for(var j = 0; j < keys.length; j++) await caches.delete(keys[j]);
+      }
+
+      /* إلغاء SW */
+      if("serviceWorker" in navigator){
+        var regs = await navigator.serviceWorker.getRegistrations();
+        for(var j = 0; j < regs.length; j++) await regs[j].unregister();
+      }
+
+      showMsg("✅ تم المسح بنجاح!", "ok");
+      document.getElementById("manualSteps").style.display = "block";
+
+      /* انتقل للرئيسية بعد 2 ثانية */
+      setTimeout(function(){ window.location.href = "/system/main.html"; }, 2000);
+
+    } catch(e){
+      showMsg("❌ خطأ: " + e.message, "err");
+    }
+  }
+</script>
+</body>
+</html>
