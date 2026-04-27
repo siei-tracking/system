@@ -41,61 +41,114 @@
   let pollTimer             = null;
 
   /* ============================================================
-   * AUTO CLEAR: إذا التطبيق مُسح يعمل clear تلقائياً
-   * الشروط: standalone=false + pwa_installed=yes + لا يوجد SW
+   * AUTO CLEAR: كشف مسح التطبيق وتنظيف تلقائي
+   *
+   * المنطق:
+   * - نحفظ timestamp عند التثبيت
+   * - عند فتح الصفحة: إذا standalone=false + timestamp موجود
+   *   + لم يفتح كـ standalone منذ فترة = مُسح على الأرجح
+   * - Samsung: نعتمد على فقدان sessionStorage بين الجلسات
    * ============================================================ */
+  function saveWithKeepingSession(storeFn, clearFn) {
+    /* احفظ توكنات الجلسة قبل المسح ثم أعدها */
+    const keep = {};
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && k.indexOf("tracking_session_token") === 0) keep["ls_" + k] = localStorage.getItem(k);
+      }
+      for (let i = 0; i < sessionStorage.length; i++) {
+        const k = sessionStorage.key(i);
+        if (k && k.indexOf("tracking_session_token") === 0) keep["ss_" + k] = sessionStorage.getItem(k);
+      }
+    } catch(e) {}
+
+    clearFn();
+
+    try {
+      Object.keys(keep).forEach(function(k) {
+        const val = keep[k];
+        if (k.startsWith("ls_")) localStorage.setItem(k.slice(3), val);
+        else sessionStorage.setItem(k.slice(3), val);
+      });
+    } catch(e) {}
+  }
+
+  async function doClear() {
+    console.log("[PWA] تنظيف تلقائي...");
+    saveWithKeepingSession(null, function() {
+      localStorage.clear();
+      sessionStorage.clear();
+    });
+    try {
+      if ("caches" in window) {
+        const keys = await caches.keys();
+        for (const k of keys) await caches.delete(k);
+      }
+    } catch(e) {}
+    console.log("[PWA] تنظيف اكتمل ✅");
+  }
+
   async function autoClearIfUninstalled() {
     try {
-      /* Samsung: يستخدم sessionStorage فقط — لا حاجة للفحص */
-      if (IS_SAMSUNG) return;
+      const isStandalone = window.matchMedia("(display-mode: standalone)").matches
+                        || window.navigator.standalone === true;
 
-      /* فقط إذا pwa_installed=yes وليس standalone */
+      /* إذا مفتوح كـ standalone — حفظ الوقت والخروج */
+      if (isStandalone) {
+        localStorage.setItem("pwa_last_standalone", Date.now().toString());
+        sessionStorage.setItem("pwa_session_standalone", "yes");
+        return;
+      }
+
+      /* ── Samsung Internet ── */
+      if (IS_SAMSUNG) {
+        /* إذا تم التنظيف مسبقاً في هذه الجلسة — لا تكرر */
+        if (sessionStorage.getItem("pwa_cleared_this_session") === "yes") return;
+
+        const lastStandalone = localStorage.getItem("pwa_last_standalone");
+
+        /* لا يوجد تاريخ standalone سابق = لم يُثبَّت قبلاً */
+        if (!lastStandalone) return;
+
+        const daysSince = (Date.now() - parseInt(lastStandalone)) / 86400000;
+
+        /* إذا آخر standalone أكثر من يوم → على الأرجح مُسح */
+        if (daysSince > 1) {
+          console.log("[PWA Samsung] اكتُشف مسح — منذ " + daysSince.toFixed(1) + " يوم");
+          /* احفظ علامة "تم التنظيف" في sessionStorage قبل المسح */
+          sessionStorage.setItem("pwa_cleared_this_session", "yes");
+          await doClear();
+          /* امسح lastStandalone حتى لا يتكرر */
+          localStorage.removeItem("pwa_last_standalone");
+        }
+        return;
+      }
+
+      /* ── Chrome / Edge ── */
       if (localStorage.getItem("pwa_installed") !== "yes") return;
-      if (window.matchMedia("(display-mode: standalone)").matches) return;
-      if (window.navigator.standalone === true) return;
 
-      /* تحقق من وجود SW */
+      /* تحقق من SW */
       if (!("serviceWorker" in navigator)) return;
       const regs = await navigator.serviceWorker.getRegistrations();
 
       if (regs.length === 0) {
-        /* لا يوجد SW = التطبيق مُسح */
-        console.log("[PWA] اكتُشف مسح التطبيق — جاري التنظيف التلقائي...");
-
-        /* مسح localStorage ما عدا توكنات الجلسة */
-        const keysToKeep = {};
-        for (let i = 0; i < localStorage.length; i++) {
-          const k = localStorage.key(i);
-          if (k && k.indexOf("tracking_session_token") === 0) {
-            keysToKeep[k] = localStorage.getItem(k);
-          }
-        }
-        localStorage.clear();
-        Object.keys(keysToKeep).forEach(function(k){
-          localStorage.setItem(k, keysToKeep[k]);
-        });
-
-        /* مسح sessionStorage ما عدا توكنات الجلسة */
-        const ssKeysToKeep = {};
-        for (let i = 0; i < sessionStorage.length; i++) {
-          const k = sessionStorage.key(i);
-          if (k && k.indexOf("tracking_session_token") === 0) {
-            ssKeysToKeep[k] = sessionStorage.getItem(k);
-          }
-        }
-        sessionStorage.clear();
-        Object.keys(ssKeysToKeep).forEach(function(k){
-          sessionStorage.setItem(k, ssKeysToKeep[k]);
-        });
-
-        /* مسح الـ Cache */
-        if ("caches" in window) {
-          const keys = await caches.keys();
-          for (const k of keys) await caches.delete(k);
-        }
-
-        console.log("[PWA] تنظيف تلقائي اكتمل");
+        console.log("[PWA Chrome] لا يوجد SW — اكتُشف مسح");
+        await doClear();
+        return;
       }
+
+      /* SW موجود لكن تحقق من lastStandalone */
+      const lastStandalone = localStorage.getItem("pwa_last_standalone");
+      if (lastStandalone) {
+        const daysSince = (Date.now() - parseInt(lastStandalone)) / 86400000;
+        if (daysSince > 30) {
+          /* لم يُفتح كـ standalone منذ 30 يوم → امسح */
+          console.log("[PWA Chrome] لم يُفتح standalone منذ " + daysSince.toFixed(0) + " يوم");
+          await doClear();
+        }
+      }
+
     } catch (e) {
       console.warn("[PWA] autoClearIfUninstalled:", e);
     }
