@@ -156,24 +156,16 @@
    * PWA: هل التطبيق مثبت؟
    * ============================================================ */
   function isInstalled() {
-    /* standalone = مفتوح فعلاً كـ PWA */
+    /* standalone = مفتوح فعلاً كـ PWA — هذا الوحيد الموثوق */
     if (window.matchMedia("(display-mode: standalone)").matches) return true;
     if (window.navigator.standalone === true) return true;
-    /* pwa_installed فقط إذا كان standalone سابقاً (Samsung يمسحه عند مسح التطبيق) */
-    if (localStorage.getItem("pwa_installed") === "yes") {
-      /* تحقق: إذا فُقد الـ SW يعني التطبيق مُسح — امسح العلم */
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(regs){
-          if (regs.length === 0) {
-            localStorage.removeItem("pwa_installed");
-            localStorage.removeItem("app_installed");
-            console.log("[PWA] SW مفقود — تم مسح pwa_installed");
-          }
-        });
-      }
-      return true; /* مؤقتاً حتى يكتمل الفحص */
-    }
-    return false;
+
+    /* Samsung Internet: لا تعتمد على localStorage
+       لأنه لا يُمسح عند مسح التطبيق */
+    if (IS_SAMSUNG) return false;
+
+    /* Chrome / Edge: استخدم localStorage */
+    return localStorage.getItem("pwa_installed") === "yes";
   }
 
   /* ============================================================
@@ -202,7 +194,8 @@
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
         if (outcome === "accepted") {
-          localStorage.setItem("pwa_installed", "yes");
+          /* Samsung: لا تحفظ في localStorage */
+          if (!IS_SAMSUNG) localStorage.setItem("pwa_installed", "yes");
           hideInstallBtn();
           callShowMsg("✅ تم تثبيت التطبيق بنجاح", "ok");
         } else {
@@ -245,28 +238,7 @@
   /* ============================================================
    * PWA: إعداد مستمعات التثبيت
    * ============================================================ */
-  async function checkAndResetIfUninstalled() {
-    /* إذا pwa_installed = yes لكن لا يوجد SW → التطبيق مُسح → امسح العلم */
-    if (localStorage.getItem("pwa_installed") === "yes"
-     && !window.matchMedia("(display-mode: standalone)").matches
-     && !window.navigator.standalone) {
-      try {
-        const regs = await navigator.serviceWorker.getRegistrations();
-        if (regs.length === 0) {
-          localStorage.removeItem("pwa_installed");
-          localStorage.removeItem("app_installed");
-          console.log("[PWA] اكتُشف مسح التطبيق — تم إعادة تعيين العلم");
-        }
-      } catch(e) {}
-    }
-  }
-
   function setupPWA() {
-    /* فحص إذا التطبيق مُسح */
-    checkAndResetIfUninstalled().then(function(){
-      if (isInstalled()) { hideInstallBtn(); return; }
-    });
-
     if (isInstalled()) { hideInstallBtn(); return; }
 
     window.addEventListener("beforeinstallprompt", function (e) {
@@ -278,7 +250,8 @@
 
     window.addEventListener("appinstalled", function () {
       deferredPrompt = null;
-      localStorage.setItem("pwa_installed", "yes");
+      /* Samsung: لا تحفظ في localStorage لأنه لا يُمسح عند مسح التطبيق */
+      if (!IS_SAMSUNG) localStorage.setItem("pwa_installed", "yes");
       hideInstallBtn();
       callShowMsg("✅ تم تثبيت التطبيق", "ok");
     });
