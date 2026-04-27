@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
   <meta charset="UTF-8" />
@@ -1065,8 +1065,6 @@
   let CURRENT_USER_ROLE = "";
   let CURRENT_USER_NAME = "";
   let CURRENT_USERNAME  = "";
-  let lastNotificationIds   = [];
-  let notificationsInitialized = false;
   let sessionFailCount = 0;         // ← جديد: عداد فشل الجلسة
   const MAX_SESSION_FAILS = 3;      // ← 3 فشل متتالي قبل التحويل
 
@@ -1149,7 +1147,7 @@
         showAdminButton();
         await loadSheetOptions();
         await loadOpen();
-        await loadNotifications();
+        if(typeof window.loadNotifications === 'function') window.loadNotifications();
       } else {
         redirectToLogin();
       }
@@ -1869,253 +1867,15 @@
     }
   }
 
-  /* ============================================================
-   * NOTIFICATIONS
-   * ============================================================ */
-  async function toggleNotif(){
-    const box = document.getElementById("notifBox");
-    if(!box) return;
-    const willOpen = box.style.display !== "block";
-    box.style.display = willOpen ? "block" : "none";
-    if(willOpen) await loadNotifications();
-  }
 
-  function closeNotif(){
-    const box = document.getElementById("notifBox");
-    if(box) box.style.display = "none";
-  }
-
-  async function loadNotifications(){
-    try{
-      const sessionToken = getSessionToken();
-      if(!sessionToken) return;
-
-      const res   = await apiPost({ action:"getNotifications", token:sessionToken, page:PAGE_NAME });
-      const list  = document.getElementById("notifList");
-      const count = document.getElementById("notifCount");
-      if(!list || !count) return;
-
-      const items = Array.isArray(res && res.items) ? res.items : [];
-      let unread  = 0;
-      list.innerHTML = "";
-
-      if(!items.length){
-        list.innerHTML = '<div class="notif-item" style="color:var(--muted);text-align:center;padding:20px;">لا توجد إشعارات</div>';
-        count.textContent = "0";
-        count.classList.remove("has-notif");
-        lastNotificationIds  = [];
-        notificationsInitialized = true;
-
-        const lbl = document.getElementById("notifUnreadLabel");
-        if(lbl) lbl.textContent = "";
-        return;
-      }
-
-      const currentIds = items.map(function(n){ return String(n.id || ""); });
-      const newItems   = items.filter(function(n){
-        return String(n.id || "") && !lastNotificationIds.includes(String(n.id || ""));
-      });
-
-      items.forEach(function(n){
-        const isRead = String(n.isRead).toLowerCase() === "true";
-        if(!isRead) unread++;
-
-        const id  = String(n.id || "").trim();
-        const div = document.createElement("div");
-        div.className   = "notif-item" + (isRead ? "" : " unread");
-        div.setAttribute("data-id", id);
-        div.onclick = function(){ markNotificationRead(id); };
-        div.innerHTML =
-          '<div style="font-weight:900;">'    + escapeHtml(n.message   || "إشعار جديد") + '</div>' +
-          '<div style="font-size:12px;color:var(--muted);margin-top:4px;">' + escapeHtml(n.createdAt || "") + '</div>';
-        list.appendChild(div);
-      });
-
-      /* تحديث العداد */
-      count.textContent = unread > 99 ? "99+" : String(unread);
-      if(unread > 0){
-        count.classList.add("has-notif");
-      } else {
-        count.classList.remove("has-notif");
-      }
-
-      const lbl = document.getElementById("notifUnreadLabel");
-      if(lbl) lbl.textContent = unread > 0 ? unread + " غير مقروء" : "كل شيء مقروء";
-
-      /* إشعار المتصفح للإشعارات الجديدة */
-      if(notificationsInitialized && newItems.length > 0){
-        try{
-          const msg = newItems[0].message || "لديك إشعار جديد";
-          if(window.showBrowserNotification) window.showBrowserNotification("إشعار جديد", msg);
-        } catch(e){}
-      }
-
-      notificationsInitialized = true;
-      lastNotificationIds = currentIds;
-    } catch(err){
-      console.warn("notifications error:", err);
-    }
-  }
-
-  async function markNotificationRead(notificationId){
-    try{
-      const id = String(notificationId || "").trim();
-      if(!id) return;
-      const sessionToken = getSessionToken();
-      if(!sessionToken) return;
-      const res = await apiPost({ action:"markNotificationRead", token:sessionToken, page:PAGE_NAME, notificationId:id });
-      if(res && res.ok) await loadNotifications();
-    } catch(err){
-      console.warn("markNotificationRead error:", err);
-    }
-  }
 
   /* ============================================================
-   * PWA INSTALL — دعم جميع المتصفحات
-   * Chrome/Edge  : beforeinstallprompt
-   * iOS Safari   : navigator.standalone
-   * Firefox/غيره : تعليمات يدوية
+   * EXPOSE GLOBALS — للـ notifications-widget.js
    * ============================================================ */
-  let deferredInstallPrompt = null;
-
-  /* --- كشف المتصفح --- */
-  const UA = navigator.userAgent || "";
-  const IS_IOS     = /iphone|ipad|ipod/i.test(UA);
-  const IS_SAFARI  = /safari/i.test(UA) && !/chrome/i.test(UA);
-  const IS_FIREFOX = /firefox/i.test(UA);
-  const IS_CHROME  = /chrome|chromium|crios/i.test(UA) && !/edg/i.test(UA);
-  const IS_EDGE    = /edg\//i.test(UA);
-  const IS_SAMSUNG = /samsungbrowser/i.test(UA);
-
-  /* --- هل التطبيق مثبت بالفعل؟ --- */
-  function isAppInstalled(){
-    /* 1. مفتوح كـ PWA (standalone) */
-    if(window.matchMedia("(display-mode: standalone)").matches) return true;
-    /* 2. iOS standalone */
-    if(window.navigator.standalone === true) return true;
-    /* 3. حُفظ في localStorage بعد تثبيت مؤكد */
-    if(localStorage.getItem("app_installed") === "yes") return true;
-    return false;
-  }
-
-  /* --- إخفاء الزر --- */
-  function hideInstallButton(){
-    const btn = document.getElementById("btnInstallApp");
-    if(btn) btn.style.display = "none";
-  }
-
-  /* --- إظهار الزر مع النص المناسب للمتصفح --- */
-  function showInstallButton(label){
-    if(isAppInstalled()){ hideInstallButton(); return; }
-    const btn = document.getElementById("btnInstallApp");
-    if(!btn) return;
-    if(label){
-      btn.innerHTML = '<i class="fas fa-mobile-screen-button"></i> ' + label;
-    }
-    btn.style.display = "inline-flex";
-  }
-
-  /* --- Chrome / Edge / Samsung: beforeinstallprompt --- */
-  window.addEventListener("beforeinstallprompt", function(e){
-    e.preventDefault();
-    deferredInstallPrompt = e;
-    showInstallButton("تثبيت التطبيق");
-  });
-
-  /* --- نقر الزر: Chrome/Edge ← Prompt، iOS/Firefox ← تعليمات --- */
-  document.getElementById("btnInstallApp").addEventListener("click", async function(){
-
-    /* Chrome / Edge / Samsung: لديهم prompt */
-    if(deferredInstallPrompt){
-      try{
-        deferredInstallPrompt.prompt();
-        const { outcome } = await deferredInstallPrompt.userChoice;
-        if(outcome === "accepted"){
-          localStorage.setItem("app_installed","yes");
-          hideInstallButton();
-          showMsg("✅ تم تثبيت التطبيق بنجاح", "ok");
-        } else {
-          showMsg("ℹ️ تم إلغاء التثبيت", "warn");
-        }
-      } catch(e){
-        showMsg("⚠️ تعذر التثبيت: " + e.message, "warn");
-      }
-      deferredInstallPrompt = null;
-      return;
-    }
-
-    /* iOS Safari: تعليمات يدوية */
-    if(IS_IOS && IS_SAFARI){
-      showMsg("📱 اضغط على زر المشاركة ثم 'أضف إلى الشاشة الرئيسية'", "warn");
-      return;
-    }
-
-    /* iOS Chrome / iOS غير Safari */
-    if(IS_IOS){
-      showMsg("📱 افتح الصفحة في Safari ثم أضفها للشاشة الرئيسية", "warn");
-      return;
-    }
-
-    /* Firefox */
-    if(IS_FIREFOX){
-      showMsg("🦊 Firefox: افتح القائمة ☰ ثم 'تثبيت'", "warn");
-      return;
-    }
-
-    /* متصفح غير مدعوم أو لم يصدر الحدث بعد */
-    showMsg("ℹ️ افتح القائمة في متصفحك واختر 'تثبيت التطبيق'", "warn");
-  });
-
-  /* --- بعد التثبيت الفعلي (Chrome/Edge) --- */
-  window.addEventListener("appinstalled", function(){
-    deferredInstallPrompt = null;
-    localStorage.setItem("app_installed","yes");
-    hideInstallButton();
-    showMsg("✅ تم تثبيت التطبيق", "ok");
-  });
-
-  /* --- عند تحميل الصفحة: فحص شامل --- */
-  window.addEventListener("load", function(){
-    /* إذا مثبت → أخفِ الزر فوراً */
-    if(isAppInstalled()){
-      hideInstallButton();
-      return;
-    }
-
-    /* iOS Safari: أظهر الزر بشكل دائم لأنه لا يرسل beforeinstallprompt */
-    if(IS_IOS && IS_SAFARI){
-      showInstallButton("أضف للشاشة الرئيسية");
-      return;
-    }
-
-    /* Firefox desktop: أظهر الزر بشكل دائم */
-    if(IS_FIREFOX){
-      showInstallButton("تثبيت التطبيق");
-      return;
-    }
-
-    /* Chrome/Edge/Samsung: ينتظرون حدث beforeinstallprompt
-       — الزر يظهر فقط إذا وصل الحدث (يعني المتصفح قرر أنه قابل للتثبيت)
-       — لا نظهره هنا، ينتظر المستمع أعلاه */
-  });
-
-  /* --- مراقبة تغيير display-mode (يُغلق من standalone) --- */
-  window.matchMedia("(display-mode: standalone)").addEventListener("change", function(e){
-    if(e.matches){
-      localStorage.setItem("app_installed","yes");
-      hideInstallButton();
-    }
-  });
-
-  /* ============================================================
-   * EXPOSE GLOBALS
-   * ============================================================ */
-  window.markNotificationRead = markNotificationRead;
-  window.showMsg              = showMsg;
-  window.apiPost              = apiPost;
-  window.getSessionToken      = getSessionToken;
-  window.PAGE_NAME            = PAGE_NAME;
-  window.loadNotifications    = loadNotifications;
+  window.showMsg         = showMsg;
+  window.apiPost         = apiPost;
+  window.getSessionToken = getSessionToken;
+  window.PAGE_NAME       = PAGE_NAME;
 
   /* ============================================================
    * EVENT LISTENERS
@@ -2161,13 +1921,11 @@
       setTimeout(exportCurrentPDF, 50);
     });
 
-    /* Close menus on outside click */
+    /* Close export menu on outside click */
     document.addEventListener("click", function(e){
-      const menu        = document.getElementById("exportMenu");
-      const btnExport   = document.getElementById("btnExport");
-      const notifWrapper = document.getElementById("notifWrapper");
+      const menu      = document.getElementById("exportMenu");
+      const btnExport = document.getElementById("btnExport");
       if(menu && btnExport && !menu.contains(e.target) && !btnExport.contains(e.target)) closeExportMenu();
-      if(notifWrapper && !notifWrapper.contains(e.target)) closeNotif();
     });
 
     window.addEventListener("resize", closeExportMenu);
@@ -2179,184 +1937,17 @@
     if(openSheetBtn) openSheetBtn.addEventListener("click", openArchiveSheet);
     if(adminBtn)     adminBtn.addEventListener("click",     openAdminPage);
 
-    /* Notifications */
-    const notifIcon = document.getElementById("notifIcon");
-    if(notifIcon){
-      notifIcon.addEventListener("click", function(e){
-        e.stopPropagation();
-        toggleNotif();
-      });
-    }
-
     /* بدء التطبيق */
     ensurePageSession();
     setInterval(checkLiveSession,   10000);
-    setInterval(loadNotifications,   5000);
   });
 
   </script>
 
   <!-- ============================================================
-       SERVICE WORKER
+       NOTIFICATIONS WIDGET — إشعارات + PWA لجميع الصفحات
        ============================================================ -->
-  <script>
-    window.SW_REGISTRATION = null;
+  <script src="/system/notifications-widget.js" defer></script>
 
-    async function registerMainServiceWorker(){
-      if(!("serviceWorker" in navigator)) return null;
-      try{
-        window.SW_REGISTRATION = await navigator.serviceWorker.register(
-          "/system/firebase-messaging-sw.js",
-          { scope: "/system/" }
-        );
-        await navigator.serviceWorker.ready;
-        console.log("SW registered:", window.SW_REGISTRATION.scope);
-        return window.SW_REGISTRATION;
-      } catch(err){
-        console.error("SW registration failed:", err);
-        return null;
-      }
-    }
-
-    /* ← تحسين: تحديث الـ Token تلقائياً إذا تغير */
-    async function refreshPushTokenIfNeeded(messaging, vapidKey, registration){
-      try{
-        const { getToken } = await import("https://www.gstatic.com/firebasejs/12.12.1/firebase-messaging.js");
-        const currentToken = await getToken(messaging, { vapidKey, serviceWorkerRegistration: registration });
-        if(!currentToken) return null;
-
-        const storedToken = localStorage.getItem("fcm_push_token");
-        if(storedToken === currentToken) return currentToken; /* لم يتغير */
-
-        const sessionToken = window.getSessionToken();
-        if(!sessionToken) return currentToken;
-
-        const res = await window.apiPost({
-          action:    "savePushToken",
-          token:     sessionToken,
-          page:      window.PAGE_NAME,
-          pushToken: currentToken
-        });
-
-        if(res && res.ok) localStorage.setItem("fcm_push_token", currentToken);
-        return currentToken;
-      } catch(e){
-        console.warn("Token refresh failed:", e);
-        return null;
-      }
-    }
-
-    async function showBrowserNotification(title, body){
-      if(!("Notification" in window)) return;
-      if(Notification.permission !== "granted") return;
-
-      let reg = window.SW_REGISTRATION;
-      if(!reg && "serviceWorker" in navigator) reg = await navigator.serviceWorker.getRegistration("/system/");
-      if(!reg) reg = await registerMainServiceWorker();
-
-      if(reg && reg.showNotification){
-        reg.showNotification(title || "إشعار جديد", {
-          body:  body || "",
-          icon:  "/system/logo-192.png",
-          badge: "/system/logo-192.png",
-          dir:   "rtl",
-          lang:  "ar",
-          vibrate: [200, 100, 200],
-          data:  { url: "/system/main.html" }
-        });
-      }
-    }
-
-    window.registerMainServiceWorker      = registerMainServiceWorker;
-    window.registerServiceWorkerForPush   = registerMainServiceWorker;
-    window.showBrowserNotification        = showBrowserNotification;
-    window.refreshPushTokenIfNeeded       = refreshPushTokenIfNeeded;
-  </script>
-
-  <!-- ============================================================
-       FIREBASE (module)
-       ============================================================ -->
-  <script type="module">
-    import { initializeApp }                          from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-    import { getMessaging, getToken, onMessage }      from "https://www.gstatic.com/firebasejs/12.12.1/firebase-messaging.js";
-
-    const firebaseConfig = {
-      apiKey:            "AIzaSyBhWJtOWJKlBk04Ii7mm93rhfECuQLKRbM",
-      authDomain:        "tracking-web-218e8.firebaseapp.com",
-      projectId:         "tracking-web-218e8",
-      storageBucket:     "tracking-web-218e8.firebasestorage.app",
-      messagingSenderId: "107177409442",
-      appId:             "1:107177409442:web:c66ec3f1ad72e5fad610fb",
-      measurementId:     "G-PCJX55XGQS"
-    };
-
-    const VAPID_KEY = "BCVh972jCSmGqdWe7nDcWtepOrPGq7CwKdFNjT2gJ8IsMmhE1T0CEgOk9t5g8NQOlMNCW9peG67kUzrui6pFgFU";
-
-    const app       = initializeApp(firebaseConfig);
-    const messaging = getMessaging(app);
-
-    /* ← تحسين: تجديد الـ token دورياً */
-    async function enableNotifications(){
-      try{
-        if(!("Notification" in window))    { window.showMsg("❌ هذا المتصفح لا يدعم الإشعارات", "err");   return; }
-        if(!("serviceWorker" in navigator)){ window.showMsg("❌ هذا المتصفح لا يدعم Service Worker", "err"); return; }
-
-        const permission = await Notification.requestPermission();
-        if(permission !== "granted"){ window.showMsg("⚠️ لم يتم منح إذن الإشعارات", "warn"); return; }
-
-        const registration = await window.registerServiceWorkerForPush();
-        if(!registration){ window.showMsg("❌ فشل تسجيل Service Worker", "err"); return; }
-
-        const currentToken = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: registration });
-        if(!currentToken){ window.showMsg("⚠️ تعذر إنشاء توكن الإشعارات", "warn"); return; }
-
-        const sessionToken = window.getSessionToken();
-        if(!sessionToken){ window.showMsg("⚠️ الجلسة غير موجودة", "warn"); return; }
-
-        const res = await window.apiPost({
-          action:    "savePushToken",
-          token:     sessionToken,
-          page:      window.PAGE_NAME,
-          pushToken: currentToken
-        });
-
-        if(res && res.ok){
-          localStorage.setItem("fcm_push_token", currentToken);
-          window.showMsg("✅ تم تفعيل الإشعارات بنجاح", "ok");
-        } else {
-          window.showMsg((res && res.message) || "❌ فشل حفظ توكن الإشعارات", "err");
-        }
-      } catch(err){
-        let msg = "❌ فشل تفعيل الإشعارات";
-        if(err && err.code)    msg += " | " + err.code;
-        if(err && err.message) msg += " | " + err.message;
-        window.showMsg(msg, "err");
-        console.error("Notification setup error:", err);
-      }
-    }
-
-    /* ← تجديد الـ Token عند تحميل الصفحة إذا كان الإذن مفعّل */
-    async function autoRefreshToken(){
-      if(Notification.permission !== "granted") return;
-      const reg = await window.registerServiceWorkerForPush();
-      if(!reg) return;
-      await window.refreshPushTokenIfNeeded(messaging, VAPID_KEY, reg);
-    }
-
-    const btnEnable = document.getElementById("btnEnableNotifications");
-    if(btnEnable) btnEnable.addEventListener("click", enableNotifications);
-
-    /* استقبال الرسائل في الـ Foreground */
-    onMessage(messaging, function(payload){
-      const title = (payload && payload.notification && payload.notification.title) || "إشعار جديد";
-      const body  = (payload && payload.notification && payload.notification.body)  || "";
-      if(window.showMsg)               window.showMsg(title + (body ? " - " + body : ""), "ok");
-      if(window.showBrowserNotification) window.showBrowserNotification(title, body);
-      if(window.loadNotifications)     window.loadNotifications();
-    });
-
-    /* تجديد الـ token بعد تحميل الصفحة */
-    window.addEventListener("load", autoRefreshToken);
-  </script>
 </body>
 </html>
