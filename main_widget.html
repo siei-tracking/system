@@ -1,0 +1,1999 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>المعاملات - منصة تتبع أوامر العمل</title>
+  <link rel="icon" href="https://siei-tracking.github.io/system/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="manifest" href="/system/manifest.webmanifest">
+  <meta name="theme-color" content="#223243">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <style>
+    /* ===== CSS VARIABLES ===== */
+    :root{
+      --primary:#223243;
+      --accent:#f5a623;
+      --accent-dark:#e59712;
+      --bg:#eef2f6;
+      --card:rgba(255,255,255,0.88);
+      --line:#e5ebf1;
+      --muted:#758292;
+      --ok:#27ae60;
+      --danger:#e74c3c;
+      --disabled:#bdc3c7;
+      --soft:#f8fafc;
+      --warn:#f39c12;
+      --admin:#6f42c1;
+      --transition-fast: .15s ease;
+      --transition-med: .25s ease;
+      --radius-sm: 10px;
+      --radius-md: 14px;
+      --radius-lg: 22px;
+    }
+
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      overflow-x: hidden;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Cairo', sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(245,166,35,.08), transparent 24%),
+        radial-gradient(circle at top left, rgba(34,50,67,.05), transparent 30%),
+        var(--bg);
+      color: #111;
+    }
+
+    /* ===== PAGE WRAP ===== */
+    #pageWrap { display: none; }
+    #pageWrap.show { display: block; }
+
+    /* ===== HEADER ===== */
+    .company-header {
+      background-image:
+        linear-gradient(rgba(34,50,67,.35), rgba(34,50,67,.35)),
+        url('https://siei-tracking.github.io/system/company.jpg');
+      background-size: cover;
+      background-position: center;
+      padding: 64px 5% 60px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      color: #fff;
+      flex-wrap: wrap;
+      justify-content: center;
+      text-align: center;
+      box-shadow: 0 12px 28px rgba(0,0,0,.18);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .company-logo {
+      width: 100px;
+      height: 100px;
+      background: #fff;
+      border-radius: 50%;
+      padding: 5px;
+      object-fit: contain;
+      display: block;
+      flex-shrink: 0;
+      box-shadow: 0 4px 16px rgba(0,0,0,.25);
+    }
+
+    .header-text {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      max-width: 100%;
+    }
+
+    .header-text h1 {
+      color: #fff;
+      margin: 0;
+      font-size: 30px;
+      font-weight: 900;
+      line-height: 1.45;
+      text-shadow: 0 2px 8px rgba(0,0,0,.7);
+    }
+
+    .header-text p {
+      color: #fff;
+      margin: 0;
+      font-size: 18px;
+      font-weight: 900;
+      line-height: 1.5;
+      text-shadow: 0 2px 8px rgba(0,0,0,.7);
+    }
+
+    .user-pill {
+      margin-top: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 4px 16px;
+      border-radius: 999px;
+      background: rgba(128,0,32,0.4);
+      border: 1px solid rgba(231,76,60,0.45);
+      color: #fff;
+      font-weight: 900;
+      font-size: 13px;
+      box-shadow: 0 4px 12px rgba(231,76,60,.25);
+      max-width: 100%;
+      word-break: break-word;
+    }
+
+    /* ===== LAYOUT ===== */
+    .wrap {
+      padding: 0 5% 30px;
+      display: flex;
+      justify-content: center;
+      position: relative;
+      margin-top: -40px;
+    }
+
+    .panel {
+      width: 100%;
+      max-width: 1275px;
+      margin-top: 13px;
+      background: rgba(255,255,255,0.92);
+      border-radius: var(--radius-lg);
+      padding: 0;
+      box-shadow:
+        0 20px 50px rgba(0,0,0,.12),
+        0 6px 18px rgba(0,0,0,.06);
+      position: relative;
+      z-index: 2;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      transition: transform var(--transition-med), box-shadow var(--transition-med);
+      border: 1px solid rgba(255,255,255,.65);
+      overflow: visible;
+    }
+
+    .panel:hover {
+      transform: translateY(-3px);
+      box-shadow:
+        0 26px 60px rgba(0,0,0,.16),
+        0 8px 22px rgba(0,0,0,.08);
+    }
+
+    .panel::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 60px;
+      background: linear-gradient(to bottom, rgba(255,255,255,.55), transparent);
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      pointer-events: none;
+    }
+
+    /* ===== PANEL HEAD ===== */
+    .panel-head {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      position: relative;
+      z-index: 2;
+      background: linear-gradient(180deg, rgba(243,156,18,0.08), transparent);
+    }
+
+    .title {
+      font-weight: 900;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 18px;
+    }
+
+    /* ===== CONTROLS ===== */
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      position: relative;
+      z-index: 10;
+      width: 100%;
+    }
+
+    input, select {
+      padding: 12px;
+      border-radius: var(--radius-sm);
+      border: 1.5px solid var(--line);
+      font-family: 'Cairo', sans-serif;
+      font-weight: 900;
+      text-align: center;
+      min-width: 180px;
+      outline: none;
+      background: #fff;
+      transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+      color: #1f2d3a;
+    }
+
+    input:focus, select:focus {
+      border-color: #d8b15d;
+      box-shadow: 0 0 0 4px rgba(245,166,35,.12);
+    }
+
+    input::placeholder {
+      color: #9aa6b2;
+      font-weight: 800;
+    }
+
+    /* ===== BUTTONS ===== */
+    .btn {
+      padding: 12px 14px;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: 'Cairo', sans-serif;
+      font-weight: 900;
+      font-size: 18px;
+      cursor: pointer;
+      display: inline-flex;
+      gap: 10px;
+      align-items: center;
+      justify-content: center;
+      transition: transform var(--transition-fast), opacity var(--transition-fast), box-shadow var(--transition-fast);
+      white-space: nowrap;
+      touch-action: manipulation;
+      position: relative;
+      overflow: hidden;
+      min-width: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Shimmer effect */
+    .btn::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: -120%;
+      width: 120%;
+      height: 100%;
+      background: linear-gradient(
+        120deg,
+        transparent 20%,
+        rgba(255,255,255,.18) 40%,
+        rgba(255,255,255,.35) 50%,
+        rgba(255,255,255,.18) 60%,
+        transparent 80%
+      );
+      transition: .65s;
+    }
+
+    .btn:hover::before { right: 120%; }
+    .btn:hover { transform: translateY(-1px); opacity: .96; }
+    .btn:active { transform: translateY(0); opacity: .9; }
+    .btn:disabled { opacity: .6; cursor: not-allowed; transform: none; pointer-events: none; }
+
+    .btn-primary {
+      background: linear-gradient(180deg, #1e3c72, #162c52);
+      color: #fff;
+      box-shadow: 0 10px 20px rgba(30,60,114,.20);
+    }
+
+    .btn-warn {
+      background: linear-gradient(180deg, #e74c3c, #c0392b);
+      color: #fff;
+      box-shadow: 0 10px 20px rgba(231,76,60,.20);
+    }
+
+    .btn-ok {
+      background: linear-gradient(180deg, #2ebf68, #26a65b);
+      color: #fff;
+      box-shadow: 0 10px 20px rgba(39,174,96,.20);
+    }
+
+    .btn-ghost {
+      background: #eef2f6;
+      color: #1f2d3a;
+    }
+
+    .btn-admin {
+      background: linear-gradient(180deg, #7b4bd3, #5f35b1);
+      color: #fff;
+      box-shadow: 0 10px 20px rgba(111,66,193,.20);
+    }
+
+    .file-btn {
+      border: none;
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      font-family: 'Cairo', sans-serif;
+      font-weight: 900;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: linear-gradient(180deg, #2ebf68, #26a65b);
+      color: #fff;
+      box-shadow: 0 10px 20px rgba(39,174,96,.20);
+      transition: transform var(--transition-fast), opacity var(--transition-fast);
+      white-space: nowrap;
+      width: auto;
+      max-width: 100%;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .file-btn:hover { transform: translateY(-1px); opacity: .96; }
+
+    /* ===== BAR ===== */
+    .bar {
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      background: #fafbfc;
+      font-weight: 900;
+      position: relative;
+      z-index: 2;
+    }
+
+    .bar-right, .bar-left {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .bar-left { justify-content: flex-end; }
+
+    /* ===== STATS ===== */
+    .stat {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 6px;
+      padding: 8px 12px;
+      border-radius: var(--radius-md);
+      background: #fff;
+      border: 1px solid #eef1f4;
+      font-weight: 900;
+      color: #111;
+    }
+
+    .stat .muted { color: var(--muted); font-size: 15px; margin-left: 2px; }
+
+    #count { font-size: 18px; margin-right: 2px; height: 32px; min-width: 25px; }
+    #at    { font-size: 18px; margin-right: 2px; height: 32px; min-width: 60px; }
+
+    .date-input {
+      min-width: 181px;
+      width: 181px;
+      height: 50px;
+      padding: 0 14px;
+      border-radius: var(--radius-md);
+      border: 1.5px solid var(--line);
+      font-family: 'Cairo', sans-serif;
+      font-weight: 900;
+      font-size: 16px;
+      text-align: center;
+      line-height: 50px;
+      background: #fff;
+      color: #1f2d3a;
+    }
+
+    /* ===== STATUS ===== */
+    #status {
+      padding: 10px 18px;
+      border-bottom: 1px solid var(--line);
+      font-weight: 900;
+      position: relative;
+      z-index: 2;
+      word-break: break-word;
+      transition: color var(--transition-fast);
+    }
+
+    #status.ok  { color: #1d5e3b; }
+    #status.bad { color: var(--danger); }
+
+    /* ===== LIST ===== */
+    .list {
+      padding: 14px 18px 22px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      position: relative;
+      z-index: 2;
+    }
+
+    /* ===== ITEM CARD ===== */
+    .item {
+      border: 1px solid #eef1f4;
+      border-radius: 16px;
+      padding: 14px;
+      background: #fff;
+      box-shadow: 0 4px 16px rgba(0,0,0,.04);
+      overflow: hidden;
+      transition: box-shadow var(--transition-med), transform var(--transition-med);
+      animation: fadeInUp .3s ease both;
+    }
+
+    .item:hover {
+      box-shadow: 0 8px 24px rgba(0,0,0,.08);
+      transform: translateY(-1px);
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .row1 {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: space-between;
+      border-bottom: 1px solid #f0f3f6;
+      padding-bottom: 10px;
+      margin-bottom: 10px;
+    }
+
+    .action-wrap {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+      max-width: 100%;
+    }
+
+    .idbox {
+      display: flex;
+      font-size: 17px;
+      align-items: center;
+      gap: 10px;
+      font-weight: 900;
+      color: var(--primary);
+      flex-wrap: wrap;
+      word-break: break-word;
+    }
+
+    /* ===== PILLS ===== */
+    .pill {
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: #f6f8fa;
+      border: 1px solid #eef1f4;
+      font-weight: 900;
+      font-size: 15px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      max-width: 100%;
+      word-break: break-word;
+    }
+
+    .pill.ok  {
+      background: rgba(39,174,96,.10);
+      border-color: rgba(39,174,96,.22);
+      color: #1d5e3b;
+    }
+
+    .pill.bad {
+      background: rgba(231,76,60,.10);
+      border-color: rgba(231,76,60,.20);
+      color: #7b1f17;
+    }
+
+    .late {
+      margin-top: 8px;
+      font-weight: 900;
+      color: var(--danger);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .client {
+      margin-top: 8px;
+      font-size: 17px;
+      font-weight: 900;
+      color: #111;
+      word-break: break-word;
+    }
+
+    /* ===== STEPPER ===== */
+    .stepper-scroll { overflow: visible; width: 100%; }
+
+    .stepper {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(11, minmax(0, 1fr));
+      align-items: flex-start;
+      padding: 4px 0 8px;
+      direction: rtl;
+    }
+
+    .node {
+      min-width: 0;
+      text-align: center;
+      font-weight: 900;
+      position: relative;
+      padding: 2px 0 6px;
+      user-select: none;
+    }
+
+    .node.ghost { visibility: hidden; pointer-events: none; }
+
+    .node:not(.ghost)::after {
+      content: "";
+      position: absolute;
+      top: 25px;
+      right: calc(100% - 11px);
+      width: 22px;
+      height: 3px;
+      background: #dfe5ec;
+      border-radius: 999px;
+      transition: background var(--transition-med);
+    }
+
+    .stepper .node.last-real::after { display: none; }
+
+    .circle {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: var(--disabled);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      margin: auto;
+      box-shadow: 0 6px 14px rgba(0,0,0,.12);
+      transition: background var(--transition-med), transform var(--transition-med);
+    }
+
+    .circle i { font-size: 16px; }
+
+    .node.done .circle { background: var(--ok); }
+    .node.next .circle { background: var(--accent); transform: scale(1.06); box-shadow: 0 8px 20px rgba(245,166,35,.35); }
+
+    .node.done:not(.ghost)::after { background: var(--ok); }
+    .node.next:not(.ghost)::after { background: var(--accent); }
+
+    .label    { margin-top: 5px; font-size: 15px; }
+    .sub      { margin-top: 5px; min-height: 36px; line-height: 1.2; }
+    .sub-name { font-size: 13px; font-weight: 900; display: block; line-height: 1.2; margin-top: 8px; word-break: break-word; }
+    .sub-date { font-size: 11px; font-weight: 900; direction: ltr; display: block; line-height: 1.2; margin-top: 2px; word-break: break-word; }
+
+    /* ===== EMPTY STATE ===== */
+    .empty {
+      padding: 36px 18px;
+      text-align: center;
+      font-weight: 900;
+      color: var(--muted);
+      font-size: 16px;
+    }
+
+    .empty i { font-size: 32px; display: block; margin-bottom: 10px; opacity: .4; }
+
+    /* ===== TOAST ===== */
+    #toast {
+      position: fixed;
+      bottom: 22px;
+      left: 50%;
+      transform: translateX(-50%) translateY(0);
+      min-width: 240px;
+      max-width: 90%;
+      background: #223243;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: var(--radius-md);
+      font-weight: 900;
+      font-family: 'Cairo', sans-serif;
+      font-size: 14px;
+      display: none;
+      z-index: 99999;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,.28);
+      animation: toastIn .25s ease;
+    }
+
+    @keyframes toastIn {
+      from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+      to   { transform: translateX(-50%) translateY(0);   opacity: 1; }
+    }
+
+    #toast.ok   { background: #27ae60; }
+    #toast.warn { background: #f39c12; }
+    #toast.err  { background: #e74c3c; }
+
+    /* ===== SEARCH INPUTS ===== */
+    #qDone {
+      flex: 1;
+      min-width: 100px;
+      height: 50px;
+      font-size: clamp(13px, 1vw, 16px);
+      line-height: 50px;
+      padding: 0 12px;
+    }
+
+    #qDone::placeholder { font-size: clamp(12px, .9vw, 15px); }
+
+    #sheetSelect {
+      flex: 1;
+      min-width: 100px;
+      height: 50px;
+      font-size: 18px;
+      line-height: 50px;
+      padding: 0 12px;
+    }
+
+    #btnAdmin { margin-left: 20px; }
+
+    #btnSearchDone, #btnExport {
+      height: 57px;
+      min-width: 106px;
+      padding: 0 16px;
+      font-size: 16px;
+      font-weight: 900;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    /* ===== NOTIFICATIONS ===== */
+    #notifWrapper {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 999;
+    }
+
+    #notifIcon {
+      background: white;
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(0,0,0,.22);
+      position: relative;
+      color: #223243;
+      user-select: none;
+      transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    }
+
+    #notifIcon:hover { transform: scale(1.08); box-shadow: 0 6px 18px rgba(0,0,0,.28); }
+
+    #notifCount {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: var(--danger);
+      color: white;
+      font-size: 12px;
+      padding: 3px 6px;
+      border-radius: 50%;
+      min-width: 22px;
+      text-align: center;
+      line-height: 1.2;
+      font-weight: 900;
+      display: none; /* يظهر فقط عند وجود إشعارات */
+    }
+
+    #notifCount.has-notif { display: block; }
+
+    #notifBox {
+      display: none;
+      position: absolute;
+      top: 60px;
+      right: 0;
+      width: 280px;
+      background: white;
+      border-radius: var(--radius-md);
+      box-shadow: 0 8px 24px rgba(0,0,0,.18);
+      max-height: 320px;
+      overflow: auto;
+      border: 1px solid var(--line);
+    }
+
+    .notif-header {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--line);
+      font-weight: 900;
+      font-size: 14px;
+      color: var(--primary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    /* notif-item: كلاس الصفحة */
+    .notif-item {
+      padding: 10px 14px;
+      border-bottom: 1px solid #eee;
+      color: #223243;
+      text-align: right;
+      cursor: pointer;
+      transition: background var(--transition-fast);
+    }
+    .notif-item:hover  { background: #f8fafc; }
+    .notif-item:last-child { border-bottom: none; }
+    .notif-item.unread { border-right: 3px solid var(--accent); }
+
+    /* nw-item: كلاس الـ widget — نفس التصميم */
+    #notifBox .nw-item {
+      padding: 10px 14px;
+      border-bottom: 1px solid #eee;
+      color: #223243 !important;
+      text-align: right;
+      cursor: pointer;
+      transition: background var(--transition-fast);
+      background: #fff;
+      display: block;
+    }
+    #notifBox .nw-item div { color: #223243 !important; }
+    #notifBox .nw-item:hover { background: #f8fafc; }
+    #notifBox .nw-item:last-child { border-bottom: none; }
+    #notifBox .nw-item.nw-unread { border-right: 3px solid var(--accent); }
+    #notifBox .nw-dt { font-size: 12px; color: #758292 !important; margin-top: 4px; }
+
+    /* ===== EXPORT MENU ===== */
+    .export-menu-fixed {
+      position: fixed;
+      top: 0;
+      left: 0;
+      min-width: 220px;
+      background: #fff;
+      border: 1px solid #dfe7ef;
+      border-radius: var(--radius-md);
+      box-shadow: 0 18px 35px rgba(0,0,0,.16);
+      padding: 8px;
+      display: none;
+      z-index: 999999;
+    }
+
+    .export-menu-fixed.show { display: block; animation: fadeInDown .15s ease; }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .export-option {
+      width: 100%;
+      border: none;
+      outline: none;
+      background: #fff;
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      font-family: 'Cairo', sans-serif;
+      font-weight: 900;
+      font-size: 15px;
+      text-align: right;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 10px;
+      color: #223243;
+      transition: background var(--transition-fast);
+      white-space: nowrap;
+    }
+
+    .export-option:hover { background: #f4f7fb; }
+    .export-option i { width: 20px; text-align: center; flex: 0 0 20px; }
+
+    /* ===== LOADING SKELETON ===== */
+    .skeleton {
+      background: linear-gradient(90deg, #f0f4f8 25%, #e2e8f0 50%, #f0f4f8 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 8px;
+    }
+
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .skeleton-item {
+      height: 120px;
+      border-radius: 16px;
+      margin-bottom: 12px;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 1100px) {
+      .controls {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        align-items: center;
+        gap: 10px;
+      }
+      input, select { min-width: 0; width: 100%; }
+      .btn { width: 100%; }
+      #qDone, #sheetSelect, #btnSearchDone { width: 100%; min-width: 0; margin-left: 0; }
+    }
+
+    @media (max-width: 820px) {
+      .company-header { padding: 34px 14px 48px; gap: 12px; }
+      .company-logo   { width: 78px; height: 78px; }
+      .header-text h1 { font-size: 22px; }
+      .header-text p  { font-size: 14px; }
+
+      .wrap  { padding: 0 10px 20px; margin-top: -24px; }
+      .panel { border-radius: 18px; }
+      .panel-head { padding: 14px; }
+
+      .title {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+        font-size: 17px;
+      }
+
+      .controls { display: grid; grid-template-columns: 1fr; width: 100%; }
+
+      input, select, .btn, .file-btn,
+      #qDone, #sheetSelect, #btnSearchDone, #btnExport {
+        width: 100%;
+        min-width: 0;
+      }
+
+      .bar { padding: 12px 14px; }
+      .bar-right, .bar-left { width: 100%; }
+      .bar-right { justify-content: space-between; }
+      .bar-left  { justify-content: stretch; }
+
+      .date-input { width: 100%; min-width: 0; height: 50px; }
+      .stat { flex: 1 1 calc(50% - 5px); justify-content: center; }
+
+      .list { padding: 12px 12px 18px; }
+      .item { padding: 12px; }
+
+      .row1 { flex-direction: column; align-items: stretch; }
+      .action-wrap { width: 100%; justify-content: stretch; }
+      .action-wrap .btn, .action-wrap .file-btn { width: 100%; }
+
+      .idbox  { font-size: 15px; }
+      .client { font-size: 15px; }
+      .pill   { font-size: 13px; }
+
+      .stepper-scroll {
+        overflow-x: auto;
+        scroll-behavior: smooth;
+        scroll-snap-type: x mandatory;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .stepper-scroll::-webkit-scrollbar { display: none; }
+
+      .stepper {
+        width: max-content;
+        min-width: 100%;
+        display: flex;
+        gap: 11px;
+        justify-content: flex-start;
+        align-items: flex-start;
+      }
+
+      .node {
+        width: 98px;
+        min-width: 98px;
+        flex: 0 0 auto;
+        scroll-snap-align: center;
+      }
+
+      .node.ghost { display: none; }
+
+      .node:not(.ghost)::after {
+        top: 25px;
+        left: -16.5px;
+        width: 22px;
+        height: 3px;
+      }
+
+      .circle  { width: 50px; height: 50px; }
+      .label   { font-size: 13px; }
+      .sub-name { font-size: 12px; }
+      .sub-date { font-size: 10px; }
+
+      #status   { font-size: 14px; padding: 10px 14px; }
+      #btnAdmin { margin-left: 0; }
+
+      #btnSearchDone, #btnExport { height: 50px; font-size: 15px; }
+      #qDone, #sheetSelect, input, select { font-size: 15px; }
+
+      .export-menu-fixed { min-width: 180px; max-width: calc(100vw - 20px); }
+
+      #notifWrapper { top: 12px; right: 12px; }
+      #notifIcon    { width: 44px; height: 44px; font-size: 18px; }
+      #notifBox     { width: 240px; }
+    }
+
+    @media (max-width: 480px) {
+      .company-header { padding: 28px 12px 42px; }
+      .company-logo   { width: 68px; height: 68px; }
+      .header-text h1 { font-size: 19px; }
+      .header-text p  { font-size: 13px; }
+      .user-pill      { font-size: 12px; padding: 6px 12px; }
+      .wrap           { padding: 0 8px 16px; margin-top: -18px; }
+      .panel-head     { padding: 12px; }
+      .bar            { padding: 10px 12px; }
+      .list           { padding: 10px 10px 16px; }
+      .item           { padding: 10px; border-radius: 14px; }
+      .stat           { width: 100%; flex: 1 1 100%; }
+      .btn, #btnSearchDone, #btnExport { font-size: 15px; }
+      #qDone, #sheetSelect, input, select { font-size: 15px; }
+      #notifBox       { width: 220px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="pageWrap">
+    <header class="company-header">
+      <div id="notifWrapper">
+        <div id="notifIcon" title="الإشعارات" role="button" aria-label="فتح الإشعارات">
+          🔔 <span id="notifCount" aria-live="polite">0</span>
+        </div>
+        <div id="notifBox" role="dialog" aria-label="قائمة الإشعارات">
+          <div class="notif-header">
+            <span>الإشعارات</span>
+            <span id="notifUnreadLabel" style="font-size:12px;color:var(--muted);"></span>
+          </div>
+          <div id="notifList"></div>
+        </div>
+      </div>
+
+      <img src="https://siei-tracking.github.io/system/logo.png" class="company-logo" alt="شعار الشركة" loading="lazy">
+
+      <div class="header-text">
+        <h1>الشركة العامة للفحص والتأهيل الهندسي</h1>
+        <p><i class="fas fa-layer-group"></i> منصة تتبع اوامر العمل - المعاملات</p>
+        <div id="welcomeUser" class="user-pill"></div>
+      </div>
+    </header>
+
+    <div class="wrap">
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <div class="title"><i class="fas fa-list-check"></i> قائمة المعاملات</div>
+          </div>
+
+          <div class="controls">
+            <button class="btn btn-primary" id="btnOpen" type="button">
+              <i class="fas fa-folder-open"></i> غير المنجز
+            </button>
+
+            <button class="btn btn-warn" id="btnDelayed" type="button">
+              <i class="fas fa-triangle-exclamation"></i> المتأخر
+            </button>
+
+            <button class="btn btn-ok" id="btnInstallApp" type="button" style="display:none;" aria-label="تثبيت التطبيق">
+              <i class="fas fa-mobile-screen-button"></i> تثبيت التطبيق
+            </button>
+
+            <button class="btn btn-primary" id="btnEnableNotifications" type="button">
+              <i class="fas fa-bell"></i> تفعيل الإشعارات
+            </button>
+
+            <button class="btn btn-ghost" id="btnOpenArchive" type="button">
+              <i class="fas fa-table"></i> فتح شيت المعاملات
+            </button>
+
+            <button class="btn btn-admin" id="btnAdmin" type="button" style="display:none;">
+              <i class="fas fa-users-cog"></i> إدارة المستخدمين
+            </button>
+
+            <button class="btn btn-warn" id="btnClearData" type="button" style="display:none;" title="مسح بيانات المتصفح للموقع">
+              <i class="fas fa-trash-can"></i> مسح البيانات
+            </button>
+
+            <select id="sheetSelect" aria-label="اختر السنة"></select>
+
+            <input id="qDone" type="search" placeholder="بحث: رقم أمر العمل" autocomplete="off" />
+
+            <button class="btn btn-primary" id="btnSearchDone" type="button">
+              <i class="fas fa-magnifying-glass"></i> بحث
+            </button>
+          </div>
+        </div>
+
+        <div class="bar">
+          <div class="bar-right">
+            <div class="stat">
+              <i class="fas fa-list"></i>
+              <span class="muted">العدد:</span>
+              <span id="count" aria-live="polite">0</span>
+            </div>
+            <div class="stat">
+              <i class="fas fa-clock"></i>
+              <span class="muted">آخر تحديث:</span>
+              <span id="at">—</span>
+            </div>
+          </div>
+
+          <div class="bar-left">
+            <input type="date" id="dateFrom" class="date-input" aria-label="من تاريخ">
+            <input type="date" id="dateTo"   class="date-input" aria-label="إلى تاريخ">
+
+            <button class="btn btn-ok" id="btnDone" type="button">
+              <i class="fas fa-check-circle"></i> الإنجاز
+            </button>
+
+            <button class="btn btn-primary" id="btnExport" type="button" aria-haspopup="true">
+              <i class="fas fa-file-export"></i> تصدير
+            </button>
+          </div>
+        </div>
+
+        <div id="status" class="ok" role="status" aria-live="polite">جاري التحقق من الجلسة...</div>
+        <div id="list" class="list" role="list"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" role="alert" aria-live="assertive"></div>
+
+  <div class="export-menu-fixed" id="exportMenu" role="menu">
+    <button class="export-option" id="btnExportExcel" type="button" role="menuitem">
+      <i class="fas fa-file-excel" style="color:#1d6f42;"></i> تصدير Excel
+    </button>
+    <button class="export-option" id="btnExportPDF" type="button" role="menuitem">
+      <i class="fas fa-file-pdf" style="color:#e74c3c;"></i> تصدير PDF
+    </button>
+  </div>
+
+  <script>
+  /* ============================================================
+   * CONFIG
+   * ============================================================ */
+  const API_BASE      = "https://script.google.com/macros/s/AKfycbzVtH-DAsWdDWeiMcfzKTorv-pfL3jB7dS_rUuzrtB795kWerOKHZSw4GhBexAD7IpO/exec";
+  const PAGE_NAME     = "main";
+  const STORAGE_KEY   = "tracking_session_token_" + PAGE_NAME;
+  const STORAGE_KEY_G = "tracking_session_token";
+
+  /* ============================================================
+   * STATE
+   * ============================================================ */
+  let CURRENT_MODE  = "open";
+  let CURRENT_ITEMS = [];
+  let CURRENT_USER_ROLE = "";
+  let CURRENT_USER_NAME = "";
+  let CURRENT_USERNAME  = "";
+  let sessionFailCount = 0;         // ← جديد: عداد فشل الجلسة
+  const MAX_SESSION_FAILS = 3;      // ← 3 فشل متتالي قبل التحويل
+
+  /* ============================================================
+   * SESSION HELPERS
+   * ============================================================ */
+  function getSessionToken(){
+    return (
+      sessionStorage.getItem(STORAGE_KEY)   ||
+      sessionStorage.getItem(STORAGE_KEY_G) ||
+      localStorage.getItem(STORAGE_KEY)     ||
+      localStorage.getItem(STORAGE_KEY_G)   ||
+      ""
+    );
+  }
+
+  function setSessionToken(token){
+    if(!token) return;
+    sessionStorage.setItem(STORAGE_KEY,   token);
+    sessionStorage.setItem(STORAGE_KEY_G, token);
+    localStorage.setItem(STORAGE_KEY,     token);
+    localStorage.setItem(STORAGE_KEY_G,   token);
+  }
+
+  function clearSessionToken(){
+    [STORAGE_KEY, STORAGE_KEY_G].forEach(function(k){
+      sessionStorage.removeItem(k);
+      localStorage.removeItem(k);
+    });
+  }
+
+  function redirectToLogin(){
+    clearSessionToken();
+    window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
+  }
+
+  function isAdminUser(){
+    return String(CURRENT_USERNAME || "").trim().toLowerCase() === "admin";
+  }
+
+  /* ============================================================
+   * API
+   * ============================================================ */
+  async function apiPost(payload){
+    const response = await fetch(API_BASE, {
+      method:  "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body:    JSON.stringify(payload)
+    });
+    const text = await response.text();
+    try {
+      return JSON.parse(text);
+    } catch(err) {
+      throw new Error(text || "Invalid JSON response");
+    }
+  }
+
+  /* ============================================================
+   * SESSION CHECK
+   * ============================================================ */
+  async function ensurePageSession(){
+    const token = getSessionToken();
+    if(!token){ redirectToLogin(); return; }
+
+    try{
+      const result = await apiPost({ action:"checkSession", token, page:PAGE_NAME });
+
+      if(result && result.ok){
+        setSessionToken(token);
+        sessionFailCount = 0;
+
+        CURRENT_USER_NAME = result.user || result.userName || "مخول غير معروف";
+        CURRENT_USERNAME  = result.username || "";
+        CURRENT_USER_ROLE = isAdminUser() ? "admin" : "user";
+
+        document.getElementById("welcomeUser").innerHTML =
+          '<i class="fas fa-user-shield"></i> المستخدم: ' + escapeHtml(CURRENT_USER_NAME);
+
+        document.getElementById("pageWrap").classList.add("show");
+        showAdminButton();
+        await loadSheetOptions();
+        await loadOpen();
+        if(typeof window.loadNotifications === 'function') window.loadNotifications();
+      } else {
+        redirectToLogin();
+      }
+    } catch(error){
+      showMsg("❌ تعذر التحقق من الجلسة", "err");
+      setTimeout(redirectToLogin, 900);
+    }
+  }
+
+  /* ← تحسين: لا يُطرد المستخدم فور انقطاع الشبكة */
+  async function checkLiveSession(){
+    const token = getSessionToken();
+    if(!token){ redirectToLogin(); return; }
+
+    try{
+      const res = await apiPost({ action:"checkSession", token, page:PAGE_NAME });
+      if(!res || !res.ok){
+        sessionFailCount++;
+        if(sessionFailCount >= MAX_SESSION_FAILS) redirectToLogin();
+      } else {
+        sessionFailCount = 0;
+      }
+    } catch(e){
+      sessionFailCount++;
+      console.warn("Session check failed (" + sessionFailCount + "/" + MAX_SESSION_FAILS + "):", e.message);
+      if(sessionFailCount >= MAX_SESSION_FAILS) redirectToLogin();
+    }
+  }
+
+  /* ============================================================
+   * UI HELPERS
+   * ============================================================ */
+  function safeErr(err){
+    if(!err)          return "Unknown error";
+    if(typeof err === "string") return err;
+    if(err.message)   return err.message;
+    try{ return JSON.stringify(err); } catch(e){ return String(err); }
+  }
+
+  function showMsg(text, type){
+    const t = document.getElementById("toast");
+    t.className = type === "ok" ? "ok" : type === "warn" ? "warn" : type === "err" ? "err" : "";
+    t.textContent = text || "";
+    t.style.display = "block";
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(function(){ t.style.display = "none"; }, 3000);
+  }
+
+  function setStatus(msg, ok){
+    const el = document.getElementById("status");
+    el.className = ok ? "ok" : "bad";
+    el.textContent = msg;
+  }
+
+  function setLoading(on){
+    const ids = ["btnOpen","btnDelayed","btnDone","btnSearchDone","sheetSelect","dateFrom","dateTo","qDone","btnExport","btnExportExcel","btnExportPDF"];
+    ids.forEach(function(id){
+      const el = document.getElementById(id);
+      if(el) el.disabled = on;
+    });
+
+    const btnOpenArchive = document.getElementById("btnOpenArchive");
+    if(btnOpenArchive) btnOpenArchive.disabled = on || !isAdminUser();
+
+    const btnAdmin = document.getElementById("btnAdmin");
+    if(btnAdmin) btnAdmin.disabled = on || !isAdminUser();
+
+    if(on){ closeExportMenu(); setStatus("جاري التحميل...", true); }
+  }
+
+  function escapeHtml(s){
+    return String(s == null ? "" : s)
+      .replace(/&/g,  "&amp;")
+      .replace(/</g,  "&lt;")
+      .replace(/>/g,  "&gt;")
+      .replace(/"/g,  "&quot;")
+      .replace(/'/g,  "&#39;");
+  }
+
+  /* ============================================================
+   * SHEET OPTIONS
+   * ============================================================ */
+  async function loadSheetOptions(){
+    const token = getSessionToken();
+    if(!token) return;
+
+    try{
+      const res = await apiPost({ action:"getMainSearchSheets", token, page:PAGE_NAME });
+      const sheets = Array.isArray(res && res.items) ? res.items : (Array.isArray(res) ? res : []);
+      const select = document.getElementById("sheetSelect");
+      if(!select) return;
+
+      select.innerHTML = "";
+
+      if(!sheets || !sheets.length){
+        const opt = document.createElement("option");
+        opt.value = ""; opt.textContent = "لا توجد سنوات";
+        select.appendChild(opt);
+        return;
+      }
+
+      sheets.forEach(function(name){
+        const opt = document.createElement("option");
+        opt.value = name; opt.textContent = name;
+        select.appendChild(opt);
+      });
+
+      const currentYear = new Date().getFullYear().toString();
+      select.value = sheets.includes(currentYear) ? currentYear : sheets[0];
+    } catch(err){
+      console.warn("sheet options error:", safeErr(err));
+    }
+  }
+
+  /* ============================================================
+   * ADMIN
+   * ============================================================ */
+  function showAdminButton(){
+    const admin = isAdminUser();
+
+    /* أزرار الـ admin فقط */
+    ["btnAdmin", "btnOpenArchive"].forEach(function(id){
+      const btn = document.getElementById(id);
+      if(!btn) return;
+      btn.style.display  = "inline-flex";
+      btn.disabled       = !admin;
+      btn.title          = admin ? "" : "متاح لمدير النظام فقط";
+      btn.style.opacity  = admin ? "1" : "0.6";
+      btn.style.cursor   = admin ? "pointer" : "not-allowed";
+    });
+
+    /* زر مسح البيانات — لجميع المستخدمين */
+    const btnClear = document.getElementById("btnClearData");
+    if(btnClear){
+      btnClear.style.display = "inline-flex";
+      btnClear.disabled      = false;
+      btnClear.title         = "مسح بيانات المتصفح وإعادة التثبيت";
+      btnClear.style.opacity = "1";
+      btnClear.style.cursor  = "pointer";
+    }
+  }
+
+  /* ============================================================
+   * CLEAR SITE DATA
+   * ============================================================ */
+  function clearSiteData(){
+    /* استخدم دالة الـ widget الموحدة */
+    if(typeof window.clearDataAndReload === "function"){
+      if(confirm("سيتم مسح بيانات المتصفح. هل أنت متأكد؟")){
+        window.clearDataAndReload();
+      }
+    }
+  }
+
+  function openAdminPage(){
+    if(!isAdminUser()){ showMsg("⚠️ متاح لمدير النظام فقط", "warn"); return; }
+    const token = getSessionToken();
+    if(!token){ redirectToLogin(); return; }
+    sessionStorage.setItem("tracking_session_token_admin", token);
+    sessionStorage.setItem("tracking_session_token",       token);
+    window.location.href = "admin.html";
+  }
+
+  async function openArchiveSheet(){
+    if(!isAdminUser()){ showMsg("⚠️ متاح لمدير النظام فقط", "warn"); return; }
+    const token = getSessionToken();
+    if(!token){ redirectToLogin(); return; }
+
+    try{
+      const res = await apiPost({ action:"getArchiveSheetUrl", token, page:PAGE_NAME });
+      if(!res || !res.ok){
+        const msg = (res && (res.error || res.message)) || "لا يمكن فتح الشيت";
+        setStatus("❌ " + msg, false);
+        showMsg("❌ " + msg, "err");
+        return;
+      }
+      window.open(res.url, "_blank", "noopener,noreferrer");
+    } catch(err){
+      setStatus("❌ خطأ: " + safeErr(err), false);
+      showMsg("❌ خطأ في فتح الشيت", "err");
+    }
+  }
+
+  /* ============================================================
+   * STEPPER LOGIC
+   * ============================================================ */
+  function isDoneAny(v){ return String(v || "").indexOf("✅") !== -1; }
+
+  function formatSub(val, done, cls, stepKey){
+    if(!done){
+      return cls.indexOf("next") !== -1
+        ? '<div class="sub-date">الخطوة الحالية</div>'
+        : '<div class="sub-date">بانتظار</div>';
+    }
+
+    val = String(val || "")
+      .replace("✅","").replace("استلام -","").replace("استلام","").trim();
+
+    let name = "", date = "";
+
+    const userMatch = val.match(/\((.*?)\)/);
+    if(userMatch && userMatch[1]){
+      name = userMatch[1].trim();
+      date = val.replace(userMatch[0], "").trim();
+    } else {
+      const dt = val.match(/(\d{4}-\d{2}-\d{2}\s*\|\s*\d{2}:\d{2})/);
+      if(dt){
+        date = dt[1].trim();
+        name = val.replace(dt[1], "").trim();
+      } else {
+        const parts = val.split(/\s*\|\s*/);
+        if(parts.length >= 2){
+          name = parts[0].trim();
+          date = parts.slice(1).join(" | ").trim();
+        } else {
+          date = val.trim();
+        }
+      }
+    }
+
+    if(stepKey === "pricing"){
+      const dt2 = val.match(/(\d{4}-\d{2}-\d{2}\s*\|\s*\d{2}:\d{2})/);
+      date = dt2 ? dt2[1].trim() : "";
+      const um2 = val.match(/\((.*?)\)/);
+      name = (um2 && um2[1]) ? um2[1].trim() : "";
+    }
+
+    if(stepKey === "payment"){
+      name = name.replace("تم التسديد","").trim();
+      date = date.replace("تم التسديد","").trim();
+    }
+
+    const clean = function(s){ return s.replace(/^[\-\–—\s]+/, "").replace(/[\-\–—\s]+$/, "").trim(); };
+    name = clean(name);
+    date = clean(date);
+
+    return '<div class="sub-name">' + escapeHtml(name) + '</div>'
+         + '<div class="sub-date">' + escapeHtml(date) + '</div>';
+  }
+
+  function inferType(it){
+    if(!isDoneAny(it.pricing)) return "";
+    const t = String(it.testType || "").trim();
+    if(t === "مصاعد" || t === "مختبرات") return t;
+    const elev     = String(it.elev     || "").trim();
+    const lab1     = String(it.lab1     || "").trim();
+    const workshop = String(it.workshop || "").trim();
+    const lab2     = String(it.lab2     || "").trim();
+    if(elev && elev !== "-" && elev !== "—") return "مصاعد";
+    if(lab1 || workshop || lab2) return "مختبرات";
+    return "";
+  }
+
+  function inferLabPath(it){
+    if(!isDoneAny(it.pricing)) return "";
+    const labPath = String(it.labPath || "").trim();
+    if(labPath) return labPath;
+    const workshop = String(it.workshop || "").trim();
+    const lab2     = String(it.lab2     || "").trim();
+    return (workshop || lab2) ? "ورشة" : "مختبرات فقط";
+  }
+
+  function buildSteps(it){
+    const type    = inferType(it);
+    const labPath = inferLabPath(it);
+    const workflowReady = isDoneAny(it.pricing) && !!type;
+
+    const steps = [
+      {key:"inspection", label:"استلام",  icon:"fa-handshake"},
+      {key:"pricing",    label:"تسعيرة",  icon:"fa-receipt"}
+    ];
+
+    if(!workflowReady) return steps;
+
+    steps.push({key:"payment", label:"تسديد", icon:"fa-sack-dollar"});
+
+    if(type === "مصاعد"){
+      steps.push({key:"elev", label:"مصاعد", icon:"fa-elevator"});
+    } else {
+      steps.push({key:"lab1", label:"مختبرات", icon:"fa-microscope"});
+      if(labPath !== "مختبرات فقط"){
+        steps.push({key:"workshop", label:"ورشة",      icon:"fa-screwdriver-wrench"});
+        steps.push({key:"lab2",     label:"مختبرات",   icon:"fa-flask"});
+      }
+    }
+
+    steps.push(
+      {key:"testResults", label:"نتائج",  icon:"fa-clipboard-check"},
+      {key:"official",    label:"كتاب",   icon:"fa-file"},
+      {key:"barcode",     label:"باركود", icon:"fa-qrcode"},
+      {key:"email",       label:"ايميل",  icon:"fa-paper-plane"},
+      {key:"final",       label:"استلام", icon:"fa-flag-checkered"}
+    );
+
+    return steps;
+  }
+
+  function typePills(it){
+    const pricingDone = isDoneAny(it.pricing);
+    const type    = inferType(it);
+    const labPath = inferLabPath(it);
+
+    if(!pricingDone || !type){
+      return '<span class="pill bad"><i class="fas fa-hourglass-half"></i> بانتظار التسعيرة</span>';
+    }
+
+    let typePill = '<span class="pill bad"><i class="fas fa-triangle-exclamation"></i> غير محدد</span>';
+    if(type === "مصاعد")   typePill = '<span class="pill ok"><i class="fas fa-elevator"></i> مصاعد</span>';
+    if(type === "مختبرات") typePill = '<span class="pill ok"><i class="fas fa-microscope"></i> مختبرات</span>';
+
+    const showPath = type === "مختبرات" && labPath && labPath !== "مختبرات فقط";
+    const pathPill = showPath ? '<span class="pill"><i class="fas fa-route"></i> ' + escapeHtml(labPath) + '</span>' : "";
+
+    return typePill + (pathPill ? " " + pathPill : "");
+  }
+
+  function renderStepper(it){
+    const steps       = buildSteps(it);
+    const TOTAL_SLOTS = 11;
+    const pricingDone = isDoneAny(it.pricing);
+    const type        = inferType(it);
+    const workflowReady = pricingDone && !!type;
+
+    let html = '<div class="stepper-scroll"><div class="stepper">';
+    let firstPending = false;
+
+    for(let i = 0; i < steps.length; i++){
+      const s   = steps[i];
+      const val = String(it[s.key] || "");
+      const done = isDoneAny(val);
+
+      let cls = "node";
+      if(done){
+        cls += " done";
+      } else if(!firstPending){
+        cls += " next";
+        firstPending = true;
+      } else {
+        cls += " locked";
+      }
+
+      if(i === steps.length - 1) cls += " last-real";
+
+      const sub = formatSub(val, done, cls, s.key);
+
+      html += '<div class="' + cls + '">'
+            +   '<div class="circle"><i class="fas ' + s.icon + '"></i></div>'
+            +   '<div class="label">' + escapeHtml(s.label) + '</div>'
+            +   '<div class="sub">' + sub + '</div>'
+            + '</div>';
+    }
+
+    for(let j = steps.length; j < TOTAL_SLOTS; j++){
+      html += '<div class="node ghost" aria-hidden="true">'
+            +   '<div class="circle"></div>'
+            +   '<div class="label"></div>'
+            +   '<div class="sub"></div>'
+            + '</div>';
+    }
+
+    html += '</div></div>';
+
+    if(!workflowReady){
+      html += '<div class="empty" style="padding-top:8px;">'
+            +   '<i class="fas fa-circle-info"></i> '
+            +   'تظهر بقية المراحل بعد تثبيت التسعيرة ونوع الفحص'
+            + '</div>';
+    }
+
+    return html;
+  }
+
+  /* ============================================================
+   * EXPORT
+   * ============================================================ */
+  function getExportTitleByMode(mode){
+    const titles = {
+      open:    "تقرير المعاملات غير المنجزة",
+      delayed: "تقرير المعاملات المتأخرة",
+      done:    "تقرير المعاملات المنجزة",
+      search:  "تقرير نتائج البحث"
+    };
+    return titles[mode] || "تقرير المعاملات";
+  }
+
+  function openExportMenu(anchorEl){
+    const menu = document.getElementById("exportMenu");
+    if(!menu || !anchorEl) return;
+    const rect = anchorEl.getBoundingClientRect();
+    menu.style.display = "block";
+    menu.classList.add("show");
+
+    const menuWidth = menu.offsetWidth || 220;
+    let left = rect.right - menuWidth;
+    let top  = rect.bottom + 10;
+
+    left = Math.max(10, Math.min(left, window.innerWidth - menuWidth - 10));
+    menu.style.left = left + "px";
+    menu.style.top  = top  + "px";
+  }
+
+  function closeExportMenu(){
+    const menu = document.getElementById("exportMenu");
+    if(!menu) return;
+    menu.classList.remove("show");
+    menu.style.display = "none";
+  }
+
+  function exportCurrentTable(){
+    if(!CURRENT_ITEMS || !CURRENT_ITEMS.length){
+      showMsg("⚠️ لا توجد بيانات للتصدير", "warn");
+      return;
+    }
+
+    const title = getExportTitleByMode(CURRENT_MODE);
+    const now   = new Date();
+    const stamp = now.getFullYear()
+      + "-" + String(now.getMonth()+1).padStart(2,"0")
+      + "-" + String(now.getDate()).padStart(2,"0")
+      + "_" + String(now.getHours()).padStart(2,"0")
+      + "-" + String(now.getMinutes()).padStart(2,"0");
+
+    const rows = CURRENT_ITEMS.map(function(it){
+      return {
+        orderNo:    String(it.orderNo    || "").trim() || "—",
+        orderDate:  String(it.orderDate  || "").trim() || "—",
+        clientName: String(it.clientName || "").trim() || "—",
+        lastStage:  String(it.lastStage  || "").trim() || "—"
+      };
+    });
+
+    let html = '<html dir="rtl" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">'
+      + '<head><meta charset="UTF-8"></head><body>'
+      + '<table border="1" style="border-collapse:collapse;font-family:Cairo,Arial,sans-serif;text-align:center;">'
+      + '<tr><th colspan="4" style="background:#223243;color:#fff;font-size:18px;padding:10px;">' + escapeHtml(title) + '</th></tr>'
+      + '<tr>'
+      + '<th style="background:#f5a623;color:#111;padding:8px;">رقم أمر العمل</th>'
+      + '<th style="background:#f5a623;color:#111;padding:8px;">تاريخ أمر العمل</th>'
+      + '<th style="background:#f5a623;color:#111;padding:8px;">الجهة المستفيدة</th>'
+      + '<th style="background:#f5a623;color:#111;padding:8px;">آخر مرحلة</th>'
+      + '</tr>';
+
+    rows.forEach(function(r){
+      html += '<tr>'
+        + '<td style="padding:8px;">' + escapeHtml(r.orderNo)    + '</td>'
+        + '<td style="padding:8px;">' + escapeHtml(r.orderDate)  + '</td>'
+        + '<td style="padding:8px;">' + escapeHtml(r.clientName) + '</td>'
+        + '<td style="padding:8px;">' + escapeHtml(r.lastStage)  + '</td>'
+        + '</tr>';
+    });
+
+    html += '</table></body></html>';
+
+    const blob = new Blob(['\ufeff' + html], { type:'application/vnd.ms-excel;charset=utf-8;' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    a.href     = url;
+    a.download = title + "_" + stamp + ".xls";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showMsg("✅ تم تصدير Excel بنجاح", "ok");
+  }
+
+  async function exportCurrentPDF(){
+    if(!CURRENT_ITEMS || !CURRENT_ITEMS.length){
+      showMsg("⚠️ لا توجد بيانات للتصدير", "warn");
+      return;
+    }
+
+    const token = getSessionToken();
+    if(!token){ redirectToLogin(); return; }
+
+    const rows = CURRENT_ITEMS.map(function(it){
+      return {
+        orderNo:    String(it.orderNo    || "").trim() || "—",
+        orderDate:  String(it.orderDate  || "").trim() || "—",
+        clientName: String(it.clientName || "").trim() || "—",
+        lastStage:  String(it.lastStage  || "").trim() || "—"
+      };
+    });
+
+    setLoading(true);
+    try{
+      const res = await apiPost({
+        action: "exportPDF",
+        token, page: PAGE_NAME,
+        title: getExportTitleByMode(CURRENT_MODE),
+        mode:  CURRENT_MODE,
+        rows
+      });
+
+      setLoading(false);
+
+      if(!res || !res.ok || !res.base64){
+        showMsg((res && res.message) || "❌ فشل إنشاء PDF", "err");
+        setStatus("❌ فشل إنشاء PDF", false);
+        return;
+      }
+
+      const byteCharacters = atob(res.base64);
+      const byteNumbers    = new Uint8Array(byteCharacters.length);
+      for(let i = 0; i < byteCharacters.length; i++){
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+
+      const blob    = new Blob([byteNumbers], { type:"application/pdf" });
+      const blobUrl = URL.createObjectURL(blob);
+
+      /* ← إصلاح: إضافة للـ DOM قبل النقر */
+      const a = document.createElement("a");
+      a.href     = blobUrl;
+      a.download = getExportTitleByMode(CURRENT_MODE) + ".pdf";
+      a.target   = "_blank";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      setTimeout(function(){ URL.revokeObjectURL(blobUrl); }, 10000);
+      showMsg("✅ تم إنشاء PDF بنجاح", "ok");
+    } catch(err){
+      setLoading(false);
+      setStatus("❌ export pdf error: " + safeErr(err), false);
+      showMsg("❌ فشل تصدير PDF", "err");
+    }
+  }
+
+  /* ============================================================
+   * RENDER
+   * ============================================================ */
+  function computeLastStage(item){
+    const steps = [
+      {key:"final",       label:"استلام النتائج"},
+      {key:"email",       label:"ارسال الايميل"},
+      {key:"barcode",     label:"الباركود"},
+      {key:"official",    label:"الكتاب الرسمي"},
+      {key:"testResults", label:"نتائج الفحص"},
+      {key:"lab2",        label:"المختبرات بعد الورشة"},
+      {key:"workshop",    label:"الورشة"},
+      {key:"elev",        label:"المصاعد"},
+      {key:"lab1",        label:"المختبرات"},
+      {key:"payment",     label:"التسديد"},
+      {key:"pricing",     label:"التسعيرة"},
+      {key:"inspection",  label:"استلام المعاملة"}
+    ];
+    for(const s of steps){
+      if(isDoneAny(item[s.key])) return s.label;
+    }
+    return "لم تبدأ";
+  }
+
+  function normalizeItemsForRender(items){
+    return (items || []).map(function(it){
+      const item = Object.assign({}, it);
+      if(!item.orderDate){
+        const src = String(item.inspection || "");
+        const dt  = src.match(/(\d{4}-\d{2}-\d{2})/);
+        item.orderDate = dt ? dt[1] : "—";
+      }
+      if(!item.lastStage) item.lastStage = computeLastStage(item);
+      return item;
+    });
+  }
+
+  /* ← تحسين: skeleton loading أثناء التحميل */
+  function showSkeletons(count){
+    count = count || 3;
+    let html = "";
+    for(let i = 0; i < count; i++){
+      html += '<div class="skeleton skeleton-item" style="animation-delay:' + (i * .1) + 's"></div>';
+    }
+    document.getElementById("list").innerHTML = html;
+  }
+
+  function renderList(res, mode){
+    if(res && res.error){
+      CURRENT_MODE  = mode || "open";
+      CURRENT_ITEMS = [];
+      document.getElementById("count").textContent = "0";
+      document.getElementById("at").textContent    = res.at || "—";
+      document.getElementById("list").innerHTML    = "";
+      setStatus("❌ خطأ من السيرفر: " + res.error, false);
+      showMsg("❌ خطأ من السيرفر", "err");
+      return;
+    }
+
+    const rawItems = (res && res.items) ? res.items : [];
+    const items    = normalizeItemsForRender(rawItems);
+
+    CURRENT_MODE  = mode || "open";
+    CURRENT_ITEMS = items.slice();
+
+    document.getElementById("count").textContent = String(items.length);
+    document.getElementById("at").textContent    = (res && res.at) ? res.at : "—";
+
+    if(!items.length){
+      document.getElementById("list").innerHTML =
+        '<div class="empty"><i class="fas fa-check-circle"></i>لا توجد معاملات</div>';
+      setStatus("تم التحميل — لا توجد نتائج", true);
+      return;
+    }
+
+    let html = "";
+    items.forEach(function(it, idx){
+      const orderNo  = escapeHtml(it.orderNo   || "");
+      const client   = escapeHtml(it.clientName || "—");
+      const lateDays = Number(it.lateDays || 0);
+      const fileUrl  = String(it.barcodeFileUrl || it.barcodeLink || it.fileUrl || it.fileLink || "").trim();
+
+      html += '<div class="item" role="listitem" style="animation-delay:' + (idx * .04) + 's">';
+      html +=   '<div class="row1">';
+      html +=     '<div>';
+      html +=       '<div class="idbox">أمر العمل : <span>' + orderNo + '</span> ' + typePills(it) + '</div>';
+      html +=       '<div class="client"><i class="fas fa-building"></i> ' + client + '</div>';
+      if(mode === "delayed"){
+        html += '<div class="late"><i class="fas fa-hourglass-half"></i> متأخر ' + lateDays + ' يوم</div>';
+      }
+      html +=     '</div>';
+      html +=     '<div class="action-wrap">';
+      if(mode === "done" || mode === "search"){
+        if(fileUrl){
+          html += '<a href="' + escapeHtml(fileUrl) + '" target="_blank" rel="noopener noreferrer" class="file-btn">'
+               +    '<i class="fas fa-up-right-from-square"></i> فتح الملف'
+               +  '</a>';
+        } else {
+          html += '<button class="btn btn-ghost" type="button" disabled>'
+               +    '<i class="fas fa-ban"></i> لا يوجد ملف'
+               +  '</button>';
+        }
+      }
+      html +=     '</div>';
+      html +=   '</div>';
+      html +=   renderStepper(it);
+      html += '</div>';
+    });
+
+    document.getElementById("list").innerHTML = html;
+    setStatus("تم التحميل بنجاح (" + items.length + " معاملة)", true);
+  }
+
+  /* ============================================================
+   * LOAD FUNCTIONS
+   * ============================================================ */
+  async function loadOpen(){
+    const token = getSessionToken();
+    if(!token){ redirectToLogin(); return; }
+    showSkeletons(4);
+    setLoading(true);
+    try{
+      const res = await apiPost({ action:"getOpenOrders", token, page:PAGE_NAME });
+      setLoading(false);
+      renderList(res, "open");
+    } catch(err){
+      setLoading(false);
+      setStatus("❌ open error: " + safeErr(err), false);
+      showMsg("❌ فشل تحميل غير المنجز", "err");
+    }
+  }
+
+  async function loadDelayed(){
+    const token = getSessionToken();
+    if(!token){ redirectToLogin(); return; }
+    showSkeletons(4);
+    setLoading(true);
+    try{
+      const res = await apiPost({ action:"getDelayedOrders", token, page:PAGE_NAME });
+      setLoading(false);
+      renderList(res, "delayed");
+    } catch(err){
+      setLoading(false);
+      setStatus("❌ delayed error: " + safeErr(err), false);
+      showMsg("❌ فشل تحميل المتأخر", "err");
+    }
+  }
+
+  async function loadDone(){
+    const token = getSessionToken();
+    if(!token){ redirectToLogin(); return; }
+
+    const from = String(document.getElementById("dateFrom").value || "").trim();
+    const to   = String(document.getElementById("dateTo").value   || "").trim();
+
+    showSkeletons(4);
+    setLoading(true);
+    try{
+      const action = (from && to) ? "getCompletedOrdersByDateRange" : "getCompletedOrders";
+      const payload = { action, token, page:PAGE_NAME, limit:5000 };
+      if(from && to){ payload.fromDate = from; payload.toDate = to; }
+
+      const res = await apiPost(payload);
+      setLoading(false);
+      renderList(res, "done");
+      if(from && to) showMsg("✅ تم تحميل النتائج حسب التاريخ", "ok");
+    } catch(err){
+      setLoading(false);
+      setStatus("❌ done error: " + safeErr(err), false);
+      showMsg("❌ فشل تحميل الإنجاز", "err");
+    }
+  }
+
+  async function searchAny(){
+    const token = getSessionToken();
+    if(!token){ redirectToLogin(); return; }
+
+    const id        = String(document.getElementById("qDone").value       || "").trim();
+    const sheetName = String(document.getElementById("sheetSelect").value || "").trim();
+
+    if(!id)        { showMsg("⚠️ أدخل رقم أمر العمل", "warn");     setStatus("⚠️ أدخل رقم أمر العمل", false);          return; }
+    if(!sheetName) { showMsg("⚠️ لا توجد سنة محددة", "warn");      setStatus("⚠️ لا توجد سنة محددة للبحث", false);     return; }
+
+    showSkeletons(1);
+    setLoading(true);
+    try{
+      const res = await apiPost({ action:"searchOrderAnywhere", token, page:PAGE_NAME, orderNo:id, sheetName });
+      setLoading(false);
+
+      if(res && res.error){ setStatus("❌ خطأ: " + res.error, false); showMsg("❌ خطأ من السيرفر", "err"); return; }
+
+      if(!res || !res.found){
+        CURRENT_MODE  = "search";
+        CURRENT_ITEMS = [];
+        document.getElementById("count").textContent = "0";
+        document.getElementById("at").textContent    = "—";
+        document.getElementById("list").innerHTML    =
+          '<div class="empty"><i class="fas fa-circle-xmark"></i>لا توجد معاملة بهذا الرقم داخل السنة المحددة</div>';
+        setStatus("❌ لم يتم العثور على أمر العمل " + escapeHtml(id), false);
+        showMsg("⚠️ غير موجود", "warn");
+        return;
+      }
+
+      const item = Object.assign({}, res.item ? res.item : res, { orderNo: (res.item && res.item.orderNo) || id });
+      renderList({ at:(res.at || "—"), items:[item] }, "search");
+      setStatus("✅ تم العثور على أمر العمل " + escapeHtml(id) + " في " + escapeHtml(item.sourceSheet || sheetName), true);
+      showMsg("✅ تم العثور على المعاملة", "ok");
+    } catch(err){
+      setLoading(false);
+      setStatus("❌ search error: " + safeErr(err), false);
+      showMsg("❌ فشل البحث", "err");
+    }
+  }
+
+
+
+  /* ============================================================
+   * EXPOSE GLOBALS — للـ notifications-widget.js
+   * ============================================================ */
+  window.showMsg         = showMsg;
+  window.apiPost         = apiPost;
+  window.getSessionToken = getSessionToken;
+  window.PAGE_NAME       = PAGE_NAME;
+
+  /* ============================================================
+   * EVENT LISTENERS
+   * ============================================================ */
+  document.addEventListener("DOMContentLoaded", function(){
+    /* تحديد التواريخ الافتراضية */
+    (function setDefaultDates(){
+      const today = new Date();
+      const fmt   = function(d){
+        return d.getFullYear()
+          + "-" + String(d.getMonth()+1).padStart(2,"0")
+          + "-" + String(d.getDate()).padStart(2,"0");
+      };
+      document.getElementById("dateFrom").value = fmt(today);
+      document.getElementById("dateTo").value   = fmt(today);
+    })();
+
+    document.getElementById("btnOpen").addEventListener("click",        loadOpen);
+    document.getElementById("btnDelayed").addEventListener("click",     loadDelayed);
+    document.getElementById("btnDone").addEventListener("click",        loadDone);
+    document.getElementById("btnSearchDone").addEventListener("click",  searchAny);
+
+    document.getElementById("qDone").addEventListener("keypress", function(e){
+      if(e.key === "Enter") searchAny();
+    });
+
+    /* Export */
+    document.getElementById("btnExport").addEventListener("click", function(e){
+      e.preventDefault(); e.stopPropagation();
+      const menu = document.getElementById("exportMenu");
+      menu.classList.contains("show") ? closeExportMenu() : openExportMenu(this);
+    });
+
+    document.getElementById("btnExportExcel").addEventListener("click", function(e){
+      e.preventDefault(); e.stopPropagation();
+      closeExportMenu();
+      setTimeout(exportCurrentTable, 50);
+    });
+
+    document.getElementById("btnExportPDF").addEventListener("click", function(e){
+      e.preventDefault(); e.stopPropagation();
+      closeExportMenu();
+      setTimeout(exportCurrentPDF, 50);
+    });
+
+    /* Close export menu on outside click */
+    document.addEventListener("click", function(e){
+      const menu      = document.getElementById("exportMenu");
+      const btnExport = document.getElementById("btnExport");
+      if(menu && btnExport && !menu.contains(e.target) && !btnExport.contains(e.target)) closeExportMenu();
+    });
+
+    window.addEventListener("resize", closeExportMenu);
+    window.addEventListener("scroll", closeExportMenu, true);
+
+    /* Admin & Archive */
+    const openSheetBtn  = document.getElementById("btnOpenArchive");
+    const adminBtn      = document.getElementById("btnAdmin");
+    const clearDataBtn  = document.getElementById("btnClearData");
+    if(openSheetBtn) openSheetBtn.addEventListener("click", openArchiveSheet);
+    if(adminBtn)     adminBtn.addEventListener("click",     openAdminPage);
+    if(clearDataBtn) clearDataBtn.addEventListener("click", clearSiteData);
+
+    /* بدء التطبيق */
+    ensurePageSession();
+    setInterval(checkLiveSession,   10000);
+  });
+
+  </script>
+
+  <!-- ============================================================
+       NOTIFICATIONS WIDGET — إشعارات + PWA لجميع الصفحات
+       ============================================================ -->
+  <script src="/system/notifications-widget.js" defer></script>
+
+</body>
+</html>
