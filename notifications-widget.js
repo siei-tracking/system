@@ -27,6 +27,7 @@
   const SW_SCOPE        = "/system/";
   const POLL_INTERVAL   = 30000;   /* 30 ثانية */
   const INIT_DELAY      = 400;     /* انتظر حتى تنتهي الصفحة من التهيئة */
+  const PWA_VERSION     = "v2";    /* غيّر هذا عند كل نشر جديد */
 
   /* ============================================================
    * STATE
@@ -38,6 +39,50 @@
   let lastNotifIds          = [];
   let notifReady            = false;
   let pollTimer             = null;
+
+  /* ============================================================
+   * تنظيف تلقائي عند تغيير الإصدار أو إعادة التثبيت
+   * يحل مشكلة "التطبيق مثبت مسبقاً" في Chrome
+   * ============================================================ */
+  async function cleanupOnVersionChange() {
+    try {
+      const storedVersion = localStorage.getItem("pwa_version");
+
+      /* إذا الإصدار تغيير أو لا يوجد — نظّف كل شيء */
+      if (storedVersion !== PWA_VERSION) {
+        console.log("[PWA] إصدار جديد — تنظيف البيانات القديمة");
+
+        /* 1. مسح مفاتيح PWA */
+        localStorage.removeItem("pwa_installed");
+        localStorage.removeItem("app_installed");
+        localStorage.removeItem("fcm_push_token");
+
+        /* 2. إلغاء تسجيل Service Workers القديمة */
+        if ("serviceWorker" in navigator) {
+          const regs = await navigator.serviceWorker.getRegistrations();
+          for (const reg of regs) {
+            await reg.unregister();
+            console.log("[PWA] SW unregistered:", reg.scope);
+          }
+        }
+
+        /* 3. مسح الـ Cache القديم */
+        if ("caches" in window) {
+          const keys = await caches.keys();
+          for (const key of keys) {
+            await caches.delete(key);
+            console.log("[PWA] Cache deleted:", key);
+          }
+        }
+
+        /* 4. حفظ الإصدار الجديد */
+        localStorage.setItem("pwa_version", PWA_VERSION);
+        console.log("[PWA] تنظيف اكتمل — إصدار:", PWA_VERSION);
+      }
+    } catch (e) {
+      console.warn("[PWA] cleanupOnVersionChange:", e);
+    }
+  }
 
   /* ============================================================
    * كشف المتصفح
@@ -111,9 +156,24 @@
    * PWA: هل التطبيق مثبت؟
    * ============================================================ */
   function isInstalled() {
-    return window.matchMedia("(display-mode: standalone)").matches
-      || window.navigator.standalone === true
-      || localStorage.getItem("pwa_installed") === "yes";
+    /* standalone = مفتوح فعلاً كـ PWA */
+    if (window.matchMedia("(display-mode: standalone)").matches) return true;
+    if (window.navigator.standalone === true) return true;
+    /* pwa_installed فقط إذا كان standalone سابقاً (Samsung يمسحه عند مسح التطبيق) */
+    if (localStorage.getItem("pwa_installed") === "yes") {
+      /* تحقق: إذا فُقد الـ SW يعني التطبيق مُسح — امسح العلم */
+      if ("serviceWorker" in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(regs){
+          if (regs.length === 0) {
+            localStorage.removeItem("pwa_installed");
+            localStorage.removeItem("app_installed");
+            console.log("[PWA] SW مفقود — تم مسح pwa_installed");
+          }
+        });
+      }
+      return true; /* مؤقتاً حتى يكتمل الفحص */
+    }
+    return false;
   }
 
   /* ============================================================
@@ -162,7 +222,19 @@
     if (IS_FF)   { callShowMsg("🦊 افتح القائمة ☰ ثم اختر 'تثبيت'", "warn"); return; }
     /* Samsung Internet بدون prompt */
     if (IS_SAMSUNG) {
-      callShowMsg("📲 افتح قائمة المتصفح ⋮ ثم اختر 'إضافة صفحة إلى' ← 'الشاشة الرئيسية'", "warn");
+      callShowMsg("📲 افتح قائمة ⋮ ثم 'إضافة صفحة إلى' ← 'الشاشة الرئيسية'", "warn");
+      return;
+    }
+
+    /* Chrome / Edge بدون prompt — إرشادات واضحة */
+    const isChrome = /chrome|chromium/i.test(UA) && !/edg/i.test(UA);
+    const isEdge   = /edg\//i.test(UA);
+    if (isChrome) {
+      callShowMsg("📲 افتح قائمة Chrome ⋮ ثم اختر 'تثبيت منصة تتبع أوامر العمل...'", "warn");
+      return;
+    }
+    if (isEdge) {
+      callShowMsg("📲 افتح قائمة Edge ••• ثم اختر 'التطبيقات' ← 'تثبيت هذا الموقع كتطبيق'", "warn");
       return;
     }
 
@@ -173,7 +245,28 @@
   /* ============================================================
    * PWA: إعداد مستمعات التثبيت
    * ============================================================ */
+  async function checkAndResetIfUninstalled() {
+    /* إذا pwa_installed = yes لكن لا يوجد SW → التطبيق مُسح → امسح العلم */
+    if (localStorage.getItem("pwa_installed") === "yes"
+     && !window.matchMedia("(display-mode: standalone)").matches
+     && !window.navigator.standalone) {
+      try {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        if (regs.length === 0) {
+          localStorage.removeItem("pwa_installed");
+          localStorage.removeItem("app_installed");
+          console.log("[PWA] اكتُشف مسح التطبيق — تم إعادة تعيين العلم");
+        }
+      } catch(e) {}
+    }
+  }
+
   function setupPWA() {
+    /* فحص إذا التطبيق مُسح */
+    checkAndResetIfUninstalled().then(function(){
+      if (isInstalled()) { hideInstallBtn(); return; }
+    });
+
     if (isInstalled()) { hideInstallBtn(); return; }
 
     window.addEventListener("beforeinstallprompt", function (e) {
@@ -196,14 +289,14 @@
     /* Firefox: أظهر الزر دائماً */
     if (IS_FF) { showInstallBtn("تثبيت التطبيق"); return; }
 
-    /* Samsung Internet: انتظر 4 ثواني — إذا لم يصل الحدث أظهر الزر يدوياً */
-    if (IS_SAMSUNG) {
-      setTimeout(function () {
-        if (!deferredPrompt && !isInstalled()) {
-          showInstallBtn("تثبيت التطبيق");
-        }
-      }, PROMPT_TIMEOUT);
-    }
+    /* Chrome / Edge / Samsung:
+       إذا لم يصل beforeinstallprompt خلال 5 ثواني أظهر الزر يدوياً
+       يحل مشكلة إعادة التثبيت بعد المسح (Chrome يحجب الحدث لـ 90 يوم) */
+    setTimeout(function () {
+      if (!deferredPrompt && !isInstalled()) {
+        showInstallBtn("تثبيت التطبيق");
+      }
+    }, IS_SAMSUNG ? PROMPT_TIMEOUT : 5000);
 
     /* مراقبة standalone */
     window.matchMedia("(display-mode: standalone)").addEventListener("change", function (e) {
@@ -557,6 +650,9 @@
   async function init() {
     if (initialized) return;
     initialized = true;
+
+    /* تنظيف عند تغيير الإصدار */
+    await cleanupOnVersionChange();
 
     /* بناء الـ Widget أو الربط بالعناصر الموجودة */
     buildWidget();
