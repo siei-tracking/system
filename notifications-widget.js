@@ -332,46 +332,59 @@
     if (IS_IOS)  { callShowMsg("📱 افتح الصفحة في Safari ثم أضفها للشاشة الرئيسية", "warn"); return; }
     /* Firefox */
     if (IS_FF)   { callShowMsg("🦊 افتح القائمة ☰ ثم اختر 'تثبيت'", "warn"); return; }
-    /* Samsung Internet بدون prompt — clear أولاً ثم تعليمات */
+    /* Samsung Internet بدون prompt */
     if (IS_SAMSUNG) {
-      callShowMsg("🔄 جاري تجهيز التثبيت...", "ok");
-      /* clear data لضمان ظهور زر التثبيت بعد إعادة التحميل */
-      try {
-        /* احفظ توكنات الجلسة */
-        const keep = {};
-        for (let i = 0; i < localStorage.length; i++) {
-          const k = localStorage.key(i);
-          if (k && k.indexOf("tracking_session_token") === 0) keep[k] = localStorage.getItem(k);
+      /* انتظر 2 ثانية — قد يصل prompt بتأخير */
+      callShowMsg("⏳ جاري التحقق...", "ok");
+      setTimeout(async function(){
+        /* إذا وصل الـ prompt أثناء الانتظار — استخدمه */
+        if (deferredPrompt) {
+          try {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === "accepted") {
+              sessionStorage.setItem("samsung_installed", "yes");
+              hideInstallBtn();
+              callShowMsg("✅ تم تثبيت التطبيق بنجاح", "ok");
+            } else {
+              callShowMsg("ℹ️ تم إلغاء التثبيت", "warn");
+            }
+            deferredPrompt = null;
+          } catch(e) {
+            callShowMsg("⚠️ تعذر التثبيت", "warn");
+          }
+          return;
         }
-        const ssKeep = {};
-        for (let i = 0; i < sessionStorage.length; i++) {
-          const k = sessionStorage.key(i);
-          if (k && k.indexOf("tracking_session_token") === 0) ssKeep[k] = sessionStorage.getItem(k);
-        }
-        /* امسح كل شيء */
-        localStorage.clear();
-        sessionStorage.clear();
-        /* أعد الجلسة */
-        Object.keys(keep).forEach(function(k){ localStorage.setItem(k, keep[k]); });
-        Object.keys(ssKeep).forEach(function(k){ sessionStorage.setItem(k, ssKeep[k]); });
-        /* امسح الـ Cache */
-        if ("caches" in window) {
-          caches.keys().then(function(keys){
-            keys.forEach(function(k){ caches.delete(k); });
-          });
-        }
-        /* إلغاء SW القديمة */
-        if ("serviceWorker" in navigator) {
-          navigator.serviceWorker.getRegistrations().then(function(regs){
-            regs.forEach(function(r){ r.unregister(); });
-          });
-        }
-      } catch(e) { console.warn("clear error:", e); }
 
-      /* أعد التحميل بعد ثانية ليكتمل الـ clear */
-      setTimeout(function(){
-        location.reload(true);
-      }, 1000);
+        /* لم يصل prompt — اعمل clear وأعد التحميل */
+        callShowMsg("🔄 جاري تجهيز التثبيت...", "ok");
+        try {
+          const keep = {}, ssKeep = {};
+          for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (k && k.indexOf("tracking_session_token") === 0) keep[k] = localStorage.getItem(k);
+          }
+          for (let i = 0; i < sessionStorage.length; i++) {
+            const k = sessionStorage.key(i);
+            if (k && k.indexOf("tracking_session_token") === 0) ssKeep[k] = sessionStorage.getItem(k);
+          }
+          localStorage.clear();
+          sessionStorage.clear();
+          Object.keys(keep).forEach(function(k){ localStorage.setItem(k, keep[k]); });
+          Object.keys(ssKeep).forEach(function(k){ sessionStorage.setItem(k, ssKeep[k]); });
+          if ("caches" in window) {
+            const keys = await caches.keys();
+            for (const k of keys) await caches.delete(k);
+          }
+          if ("serviceWorker" in navigator) {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            for (const r of regs) await r.unregister();
+          }
+        } catch(e) { console.warn("clear error:", e); }
+
+        callShowMsg("✅ اضغط الزر مجدداً لتثبيت التطبيق", "ok");
+        setTimeout(function(){ location.reload(true); }, 1200);
+      }, 2000);
       return;
     }
 
