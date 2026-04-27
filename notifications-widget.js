@@ -434,12 +434,55 @@
     /* Firefox: أظهر الزر دائماً */
     if (IS_FF) { showInstallBtn("تثبيت التطبيق"); return; }
 
-    /* انتظر وصول beforeinstallprompt
-       Samsung: 4 ثواني — Chrome/Edge: 5 ثواني */
-    setTimeout(function () {
-      if (!deferredPrompt && !isInstalled()) {
+    /* انتظر وصول beforeinstallprompt */
+    setTimeout(async function () {
+      const standalone = window.matchMedia("(display-mode: standalone)").matches
+                      || window.navigator.standalone === true;
+      if (standalone) return;
+
+      if (deferredPrompt) {
+        /* وصل الـ prompt — أظهر الزر */
         showInstallBtn("تثبيت التطبيق");
+        return;
       }
+
+      /* لم يصل prompt */
+      if (IS_SAMSUNG) {
+        /* Samsung: اعمل clear تلقائي ثم أعد التحميل */
+        console.log("[PWA Samsung] لم يصل prompt — جاري التنظيف التلقائي");
+        try {
+          /* احفظ توكنات الجلسة */
+          const keep = {}, ssKeep = {};
+          for (let i = 0; i < localStorage.length; i++) {
+            const k = localStorage.key(i);
+            if (k && k.indexOf("tracking_session_token") === 0) keep[k] = localStorage.getItem(k);
+          }
+          for (let i = 0; i < sessionStorage.length; i++) {
+            const k = sessionStorage.key(i);
+            if (k && k.indexOf("tracking_session_token") === 0) ssKeep[k] = sessionStorage.getItem(k);
+          }
+          localStorage.clear();
+          sessionStorage.clear();
+          Object.keys(keep).forEach(function(k){ localStorage.setItem(k, keep[k]); });
+          Object.keys(ssKeep).forEach(function(k){ sessionStorage.setItem(k, ssKeep[k]); });
+          if ("caches" in window) {
+            const keys = await caches.keys();
+            for (const k of keys) await caches.delete(k);
+          }
+          if ("serviceWorker" in navigator) {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            for (const r of regs) await r.unregister();
+          }
+        } catch(e) { console.warn("auto clear:", e); }
+
+        /* أعد التحميل — بعده beforeinstallprompt سيصل */
+        setTimeout(function(){ location.reload(true); }, 500);
+        return;
+      }
+
+      /* Chrome/Edge بدون prompt — أظهر الزر مع تعليمات */
+      showInstallBtn("تثبيت التطبيق");
+
     }, IS_SAMSUNG ? PROMPT_TIMEOUT : 5000);
 
     /* مراقبة standalone */
