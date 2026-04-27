@@ -448,8 +448,15 @@
 
       /* لم يصل prompt */
       if (IS_SAMSUNG) {
-        /* Samsung: اعمل clear تلقائي ثم أعد التحميل */
-        console.log("[PWA Samsung] لم يصل prompt — جاري التنظيف التلقائي");
+        /* إذا تم التنظيف مسبقاً في هذه الجلسة — لا تكرر، فقط أظهر الزر */
+        if (sessionStorage.getItem("samsung_cleared") === "yes") {
+          console.log("[PWA Samsung] تم التنظيف مسبقاً — أظهر الزر");
+          showInstallBtn("تثبيت التطبيق");
+          return;
+        }
+
+        /* Samsung: اعمل clear مرة واحدة فقط */
+        console.log("[PWA Samsung] لم يصل prompt — جاري التنظيف");
         try {
           /* احفظ توكنات الجلسة */
           const keep = {}, ssKeep = {};
@@ -463,8 +470,12 @@
           }
           localStorage.clear();
           sessionStorage.clear();
+          /* أعد الجلسة */
           Object.keys(keep).forEach(function(k){ localStorage.setItem(k, keep[k]); });
           Object.keys(ssKeep).forEach(function(k){ sessionStorage.setItem(k, ssKeep[k]); });
+          /* علامة "تم التنظيف" — تبقى في sessionStorage بعد الـ reload */
+          sessionStorage.setItem("samsung_cleared", "yes");
+          /* مسح Cache و SW */
           if ("caches" in window) {
             const keys = await caches.keys();
             for (const k of keys) await caches.delete(k);
@@ -475,7 +486,7 @@
           }
         } catch(e) { console.warn("auto clear:", e); }
 
-        /* أعد التحميل — بعده beforeinstallprompt سيصل */
+        /* أعد التحميل مرة واحدة فقط */
         setTimeout(function(){ location.reload(true); }, 500);
         return;
       }
