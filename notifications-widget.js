@@ -42,10 +42,13 @@
   /* ============================================================
    * كشف المتصفح
    * ============================================================ */
-  const UA        = navigator.userAgent || "";
-  const IS_IOS    = /iphone|ipad|ipod/i.test(UA);
-  const IS_SAFARI = /safari/i.test(UA) && !/chrome/i.test(UA);
-  const IS_FF     = /firefox/i.test(UA);
+  const UA         = navigator.userAgent || "";
+  const IS_IOS     = /iphone|ipad|ipod/i.test(UA);
+  const IS_SAFARI  = /safari/i.test(UA) && !/chrome/i.test(UA);
+  const IS_FF      = /firefox/i.test(UA);
+  const IS_SAMSUNG = /samsungbrowser/i.test(UA);
+  /* Samsung Internet يدعم beforeinstallprompt لكن يتأخر أحياناً */
+  const PROMPT_TIMEOUT = IS_SAMSUNG ? 4000 : 0;
 
   /* ============================================================
    * HELPERS — الوصول لدوال الصفحة بأمان
@@ -157,6 +160,12 @@
     if (IS_IOS)  { callShowMsg("📱 افتح الصفحة في Safari ثم أضفها للشاشة الرئيسية", "warn"); return; }
     /* Firefox */
     if (IS_FF)   { callShowMsg("🦊 افتح القائمة ☰ ثم اختر 'تثبيت'", "warn"); return; }
+    /* Samsung Internet بدون prompt */
+    if (IS_SAMSUNG) {
+      callShowMsg("📲 افتح قائمة المتصفح ⋮ ثم اختر 'إضافة صفحة إلى' ← 'الشاشة الرئيسية'", "warn");
+      return;
+    }
+
     /* بقية المتصفحات */
     callShowMsg("ℹ️ افتح قائمة المتصفح واختر 'تثبيت التطبيق'", "warn");
   }
@@ -165,7 +174,7 @@
    * PWA: إعداد مستمعات التثبيت
    * ============================================================ */
   function setupPWA() {
-    if (isInstalled()) { hideInstallBtn(); }
+    if (isInstalled()) { hideInstallBtn(); return; }
 
     window.addEventListener("beforeinstallprompt", function (e) {
       e.preventDefault();
@@ -186,6 +195,15 @@
 
     /* Firefox: أظهر الزر دائماً */
     if (IS_FF) { showInstallBtn("تثبيت التطبيق"); return; }
+
+    /* Samsung Internet: انتظر 4 ثواني — إذا لم يصل الحدث أظهر الزر يدوياً */
+    if (IS_SAMSUNG) {
+      setTimeout(function () {
+        if (!deferredPrompt && !isInstalled()) {
+          showInstallBtn("تثبيت التطبيق");
+        }
+      }, PROMPT_TIMEOUT);
+    }
 
     /* مراقبة standalone */
     window.matchMedia("(display-mode: standalone)").addEventListener("change", function (e) {
@@ -333,7 +351,7 @@
       const items = Array.isArray(res && res.items) ? res.items : [];
 
       if (!items.length) {
-        list.innerHTML = '<div class="nw-empty">لا توجد إشعارات</div>';
+        list.innerHTML = '<div class="nw-empty" style="padding:20px;text-align:center;color:#758292;font-weight:900;">لا توجد إشعارات</div>';
         count.textContent = "0";
         count.style.display = "none";
         lastNotifIds = [];
@@ -347,6 +365,12 @@
         return id && notifReady && lastNotifIds.indexOf(id) === -1;
       });
 
+      /* اكتشف تلقائياً هل الصفحة تستخدم notif-item أم nw-item */
+      const usePageClass = !!document.querySelector(".notif-item, .notif-header");
+      const itemClass    = usePageClass ? "notif-item" : "nw-item";
+      const unreadClass  = usePageClass ? "unread"     : "nw-unread";
+      const dateClass    = usePageClass ? "notif-date" : "nw-dt";
+
       let unread = 0;
       list.innerHTML = "";
       items.forEach(function (n) {
@@ -354,10 +378,11 @@
         if (!isRead) unread++;
         const id  = String(n.id || "").trim();
         const div = document.createElement("div");
-        div.className = "nw-item" + (isRead ? "" : " nw-unread");
+        div.className = itemClass + (isRead ? "" : " " + unreadClass);
+        div.style.color = "#223243";
         div.innerHTML =
-          '<div>'               + escapeHtml(n.message   || "إشعار جديد") + '</div>' +
-          '<div class="nw-dt">' + escapeHtml(n.createdAt || "")            + '</div>';
+          '<div style="font-weight:900;color:#223243;">' + escapeHtml(n.message   || "إشعار جديد") + '</div>' +
+          '<div class="' + dateClass + '" style="font-size:12px;color:#758292;margin-top:4px;">' + escapeHtml(n.createdAt || "") + '</div>';
         div.addEventListener("click", function () { markRead(id); });
         list.appendChild(div);
       });
@@ -450,8 +475,8 @@
         #notifBox{
           display:none;position:absolute;top:56px;right:0;
           width:310px;max-width:calc(100vw - 20px);max-height:360px;overflow:auto;
-          background:#fff;border-radius:14px;
-          box-shadow:0 14px 30px rgba(0,0,0,.22);border:1px solid #e6edf4;color:#223243;
+          background:#fff !important;border-radius:14px;
+          box-shadow:0 14px 30px rgba(0,0,0,.22);border:1px solid #e6edf4;color:#223243 !important;
         }
         .nw-hdr{
           padding:10px 14px;border-bottom:1px solid #eef2f6;
@@ -461,12 +486,14 @@
         .nw-item{
           padding:11px 14px;border-bottom:1px solid #eef2f6;cursor:pointer;
           text-align:right;font-weight:800;font-size:14px;transition:background .12s;
+          color:#223243 !important;background:#fff !important;
         }
-        .nw-item:hover{ background:#f6f8fb; }
+        .nw-item:hover{ background:#f6f8fb !important; }
         .nw-item:last-child{ border-bottom:none; }
+        .nw-item div{ color:#223243 !important; }
         .nw-unread{ border-right:3px solid #f5a623; }
-        .nw-dt{ font-size:11px;color:#758292;margin-top:4px;font-weight:700; }
-        .nw-empty{ padding:20px;color:#758292;font-weight:900;text-align:center; }
+        .nw-dt{ font-size:11px;color:#758292 !important;margin-top:4px;font-weight:700; }
+        .nw-empty{ padding:20px;color:#758292 !important;font-weight:900;text-align:center;background:#fff; }
         @media(max-width:700px){
           #nwRoot{ top:10px;right:10px; }
           #btnEnableNotifications,#btnInstallApp{ padding:7px 10px;font-size:12px; }
