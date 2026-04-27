@@ -615,7 +615,20 @@
    * ============================================================ */
   function buildWidget() {
     /* إذا الصفحة لديها notifIcon مسبقاً لا تنشئ widget جديد */
-    if ($("notifIcon")) return;
+    if ($("notifIcon")) {
+      /* لكن أضف headerBtns إذا لم تكن موجودة */
+      if (!$("headerBtns")) {
+        const header = document.querySelector(".company-header") || document.body;
+        if (header && getComputedStyle(header).position === "static") header.style.position = "relative";
+        const hb = document.createElement("div");
+        hb.id = "headerBtns";
+        hb.innerHTML =
+          '<button id="btnInstallApp" class="hbtn hbtn-install" type="button" style="display:none;">📲 تثبيت التطبيق</button>' +
+          '<button id="btnEnableNotifications" class="hbtn hbtn-notif" type="button" style="display:none;">🔔 تفعيل الإشعارات</button>';
+        header.appendChild(hb);
+      }
+      return;
+    }
 
     const root = document.createElement("div");
     root.id = "nwRoot";
@@ -626,6 +639,34 @@
           z-index:999999;font-family:'Cairo',Arial,sans-serif;direction:rtl;
         }
         .nw-row{ display:flex;gap:8px;align-items:center;flex-wrap:wrap; }
+
+        /* ── headerBtns: يسار الهيدر ── */
+        #headerBtns{
+          position:absolute;top:14px;left:14px;
+          z-index:999999;display:flex;flex-direction:row;
+          gap:10px;align-items:center;
+          font-family:'Cairo',Arial,sans-serif;
+        }
+        .hbtn{
+          border:none;border-radius:12px;padding:10px 14px;
+          font-family:'Cairo',Arial,sans-serif;font-weight:900;font-size:14px;
+          cursor:pointer;color:#fff;white-space:nowrap;
+          box-shadow:0 5px 14px rgba(0,0,0,.18);
+          transition:transform .15s,opacity .15s;
+          display:none;align-items:center;gap:6px;
+        }
+        .hbtn:hover{ transform:translateY(-1px);opacity:.92; }
+        .hbtn-install{ background:#27ae60; }
+        .hbtn-notif  { background:#1e3c72; }
+
+        @media(max-width:820px){
+          #headerBtns{
+            top:auto;bottom:12px;
+            left:50%;transform:translateX(-50%);
+            flex-direction:column;align-items:center;gap:8px;
+          }
+          .hbtn{ font-size:13px;padding:9px 18px;min-width:180px;justify-content:center; }
+        }
         #notifIcon{
           width:46px;height:46px;border-radius:50%;background:#fff;color:#223243;
           box-shadow:0 5px 14px rgba(0,0,0,.22);display:flex;align-items:center;
@@ -638,22 +679,7 @@
           border-radius:999px;background:#e74c3c;color:#fff;font-size:11px;font-weight:900;
           display:none;align-items:center;justify-content:center;line-height:1;
         }
-        #btnEnableNotifications{
-          border:none;border-radius:12px;padding:9px 12px;
-          font-family:'Cairo',Arial,sans-serif;font-weight:900;font-size:14px;
-          cursor:pointer;background:#1e3c72;color:#fff;white-space:nowrap;
-          box-shadow:0 5px 14px rgba(0,0,0,.18);transition:transform .15s,opacity .15s;
-          display:inline-flex;align-items:center;gap:6px;
-        }
-        #btnEnableNotifications:hover{ transform:translateY(-1px);opacity:.92; }
-        #btnInstallApp{
-          border:none;border-radius:12px;padding:9px 12px;
-          font-family:'Cairo',Arial,sans-serif;font-weight:900;font-size:14px;
-          cursor:pointer;background:#27ae60;color:#fff;white-space:nowrap;
-          box-shadow:0 5px 14px rgba(0,0,0,.18);transition:transform .15s,opacity .15s;
-          display:none;align-items:center;gap:6px;
-        }
-        #btnInstallApp:hover{ transform:translateY(-1px);opacity:.92; }
+
         #btnClearDataWidget{
           border:none;border-radius:12px;padding:9px 12px;
           font-family:'Cairo',Arial,sans-serif;font-weight:900;font-size:14px;
@@ -686,7 +712,6 @@
         .nw-empty{ padding:20px;color:#758292 !important;font-weight:900;text-align:center;background:#fff; }
         @media(max-width:700px){
           #nwRoot{ top:10px;right:10px; }
-          #btnEnableNotifications,#btnInstallApp{ padding:7px 10px;font-size:12px; }
           #notifIcon{ width:40px;height:40px;font-size:17px; }
           #notifBox{ width:260px;top:50px; }
         }
@@ -695,8 +720,7 @@
         <div id="notifIcon" title="الإشعارات" role="button" aria-label="الإشعارات">
           🔔<span id="notifCount">0</span>
         </div>
-        <button id="btnEnableNotifications" type="button">🔔 تفعيل الإشعارات</button>
-        <button id="btnInstallApp" type="button">📲 تثبيت التطبيق</button>
+
         <button id="btnClearDataWidget" type="button">🗑️ مسح البيانات</button>
       </div>
       <div id="notifBox" role="dialog" aria-label="الإشعارات">

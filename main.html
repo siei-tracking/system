@@ -667,9 +667,6 @@
       z-index: 999;
     }
 
-
-
-
     #notifIcon {
       background: white;
       border-radius: 50%;
@@ -972,7 +969,6 @@
         </div>
       </div>
 
-
       <img src="https://siei-tracking.github.io/system/logo.png" class="company-logo" alt="شعار الشركة" loading="lazy">
 
       <div class="header-text">
@@ -998,16 +994,20 @@
               <i class="fas fa-triangle-exclamation"></i> المتأخر
             </button>
 
+            <button class="btn btn-ok" id="btnInstallApp" type="button" style="display:none;" aria-label="تثبيت التطبيق">
+              <i class="fas fa-mobile-screen-button"></i> تثبيت التطبيق
+            </button>
+
+            <button class="btn btn-primary" id="btnEnableNotifications" type="button">
+              <i class="fas fa-bell"></i> تفعيل الإشعارات
+            </button>
+
             <button class="btn btn-ghost" id="btnOpenArchive" type="button">
               <i class="fas fa-table"></i> فتح شيت المعاملات
             </button>
 
             <button class="btn btn-admin" id="btnAdmin" type="button" style="display:none;">
               <i class="fas fa-users-cog"></i> إدارة المستخدمين
-            </button>
-
-            <button class="btn btn-warn" id="btnClearData" type="button" style="display:none;" title="مسح بيانات المتصفح للموقع">
-              <i class="fas fa-trash-can"></i> مسح البيانات
             </button>
 
             <select id="sheetSelect" aria-label="اختر السنة"></select>
@@ -1296,27 +1296,6 @@
       btn.style.cursor   = admin ? "pointer" : "not-allowed";
     });
 
-    /* زر مسح البيانات — لجميع المستخدمين */
-    const btnClear = document.getElementById("btnClearData");
-    if(btnClear){
-      btnClear.style.display = "inline-flex";
-      btnClear.disabled      = false;
-      btnClear.title         = "مسح بيانات المتصفح وإعادة التثبيت";
-      btnClear.style.opacity = "1";
-      btnClear.style.cursor  = "pointer";
-    }
-  }
-
-  /* ============================================================
-   * CLEAR SITE DATA
-   * ============================================================ */
-  function clearSiteData(){
-    /* استخدم دالة الـ widget الموحدة */
-    if(typeof window.clearDataAndReload === "function"){
-      if(confirm("سيتم مسح بيانات المتصفح. هل أنت متأكد؟")){
-        window.clearDataAndReload();
-      }
-    }
   }
 
   function openAdminPage(){
@@ -1973,12 +1952,8 @@
 
     /* Admin & Archive */
     const openSheetBtn  = document.getElementById("btnOpenArchive");
-    const adminBtn      = document.getElementById("btnAdmin");
-    const clearDataBtn  = document.getElementById("btnClearData");
-    if(openSheetBtn) openSheetBtn.addEventListener("click", openArchiveSheet);
+    const adminBtn      = document.getElementById("btnAdmin");    if(openSheetBtn) openSheetBtn.addEventListener("click", openArchiveSheet);
     if(adminBtn)     adminBtn.addEventListener("click",     openAdminPage);
-    if(clearDataBtn) clearDataBtn.addEventListener("click", clearSiteData);
-
     /* بدء التطبيق */
     ensurePageSession();
     setInterval(checkLiveSession,   10000);
