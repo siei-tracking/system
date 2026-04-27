@@ -48,3 +48,57 @@ self.addEventListener("notificationclick", function(event){
     })
   );
 });
+
+/* =========================================================
+   Cache بسيط لتشغيل الـ PWA offline
+   يكفي لإزالة تحذير "Page does not work offline"
+========================================================= */
+const CACHE_NAME = "siei-pwa-v1";
+const CACHE_URLS = [
+  "/system/main.html",
+  "/system/manifest.webmanifest",
+  "/system/logo-192.png",
+  "/system/logo-512.png"
+];
+
+self.addEventListener("install", function(event){
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(function(cache){
+      return cache.addAll(CACHE_URLS);
+    })
+  );
+  self.skipWaiting();
+});
+
+self.addEventListener("activate", function(event){
+  event.waitUntil(
+    caches.keys().then(function(keys){
+      return Promise.all(
+        keys.filter(function(k){ return k !== CACHE_NAME; })
+            .map(function(k){ return caches.delete(k); })
+      );
+    })
+  );
+  self.clients.claim();
+});
+
+self.addEventListener("fetch", function(event){
+  /* فقط للـ GET requests */
+  if(event.request.method !== "GET") return;
+
+  /* تجاهل طلبات الـ API */
+  if(event.request.url.indexOf("script.google.com") !== -1) return;
+  if(event.request.url.indexOf("googleapis.com") !== -1) return;
+
+  event.respondWith(
+    caches.match(event.request).then(function(cached){
+      /* إذا موجود في الـ cache أرجعه، وإلا اطلبه من الشبكة */
+      return cached || fetch(event.request).catch(function(){
+        /* إذا الشبكة منقطعة وطلب main.html أرجع من الـ cache */
+        if(event.request.url.indexOf("main.html") !== -1){
+          return caches.match("/system/main.html");
+        }
+      });
+    })
+  );
+});
