@@ -332,9 +332,46 @@
     if (IS_IOS)  { callShowMsg("📱 افتح الصفحة في Safari ثم أضفها للشاشة الرئيسية", "warn"); return; }
     /* Firefox */
     if (IS_FF)   { callShowMsg("🦊 افتح القائمة ☰ ثم اختر 'تثبيت'", "warn"); return; }
-    /* Samsung Internet بدون prompt */
+    /* Samsung Internet بدون prompt — clear أولاً ثم تعليمات */
     if (IS_SAMSUNG) {
-      callShowMsg("📲 افتح قائمة ⋮ ثم 'إضافة صفحة إلى' ← 'الشاشة الرئيسية'", "warn");
+      callShowMsg("🔄 جاري تجهيز التثبيت...", "ok");
+      /* clear data لضمان ظهور زر التثبيت بعد إعادة التحميل */
+      try {
+        /* احفظ توكنات الجلسة */
+        const keep = {};
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i);
+          if (k && k.indexOf("tracking_session_token") === 0) keep[k] = localStorage.getItem(k);
+        }
+        const ssKeep = {};
+        for (let i = 0; i < sessionStorage.length; i++) {
+          const k = sessionStorage.key(i);
+          if (k && k.indexOf("tracking_session_token") === 0) ssKeep[k] = sessionStorage.getItem(k);
+        }
+        /* امسح كل شيء */
+        localStorage.clear();
+        sessionStorage.clear();
+        /* أعد الجلسة */
+        Object.keys(keep).forEach(function(k){ localStorage.setItem(k, keep[k]); });
+        Object.keys(ssKeep).forEach(function(k){ sessionStorage.setItem(k, ssKeep[k]); });
+        /* امسح الـ Cache */
+        if ("caches" in window) {
+          caches.keys().then(function(keys){
+            keys.forEach(function(k){ caches.delete(k); });
+          });
+        }
+        /* إلغاء SW القديمة */
+        if ("serviceWorker" in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function(regs){
+            regs.forEach(function(r){ r.unregister(); });
+          });
+        }
+      } catch(e) { console.warn("clear error:", e); }
+
+      /* أعد التحميل بعد ثانية ليكتمل الـ clear */
+      setTimeout(function(){
+        location.reload(true);
+      }, 1000);
       return;
     }
 
