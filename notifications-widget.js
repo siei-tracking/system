@@ -677,9 +677,10 @@
         '.nw-install{background:#27ae60;}' +
         '.nw-notif{background:#1e3c72;}' +
         '@media(max-width:820px){' +
-          '#nwLeftBtns{top:auto;bottom:12px;left:50%;transform:translateX(-50%);' +
-            'flex-direction:column;align-items:center;gap:8px;}' +
-          '.nw-lbtn{font-size:13px;padding:9px 18px;min-width:180px;justify-content:center;}' +
+          '#nwLeftBtns{position:fixed!important;top:10px!important;left:10px!important;' +
+            'right:auto!important;bottom:auto!important;transform:none!important;' +
+            'flex-direction:column;align-items:flex-start;gap:6px;}' +
+          '.nw-lbtn{font-size:12px;padding:7px 11px;min-width:0;}' +
         '}' +
         '</style>' +
         '<button id="btnInstallApp" class="nw-lbtn nw-install" type="button" style="display:none;">📲 تثبيت التطبيق</button>' +
