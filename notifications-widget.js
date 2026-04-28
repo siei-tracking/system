@@ -689,14 +689,12 @@
             'flex-direction:column!important;' +
             'align-items:flex-start!important;' +
             'gap:6px!important;' +
-            'width:auto!important;' +
           '}' +
           '.nw-lbtn{' +
             'font-size:12px!important;' +
             'padding:7px 11px!important;' +
-            'min-width:0!important;' +
-            'width:auto!important;' +
-            'align-self:flex-start!important;' +
+            'margin-left:0!important;' +
+            'margin-right:0!important;' +
           '}' +
         '}' +
         '</style>' +
