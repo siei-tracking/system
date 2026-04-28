@@ -665,6 +665,8 @@
       left.id = "nwLeftBtns";
       left.innerHTML =
         '<style>' +
+        /* حاسبة: أفقي — إشعارات أولاً ثم تثبيت من اليسار */
+        /* موبايل: عمودي — إشعارات فوق، تثبيت تحت، كلاهما من حافة اليسار */
         '#nwLeftBtns{position:absolute;top:14px;left:14px;z-index:999999;' +
           'display:flex;flex-direction:row;gap:10px;align-items:center;' +
           'font-family:"Cairo",Arial,sans-serif;}' +
@@ -672,15 +674,30 @@
           'font-family:"Cairo",Arial,sans-serif;font-weight:900;font-size:14px;' +
           'cursor:pointer;color:#fff;white-space:nowrap;' +
           'box-shadow:0 5px 14px rgba(0,0,0,.18);transition:transform .15s,opacity .15s;' +
-          'display:none;align-items:center;gap:6px;}' +
+          'display:none;align-items:center;justify-content:flex-start;gap:6px;}' +
         '.nw-lbtn:hover{transform:translateY(-1px);opacity:.92;}' +
         '.nw-install{background:#27ae60;}' +
         '.nw-notif{background:#1e3c72;}' +
         '@media(max-width:820px){' +
-          '#nwLeftBtns{position:fixed!important;top:10px!important;left:10px!important;' +
-            'right:auto!important;bottom:auto!important;transform:none!important;' +
-            'flex-direction:column!important;align-items:flex-start!important;gap:6px!important;}' +
-          '.nw-lbtn{font-size:12px!important;padding:7px 11px!important;min-width:0!important;}' +
+          '#nwLeftBtns{' +
+            'position:fixed!important;' +
+            'top:10px!important;' +
+            'left:10px!important;' +
+            'right:auto!important;' +
+            'bottom:auto!important;' +
+            'transform:none!important;' +
+            'flex-direction:column!important;' +
+            'align-items:flex-start!important;' +
+            'gap:6px!important;' +
+            'width:auto!important;' +
+          '}' +
+          '.nw-lbtn{' +
+            'font-size:12px!important;' +
+            'padding:7px 11px!important;' +
+            'min-width:0!important;' +
+            'width:auto!important;' +
+            'align-self:flex-start!important;' +
+          '}' +
         '}' +
         '</style>' +
         '<button id="btnEnableNotifications" class="nw-lbtn nw-notif" type="button" style="display:none;">🔔 تفعيل الإشعارات</button>' +
