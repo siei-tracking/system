@@ -679,8 +679,8 @@
         '@media(max-width:820px){' +
           '#nwLeftBtns{position:fixed!important;top:10px!important;left:10px!important;' +
             'right:auto!important;bottom:auto!important;transform:none!important;' +
-            'flex-direction:column;align-items:flex-start;gap:6px;}' +
-          '.nw-lbtn{font-size:12px;padding:7px 11px;min-width:0;}' +
+            'flex-direction:column!important;align-items:flex-start!important;gap:6px!important;}' +
+          '.nw-lbtn{font-size:12px!important;padding:7px 11px!important;min-width:0!important;}' +
         '}' +
         '</style>' +
         '<button id="btnEnableNotifications" class="nw-lbtn nw-notif" type="button" style="display:none;">🔔 تفعيل الإشعارات</button>' +
