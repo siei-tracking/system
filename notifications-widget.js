@@ -663,8 +663,13 @@
    * (فقط إذا لم تكن العناصر موجودة مسبقاً في HTML)
    * ============================================================ */
   function buildWidget() {
-    const header = document.querySelector(".company-header") || document.body;
-    if (header && getComputedStyle(header).position === "static") header.style.position = "relative";
+    const header = document.querySelector(".company-header");
+    /* إذا company-header غير موجود بعد — انتظر */
+    if (!header) {
+      setTimeout(buildWidget, 300);
+      return;
+    }
+    if (getComputedStyle(header).position === "static") header.style.position = "relative";
 
     /* ── جرس الإشعارات — يمين الهيدر ── */
     if (!$("notifIcon")) {
@@ -723,7 +728,9 @@
           'display:flex;flex-direction:column;gap:8px;' +
           'align-items:flex-start;' +
           'font-family:"Cairo",Arial,sans-serif;' +
+          'direction:ltr;' +
         '}' +
+        '#nwLeftBtns button{direction:rtl;}' +
         '#btnEnableNotifications{' +
           'border:none;border-radius:12px;' +
           'background:#1e3c72;color:#fff;' +
