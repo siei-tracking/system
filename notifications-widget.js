@@ -776,6 +776,7 @@
     buildWidget();
     bindButtons();
     setupPWA();
+    updateNotifBtnVisibility();
 
     /* Firebase + Service Worker */
     try { await ensureFirebase(); setupForeground(); } catch (e) { console.warn("Firebase:", e); }
