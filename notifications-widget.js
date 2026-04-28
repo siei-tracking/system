@@ -759,7 +759,10 @@
             'position:absolute!important;' +
             'top:10px!important;left:10px!important;' +
           '}' +
-          '#btnEnableNotifications,#btnInstallApp{font-size:13px;padding:9px 14px;}' +
+          '#btnEnableNotifications,#btnInstallApp{' +
+            'font-size:11px!important;' +
+            'padding:6px 10px!important;' +
+          '}' +
         '}' +
         '</style>' +
         '<button id="btnEnableNotifications" type="button" style="display:none;">🔔 تفعيل الإشعارات</button>' +
