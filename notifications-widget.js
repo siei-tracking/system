@@ -55,8 +55,8 @@
     mobile_position:   "fixed",     /* fixed = ثابت عند التمرير */
     mobile_top:        "10px",      /* المسافة من الأعلى */
     mobile_left:       "10px",      /* المسافة من اليسار */
-    mobile_size:       "8px",      /* حجم الخط */
-    mobile_pad:        "4px 4px",  /* الحشوة */
+    mobile_size:       "12px",      /* حجم الخط */
+    mobile_pad:        "7px 11px",  /* الحشوة */
   };
 
   /* ============================================================
@@ -77,8 +77,8 @@
     mobile_position:   "fixed",     /* fixed = ثابت عند التمرير */
     mobile_top:        "50px",      /* المسافة من الأعلى — أسفل زر الإشعارات */
     mobile_left:       "-5px",      /* المسافة من اليسار — نفس زر الإشعارات */
-    mobile_size:       "8px",      /* حجم الخط */
-    mobile_pad:        "4px 4px",  /* الحشوة */
+    mobile_size:       "12px",      /* حجم الخط */
+    mobile_pad:        "7px 11px",  /* الحشوة */
   };
 
   /* ============================================================
@@ -732,24 +732,24 @@
         '}' +
         '#nwLeftBtns button{direction:rtl;}' +
         '#btnEnableNotifications{' +
-          'border:none;border-radius:12px;' +
+          'border:none;border-radius:10px;' +
           'background:#1e3c72;color:#fff;' +
-          'font-size:14px;padding:10px 16px;' +
+          'font-size:11px;padding:6px 10px;' +
           'font-family:"Cairo",Arial,sans-serif;font-weight:900;' +
           'cursor:pointer;white-space:nowrap;' +
-          'box-shadow:0 5px 14px rgba(0,0,0,.22);' +
+          'box-shadow:0 3px 8px rgba(0,0,0,.22);' +
           'transition:transform .15s,opacity .15s;' +
-          'display:none;align-items:center;gap:8px;' +
+          'display:none;align-items:center;gap:5px;' +
         '}' +
         '#btnInstallApp{' +
-          'border:none;border-radius:12px;' +
+          'border:none;border-radius:10px;' +
           'background:#27ae60;color:#fff;' +
-          'font-size:14px;padding:10px 16px;' +
+          'font-size:11px;padding:6px 10px;' +
           'font-family:"Cairo",Arial,sans-serif;font-weight:900;' +
           'cursor:pointer;white-space:nowrap;' +
-          'box-shadow:0 5px 14px rgba(0,0,0,.22);' +
+          'box-shadow:0 3px 8px rgba(0,0,0,.22);' +
           'transition:transform .15s,opacity .15s;' +
-          'display:none;align-items:center;gap:8px;' +
+          'display:none;align-items:center;gap:5px;' +
         '}' +
         '#btnEnableNotifications:hover,#btnInstallApp:hover{' +
           'transform:translateY(-1px);opacity:.92;' +
