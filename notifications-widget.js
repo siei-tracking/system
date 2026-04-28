@@ -76,7 +76,7 @@
     /* ── موبايل ── */
     mobile_position:   "fixed",     /* fixed = ثابت عند التمرير */
     mobile_top:        "50px",      /* المسافة من الأعلى — أسفل زر الإشعارات */
-    mobile_left:       "10px",      /* المسافة من اليسار — نفس زر الإشعارات */
+    mobile_left:       "-5px",      /* المسافة من اليسار — نفس زر الإشعارات */
     mobile_size:       "12px",      /* حجم الخط */
     mobile_pad:        "7px 11px",  /* الحشوة */
   };
@@ -709,107 +709,6 @@
           '<div id="notifList"><div class="nw-empty">جاري التحميل...</div></div>' +
         '</div>';
       header.appendChild(right);
-    }
-
-    /* ── أزرار تثبيت + إشعارات — يسار الهيدر (يُبنى دائماً) ── */
-    /* ═══════════════════════════════════════════════════
-       زر تفعيل الإشعارات — مستقل تماماً
-       ═══════════════════════════════════════════════════ */
-    if (!$("btnEnableNotifications")) {
-      const nb = document.createElement("button");
-      nb.id   = "btnEnableNotifications";
-      nb.type = "button";
-      nb.textContent = NOTIF_BTN.text;
-
-      /* CSS حاسبة */
-      nb.style.cssText = [
-        "position:"    + NOTIF_BTN.desktop_position,
-        "top:"         + NOTIF_BTN.desktop_top,
-        "left:"        + NOTIF_BTN.desktop_left,
-        "z-index:999999",
-        "border:none",
-        "border-radius:" + NOTIF_BTN.border_radius,
-        "background:"  + NOTIF_BTN.bg,
-        "color:"       + NOTIF_BTN.color,
-        "font-size:"   + NOTIF_BTN.desktop_size,
-        "padding:"     + NOTIF_BTN.desktop_pad,
-        "font-family:Cairo,Arial,sans-serif",
-        "font-weight:900",
-        "cursor:pointer",
-        "white-space:nowrap",
-        "box-shadow:0 5px 14px rgba(0,0,0,.18)",
-        "transition:transform .15s,opacity .15s",
-        "display:none"
-      ].join(";");
-
-      nb.onmouseover = function(){ this.style.opacity=".9"; this.style.transform="translateY(-1px)"; };
-      nb.onmouseout  = function(){ this.style.opacity="1";  this.style.transform="none"; };
-      header.appendChild(nb);
-
-      /* CSS موبايل */
-      const ns = document.createElement("style");
-      ns.textContent =
-        "@media(max-width:820px){" +
-          "#btnEnableNotifications{" +
-            "position:" + NOTIF_BTN.mobile_position + "!important;" +
-            "top:"      + NOTIF_BTN.mobile_top      + "!important;" +
-            "left:"     + NOTIF_BTN.mobile_left     + "!important;" +
-            "right:auto!important;bottom:auto!important;" +
-            "font-size:" + NOTIF_BTN.mobile_size + "!important;" +
-            "padding:"   + NOTIF_BTN.mobile_pad  + "!important;" +
-          "}" +
-        "}";
-      document.head.appendChild(ns);
-    }
-
-    /* ═══════════════════════════════════════════════════
-       زر تثبيت التطبيق — مستقل تماماً
-       ═══════════════════════════════════════════════════ */
-    if (!$("btnInstallApp")) {
-      const ib = document.createElement("button");
-      ib.id   = "btnInstallApp";
-      ib.type = "button";
-      ib.textContent = INSTALL_BTN.text;
-
-      /* CSS حاسبة */
-      ib.style.cssText = [
-        "position:"    + INSTALL_BTN.desktop_position,
-        "top:"         + INSTALL_BTN.desktop_top,
-        "left:"        + INSTALL_BTN.desktop_left,
-        "z-index:999999",
-        "border:none",
-        "border-radius:" + INSTALL_BTN.border_radius,
-        "background:"  + INSTALL_BTN.bg,
-        "color:"       + INSTALL_BTN.color,
-        "font-size:"   + INSTALL_BTN.desktop_size,
-        "padding:"     + INSTALL_BTN.desktop_pad,
-        "font-family:Cairo,Arial,sans-serif",
-        "font-weight:900",
-        "cursor:pointer",
-        "white-space:nowrap",
-        "box-shadow:0 5px 14px rgba(0,0,0,.18)",
-        "transition:transform .15s,opacity .15s",
-        "display:none"
-      ].join(";");
-
-      ib.onmouseover = function(){ this.style.opacity=".9"; this.style.transform="translateY(-1px)"; };
-      ib.onmouseout  = function(){ this.style.opacity="1";  this.style.transform="none"; };
-      header.appendChild(ib);
-
-      /* CSS موبايل */
-      const is_ = document.createElement("style");
-      is_.textContent =
-        "@media(max-width:820px){" +
-          "#btnInstallApp{" +
-            "position:" + INSTALL_BTN.mobile_position + "!important;" +
-            "top:"      + INSTALL_BTN.mobile_top      + "!important;" +
-            "left:"     + INSTALL_BTN.mobile_left     + "!important;" +
-            "right:auto!important;bottom:auto!important;" +
-            "font-size:" + INSTALL_BTN.mobile_size + "!important;" +
-            "padding:"   + INSTALL_BTN.mobile_pad  + "!important;" +
-          "}" +
-        "}";
-      document.head.appendChild(is_);
     }
   }
 
