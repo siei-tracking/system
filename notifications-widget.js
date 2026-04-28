@@ -720,9 +720,12 @@
         '#nwLeftBtns{' +
           'position:absolute;top:14px;left:14px;' +
           'z-index:999999;' +
-          'display:flex;flex-direction:column;gap:8px;align-items:flex-start;' +
+          'display:flex;flex-direction:column;gap:8px;' +
+          'align-items:flex-start;' +
+          'width:auto;' +
           'font-family:"Cairo",Arial,sans-serif;direction:rtl;' +
         '}' +
+        '#nwLeftBtns>*{margin-left:0!important;margin-right:0!important;}' +
         '#btnEnableNotifications{' +
           'border:none;border-radius:12px;' +
           'background:#1e3c72;color:#fff;' +
