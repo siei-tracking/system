@@ -683,8 +683,8 @@
           '.nw-lbtn{font-size:12px!important;padding:7px 11px!important;min-width:0!important;}' +
         '}' +
         '</style>' +
-        '<button id="btnInstallApp" class="nw-lbtn nw-install" type="button" style="display:none;">📲 تثبيت التطبيق</button>' +
-        '<button id="btnEnableNotifications" class="nw-lbtn nw-notif" type="button" style="display:none;">🔔 تفعيل الإشعارات</button>';
+        '<button id="btnEnableNotifications" class="nw-lbtn nw-notif" type="button" style="display:none;">🔔 تفعيل الإشعارات</button>' +
+        '<button id="btnInstallApp" class="nw-lbtn nw-install" type="button" style="display:none;">📲 تثبيت التطبيق</button>';
       header.appendChild(left);
     }
   }
