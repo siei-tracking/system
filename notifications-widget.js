@@ -76,7 +76,7 @@
     /* ── موبايل ── */
     mobile_position:   "fixed",     /* fixed = ثابت عند التمرير */
     mobile_top:        "50px",      /* المسافة من الأعلى — أسفل زر الإشعارات */
-    mobile_left:       "10px",      /* المسافة من اليسار — نفس زر الإشعارات */
+    mobile_left:       "-5px",      /* المسافة من اليسار — نفس زر الإشعارات */
     mobile_size:       "12px",      /* حجم الخط */
     mobile_pad:        "7px 11px",  /* الحشوة */
   };
@@ -722,10 +722,8 @@
           'z-index:999999;' +
           'display:flex;flex-direction:column;gap:8px;' +
           'align-items:flex-start;' +
-          'width:auto;' +
-          'font-family:"Cairo",Arial,sans-serif;direction:rtl;' +
+          'font-family:"Cairo",Arial,sans-serif;' +
         '}' +
-        '#nwLeftBtns>*{margin-left:0!important;margin-right:0!important;}' +
         '#btnEnableNotifications{' +
           'border:none;border-radius:12px;' +
           'background:#1e3c72;color:#fff;' +
