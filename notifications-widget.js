@@ -710,6 +710,54 @@
         '</div>';
       header.appendChild(right);
     }
+
+    /* ── أزرار اليسار ── */
+    if (!$("nwLeftBtns")) {
+      const left = document.createElement("div");
+      left.id = "nwLeftBtns";
+      left.innerHTML =
+        '<style>' +
+        '#nwLeftBtns{' +
+          'position:absolute;top:14px;left:14px;' +
+          'z-index:999999;' +
+          'display:flex;flex-direction:column;gap:8px;align-items:flex-start;' +
+          'font-family:"Cairo",Arial,sans-serif;direction:rtl;' +
+        '}' +
+        '#btnEnableNotifications{' +
+          'border:none;border-radius:12px;' +
+          'background:#1e3c72;color:#fff;' +
+          'font-size:14px;padding:10px 16px;' +
+          'font-family:"Cairo",Arial,sans-serif;font-weight:900;' +
+          'cursor:pointer;white-space:nowrap;' +
+          'box-shadow:0 5px 14px rgba(0,0,0,.22);' +
+          'transition:transform .15s,opacity .15s;' +
+          'display:none;align-items:center;gap:8px;' +
+        '}' +
+        '#btnInstallApp{' +
+          'border:none;border-radius:12px;' +
+          'background:#27ae60;color:#fff;' +
+          'font-size:14px;padding:10px 16px;' +
+          'font-family:"Cairo",Arial,sans-serif;font-weight:900;' +
+          'cursor:pointer;white-space:nowrap;' +
+          'box-shadow:0 5px 14px rgba(0,0,0,.22);' +
+          'transition:transform .15s,opacity .15s;' +
+          'display:none;align-items:center;gap:8px;' +
+        '}' +
+        '#btnEnableNotifications:hover,#btnInstallApp:hover{' +
+          'transform:translateY(-1px);opacity:.92;' +
+        '}' +
+        '@media(max-width:820px){' +
+          '#nwLeftBtns{' +
+            'position:absolute!important;' +
+            'top:10px!important;left:10px!important;' +
+          '}' +
+          '#btnEnableNotifications,#btnInstallApp{font-size:13px;padding:9px 14px;}' +
+        '}' +
+        '</style>' +
+        '<button id="btnEnableNotifications" type="button" style="display:none;">🔔 تفعيل الإشعارات</button>' +
+        '<button id="btnInstallApp" type="button" style="display:none;">📲 تثبيت التطبيق</button>';
+      header.appendChild(left);
+    }
   }
 
   /* ============================================================
