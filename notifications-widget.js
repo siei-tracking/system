@@ -659,8 +659,8 @@
       header.appendChild(right);
     }
 
-    /* ── أزرار تثبيت + إشعارات — يسار الهيدر ── */
-    if (!$("nwLeftBtns")) {
+    /* ── أزرار تثبيت + إشعارات — يسار الهيدر (يُبنى دائماً) ── */
+    if (!$("nwLeftBtns") && !$("btnEnableNotifications")) {
       const left = document.createElement("div");
       left.id = "nwLeftBtns";
       left.innerHTML =
@@ -776,7 +776,8 @@
     buildWidget();
     bindButtons();
     setupPWA();
-    updateNotifBtnVisibility();
+    /* تأخير لضمان اكتمال بناء الـ DOM */
+    setTimeout(updateNotifBtnVisibility, 100);
 
     /* Firebase + Service Worker */
     try { await ensureFirebase(); setupForeground(); } catch (e) { console.warn("Firebase:", e); }
