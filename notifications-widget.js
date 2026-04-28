@@ -1,4 +1,4 @@
-/* =========================================================
+﻿/* =========================================================
    notifications-widget.js  v3.0
    ملف موحد للإشعارات وتثبيت PWA — يعمل مع جميع الصفحات
    الاستخدام: أضف هذا السطر قبل </body> في كل صفحة:
@@ -701,7 +701,26 @@
             'justify-content:flex-start!important;' +
             'box-sizing:border-box!important;' +
           '}' +
+            /* زر الإشعارات */
+          #btnEnableNotifications{
+            position:fixed !important;
+            top:10px;
+            left:0;
+            z-index:999999;
+           }
+
+            /* زر التثبيت */
+          #btnInstallApp{
+            position:fixed !important;
+            top:60px; /* تحت زر الإشعارات */
+            left:0;
+            z-index:999999;
+           }
+
+         }
+          
         '}' +
+        
         '</style>' +
         '<button id="btnEnableNotifications" class="nw-lbtn nw-notif" type="button" style="display:none;">🔔 تفعيل الإشعارات</button>' +
         '<button id="btnInstallApp" class="nw-lbtn nw-install" type="button" style="display:none;">📲 تثبيت التطبيق</button>';
