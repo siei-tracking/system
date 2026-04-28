@@ -7,6 +7,7 @@
        window.PAGE_NAME , window.apiPost , window.getSessionToken
        (أو أن هذه الدوال معرّفة في النطاق العام)
 ========================================================= */
+<!-- force deploy -->
 (function () {
   "use strict";
 
