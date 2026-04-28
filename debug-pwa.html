@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تشخيص PWA</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  body{ margin:0; font-family:'Cairo',sans-serif; background:#eef2f6; padding:16px; }
+  h2{ color:#223243; text-align:center; }
+  .card{
+    background:#fff; border-radius:14px; padding:16px; margin-bottom:12px;
+    box-shadow:0 4px 14px rgba(0,0,0,.08);
+  }
+  .row{ display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #eef2f6; }
+  .row:last-child{ border-bottom:none; }
+  .label{ font-weight:900; color:#223243; font-size:14px; }
+  .val{ font-size:13px; color:#223243; max-width:60%; text-align:left; word-break:break-all; }
+  .ok{ color:#27ae60; font-weight:900; }
+  .bad{ color:#e74c3c; font-weight:900; }
+  .warn{ color:#f39c12; font-weight:900; }
+  textarea{
+    width:100%; height:120px; font-size:11px; font-family:monospace;
+    border:1px solid #ddd; border-radius:8px; padding:8px; margin-top:8px;
+    resize:none; direction:ltr;
+  }
+  #installBtn{
+    width:100%; padding:14px; background:#27ae60; color:#fff;
+    border:none; border-radius:12px; font-family:'Cairo',sans-serif;
+    font-weight:900; font-size:16px; cursor:pointer; margin-top:8px;
+    display:none;
+  }
+</style>
+</head>
+<body>
+<h2>🔍 تشخيص PWA</h2>
+
+<div class="card">
+  <div class="row"><span class="label">المتصفح</span><span class="val" id="browser">...</span></div>
+  <div class="row"><span class="label">HTTPS</span><span class="val" id="https">...</span></div>
+  <div class="row"><span class="label">Service Worker</span><span class="val" id="sw">...</span></div>
+  <div class="row"><span class="label">Standalone</span><span class="val" id="standalone">...</span></div>
+  <div class="row"><span class="label">pwa_installed</span><span class="val" id="pwaInstalled">...</span></div>
+  <div class="row"><span class="label">beforeinstallprompt</span><span class="val" id="bip">⏳ انتظار...</span></div>
+  <div class="row"><span class="label">Installable</span><span class="val" id="installable">⏳ جاري الفحص...</span></div>
+</div>
+
+<div class="card">
+  <div class="label">UserAgent:</div>
+  <textarea id="ua" readonly></textarea>
+</div>
+
+<div class="card">
+  <div class="label">السجل:</div>
+  <textarea id="log" readonly></textarea>
+</div>
+
+<button id="installBtn">📲 تثبيت التطبيق</button>
+
+<script>
+  var deferredPrompt = null;
+  var log = [];
+
+  function addLog(msg){
+    log.push(new Date().toLocaleTimeString() + " — " + msg);
+    document.getElementById("log").value = log.join("\n");
+  }
+
+  function setVal(id, val, cls){
+    var el = document.getElementById(id);
+    el.textContent = val;
+    if(cls) el.className = "val " + cls;
+  }
+
+  // UserAgent
+  var ua = navigator.userAgent;
+  document.getElementById("ua").value = ua;
+
+  // كشف المتصفح
+  var browser = "غير معروف";
+  if(/samsungbrowser/i.test(ua)) browser = "Samsung Internet ✅";
+  else if(/edg\//i.test(ua))     browser = "Edge";
+  else if(/chrome/i.test(ua))    browser = "Chrome";
+  else if(/firefox/i.test(ua))   browser = "Firefox";
+  else if(/safari/i.test(ua))    browser = "Safari";
+  setVal("browser", browser);
+  addLog("المتصفح: " + browser);
+
+  // HTTPS
+  var isHttps = location.protocol === "https:";
+  setVal("https", isHttps ? "✅ نعم" : "❌ لا", isHttps ? "ok" : "bad");
+  addLog("HTTPS: " + isHttps);
+
+  // Standalone
+  var isStandalone = window.matchMedia("(display-mode: standalone)").matches || navigator.standalone;
+  setVal("standalone", isStandalone ? "✅ نعم (مثبت)" : "❌ لا", isStandalone ? "ok" : "");
+  addLog("Standalone: " + isStandalone);
+
+  // pwa_installed
+  var pwaInstalled = localStorage.getItem("pwa_installed");
+  setVal("pwaInstalled", pwaInstalled || "null", pwaInstalled === "yes" ? "warn" : "ok");
+  addLog("pwa_installed: " + pwaInstalled);
+
+  // Service Worker
+  if("serviceWorker" in navigator){
+    navigator.serviceWorker.getRegistrations().then(function(regs){
+      setVal("sw", regs.length > 0 ? "✅ مسجل (" + regs.length + ")" : "❌ غير مسجل", regs.length > 0 ? "ok" : "bad");
+      addLog("SW registrations: " + regs.length);
+      regs.forEach(function(r){ addLog("SW scope: " + r.scope + " | state: " + (r.active ? r.active.state : "none")); });
+    });
+  } else {
+    setVal("sw", "❌ غير مدعوم", "bad");
+  }
+
+  // beforeinstallprompt
+  window.addEventListener("beforeinstallprompt", function(e){
+    e.preventDefault();
+    deferredPrompt = e;
+    setVal("bip", "✅ وصل!", "ok");
+    setVal("installable", "✅ قابل للتثبيت", "ok");
+    document.getElementById("installBtn").style.display = "block";
+    addLog("✅ beforeinstallprompt وصل!");
+  });
+
+  // appinstalled
+  window.addEventListener("appinstalled", function(){
+    setVal("installable", "✅ تم التثبيت!", "ok");
+    addLog("✅ appinstalled!");
+  });
+
+  // بعد 6 ثواني — فحص نهائي
+  setTimeout(function(){
+    if(!deferredPrompt){
+      setVal("bip", "❌ لم يصل", "bad");
+      var reason = "";
+      if(isStandalone)         reason = "الصفحة مفتوحة كـ PWA مثبت";
+      else if(pwaInstalled === "yes") reason = "pwa_installed = yes";
+      else                     reason = "Chrome/Samsung يحجب الحدث (مثبت مسبقاً؟)";
+      setVal("installable", "⚠️ " + reason, "warn");
+      addLog("❌ beforeinstallprompt لم يصل — السبب: " + reason);
+      document.getElementById("installBtn").style.display = "block";
+      document.getElementById("installBtn").textContent = "⚠️ افتح قائمة المتصفح ← تثبيت";
+      document.getElementById("installBtn").style.background = "#f39c12";
+    }
+  }, 6000);
+
+  // زر التثبيت
+  document.getElementById("installBtn").addEventListener("click", function(){
+    if(deferredPrompt){
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(function(r){
+        addLog("userChoice: " + r.outcome);
+        if(r.outcome === "accepted"){
+          localStorage.setItem("pwa_installed","yes");
+          addLog("✅ تم قبول التثبيت");
+        }
+        deferredPrompt = null;
+      });
+    } else {
+      addLog("لا يوجد prompt — افتح القائمة يدوياً");
+      alert("افتح قائمة المتصفح ⋮ واختر 'تثبيت التطبيق' أو 'إضافة للشاشة الرئيسية'");
+    }
+  });
+
+  addLog("الصفحة محملة — انتظار beforeinstallprompt...");
+</script>
+</body>
+</html>
