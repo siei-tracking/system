@@ -762,6 +762,12 @@
   /* ============================================================
    * تهيئة رئيسية
    * ============================================================ */
+  /* إظهار زر تفعيل الإشعارات دائماً */
+  function updateNotifBtnVisibility() {
+    const btn = document.getElementById("btnEnableNotifications");
+    if (btn) btn.style.display = "inline-flex";
+  }
+
   async function init() {
     if (initialized) return;
     initialized = true;
