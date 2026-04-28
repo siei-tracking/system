@@ -811,6 +811,7 @@
         "}";
       document.head.appendChild(is_);
     }
+  }
 
   /* ============================================================
    * ربط الأزرار (سواء من HTML أو من widget)
@@ -940,6 +941,5 @@
     window.addEventListener("load", function () { setTimeout(init, INIT_DELAY); });
   }
 
-}
 
 })();
