@@ -382,9 +382,6 @@
       if (isInstalled()) return;
       /* أظهر زر التثبيت */
       showInstallBtn("تثبيت التطبيق");
-      /* أظهر زر مسح البيانات أيضاً */
-      const btnClear = $("btnClearDataWidget");
-      if (btnClear) btnClear.style.display = "inline-flex";
     }, IS_SAMSUNG ? PROMPT_TIMEOUT : 5000);
 
     /* مراقبة standalone */
@@ -614,124 +611,81 @@
    * (فقط إذا لم تكن العناصر موجودة مسبقاً في HTML)
    * ============================================================ */
   function buildWidget() {
-    /* إذا الصفحة لديها notifIcon مسبقاً لا تنشئ widget جديد */
-    if ($("notifIcon")) {
-      /* لكن أضف headerBtns إذا لم تكن موجودة */
-      if (!$("headerBtns")) {
-        const header = document.querySelector(".company-header") || document.body;
-        if (header && getComputedStyle(header).position === "static") header.style.position = "relative";
-        const hb = document.createElement("div");
-        hb.id = "headerBtns";
-        hb.innerHTML =
-          '<button id="btnInstallApp" class="hbtn hbtn-install" type="button" style="display:none;">📲 تثبيت التطبيق</button>' +
-          '<button id="btnEnableNotifications" class="hbtn hbtn-notif" type="button" style="display:none;">🔔 تفعيل الإشعارات</button>';
-        header.appendChild(hb);
-      }
-      return;
-    }
-
-    const root = document.createElement("div");
-    root.id = "nwRoot";
-    root.innerHTML = `
-      <style>
-        #nwRoot{
-          position:absolute;top:14px;right:14px;
-          z-index:999999;font-family:'Cairo',Arial,sans-serif;direction:rtl;
-        }
-        .nw-row{ display:flex;gap:8px;align-items:center;flex-wrap:wrap; }
-
-        /* ── headerBtns: يسار الهيدر ── */
-        #headerBtns{
-          position:absolute;top:14px;left:14px;
-          z-index:999999;display:flex;flex-direction:row;
-          gap:10px;align-items:center;
-          font-family:'Cairo',Arial,sans-serif;
-        }
-        .hbtn{
-          border:none;border-radius:12px;padding:10px 14px;
-          font-family:'Cairo',Arial,sans-serif;font-weight:900;font-size:14px;
-          cursor:pointer;color:#fff;white-space:nowrap;
-          box-shadow:0 5px 14px rgba(0,0,0,.18);
-          transition:transform .15s,opacity .15s;
-          display:none;align-items:center;gap:6px;
-        }
-        .hbtn:hover{ transform:translateY(-1px);opacity:.92; }
-        .hbtn-install{ background:#27ae60; }
-        .hbtn-notif  { background:#1e3c72; }
-
-        @media(max-width:820px){
-          #headerBtns{
-            top:auto;bottom:12px;
-            left:50%;transform:translateX(-50%);
-            flex-direction:column;align-items:center;gap:8px;
-          }
-          .hbtn{ font-size:13px;padding:9px 18px;min-width:180px;justify-content:center; }
-        }
-        #notifIcon{
-          width:46px;height:46px;border-radius:50%;background:#fff;color:#223243;
-          box-shadow:0 5px 14px rgba(0,0,0,.22);display:flex;align-items:center;
-          justify-content:center;cursor:pointer;position:relative;font-size:20px;
-          user-select:none;transition:transform .15s,box-shadow .15s;
-        }
-        #notifIcon:hover{ transform:scale(1.08);box-shadow:0 7px 18px rgba(0,0,0,.28); }
-        #notifCount{
-          position:absolute;top:-5px;right:-5px;min-width:20px;height:20px;padding:0 4px;
-          border-radius:999px;background:#e74c3c;color:#fff;font-size:11px;font-weight:900;
-          display:none;align-items:center;justify-content:center;line-height:1;
-        }
-
-        #btnClearDataWidget{
-          border:none;border-radius:12px;padding:9px 12px;
-          font-family:'Cairo',Arial,sans-serif;font-weight:900;font-size:14px;
-          cursor:pointer;background:#e74c3c;color:#fff;white-space:nowrap;
-          box-shadow:0 5px 14px rgba(0,0,0,.18);transition:transform .15s,opacity .15s;
-          display:none;align-items:center;gap:6px;
-        }
-        #btnClearDataWidget:hover{ transform:translateY(-1px);opacity:.92; }
-        #notifBox{
-          display:none;position:absolute;top:56px;right:0;
-          width:310px;max-width:calc(100vw - 20px);max-height:360px;overflow:auto;
-          background:#fff !important;border-radius:14px;
-          box-shadow:0 14px 30px rgba(0,0,0,.22);border:1px solid #e6edf4;color:#223243 !important;
-        }
-        .nw-hdr{
-          padding:10px 14px;border-bottom:1px solid #eef2f6;
-          font-weight:900;font-size:14px;color:#223243;
-          display:flex;justify-content:space-between;align-items:center;
-        }
-        .nw-item{
-          padding:11px 14px;border-bottom:1px solid #eef2f6;cursor:pointer;
-          text-align:right;font-weight:800;font-size:14px;transition:background .12s;
-          color:#223243 !important;background:#fff !important;
-        }
-        .nw-item:hover{ background:#f6f8fb !important; }
-        .nw-item:last-child{ border-bottom:none; }
-        .nw-item div{ color:#223243 !important; }
-        .nw-unread{ border-right:3px solid #f5a623; }
-        .nw-dt{ font-size:11px;color:#758292 !important;margin-top:4px;font-weight:700; }
-        .nw-empty{ padding:20px;color:#758292 !important;font-weight:900;text-align:center;background:#fff; }
-        @media(max-width:700px){
-          #nwRoot{ top:10px;right:10px; }
-          #notifIcon{ width:40px;height:40px;font-size:17px; }
-          #notifBox{ width:260px;top:50px; }
-        }
-      </style>
-      <div class="nw-row">
-        <div id="notifIcon" title="الإشعارات" role="button" aria-label="الإشعارات">
-          🔔<span id="notifCount">0</span>
-        </div>
-
-        <button id="btnClearDataWidget" type="button">🗑️ مسح البيانات</button>
-      </div>
-      <div id="notifBox" role="dialog" aria-label="الإشعارات">
-        <div class="nw-hdr"><span>الإشعارات</span></div>
-        <div id="notifList"><div class="nw-empty">جاري التحميل...</div></div>
-      </div>
-    `;
-
     const header = document.querySelector(".company-header") || document.body;
     if (header && getComputedStyle(header).position === "static") header.style.position = "relative";
-    header.appendChild(root);
+
+    /* ── جرس الإشعارات — يمين الهيدر ── */
+    if (!$("notifIcon")) {
+      const right = document.createElement("div");
+      right.id = "nwRoot";
+      right.innerHTML =
+        '<style>' +
+        '#nwRoot{position:absolute;top:14px;right:14px;z-index:999999;font-family:"Cairo",Arial,sans-serif;direction:rtl;}' +
+        '#notifIcon{width:46px;height:46px;border-radius:50%;background:#fff;color:#223243;' +
+          'box-shadow:0 5px 14px rgba(0,0,0,.22);display:flex;align-items:center;' +
+          'justify-content:center;cursor:pointer;position:relative;font-size:20px;' +
+          'user-select:none;transition:transform .15s,box-shadow .15s;}' +
+        '#notifIcon:hover{transform:scale(1.08);box-shadow:0 7px 18px rgba(0,0,0,.28);}' +
+        '#notifCount{position:absolute;top:-5px;right:-5px;min-width:20px;height:20px;padding:0 4px;' +
+          'border-radius:999px;background:#e74c3c;color:#fff;font-size:11px;font-weight:900;' +
+          'display:none;align-items:center;justify-content:center;line-height:1;}' +
+        '#notifBox{display:none;position:absolute;top:56px;right:0;' +
+          'width:310px;max-width:calc(100vw - 20px);max-height:360px;overflow:auto;' +
+          'background:#fff !important;border-radius:14px;' +
+          'box-shadow:0 14px 30px rgba(0,0,0,.22);border:1px solid #e6edf4;color:#223243 !important;}' +
+        '.nw-hdr{padding:10px 14px;border-bottom:1px solid #eef2f6;font-weight:900;font-size:14px;color:#223243;}' +
+        '.nw-item{padding:11px 14px;border-bottom:1px solid #eef2f6;cursor:pointer;' +
+          'text-align:right;font-weight:800;font-size:14px;transition:background .12s;' +
+          'color:#223243 !important;background:#fff !important;}' +
+        '.nw-item:hover{background:#f6f8fb !important;}' +
+        '.nw-item:last-child{border-bottom:none;}' +
+        '.nw-item div{color:#223243 !important;}' +
+        '.nw-unread{border-right:3px solid #f5a623;}' +
+        '.nw-dt{font-size:11px;color:#758292 !important;margin-top:4px;font-weight:700;}' +
+        '.nw-empty{padding:20px;color:#758292 !important;font-weight:900;text-align:center;background:#fff;}' +
+        '@media(max-width:700px){' +
+          '#nwRoot{top:10px;right:10px;}' +
+          '#notifIcon{width:40px;height:40px;font-size:17px;}' +
+          '#notifBox{width:260px;top:50px;}' +
+        '}' +
+        '</style>' +
+        '<div id="notifIcon" title="الإشعارات" role="button" aria-label="الإشعارات">' +
+          '🔔<span id="notifCount">0</span>' +
+        '</div>' +
+        '<div id="notifBox" role="dialog" aria-label="الإشعارات">' +
+          '<div class="nw-hdr"><span>الإشعارات</span></div>' +
+          '<div id="notifList"><div class="nw-empty">جاري التحميل...</div></div>' +
+        '</div>';
+      header.appendChild(right);
+    }
+
+    /* ── أزرار تثبيت + إشعارات — يسار الهيدر ── */
+    if (!$("nwLeftBtns")) {
+      const left = document.createElement("div");
+      left.id = "nwLeftBtns";
+      left.innerHTML =
+        '<style>' +
+        '#nwLeftBtns{position:absolute;top:14px;left:14px;z-index:999999;' +
+          'display:flex;flex-direction:row;gap:10px;align-items:center;' +
+          'font-family:"Cairo",Arial,sans-serif;}' +
+        '.nw-lbtn{border:none;border-radius:12px;padding:9px 14px;' +
+          'font-family:"Cairo",Arial,sans-serif;font-weight:900;font-size:14px;' +
+          'cursor:pointer;color:#fff;white-space:nowrap;' +
+          'box-shadow:0 5px 14px rgba(0,0,0,.18);transition:transform .15s,opacity .15s;' +
+          'display:none;align-items:center;gap:6px;}' +
+        '.nw-lbtn:hover{transform:translateY(-1px);opacity:.92;}' +
+        '.nw-install{background:#27ae60;}' +
+        '.nw-notif{background:#1e3c72;}' +
+        '@media(max-width:820px){' +
+          '#nwLeftBtns{top:auto;bottom:12px;left:50%;transform:translateX(-50%);' +
+            'flex-direction:column;align-items:center;gap:8px;}' +
+          '.nw-lbtn{font-size:13px;padding:9px 18px;min-width:180px;justify-content:center;}' +
+        '}' +
+        '</style>' +
+        '<button id="btnInstallApp" class="nw-lbtn nw-install" type="button" style="display:none;">📲 تثبيت التطبيق</button>' +
+        '<button id="btnEnableNotifications" class="nw-lbtn nw-notif" type="button" style="display:none;">🔔 تفعيل الإشعارات</button>';
+      header.appendChild(left);
+    }
   }
 
   /* ============================================================
@@ -755,16 +709,6 @@
     if (btnInstall && !btnInstall._nwBound) {
       btnInstall.addEventListener("click", installApp);
       btnInstall._nwBound = true;
-    }
-    /* زر مسح البيانات — لجميع المستخدمين */
-    const btnClear = $("btnClearDataWidget");
-    if (btnClear && !btnClear._nwBound) {
-      btnClear.addEventListener("click", function(){
-        if(confirm("سيتم مسح بيانات المتصفح للموقع وإعادة التحميل.\nهل أنت متأكد؟")){
-          clearDataAndReload();
-        }
-      });
-      btnClear._nwBound = true;
     }
     /* إغلاق عند النقر خارج القائمة */
     if (!window._nwOutsideBound) {
