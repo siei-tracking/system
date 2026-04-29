@@ -613,7 +613,8 @@
         const id  = String(n.id || "").trim();
         const div = document.createElement("div");
         div.className = itemClass + (isRead ? "" : " " + unreadClass);
-        div.style.color = "#223243";
+        div.style.color      = "#223243";
+        div.style.background = isRead ? "#f0f0f0" : "#ffffff";
         div.innerHTML =
           '<div style="font-weight:900;color:#223243;">' + escapeHtml(n.message   || "إشعار جديد") + '</div>' +
           '<div class="' + dateClass + '" style="font-size:12px;color:#758292;margin-top:4px;">' + escapeHtml(n.createdAt || "") + '</div>';
@@ -706,8 +707,8 @@
         '.nw-hdr{padding:10px 14px;border-bottom:1px solid #eef2f6;font-weight:900;font-size:14px;color:#223243;}' +
         '.nw-item{padding:11px 14px;border-bottom:1px solid #eef2f6;cursor:pointer;' +
           'text-align:right;font-weight:800;font-size:14px;transition:background .12s;' +
-          'color:#223243 !important;background:#fff !important;}' +
-        '.nw-item:hover{background:#f6f8fb !important;}' +
+          'color:#223243 !important;}' +
+        '.nw-item:hover{filter:brightness(0.95);cursor:pointer;}' +
         '.nw-item:last-child{border-bottom:none;}' +
         '.nw-item div{color:#223243 !important;}' +
         '.nw-unread{border-right:3px solid #f5a623;}' +
