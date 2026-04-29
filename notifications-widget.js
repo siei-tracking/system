@@ -608,7 +608,9 @@
       let unread = 0;
       list.innerHTML = "";
       items.forEach(function (n) {
-        const isRead = String(n.isRead).toLowerCase() === "true";
+        const serverRead = String(n.isRead).toLowerCase() === "true";
+        const localRead  = !!localStorage.getItem("nw_read_" + String(n.id || "").trim());
+        const isRead     = serverRead || localRead;
         if (!isRead) unread++;
         const id  = String(n.id || "").trim();
         const div = document.createElement("div");
@@ -618,7 +620,15 @@
         div.innerHTML =
           '<div style="font-weight:900;color:#223243;">' + escapeHtml(n.message   || "إشعار جديد") + '</div>' +
           '<div class="' + dateClass + '" style="font-size:12px;color:#758292;margin-top:4px;">' + escapeHtml(n.createdAt || "") + '</div>';
-        div.addEventListener("click", function () { markRead(id); });
+        div.addEventListener("click", function () {
+          /* تغيير اللون فوراً بدون انتظار السيرفر */
+          this.style.background = "#f0f0f0";
+          this.classList.remove(unreadClass);
+          this.style.borderRight = "none";
+          /* حفظ حالة القراءة محلياً */
+          try { localStorage.setItem("nw_read_" + id, "1"); } catch(e){}
+          markRead(id);
+        });
         list.appendChild(div);
       });
 
@@ -627,6 +637,12 @@
 
       if (newItems.length > 0) showBrowserNotif("إشعار جديد", newItems[0].message || "لديك إشعار جديد");
 
+      /* مسح الـ cache المحلي للإشعارات المؤكدة من السيرفر */
+      items.forEach(function(n) {
+        if (String(n.isRead).toLowerCase() === "true") {
+          try { localStorage.removeItem("nw_read_" + String(n.id || "").trim()); } catch(e){}
+        }
+      });
       lastNotifIds = currentIds;
       notifReady   = true;
     } catch (e) { console.warn("loadNotifications:", e); }
