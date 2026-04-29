@@ -521,6 +521,7 @@
       if (res && res.ok) {
         localStorage.setItem("fcm_push_token", pushToken);
         callShowMsg("✅ تم تفعيل الإشعارات بنجاح", "ok");
+        updateBellShape();
         setupForeground();
       } else {
         callShowMsg((res && (res.message || res.error)) || "❌ فشل حفظ التوكن", "err");
@@ -732,15 +733,26 @@
         '}' +
         '#nwLeftBtns button{direction:rtl;}' +
         '#btnEnableNotifications{' +
-          'border:none;border-radius:10px;' +
-          'background:#1e3c72;color:#fff;' +
-          'font-size:11px;padding:6px 10px;' +
-          'font-family:"Cairo",Arial,sans-serif;font-weight:900;' +
-          'cursor:pointer;white-space:nowrap;' +
-          'box-shadow:0 3px 8px rgba(0,0,0,.22);' +
-          'transition:transform .15s,opacity .15s;' +
-          'display:none;align-items:center;gap:5px;' +
+          'border:none;border-radius:50%;' +
+          'background:none;' +
+          'padding:0;' +
+          'cursor:pointer;' +
+          'box-shadow:none;' +
+          'transition:transform .15s;' +
+          'display:none;align-items:center;justify-content:center;' +
+          'width:52px;height:52px;' +
         '}' +
+        '#btnEnableNotifications:hover{transform:scale(1.08);}' +
+        '#btnEnableNotifications:active{transform:scale(0.93);}' +
+        /* ── الجرس المفعّل ── */
+        '#bellActive{display:block;}' +
+        '#bellInactive{display:none;}' +
+        '#btnEnableNotifications.notif-on #bellActive{display:block;}' +
+        '#btnEnableNotifications.notif-on #bellInactive{display:none;}' +
+        '#btnEnableNotifications.notif-off #bellActive{display:none;}' +
+        '#btnEnableNotifications.notif-off #bellInactive{display:block;}' +
+        '@keyframes nwRing{0%,100%{transform:rotate(0)}10%{transform:rotate(-8deg)}20%{transform:rotate(8deg)}30%{transform:rotate(-5deg)}40%{transform:rotate(5deg)}50%{transform:rotate(0)}}' +
+        '#btnEnableNotifications.notif-on svg{animation:nwRing 2.8s ease-in-out infinite;}' +
         '#btnInstallApp{' +
           'border:none;border-radius:10px;' +
           'background:#27ae60;color:#fff;' +
@@ -765,7 +777,49 @@
           '}' +
         '}' +
         '</style>' +
-        '<button id="btnEnableNotifications" type="button" style="display:none;">🔔 تفعيل الإشعارات</button>' +
+        '<button id="btnEnableNotifications" type="button" class="notif-off" style="display:none;" title="تفعيل الإشعارات">' +
+        /* ── الجرس المفعّل: دائرة بيضاء + جرس أحمر ── */
+        '<svg id="bellActive" xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 52 52">' +
+          '<defs>' +
+            '<radialGradient id="bACirc" cx="40%" cy="35%" r="65%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#d8d8d8"/></radialGradient>' +
+            '<radialGradient id="bABell" cx="38%" cy="22%" r="65%"><stop offset="0%" stop-color="#e8405a"/><stop offset="45%" stop-color="#c0143c"/><stop offset="100%" stop-color="#7a0024"/></radialGradient>' +
+            '<filter id="bASh"><feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#7a0024" flood-opacity="0.5"/></filter>' +
+            '<filter id="bACiSh"><feDropShadow dx="0" dy="4" stdDeviation="5" flood-color="#000" flood-opacity="0.3"/></filter>' +
+          '</defs>' +
+          '<circle cx="26" cy="26" r="24" fill="url(#bACirc)" filter="url(#bACiSh)"/>' +
+          '<g filter="url(#bASh)">' +
+            '<ellipse cx="26" cy="12" rx="3.5" ry="4" fill="url(#bABell)"/>' +
+            '<path d="M26 15 C16 15 10 23 10 34 L10 40 Q10 43 13 43 L39 43 Q42 43 42 40 L42 34 C42 23 36 15 26 15Z" fill="url(#bABell)"/>' +
+            '<ellipse cx="22" cy="24" rx="4" ry="7" fill="rgba(255,255,255,0.15)" transform="rotate(-15,22,24)"/>' +
+            '<ellipse cx="26" cy="46" rx="4" ry="4.5" fill="url(#bABell)"/>' +
+            '<path d="M10 40 Q10 44 14 45 L38 45 Q42 44 42 40 L42 43 Q42 43 39 43 L13 43 Q10 43 10 40Z" fill="#8a001e"/>' +
+          '</g>' +
+        '</svg>' +
+        /* ── الجرس المعطّل: إطار ذهبي + جرس أحمر + شريط ذهبي ── */
+        '<svg id="bellInactive" xmlns="http://www.w3.org/2000/svg" width="52" height="52" viewBox="0 0 52 52" style="display:none;">' +
+          '<defs>' +
+            '<radialGradient id="bICirc" cx="40%" cy="35%" r="65%"><stop offset="0%" stop-color="#ffffff"/><stop offset="100%" stop-color="#ddd"/></radialGradient>' +
+            '<linearGradient id="bIRing" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f5d67a"/><stop offset="40%" stop-color="#c9a227"/><stop offset="70%" stop-color="#e8c555"/><stop offset="100%" stop-color="#a07820"/></linearGradient>' +
+            '<linearGradient id="bISlash" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#f0d060"/><stop offset="50%" stop-color="#c9a227"/><stop offset="100%" stop-color="#a07820"/></linearGradient>' +
+            '<radialGradient id="bIBell" cx="38%" cy="22%" r="65%"><stop offset="0%" stop-color="#e8405a"/><stop offset="45%" stop-color="#c0143c"/><stop offset="100%" stop-color="#7a0024"/></radialGradient>' +
+            '<filter id="bISh"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#7a0024" flood-opacity="0.45"/></filter>' +
+            '<filter id="bIRSh"><feDropShadow dx="1" dy="2" stdDeviation="2" flood-color="#5a3a00" flood-opacity="0.5"/></filter>' +
+            '<clipPath id="bIClip"><circle cx="26" cy="26" r="22"/></clipPath>' +
+          '</defs>' +
+          '<circle cx="26" cy="26" r="25" fill="url(#bIRing)"/>' +
+          '<circle cx="26" cy="26" r="22" fill="url(#bICirc)"/>' +
+          '<g filter="url(#bISh)">' +
+            '<ellipse cx="26" cy="12.5" rx="3" ry="3.5" fill="url(#bIBell)"/>' +
+            '<path d="M26 15.5 C17 15.5 11.5 23 11.5 33 L11.5 38.5 Q11.5 41 14 41 L38 41 Q40.5 41 40.5 38.5 L40.5 33 C40.5 23 35 15.5 26 15.5Z" fill="url(#bIBell)"/>' +
+            '<ellipse cx="26" cy="44" rx="3.5" ry="4" fill="url(#bIBell)"/>' +
+            '<path d="M11.5 38.5 Q11.5 42 15 43 L37 43 Q40.5 42 40.5 38.5 L40.5 41 Q40.5 41 38 41 L14 41 Q11.5 41 11.5 38.5Z" fill="#8a001e"/>' +
+          '</g>' +
+          '<g clip-path="url(#bIClip)" filter="url(#bIRSh)">' +
+            '<rect x="-5" y="22.5" width="62" height="9" rx="4.5" fill="url(#bISlash)" transform="rotate(-38,26,26)"/>' +
+            '<rect x="-5" y="23.5" width="62" height="2.5" rx="1.2" fill="rgba(255,250,200,0.35)" transform="rotate(-38,26,26)"/>' +
+          '</g>' +
+        '</svg>' +
+        '</button>' +
         '<button id="btnInstallApp" type="button" style="display:none;">📲 تثبيت التطبيق</button>';
       header.appendChild(left);
     }
@@ -845,10 +899,35 @@
   /* ============================================================
    * تهيئة رئيسية
    * ============================================================ */
-  /* إظهار زر تفعيل الإشعارات دائماً */
+  /* إظهار زر تفعيل الإشعارات دائماً وتحديث شكله */
   function updateNotifBtnVisibility() {
     const btn = document.getElementById("btnEnableNotifications");
-    if (btn) btn.style.display = "inline-flex";
+    if (!btn) return;
+    btn.style.display = "inline-flex";
+    /* تحديث شكل الجرس حسب حالة الإذن */
+    updateBellShape();
+  }
+
+  function updateBellShape() {
+    const btn = document.getElementById("btnEnableNotifications");
+    if (!btn) return;
+    const granted = ("Notification" in window) && Notification.permission === "granted"
+                    && !!localStorage.getItem("fcm_push_token");
+    const bellOn  = btn.querySelector("#bellActive");
+    const bellOff = btn.querySelector("#bellInactive");
+    if (granted) {
+      btn.classList.remove("notif-off");
+      btn.classList.add("notif-on");
+      btn.title = "الإشعارات مفعّلة — انقر للإعادة";
+      if (bellOn)  bellOn.style.display  = "block";
+      if (bellOff) bellOff.style.display = "none";
+    } else {
+      btn.classList.remove("notif-on");
+      btn.classList.add("notif-off");
+      btn.title = "تفعيل الإشعارات";
+      if (bellOn)  bellOn.style.display  = "none";
+      if (bellOff) bellOff.style.display = "block";
+    }
   }
 
   async function init() {
