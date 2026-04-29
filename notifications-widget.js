@@ -522,6 +522,7 @@
         localStorage.setItem("fcm_push_token", pushToken);
         callShowMsg("✅ تم تفعيل الإشعارات بنجاح", "ok");
         updateBellShape();
+        closeNotifBox();
         setupForeground();
       } else {
         callShowMsg((res && (res.message || res.error)) || "❌ فشل حفظ التوكن", "err");
@@ -672,22 +673,25 @@
     }
     if (getComputedStyle(header).position === "static") header.style.position = "relative";
 
-    /* ── جرس الإشعارات — يمين الهيدر ── */
+    /* ── جرس الإشعارات — يمين الهيدر (مزدوج الوظيفة) ── */
     if (!$("notifIcon")) {
       const right = document.createElement("div");
       right.id = "nwRoot";
       right.innerHTML =
         '<style>' +
         '#nwRoot{position:absolute;top:14px;right:14px;z-index:999999;font-family:"Cairo",Arial,sans-serif;direction:rtl;}' +
-        '#notifIcon{width:46px;height:46px;border-radius:50%;background:#fff;color:#223243;' +
-          'box-shadow:0 5px 14px rgba(0,0,0,.22);display:flex;align-items:center;' +
-          'justify-content:center;cursor:pointer;position:relative;font-size:20px;' +
-          'user-select:none;transition:transform .15s,box-shadow .15s;}' +
-        '#notifIcon:hover{transform:scale(1.08);box-shadow:0 7px 18px rgba(0,0,0,.28);}' +
+        '#notifIcon{width:52px;height:52px;border-radius:50%;background:none;border:none;padding:0;' +
+          'display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;' +
+          'user-select:none;transition:transform .15s;}' +
+        '#notifIcon:hover{transform:scale(1.08);}' +
+        '#notifIcon:active{transform:scale(0.93);}' +
+        '#notifIcon img{width:52px;height:52px;object-fit:contain;display:block;}' +
         '#notifCount{position:absolute;top:-5px;right:-5px;min-width:20px;height:20px;padding:0 4px;' +
           'border-radius:999px;background:#e74c3c;color:#fff;font-size:11px;font-weight:900;' +
           'display:none;align-items:center;justify-content:center;line-height:1;}' +
-        '#notifBox{display:none;position:absolute;top:56px;right:0;' +
+        '@keyframes nwRing{0%,100%{transform:rotate(0)}10%{transform:rotate(-8deg)}20%{transform:rotate(8deg)}30%{transform:rotate(-5deg)}40%{transform:rotate(5deg)}50%{transform:rotate(0)}}' +
+        '#notifIcon.notif-on img{animation:nwRing 2.8s ease-in-out infinite;}' +
+        '#notifBox{display:none;position:absolute;top:62px;right:0;' +
           'width:310px;max-width:calc(100vw - 20px);max-height:360px;overflow:auto;' +
           'background:#fff !important;border-radius:14px;' +
           'box-shadow:0 14px 30px rgba(0,0,0,.22);border:1px solid #e6edf4;color:#223243 !important;}' +
@@ -703,13 +707,15 @@
         '.nw-empty{padding:20px;color:#758292 !important;font-weight:900;text-align:center;background:#fff;}' +
         '@media(max-width:700px){' +
           '#nwRoot{top:10px;right:10px;}' +
-          '#notifIcon{width:40px;height:40px;font-size:17px;}' +
-          '#notifBox{width:260px;top:50px;}' +
+          '#notifIcon{width:44px;height:44px;}' +
+          '#notifIcon img{width:44px;height:44px;}' +
+          '#notifBox{width:260px;top:54px;}' +
         '}' +
         '</style>' +
-        '<div id="notifIcon" title="الإشعارات" role="button" aria-label="الإشعارات">' +
-          '🔔<span id="notifCount">0</span>' +
-        '</div>' +
+        '<button id="notifIcon" class="notif-off" title="تفعيل الإشعارات" role="button" aria-label="الإشعارات">' +
+          '<img id="nwBellImg" src="/system/bell-off.png" alt="الإشعارات" draggable="false"/>' +
+          '<span id="notifCount">0</span>' +
+        '</button>' +
         '<div id="notifBox" role="dialog" aria-label="الإشعارات">' +
           '<div class="nw-hdr"><span>الإشعارات</span></div>' +
           '<div id="notifList"><div class="nw-empty">جاري التحميل...</div></div>' +
@@ -790,18 +796,24 @@
    * ربط الأزرار (سواء من HTML أو من widget)
    * ============================================================ */
   function bindButtons() {
-    /* زر الجرس */
+    /* زر الجرس — مزدوج الوظيفة */
     const icon = $("notifIcon");
     if (icon && !icon._nwBound) {
-      icon.addEventListener("click", function (e) { e.stopPropagation(); toggleNotifBox(); });
+      icon.addEventListener("click", function (e) {
+        e.stopPropagation();
+        const granted = ("Notification" in window) && Notification.permission === "granted"
+                        && !!localStorage.getItem("fcm_push_token");
+        if (granted) {
+          toggleNotifBox();
+        } else {
+          enableNotifications();
+        }
+      });
       icon._nwBound = true;
     }
-    /* زر تفعيل الإشعارات */
+    /* زر تفعيل الإشعارات — مخفي (موحّد مع الجرس الأيمن) */
     const btnNotif = $("btnEnableNotifications");
-    if (btnNotif && !btnNotif._nwBound) {
-      btnNotif.addEventListener("click", enableNotifications);
-      btnNotif._nwBound = true;
-    }
+    if (btnNotif) btnNotif.style.display = "none";
     /* زر تثبيت التطبيق */
     const btnInstall = $("btnInstallApp");
     if (btnInstall && !btnInstall._nwBound) {
@@ -862,32 +874,29 @@
    * ============================================================ */
   /* إظهار زر تفعيل الإشعارات دائماً وتحديث شكله */
   function updateNotifBtnVisibility() {
-    const btn = document.getElementById("btnEnableNotifications");
-    if (!btn) return;
-    btn.style.display = "inline-flex";
-    /* تحديث شكل الجرس حسب حالة الإذن */
+    /* تحديث شكل الجرس الأيمن حسب حالة الإشعارات */
     updateBellShape();
+    /* إخفاء زر اليسار — الجرس الأيمن يقوم بكل شيء */
+    const btn = document.getElementById("btnEnableNotifications");
+    if (btn) btn.style.display = "none";
   }
 
   function updateBellShape() {
-    const btn = document.getElementById("btnEnableNotifications");
-    if (!btn) return;
+    const icon = document.getElementById("notifIcon");
+    const img  = document.getElementById("nwBellImg");
+    if (!icon || !img) return;
     const granted = ("Notification" in window) && Notification.permission === "granted"
                     && !!localStorage.getItem("fcm_push_token");
-    const bellOn  = btn.querySelector("#bellActive");
-    const bellOff = btn.querySelector("#bellInactive");
     if (granted) {
-      btn.classList.remove("notif-off");
-      btn.classList.add("notif-on");
-      btn.title = "الإشعارات مفعّلة — انقر للإعادة";
-      if (bellOn)  bellOn.style.display  = "block";
-      if (bellOff) bellOff.style.display = "none";
+      icon.classList.remove("notif-off");
+      icon.classList.add("notif-on");
+      icon.title = "الإشعارات";
+      img.src = "/system/bell-on.png";
     } else {
-      btn.classList.remove("notif-on");
-      btn.classList.add("notif-off");
-      btn.title = "تفعيل الإشعارات";
-      if (bellOn)  bellOn.style.display  = "none";
-      if (bellOff) bellOff.style.display = "block";
+      icon.classList.remove("notif-on");
+      icon.classList.add("notif-off");
+      icon.title = "تفعيل الإشعارات";
+      img.src = "/system/bell-off.png";
     }
   }
 
