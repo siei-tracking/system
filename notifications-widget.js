@@ -649,9 +649,16 @@
    * فتح / إغلاق قائمة الإشعارات
    * ============================================================ */
   function toggleNotifBox() {
-    const box = $("notifBox");
+    const box  = $("notifBox");
+    const icon = $("notifIcon");
     if (!box) return;
     const open = box.style.display !== "block";
+    if (open && icon) {
+      /* حساب موقع القائمة بناءً على موقع الجرس — فوق كل العناصر */
+      const r = icon.getBoundingClientRect();
+      box.style.top   = (r.bottom + 6) + "px";
+      box.style.right = (window.innerWidth - r.right) + "px";
+    }
     box.style.display = open ? "block" : "none";
     if (open) loadNotifications();
   }
@@ -692,9 +699,9 @@
           'display:none;align-items:center;justify-content:center;line-height:1;}' +
         '@keyframes nwRing{0%,100%{transform:rotate(0)}10%{transform:rotate(-8deg)}20%{transform:rotate(8deg)}30%{transform:rotate(-5deg)}40%{transform:rotate(5deg)}50%{transform:rotate(0)}}' +
         '#notifIcon.notif-on img{animation:nwRing 2.8s ease-in-out infinite;}' +
-        '#notifBox{display:none;position:absolute;top:62px;right:0;' +
+        '#notifBox{display:none;position:fixed;top:auto;right:14px;' +
           'width:310px;max-width:calc(100vw - 20px);max-height:360px;overflow:auto;' +
-          'background:#fff !important;border-radius:14px;' +
+          'background:#fff !important;border-radius:14px;z-index:9999999;' +
           'box-shadow:0 14px 30px rgba(0,0,0,.22);border:1px solid #e6edf4;color:#223243 !important;}' +
         '.nw-hdr{padding:10px 14px;border-bottom:1px solid #eef2f6;font-weight:900;font-size:14px;color:#223243;}' +
         '.nw-item{padding:11px 14px;border-bottom:1px solid #eef2f6;cursor:pointer;' +
