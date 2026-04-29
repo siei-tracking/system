@@ -721,6 +721,8 @@
           '<div id="notifList"><div class="nw-empty">جاري التحميل...</div></div>' +
         '</div>';
       header.appendChild(right);
+      /* تحديث شكل الجرس فور البناء */
+      setTimeout(updateBellShape, 50);
     }
 
     /* ── أزرار اليسار ── */
@@ -801,9 +803,8 @@
     if (icon && !icon._nwBound) {
       icon.addEventListener("click", function (e) {
         e.stopPropagation();
-        const granted = ("Notification" in window) && Notification.permission === "granted"
-                        && !!localStorage.getItem("fcm_push_token");
-        if (granted) {
+        /* نعتمد على class الجرس كمصدر الحقيقة الوحيد */
+        if (icon.classList.contains("notif-on")) {
           toggleNotifBox();
         } else {
           enableNotifications();
@@ -923,6 +924,9 @@
 
     /* تجديد الـ Token إذا كان الإذن مفعلاً مسبقاً */
     try { await autoRefreshToken(); } catch (e) {}
+
+    /* تحديث شكل الجرس بعد تجديد التوكن */
+    updateBellShape();
 
     /* تحميل الإشعارات + بدء الـ Polling */
     await loadNotifications();
