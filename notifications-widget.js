@@ -319,127 +319,162 @@
   }
 
   /* ============================================================
-   * PWA: هل التطبيق مثبت؟
+   * PWA — نظام تثبيت موحّد
+   * يدعم: Chrome · Edge · Safari iOS · Samsung · Firefox
    * ============================================================ */
+
+  /* ── مفتاح التخزين ── */
+  const PWA_INSTALLED_KEY = "pwa_installed_v2";
+
+  /* ── هل مثبت فعلاً؟ ── */
   function isInstalled() {
-    /* 1. مفتوح كـ PWA standalone (Install الحقيقي) */
+    /* 1. يعمل كـ standalone PWA */
     if (window.matchMedia("(display-mode: standalone)").matches) return true;
+    /* 2. iOS Safari standalone */
     if (window.navigator.standalone === true) return true;
-
-    /* 2. Samsung: لا تعتمد على localStorage — standalone فقط */
-    if (IS_SAMSUNG) return false;
-
-    /* 3. Chrome / Edge: استخدم localStorage */
-    return localStorage.getItem("pwa_installed") === "yes";
+    /* 3. مسجّل في localStorage (Chrome/Edge بعد التثبيت) */
+    if (localStorage.getItem(PWA_INSTALLED_KEY) === "yes") return true;
+    return false;
   }
 
-  /* ============================================================
-   * PWA: إظهار / إخفاء زر التثبيت
-   * ============================================================ */
+  /* ── إخفاء الزر ── */
   function hideInstallBtn() {
     const btn = $("btnInstallApp");
     if (btn) btn.style.display = "none";
   }
 
+  /* ── إظهار الزر ── */
   function showInstallBtn(label) {
+    /* لا تُظهره إذا كان مثبتاً مسبقاً */
     if (isInstalled()) { hideInstallBtn(); return; }
     const btn = $("btnInstallApp");
     if (!btn) return;
-    if (label) btn.textContent = label;
+    if (label) btn.textContent = "📲 " + label;
     btn.style.display = "inline-flex";
   }
 
-  /* ============================================================
-   * PWA: تثبيت التطبيق
-   * ============================================================ */
+  /* ── تسجيل التثبيت ── */
+  function markInstalled() {
+    localStorage.setItem(PWA_INSTALLED_KEY, "yes");
+    localStorage.setItem("pwa_installed", "yes"); /* توافق مع الكود القديم */
+    deferredPrompt = null;
+    hideInstallBtn();
+    callShowMsg("✅ تم تثبيت التطبيق بنجاح", "ok");
+  }
+
+  /* ── تنفيذ التثبيت عند الضغط ── */
   async function installApp() {
-    /* Chrome / Edge / Samsung */
+
+    /* ── Chrome / Edge / Samsung: لديهم beforeinstallprompt ── */
     if (deferredPrompt) {
       try {
         deferredPrompt.prompt();
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === "accepted") {
-          if (!IS_SAMSUNG) {
-            localStorage.setItem("pwa_installed", "yes");
-          }
-          hideInstallBtn();
-          callShowMsg("✅ تم تثبيت التطبيق بنجاح", "ok");
+        const choice = await deferredPrompt.userChoice;
+        if (choice.outcome === "accepted") {
+          markInstalled();
         } else {
           callShowMsg("ℹ️ تم إلغاء التثبيت", "warn");
+          deferredPrompt = null;
         }
       } catch (e) {
-        callShowMsg("⚠️ تعذر التثبيت: " + e.message, "warn");
+        callShowMsg("⚠️ تعذر التثبيت، حاول مجدداً", "warn");
+        deferredPrompt = null;
       }
-      deferredPrompt = null;
       return;
     }
-    /* iOS Safari */
-    if (IS_IOS && IS_SAFARI) { callShowMsg("📱 اضغط زر المشاركة ثم 'أضف إلى الشاشة الرئيسية'", "warn"); return; }
-    /* iOS غير Safari */
-    if (IS_IOS)  { callShowMsg("📱 افتح الصفحة في Safari ثم أضفها للشاشة الرئيسية", "warn"); return; }
-    /* Firefox */
-    if (IS_FF)   { callShowMsg("🦊 افتح القائمة ☰ ثم اختر 'تثبيت'", "warn"); return; }
-    /* Samsung Internet بدون prompt — أظهر تعليمات فقط */
+
+    /* ── iOS Safari: تعليمات يدوية ── */
+    if (IS_IOS && IS_SAFARI) {
+      callShowMsg("📱 اضغط زر المشاركة ↑ ثم اختر «إضافة إلى الشاشة الرئيسية»", "warn");
+      return;
+    }
+
+    /* ── iOS متصفحات أخرى (Chrome على iOS) ── */
+    if (IS_IOS) {
+      callShowMsg("📱 افتح الصفحة في Safari ثم اضغط المشاركة ↑ وأضفها للشاشة الرئيسية", "warn");
+      return;
+    }
+
+    /* ── Samsung Internet بدون prompt ── */
     if (IS_SAMSUNG) {
-      callShowMsg("📲 افتح قائمة ⋮ ثم 'إضافة صفحة إلى' ← 'الشاشة الرئيسية'", "warn");
+      callShowMsg("📲 افتح قائمة ⋮ ← «إضافة صفحة إلى» ← «الشاشة الرئيسية»", "warn");
       return;
     }
 
-    /* Chrome / Edge بدون prompt — إرشادات واضحة */
-    const isChrome = /chrome|chromium/i.test(UA) && !/edg/i.test(UA);
-    const isEdge   = /edg\//i.test(UA);
-    if (isChrome) {
-      callShowMsg("📲 افتح قائمة Chrome ⋮ ثم اختر 'تثبيت منصة تتبع أوامر العمل...'", "warn");
-      return;
-    }
-    if (isEdge) {
-      callShowMsg("📲 افتح قائمة Edge ••• ثم اختر 'التطبيقات' ← 'تثبيت هذا الموقع كتطبيق'", "warn");
+    /* ── Firefox ── */
+    if (IS_FF) {
+      callShowMsg("🦊 افتح القائمة ☰ ثم اختر «تثبيت»", "warn");
       return;
     }
 
-    /* بقية المتصفحات */
-    callShowMsg("ℹ️ افتح قائمة المتصفح واختر 'تثبيت التطبيق'", "warn");
+    /* ── Chrome بدون prompt (لم يصل بعد) ── */
+    if (/chrome|chromium/i.test(UA) && !/edg/i.test(UA)) {
+      callShowMsg("📲 افتح قائمة Chrome ⋮ ثم اختر «تثبيت التطبيق...»", "warn");
+      return;
+    }
+
+    /* ── Edge بدون prompt ── */
+    if (/edg\//i.test(UA)) {
+      callShowMsg("📲 افتح قائمة Edge ••• ← «التطبيقات» ← «تثبيت هذا الموقع كتطبيق»", "warn");
+      return;
+    }
+
+    callShowMsg("📲 افتح قائمة المتصفح واختر «تثبيت التطبيق»", "warn");
   }
 
-  /* ============================================================
-   * PWA: إعداد مستمعات التثبيت
-   * ============================================================ */
+  /* ── إعداد مستمعات PWA ── */
   function setupPWA() {
-    if (isInstalled()) { hideInstallBtn(); return; }
 
+    /* إذا مثبت مسبقاً — أخفِ الزر وانتهِ */
+    if (isInstalled()) {
+      hideInstallBtn();
+      return;
+    }
+
+    /* ── beforeinstallprompt: Chrome / Edge / Samsung ── */
     window.addEventListener("beforeinstallprompt", function (e) {
       e.preventDefault();
-      if (isInstalled()) { hideInstallBtn(); return; }
       deferredPrompt = e;
-      showInstallBtn("تثبيت التطبيق");
+      if (!isInstalled()) showInstallBtn("تثبيت التطبيق");
     });
 
+    /* ── appinstalled: يُطلق بعد التثبيت الناجح ── */
     window.addEventListener("appinstalled", function () {
-      deferredPrompt = null;
-      if (!IS_SAMSUNG) {
-        localStorage.setItem("pwa_installed", "yes");
-      }
-      hideInstallBtn();
-      callShowMsg("✅ تم تثبيت التطبيق", "ok");
+      markInstalled();
     });
 
-    /* iOS Safari: أظهر الزر دائماً */
-    if (IS_IOS && IS_SAFARI) { showInstallBtn("أضف للشاشة الرئيسية"); return; }
+    /* ── مراقبة التحوّل لـ standalone ── */
+    try {
+      window.matchMedia("(display-mode: standalone)").addEventListener("change", function (e) {
+        if (e.matches) markInstalled();
+      });
+    } catch(e) {}
 
-    /* Firefox: أظهر الزر دائماً */
-    if (IS_FF) { showInstallBtn("تثبيت التطبيق"); return; }
+    /* ── iOS Safari: أظهر الزر دائماً ── */
+    if (IS_IOS && IS_SAFARI) {
+      showInstallBtn("أضف للشاشة الرئيسية");
+      return;
+    }
 
-    /* انتظر وصول beforeinstallprompt */
-    setTimeout(function () {
-      if (isInstalled()) return;
-      /* أظهر زر التثبيت */
+    /* ── Firefox: أظهر الزر دائماً ── */
+    if (IS_FF) {
       showInstallBtn("تثبيت التطبيق");
-    }, IS_SAMSUNG ? PROMPT_TIMEOUT : 5000);
+      return;
+    }
 
-    /* مراقبة standalone */
-    window.matchMedia("(display-mode: standalone)").addEventListener("change", function (e) {
-      if (e.matches) { localStorage.setItem("pwa_installed", "yes"); hideInstallBtn(); }
-    });
+    /* ── iOS متصفحات أخرى ── */
+    if (IS_IOS) {
+      showInstallBtn("تثبيت التطبيق");
+      return;
+    }
+
+    /* ── Chrome / Edge / Samsung:
+         انتظر beforeinstallprompt أولاً (1.5 ثانية)
+         إذا لم يصل — أظهر الزر مع تعليمات يدوية ── */
+    setTimeout(function () {
+      if (isInstalled() || deferredPrompt) return;
+      showInstallBtn("تثبيت التطبيق");
+    }, 1500);
   }
 
   /* ============================================================
