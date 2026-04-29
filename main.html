@@ -952,8 +952,9 @@
    * ============================================================ */
   const API_BASE      = "https://script.google.com/macros/s/AKfycbzVtH-DAsWdDWeiMcfzKTorv-pfL3jB7dS_rUuzrtB795kWerOKHZSw4GhBexAD7IpO/exec";
   const PAGE_NAME     = "main";
-  const STORAGE_KEY   = "tracking_session_token_" + PAGE_NAME;
-  const STORAGE_KEY_G = "tracking_session_token";
+  const STORAGE_KEY      = "tracking_session_token_" + PAGE_NAME;
+  const STORAGE_KEY_G    = "tracking_session_token";
+  const SESSION_CACHE_KEY = "tracking_session_cache_" + PAGE_NAME;  /* cache بيانات الجلسة */
 
   /* ============================================================
    * STATE
@@ -988,7 +989,7 @@
   }
 
   function clearSessionToken(){
-    [STORAGE_KEY, STORAGE_KEY_G].forEach(function(k){
+    [STORAGE_KEY, STORAGE_KEY_G, SESSION_CACHE_KEY].forEach(function(k){
       sessionStorage.removeItem(k);
       localStorage.removeItem(k);
     });
@@ -1023,10 +1024,39 @@
   /* ============================================================
    * SESSION CHECK
    * ============================================================ */
+  function applySessionCache(cached){
+    CURRENT_USER_NAME = cached.userName || "مخول غير معروف";
+    CURRENT_USERNAME  = cached.username || "";
+    CURRENT_USER_ROLE = isAdminUser() ? "admin" : "user";
+    document.getElementById("welcomeUser").innerHTML =
+      '<i class="fas fa-user-shield"></i> المستخدم: ' + escapeHtml(CURRENT_USER_NAME);
+    document.getElementById("pageWrap").classList.add("show");
+    showAdminButton();
+  }
+
   async function ensurePageSession(){
     const token = getSessionToken();
     if(!token){ redirectToLogin(); return; }
 
+    /* ── محاولة عرض الصفحة فوراً من الـ cache ── */
+    let usedCache = false;
+    try {
+      const raw = sessionStorage.getItem(SESSION_CACHE_KEY) || localStorage.getItem(SESSION_CACHE_KEY);
+      if(raw){
+        const cached = JSON.parse(raw);
+        /* استخدم الـ cache إذا كان أقل من 10 دقائق */
+        if(cached && cached.token === token && (Date.now() - (cached.ts || 0)) < 600000){
+          applySessionCache(cached);
+          usedCache = true;
+          /* حمّل البيانات فوراً بدون انتظار checkSession */
+          loadSheetOptions().catch(function(){});
+          loadOpen().catch(function(){});
+          if(typeof window.loadNotifications === 'function') window.loadNotifications();
+        }
+      }
+    } catch(e){}
+
+    /* ── تحقق من السيرفر (في الخلفية إذا استخدمنا cache) ── */
     try{
       const result = await apiPost({ action:"checkSession", token, page:PAGE_NAME });
 
@@ -1038,20 +1068,42 @@
         CURRENT_USERNAME  = result.username || "";
         CURRENT_USER_ROLE = isAdminUser() ? "admin" : "user";
 
-        document.getElementById("welcomeUser").innerHTML =
-          '<i class="fas fa-user-shield"></i> المستخدم: ' + escapeHtml(CURRENT_USER_NAME);
+        /* حفظ بيانات الجلسة في الـ cache */
+        try {
+          const cacheData = JSON.stringify({ token, userName: CURRENT_USER_NAME, username: CURRENT_USERNAME, ts: Date.now() });
+          sessionStorage.setItem(SESSION_CACHE_KEY, cacheData);
+          localStorage.setItem(SESSION_CACHE_KEY, cacheData);
+        } catch(e){}
 
-        document.getElementById("pageWrap").classList.add("show");
-        showAdminButton();
-        await loadSheetOptions();
-        await loadOpen();
-        if(typeof window.loadNotifications === 'function') window.loadNotifications();
+        if(!usedCache){
+          /* أول مرة: عرض الصفحة وتحميل البيانات */
+          document.getElementById("welcomeUser").innerHTML =
+            '<i class="fas fa-user-shield"></i> المستخدم: ' + escapeHtml(CURRENT_USER_NAME);
+          document.getElementById("pageWrap").classList.add("show");
+          showAdminButton();
+          await loadSheetOptions();
+          await loadOpen();
+          if(typeof window.loadNotifications === 'function') window.loadNotifications();
+        } else {
+          /* تحديث اسم المستخدم إذا تغيّر */
+          document.getElementById("welcomeUser").innerHTML =
+            '<i class="fas fa-user-shield"></i> المستخدم: ' + escapeHtml(CURRENT_USER_NAME);
+          showAdminButton();
+        }
       } else {
-        redirectToLogin();
+        /* الجلسة منتهية — امسح الـ cache وحوّل للـ login */
+        try { sessionStorage.removeItem(SESSION_CACHE_KEY); localStorage.removeItem(SESSION_CACHE_KEY); } catch(e){}
+        if(!usedCache) redirectToLogin();
+        else { showMsg("⚠️ انتهت الجلسة، سيتم تسجيل الخروج...", "warn"); setTimeout(redirectToLogin, 2000); }
       }
     } catch(error){
-      showMsg("❌ تعذر التحقق من الجلسة", "err");
-      setTimeout(redirectToLogin, 900);
+      if(!usedCache){
+        showMsg("❌ تعذر التحقق من الجلسة", "err");
+        setTimeout(redirectToLogin, 900);
+      } else {
+        /* إذا عندنا cache نتجاهل خطأ الشبكة المؤقت */
+        console.warn("Session check failed (using cache):", error);
+      }
     }
   }
 
