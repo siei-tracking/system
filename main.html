@@ -851,6 +851,7 @@
 
     }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 
 <body>
@@ -1439,6 +1440,11 @@
       return;
     }
 
+    if(typeof XLSX === "undefined"){
+      showMsg("⚠️ مكتبة Excel غير محملة، حاول مجدداً", "warn");
+      return;
+    }
+
     const title = getExportTitleByMode(CURRENT_MODE);
     const now   = new Date();
     const stamp = now.getFullYear()
@@ -1447,46 +1453,66 @@
       + "_" + String(now.getHours()).padStart(2,"0")
       + "-" + String(now.getMinutes()).padStart(2,"0");
 
-    const rows = CURRENT_ITEMS.map(function(it){
-      return {
-        orderNo:    String(it.orderNo    || "").trim() || "—",
-        orderDate:  String(it.orderDate  || "").trim() || "—",
-        clientName: String(it.clientName || "").trim() || "—",
-        lastStage:  String(it.lastStage  || "").trim() || "—"
-      };
+    /* ── بناء بيانات الجدول ── */
+    const headers = ["رقم أمر العمل", "تاريخ أمر العمل", "الجهة المستفيدة", "آخر مرحلة"];
+    const dataRows = CURRENT_ITEMS.map(function(it){
+      return [
+        String(it.orderNo    || "").trim() || "—",
+        String(it.orderDate  || "").trim() || "—",
+        String(it.clientName || "").trim() || "—",
+        String(it.lastStage  || "").trim() || "—"
+      ];
     });
 
-    let html = '<html dir="rtl" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel">'
-      + '<head><meta charset="UTF-8"></head><body>'
-      + '<table border="1" style="border-collapse:collapse;font-family:Cairo,Arial,sans-serif;text-align:center;">'
-      + '<tr><th colspan="4" style="background:#223243;color:#fff;font-size:18px;padding:10px;">' + escapeHtml(title) + '</th></tr>'
-      + '<tr>'
-      + '<th style="background:#f5a623;color:#111;padding:8px;">رقم أمر العمل</th>'
-      + '<th style="background:#f5a623;color:#111;padding:8px;">تاريخ أمر العمل</th>'
-      + '<th style="background:#f5a623;color:#111;padding:8px;">الجهة المستفيدة</th>'
-      + '<th style="background:#f5a623;color:#111;padding:8px;">آخر مرحلة</th>'
-      + '</tr>';
+    /* ── إنشاء الـ Workbook ── */
+    const wb = XLSX.utils.book_new();
+    const wsData = [headers].concat(dataRows);
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
 
-    rows.forEach(function(r){
-      html += '<tr>'
-        + '<td style="padding:8px;">' + escapeHtml(r.orderNo)    + '</td>'
-        + '<td style="padding:8px;">' + escapeHtml(r.orderDate)  + '</td>'
-        + '<td style="padding:8px;">' + escapeHtml(r.clientName) + '</td>'
-        + '<td style="padding:8px;">' + escapeHtml(r.lastStage)  + '</td>'
-        + '</tr>';
-    });
+    /* ── عرض الأعمدة ── */
+    ws["!cols"] = [
+      { wch: 18 },
+      { wch: 18 },
+      { wch: 36 },
+      { wch: 22 }
+    ];
 
-    html += '</table></body></html>';
+    /* ── تنسيق الهيدر ── */
+    const headerStyle = {
+      font:      { bold: true, color: { rgb: "111111" } },
+      fill:      { fgColor: { rgb: "F5A623" } },
+      alignment: { horizontal: "center", vertical: "center", readingOrder: 2 },
+      border: {
+        top:    { style: "thin", color: { rgb: "CCCCCC" } },
+        bottom: { style: "thin", color: { rgb: "CCCCCC" } },
+        left:   { style: "thin", color: { rgb: "CCCCCC" } },
+        right:  { style: "thin", color: { rgb: "CCCCCC" } }
+      }
+    };
 
-    const blob = new Blob(['\ufeff' + html], { type:'application/vnd.ms-excel;charset=utf-8;' });
-    const url  = URL.createObjectURL(blob);
-    const a    = document.createElement("a");
-    a.href     = url;
-    a.download = title + "_" + stamp + ".xls";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    const dataStyle = {
+      alignment: { horizontal: "center", vertical: "center", readingOrder: 2 },
+      border: {
+        top:    { style: "thin", color: { rgb: "E0E0E0" } },
+        bottom: { style: "thin", color: { rgb: "E0E0E0" } },
+        left:   { style: "thin", color: { rgb: "E0E0E0" } },
+        right:  { style: "thin", color: { rgb: "E0E0E0" } }
+      }
+    };
+
+    const range = XLSX.utils.decode_range(ws["!ref"]);
+    for(var R = range.s.r; R <= range.e.r; R++){
+      for(var C = range.s.c; C <= range.e.c; C++){
+        const addr = XLSX.utils.encode_cell({ r: R, c: C });
+        if(!ws[addr]) continue;
+        ws[addr].s = (R === 0) ? headerStyle : dataStyle;
+      }
+    }
+
+    XLSX.utils.book_append_sheet(wb, ws, title.substring(0, 31));
+
+    /* ── تحميل الملف ── */
+    XLSX.writeFile(wb, title + "_" + stamp + ".xlsx");
     showMsg("✅ تم تصدير Excel بنجاح", "ok");
   }
 
