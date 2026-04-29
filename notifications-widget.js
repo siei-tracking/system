@@ -26,7 +26,7 @@
   const SW_PATH         = "/system/firebase-messaging-sw.js";
   const SW_SCOPE        = "/system/";
   const POLL_INTERVAL   = 30000;   /* 30 ثانية */
-  const INIT_DELAY      = 400;     /* انتظر حتى تنتهي الصفحة من التهيئة */
+  const INIT_DELAY      = 0;       /* لا تأخير — الـ widget يبدأ فوراً */
   const PWA_VERSION     = "v2";    /* غيّر هذا عند كل نشر جديد */
 
   /* ============================================================
@@ -577,6 +577,14 @@
       const sessionToken = callGetSessionToken();
       if (!sessionToken) return;
 
+      /* تحميل الإشعارات من الـ cache المحلي فوراً بينما نجلب من السيرفر */
+      const cachedCount = localStorage.getItem("nw_last_unread_count");
+      const countEl = $("notifCount");
+      if (cachedCount && countEl && countEl.textContent === "0") {
+        const n = parseInt(cachedCount);
+        if (n > 0) { countEl.textContent = n > 99 ? "99+" : String(n); countEl.style.display = "flex"; }
+      }
+
       const res   = await callApiPost({ action:"getNotifications", token:sessionToken, page:getPageName() });
       const list  = $("notifList");
       const count = $("notifCount");
@@ -634,6 +642,8 @@
 
       count.textContent   = unread > 99 ? "99+" : String(unread);
       count.style.display = unread > 0 ? "flex" : "none";
+      /* حفظ العدد في الـ cache للتحميل السريع */
+      try { localStorage.setItem("nw_last_unread_count", String(unread)); } catch(e){}
 
       if (newItems.length > 0) showBrowserNotif("إشعار جديد", newItems[0].message || "لديك إشعار جديد");
 
@@ -930,33 +940,31 @@
     if (initialized) return;
     initialized = true;
 
-    /* تنظيف عند تغيير الإصدار */
-    await cleanupOnVersionChange();
-
-    /* تنظيف تلقائي إذا اكتُشف مسح التطبيق */
-    await autoClearIfUninstalled();
-
-    /* بناء الـ Widget أو الربط بالعناصر الموجودة */
+    /* ── الخطوات الفورية: بناء الـ UI بدون أي انتظار ── */
     buildWidget();
     bindButtons();
     setupPWA();
-    /* تأخير لضمان اكتمال بناء الـ DOM */
-    setTimeout(updateNotifBtnVisibility, 100);
+    updateNotifBtnVisibility();
 
-    /* Firebase + Service Worker */
-    try { await ensureFirebase(); setupForeground(); } catch (e) { console.warn("Firebase:", e); }
-    try { await registerSW();     } catch (e) { console.warn("SW:", e); }
-
-    /* تجديد الـ Token إذا كان الإذن مفعلاً مسبقاً */
-    try { await autoRefreshToken(); } catch (e) {}
-
-    /* تحديث شكل الجرس بعد تجديد التوكن */
-    updateBellShape();
-
-    /* تحميل الإشعارات + بدء الـ Polling */
-    await loadNotifications();
+    /* ── تحميل الإشعارات فوراً في الخلفية ── */
+    loadNotifications().catch(function(){});
     if (pollTimer) clearInterval(pollTimer);
     pollTimer = setInterval(loadNotifications, POLL_INTERVAL);
+
+    /* ── المهام الثقيلة تعمل بالتوازي في الخلفية ── */
+    Promise.all([
+      cleanupOnVersionChange().catch(function(){}),
+      autoClearIfUninstalled().catch(function(){})
+    ]).then(function() {
+      /* Firebase + SW + Token بعد انتهاء التنظيف */
+      return ensureFirebase()
+        .then(function() { setupForeground(); return registerSW(); })
+        .catch(function(e) { console.warn("Firebase/SW:", e); });
+    }).then(function() {
+      return autoRefreshToken().catch(function(){});
+    }).then(function() {
+      updateBellShape();
+    }).catch(function(e) { console.warn("init background:", e); });
   }
 
   /* ============================================================
