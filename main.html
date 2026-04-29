@@ -659,105 +659,7 @@
       gap: 8px;
     }
 
-    /* ===== NOTIFICATIONS ===== */
-    #notifWrapper {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      z-index: 999;
-    }
 
-    #notifIcon {
-      background: white;
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      cursor: pointer;
-      box-shadow: 0 4px 14px rgba(0,0,0,.22);
-      position: relative;
-      color: #223243;
-      user-select: none;
-      transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-    }
-
-    #notifIcon:hover { transform: scale(1.08); box-shadow: 0 6px 18px rgba(0,0,0,.28); }
-
-    #notifCount {
-      position: absolute;
-      top: -5px;
-      right: -5px;
-      background: var(--danger);
-      color: white;
-      font-size: 12px;
-      padding: 3px 6px;
-      border-radius: 50%;
-      min-width: 22px;
-      text-align: center;
-      line-height: 1.2;
-      font-weight: 900;
-      display: none; /* يظهر فقط عند وجود إشعارات */
-    }
-
-    #notifCount.has-notif { display: block; }
-
-    #notifBox {
-      display: none;
-      position: absolute;
-      top: 60px;
-      right: 0;
-      width: 280px;
-      background: white;
-      border-radius: var(--radius-md);
-      box-shadow: 0 8px 24px rgba(0,0,0,.18);
-      max-height: 320px;
-      overflow: auto;
-      border: 1px solid var(--line);
-    }
-
-    .notif-header {
-      padding: 10px 14px;
-      border-bottom: 1px solid var(--line);
-      font-weight: 900;
-      font-size: 14px;
-      color: var(--primary);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    /* notif-item: كلاس الصفحة */
-    .notif-item {
-      padding: 10px 14px;
-      border-bottom: 1px solid #eee;
-      color: #223243;
-      text-align: right;
-      cursor: pointer;
-      transition: background var(--transition-fast);
-    }
-    .notif-item:hover  { background: #f8fafc; }
-    .notif-item:last-child { border-bottom: none; }
-    .notif-item.unread { border-right: 3px solid var(--accent); }
-
-    /* nw-item: كلاس الـ widget — نفس التصميم */
-    #notifBox .nw-item {
-      padding: 10px 14px;
-      border-bottom: 1px solid #eee;
-      color: #223243 !important;
-      text-align: right;
-      cursor: pointer;
-      transition: background var(--transition-fast);
-      background: #fff;
-      display: block;
-    }
-    #notifBox .nw-item div { color: #223243 !important; }
-    #notifBox .nw-item:hover { background: #f8fafc; }
-    #notifBox .nw-item:last-child { border-bottom: none; }
-    #notifBox .nw-item.nw-unread { border-right: 3px solid var(--accent); }
-    #notifBox .nw-dt { font-size: 12px; color: #758292 !important; margin-top: 4px; }
 
     /* ===== EXPORT MENU ===== */
     .export-menu-fixed {
@@ -929,9 +831,7 @@
 
       .export-menu-fixed { min-width: 180px; max-width: calc(100vw - 20px); }
 
-      #notifWrapper { top: 12px; right: 12px; }
-      #notifIcon    { width: 44px; height: 44px; font-size: 18px; }
-      #notifBox     { width: 240px; }
+
     }
 
     @media (max-width: 480px) {
@@ -948,7 +848,7 @@
       .stat           { width: 100%; flex: 1 1 100%; }
       .btn, #btnSearchDone, #btnExport { font-size: 15px; }
       #qDone, #sheetSelect, input, select { font-size: 15px; }
-      #notifBox       { width: 220px; }
+
     }
   </style>
 </head>
@@ -956,19 +856,6 @@
 <body>
   <div id="pageWrap">
     <header class="company-header">
-      <div id="notifWrapper">
-        <div id="notifIcon" title="الإشعارات" role="button" aria-label="فتح الإشعارات">
-          🔔 <span id="notifCount" aria-live="polite">0</span>
-        </div>
-        <div id="notifBox" role="dialog" aria-label="قائمة الإشعارات">
-          <div class="notif-header">
-            <span>الإشعارات</span>
-            <span id="notifUnreadLabel" style="font-size:12px;color:var(--muted);"></span>
-          </div>
-          <div id="notifList"></div>
-        </div>
-      </div>
-
       <img src="https://siei-tracking.github.io/system/logo.png" class="company-logo" alt="شعار الشركة" loading="lazy">
 
       <div class="header-text">

@@ -522,6 +522,7 @@
         localStorage.setItem("fcm_push_token", pushToken);
         callShowMsg("✅ تم تفعيل الإشعارات بنجاح", "ok");
         updateBellShape();
+
         closeNotifBox();
         setupForeground();
       } else {
