@@ -129,8 +129,13 @@
   async function doClear() {
     console.log("[PWA] تنظيف تلقائي...");
     saveWithKeepingSession(null, function() {
+      /* احتفظ بحالة التثبيت حتى لا يظهر الزر مجدداً بعد المسح */
+      const keepInstalled   = localStorage.getItem("pwa_installed_v2");
+      const keepInstalledOld = localStorage.getItem("pwa_installed");
       localStorage.clear();
       sessionStorage.clear();
+      if (keepInstalled)    localStorage.setItem("pwa_installed_v2", keepInstalled);
+      if (keepInstalledOld) localStorage.setItem("pwa_installed", keepInstalledOld);
     });
     try {
       if ("caches" in window) {
@@ -220,8 +225,10 @@
 
         /* 1. مسح مفاتيح PWA */
         localStorage.removeItem("pwa_installed");
+        localStorage.removeItem("pwa_installed_v2");
         localStorage.removeItem("app_installed");
         localStorage.removeItem("fcm_push_token");
+        localStorage.removeItem("pwa_last_standalone");
 
         /* 2. إلغاء تسجيل Service Workers القديمة */
         if ("serviceWorker" in navigator) {
@@ -328,12 +335,16 @@
 
   /* ── هل مثبت فعلاً؟ ── */
   function isInstalled() {
-    /* 1. يعمل كـ standalone PWA */
-    if (window.matchMedia("(display-mode: standalone)").matches) return true;
+    /* 1. يعمل كـ PWA (standalone أو minimal-ui أو fullscreen) */
+    if (window.matchMedia("(display-mode: standalone)").matches)  return true;
+    if (window.matchMedia("(display-mode: minimal-ui)").matches)  return true;
+    if (window.matchMedia("(display-mode: fullscreen)").matches)  return true;
     /* 2. iOS Safari standalone */
     if (window.navigator.standalone === true) return true;
-    /* 3. مسجّل في localStorage (Chrome/Edge بعد التثبيت) */
+    /* 3. مسجّل في localStorage (Chrome/Edge/Samsung بعد التثبيت) */
     if (localStorage.getItem(PWA_INSTALLED_KEY) === "yes") return true;
+    /* 4. توافق مع النسخ القديمة */
+    if (localStorage.getItem("pwa_installed") === "yes") return true;
     return false;
   }
 
@@ -356,7 +367,8 @@
   /* ── تسجيل التثبيت ── */
   function markInstalled() {
     localStorage.setItem(PWA_INSTALLED_KEY, "yes");
-    localStorage.setItem("pwa_installed", "yes"); /* توافق مع الكود القديم */
+    localStorage.setItem("pwa_installed", "yes");
+    localStorage.setItem("pwa_last_standalone", Date.now().toString());
     deferredPrompt = null;
     hideInstallBtn();
     callShowMsg("✅ تم تثبيت التطبيق بنجاح", "ok");
@@ -468,13 +480,13 @@
       return;
     }
 
-    /* ── Chrome / Edge / Samsung:
-         انتظر beforeinstallprompt أولاً (1.5 ثانية)
-         إذا لم يصل — أظهر الزر مع تعليمات يدوية ── */
+    /* ── Samsung: انتظر أطول لأن beforeinstallprompt يتأخر ──
+       ── Chrome/Edge: انتظر 1.5 ثانية ── */
+    const waitTime = IS_SAMSUNG ? Math.max(PROMPT_TIMEOUT, 4000) : 1500;
     setTimeout(function () {
       if (isInstalled() || deferredPrompt) return;
       showInstallBtn("تثبيت التطبيق");
-    }, 1500);
+    }, waitTime);
   }
 
   /* ============================================================
