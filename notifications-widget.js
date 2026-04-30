@@ -539,45 +539,67 @@
   }
 
   /* ============================================================
-   * تفعيل الإشعارات (زر تفعيل الإشعارات)
+   * تفعيل الإشعارات
+   * Chrome / Edge / Samsung → Firebase FCM (Push حقيقي)
+   * Safari / Firefox / iOS  → إذن فقط + Polling (بدون Push)
    * ============================================================ */
   async function enableNotifications() {
     try {
-      if (!hasPageFunctions())          { callShowMsg("❌ الصفحة غير جاهزة بعد، حاول مجدداً", "err"); return; }
-      if (!("Notification" in window))  { callShowMsg("❌ هذا المتصفح لا يدعم الإشعارات", "err"); return; }
+      if (!hasPageFunctions()) { callShowMsg("❌ الصفحة غير جاهزة بعد، حاول مجدداً", "err"); return; }
+      if (!("Notification" in window)) { callShowMsg("❌ هذا المتصفح لا يدعم الإشعارات", "err"); return; }
 
       const permission = await Notification.requestPermission();
-      if (permission !== "granted")     { callShowMsg("⚠️ لم يتم منح إذن الإشعارات", "warn"); return; }
-
-      await ensureFirebase();
-      const reg = swReg || await registerSW();
-
-      const pushToken = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
-      if (!pushToken) { callShowMsg("⚠️ تعذر إنشاء توكن الإشعارات", "warn"); return; }
+      if (permission !== "granted") { callShowMsg("⚠️ لم يتم منح إذن الإشعارات", "warn"); return; }
 
       const sessionToken = callGetSessionToken();
       if (!sessionToken) { callShowMsg("⚠️ الجلسة غير موجودة", "warn"); return; }
 
-      const res = await callApiPost({
-        action: "savePushToken",
-        token:  sessionToken,
-        page:   getPageName(),
-        pushToken
-      });
+      /* ══════════════════════════════════════════════════
+       * Chrome / Edge / Samsung — Firebase FCM
+       * Push حقيقي حتى لو الصفحة مغلقة
+       * ══════════════════════════════════════════════════ */
+      if (SUPPORTS_FCM) {
+        try {
+          await ensureFirebase();
+          const reg = swReg || await registerSW();
+          const pushToken = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
+          if (!pushToken) { callShowMsg("⚠️ تعذر إنشاء توكن الإشعارات", "warn"); return; }
 
-      if (res && res.ok) {
-        localStorage.setItem("fcm_push_token", pushToken);
-        callShowMsg("✅ تم تفعيل الإشعارات بنجاح", "ok");
-        updateBellShape();
-
-        closeNotifBox();
-        setupForeground();
-      } else {
-        callShowMsg((res && (res.message || res.error)) || "❌ فشل حفظ التوكن", "err");
+          const res = await callApiPost({ action:"savePushToken", token:sessionToken, page:getPageName(), pushToken });
+          if (res && res.ok) {
+            localStorage.setItem("fcm_push_token", pushToken);
+            callShowMsg("✅ تم تفعيل الإشعارات بنجاح", "ok");
+            updateBellShape();
+            closeNotifBox();
+            setupForeground();
+          } else {
+            callShowMsg((res && (res.message || res.error)) || "❌ فشل حفظ التوكن", "err");
+          }
+          return;
+        } catch (e) {
+          console.error("enableNotifications FCM:", e);
+          callShowMsg("❌ فشل تفعيل الإشعارات: " + (e.message || ""), "err");
+          return;
+        }
       }
+
+      /* ══════════════════════════════════════════════════
+       * Safari / Firefox / iOS — Polling فقط (بدون Push)
+       * الإشعارات تظهر فقط عند فتح الصفحة كل 30 ثانية
+       * ══════════════════════════════════════════════════ */
+      const res = await callApiPost({ action:"savePushToken", token:sessionToken, page:getPageName(), pushToken:"polling-only" });
+      if (res && res.ok) {
+        localStorage.setItem("fcm_push_token", "polling-only");
+        callShowMsg("✅ تم تفعيل الإشعارات (ستظهر عند فتح الصفحة)", "ok");
+        updateBellShape();
+        closeNotifBox();
+      } else {
+        callShowMsg((res && (res.message || res.error)) || "❌ فشل تفعيل الإشعارات", "err");
+      }
+
     } catch (e) {
       console.error("enableNotifications:", e);
-      callShowMsg("❌ فشل تفعيل الإشعارات", "err");
+      callShowMsg("❌ فشل تفعيل الإشعارات: " + (e.message || ""), "err");
     }
   }
 
@@ -587,11 +609,15 @@
   async function autoRefreshToken() {
     try {
       if (Notification.permission !== "granted") return;
+      if (!SUPPORTS_FCM) return; /* Safari/Firefox يعملان بـ polling فقط */
+      const storedToken = localStorage.getItem("fcm_push_token");
+      if (!storedToken || storedToken === "polling-only") return;
+
       if (!messaging) await ensureFirebase();
       const reg = swReg || await registerSW();
       const current = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
-      if (!current) return;
-      if (localStorage.getItem("fcm_push_token") === current) return;
+      if (!current || storedToken === current) return;
+
       const sessionToken = callGetSessionToken();
       if (!sessionToken) return;
       const res = await callApiPost({ action:"savePushToken", token:sessionToken, page:getPageName(), pushToken:current });
