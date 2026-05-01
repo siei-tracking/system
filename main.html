@@ -55,8 +55,18 @@
     }
 
     /* ===== PAGE WRAP ===== */
-    #pageWrap { display: none; }
-    #pageWrap.show { display: block; }
+    #pageWrap { display: block; }
+
+    /* إخفاء المحتوى الحساس فقط حتى تتحقق الجلسة */
+    #pageWrap.loading .panel,
+    #pageWrap.loading .wrap {
+      opacity: 0;
+      pointer-events: none;
+    }
+    #pageWrap .panel,
+    #pageWrap .wrap {
+      transition: opacity .3s ease;
+    }
 
 
 
@@ -857,7 +867,7 @@
 </head>
 
 <body>
-  <div id="pageWrap">
+  <div id="pageWrap" class="loading">
     <header class="company-header">
       <img src="https://siei-tracking.github.io/system/logo.png" class="company-logo" alt="شعار الشركة" loading="lazy">
 
@@ -1041,7 +1051,7 @@
     CURRENT_USER_ROLE = isAdminUser() ? "admin" : "user";
     document.getElementById("welcomeUser").innerHTML =
       '<i class="fas fa-user-shield"></i> المستخدم: ' + escapeHtml(CURRENT_USER_NAME);
-    document.getElementById("pageWrap").classList.add("show");
+    document.getElementById("pageWrap").classList.remove("loading");
     showAdminButton();
   }
 
@@ -1052,7 +1062,7 @@
     CURRENT_USER_ROLE = (result.role === "admin" || String(CURRENT_USERNAME).trim().toLowerCase() === "admin") ? "admin" : "user";
     document.getElementById("welcomeUser").innerHTML =
       '<i class="fas fa-user-shield"></i> المستخدم: ' + escapeHtml(CURRENT_USER_NAME);
-    document.getElementById("pageWrap").classList.add("show");
+    document.getElementById("pageWrap").classList.remove("loading");
     showAdminButton();
   }
 
