@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="watermark.css">
   <title>إدارة المستخدمين - منصة تتبع أوامر العمل</title>
   <link rel="icon" href="https://siei-tracking.github.io/system/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
@@ -627,7 +628,7 @@
 
         <div class="head-actions">
           <button class="btn btn-primary" id="btnBackMain" type="button">
-            <i class="fas fa-arrow-right"></i> العودة إلى main
+            <i class="fas fa-arrow-right"></i> العودة إلى الرئيسية
           </button>
         </div>
       </div>
@@ -1266,6 +1267,8 @@
     if(token){
       sessionStorage.setItem("tracking_session_token_main", token);
       sessionStorage.setItem("tracking_session_token", token);
+      localStorage.setItem("tracking_session_token_main", token);
+      localStorage.setItem("tracking_session_token", token);
     }
     window.location.href = "main.html";
   }
@@ -1305,6 +1308,5 @@
   });
 </script>
 
-  <script src="/system/notifications-widget.js" defer></script>
 </body>
 </html>
