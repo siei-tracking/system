@@ -726,10 +726,44 @@
   /* ============================================================
    * فتح / إغلاق قائمة الإشعارات
    * ============================================================ */
+  /* تتبع موقع القائمة أثناء التمرير */
+  let _nwScrollFn = null;
+
+  function _positionNotifBox() {
+    const box  = $("notifBox");
+    const icon = $("notifIcon");
+    if (!box || !icon || box.style.display !== "block") return;
+    const r = icon.getBoundingClientRect();
+    box.style.top   = (r.bottom + 6) + "px";
+    box.style.right = Math.max(4, window.innerWidth - r.right) + "px";
+  }
+
   function toggleNotifBox() {
     const box  = $("notifBox");
+    const icon = $("notifIcon");
     if (!box) return;
     const open = box.style.display !== "block";
+
+    if (open && icon) {
+      const r = icon.getBoundingClientRect();
+      box.style.top   = (r.bottom + 6) + "px";
+      box.style.right = Math.max(4, window.innerWidth - r.right) + "px";
+
+      /* تثبيت الموقع أثناء التمرير */
+      if (!_nwScrollFn) {
+        _nwScrollFn = _positionNotifBox;
+        window.addEventListener("scroll", _nwScrollFn, { passive: true });
+        window.addEventListener("resize", _nwScrollFn, { passive: true });
+      }
+    } else {
+      /* عند الإغلاق: إزالة المستمع */
+      if (_nwScrollFn) {
+        window.removeEventListener("scroll", _nwScrollFn);
+        window.removeEventListener("resize", _nwScrollFn);
+        _nwScrollFn = null;
+      }
+    }
+
     box.style.display = open ? "block" : "none";
     if (open) loadNotifications();
   }
@@ -737,6 +771,11 @@
   function closeNotifBox() {
     const box = $("notifBox");
     if (box) box.style.display = "none";
+    if (_nwScrollFn) {
+      window.removeEventListener("scroll", _nwScrollFn);
+      window.removeEventListener("resize", _nwScrollFn);
+      _nwScrollFn = null;
+    }
   }
 
   /* ============================================================
@@ -770,7 +809,7 @@
           'display:none;align-items:center;justify-content:center;line-height:1;}' +
         '@keyframes nwRing{0%,100%{transform:rotate(0)}10%{transform:rotate(-8deg)}20%{transform:rotate(8deg)}30%{transform:rotate(-5deg)}40%{transform:rotate(5deg)}50%{transform:rotate(0)}}' +
         '#notifIcon.notif-on img{animation:nwRing 2.8s ease-in-out infinite;}' +
-        '#notifBox{display:none;position:absolute;top:68px;right:14px;' +
+        '#notifBox{display:none;position:fixed;top:auto;right:14px;' +
           'width:310px;max-width:calc(100vw - 20px);max-height:360px;overflow:auto;' +
           'background:#fff !important;border-radius:14px;z-index:9999999;' +
           'box-shadow:0 14px 30px rgba(0,0,0,.22);border:1px solid #e6edf4;color:#223243 !important;}' +
@@ -788,7 +827,7 @@
           '#nwRoot{top:10px;right:10px;}' +
           '#notifIcon{width:44px;height:44px;}' +
           '#notifIcon img{width:44px;height:44px;}' +
-          '#notifBox{width:calc(100vw - 28px);right:10px;top:58px;}' +
+          '#notifBox{width:260px;top:54px;}' +
         '}' +
         '</style>' +
         '<button id="notifIcon" class="notif-off" title="تفعيل الإشعارات" role="button" aria-label="الإشعارات">' +
