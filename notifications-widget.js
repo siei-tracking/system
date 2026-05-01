@@ -745,18 +745,13 @@
     const open = box.style.display !== "block";
 
     if (open && icon) {
-      const r = icon.getBoundingClientRect();
-      box.style.top   = (r.bottom + 6) + "px";
-      box.style.right = Math.max(4, window.innerWidth - r.right) + "px";
-
-      /* تثبيت الموقع أثناء التمرير */
+      _positionNotifBox();
       if (!_nwScrollFn) {
         _nwScrollFn = _positionNotifBox;
         window.addEventListener("scroll", _nwScrollFn, { passive: true });
         window.addEventListener("resize", _nwScrollFn, { passive: true });
       }
     } else {
-      /* عند الإغلاق: إزالة المستمع */
       if (_nwScrollFn) {
         window.removeEventListener("scroll", _nwScrollFn);
         window.removeEventListener("resize", _nwScrollFn);
@@ -809,10 +804,11 @@
           'display:none;align-items:center;justify-content:center;line-height:1;}' +
         '@keyframes nwRing{0%,100%{transform:rotate(0)}10%{transform:rotate(-8deg)}20%{transform:rotate(8deg)}30%{transform:rotate(-5deg)}40%{transform:rotate(5deg)}50%{transform:rotate(0)}}' +
         '#notifIcon.notif-on img{animation:nwRing 2.8s ease-in-out infinite;}' +
-        '#notifBox{display:none;position:fixed;top:auto;right:14px;' +
+        /* ─── الأنماط الخاصة بـ notifBox — ملحق بالـ body مباشرة ─── */
+        '#notifBox{display:none;position:fixed;z-index:2147483647;' +
           'width:310px;max-width:calc(100vw - 20px);max-height:360px;overflow:auto;' +
-          'background:#fff !important;border-radius:14px;z-index:9999999;' +
-          'box-shadow:0 14px 30px rgba(0,0,0,.22);border:1px solid #e6edf4;color:#223243 !important;}' +
+          'background:#fff !important;border-radius:14px;' +
+          'box-shadow:0 14px 30px rgba(0,0,0,.30);border:1px solid #e6edf4;color:#223243 !important;}' +
         '.nw-hdr{padding:10px 14px;border-bottom:1px solid #eef2f6;font-weight:900;font-size:14px;color:#223243;}' +
         '.nw-item{padding:11px 14px;border-bottom:1px solid #eef2f6;cursor:pointer;' +
           'text-align:right;font-weight:800;font-size:14px;transition:background .12s;' +
@@ -827,18 +823,25 @@
           '#nwRoot{top:10px;right:10px;}' +
           '#notifIcon{width:44px;height:44px;}' +
           '#notifIcon img{width:44px;height:44px;}' +
-          '#notifBox{width:260px;top:54px;}' +
+          '#notifBox{width:calc(100vw - 20px);}' +
         '}' +
         '</style>' +
         '<button id="notifIcon" class="notif-off" title="تفعيل الإشعارات" role="button" aria-label="الإشعارات">' +
           '<img id="nwBellImg" src="/system/bell-off.png" alt="الإشعارات" draggable="false"/>' +
           '<span id="notifCount">0</span>' +
-        '</button>' +
-        '<div id="notifBox" role="dialog" aria-label="الإشعارات">' +
-          '<div class="nw-hdr"><span>الإشعارات</span></div>' +
-          '<div id="notifList"><div class="nw-empty">جاري التحميل...</div></div>' +
-        '</div>';
+        '</button>';
       header.appendChild(right);
+
+      /* ── notifBox يُلحق بـ body مباشرة — خارج أي overflow:hidden ── */
+      const box = document.createElement("div");
+      box.id = "notifBox";
+      box.setAttribute("role", "dialog");
+      box.setAttribute("aria-label", "الإشعارات");
+      box.innerHTML =
+        '<div class="nw-hdr"><span>الإشعارات</span></div>' +
+        '<div id="notifList"><div class="nw-empty">جاري التحميل...</div></div>';
+      document.body.appendChild(box);
+
       /* تحديث شكل الجرس فور البناء */
       setTimeout(updateBellShape, 50);
     }
