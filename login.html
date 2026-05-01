@@ -3,13 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>تسجيل الدخول</title>
-
+  <title>تسجيل الدخول - منصة تتبع أوامر العمل</title>
   <link rel="icon" href="https://siei-tracking.github.io/system/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
 
   <style>
-    *{ box-sizing:border-box; }
+    :root{
+      --primary:#223243;
+      --accent:#f5a623;
+      --line:#ccd5dd;
+      --ok:#1e8449;
+      --danger:#c0392b;
+      --transition-fast:.15s ease;
+      --radius-md:14px;
+    }
+
+    *, *::before, *::after{ box-sizing:border-box; }
+
+    html, body{
+      width:100%;
+      overflow-x:hidden;
+    }
 
     body{
       margin:0;
@@ -20,87 +34,159 @@
       justify-content:center;
       padding:16px;
       background:
-        linear-gradient(rgba(34,50,67,.3), rgba(34,50,67,.3)),
+        linear-gradient(rgba(34,50,67,.45), rgba(34,50,67,.45)),
         url('https://siei-tracking.github.io/system/company.jpg');
       background-size:cover;
       background-position:center;
       background-repeat:no-repeat;
     }
 
+    /* ===== BOX ===== */
     .box{
       width:100%;
-      max-width:380px;
-      background:rgba(255,255,255,.95);
-      border-radius:20px;
-      padding:30px 24px;
+      max-width:400px;
+      background:rgba(255,255,255,.97);
+      border-radius:24px;
+      padding:34px 28px 28px;
       text-align:center;
-      box-shadow:0 20px 60px rgba(0,0,0,.28);
-      backdrop-filter: blur(6px);
+      box-shadow:
+        0 24px 64px rgba(0,0,0,.32),
+        0 8px 20px rgba(0,0,0,.14);
+      backdrop-filter:blur(8px);
+      -webkit-backdrop-filter:blur(8px);
+      animation:boxIn .4s ease;
     }
 
+    @keyframes boxIn{
+      from{ transform:translateY(18px); opacity:0; }
+      to  { transform:translateY(0);    opacity:1; }
+    }
+
+    /* ===== LOGO ===== */
     .logo{
-      width:92px;
-      height:92px;
+      width:96px;
+      height:96px;
       object-fit:cover;
       border-radius:50%;
       border:3px solid #fff;
       box-shadow:0 8px 24px rgba(0,0,0,.22);
-      margin:0 auto 14px;
+      margin:0 auto 16px;
       display:block;
       background:#fff;
     }
 
+    /* ===== TITLES ===== */
     h2{
       margin:0 0 6px;
-      color:#223243;
+      color:var(--primary);
       font-size:24px;
       font-weight:900;
     }
 
     .sub{
-      margin:0 0 18px;
+      margin:0 0 22px;
       color:#6b7785;
       font-size:14px;
       font-weight:700;
-      line-height:1.7;
+      line-height:1.8;
+    }
+
+    /* ===== INPUTS ===== */
+    .input-wrap{
+      position:relative;
+      margin-bottom:14px;
+    }
+
+    .input-wrap .icon{
+      position:absolute;
+      right:14px;
+      top:50%;
+      transform:translateY(-50%);
+      color:#9aa6b2;
+      font-size:16px;
+      pointer-events:none;
     }
 
     input{
       width:100%;
-      padding:13px 14px;
-      border-radius:12px;
-      border:1px solid #ccd5dd;
-      margin-bottom:14px;
-      font-size:16px;
+      padding:13px 40px 13px 14px;
+      border-radius:var(--radius-md);
+      border:1.5px solid var(--line);
+      font-size:15px;
       font-family:'Cairo',sans-serif;
+      font-weight:800;
       outline:none;
-      text-align:center;
+      text-align:right;
       background:#fff;
+      color:#1f2d3a;
+      transition:border-color var(--transition-fast), box-shadow var(--transition-fast);
+      min-height:48px;
+      -webkit-tap-highlight-color:transparent;
     }
 
     input:focus{
-      border-color:#223243;
-      box-shadow:0 0 0 4px rgba(34,50,67,.08);
+      border-color:var(--primary);
+      box-shadow:0 0 0 4px rgba(34,50,67,.10);
     }
 
+    input::placeholder{
+      color:#9aa6b2;
+      font-weight:700;
+    }
+
+    /* ===== TOGGLE PASSWORD ===== */
+    .toggle-pass{
+      position:absolute;
+      left:12px;
+      top:50%;
+      transform:translateY(-50%);
+      background:none;
+      border:none;
+      cursor:pointer;
+      color:#9aa6b2;
+      font-size:16px;
+      padding:4px;
+      display:flex;
+      align-items:center;
+      width:auto;
+      border-radius:6px;
+      transition:color var(--transition-fast);
+    }
+
+    .toggle-pass:hover{ color:var(--primary); transform:translateY(-50%); box-shadow:none; }
+
+    /* ===== BUTTON ===== */
     button{
       width:100%;
-      padding:13px;
+      padding:14px;
       border:none;
-      background:linear-gradient(135deg,#223243,#2f4356);
+      background:linear-gradient(135deg, var(--primary), #2f4356);
       color:#fff;
-      border-radius:12px;
+      border-radius:var(--radius-md);
       font-size:16px;
       font-family:'Cairo',sans-serif;
       font-weight:900;
       cursor:pointer;
-      transition:.2s;
+      transition:transform var(--transition-fast), box-shadow var(--transition-fast), opacity var(--transition-fast);
+      position:relative;
+      overflow:hidden;
+      min-height:50px;
+      touch-action:manipulation;
+      -webkit-tap-highlight-color:transparent;
     }
 
-    button:hover{
-      transform:translateY(-1px);
-      box-shadow:0 10px 20px rgba(0,0,0,.18);
+    button::before{
+      content:"";
+      position:absolute;
+      top:0; right:-120%;
+      width:120%; height:100%;
+      background:linear-gradient(120deg, transparent 20%, rgba(255,255,255,.18) 50%, transparent 80%);
+      transition:.65s;
     }
+
+    button:hover::before{ right:120%; }
+    button:hover{ transform:translateY(-1px); box-shadow:0 10px 20px rgba(0,0,0,.2); }
+    button:active{ transform:translateY(0); opacity:.92; }
 
     button:disabled{
       opacity:.6;
@@ -109,165 +195,203 @@
       box-shadow:none;
     }
 
+    /* ===== MESSAGE ===== */
     #msg{
-      margin-top:12px;
-      min-height:24px;
+      margin-top:14px;
+      min-height:22px;
       font-size:14px;
       font-weight:800;
-      color:#c0392b;
+      color:var(--danger);
+      transition:color var(--transition-fast);
     }
 
-    .ok{
-      color:#1e8449 !important;
+    #msg.ok{ color:var(--ok); }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width:420px){
+      .box{ padding:26px 18px 22px; border-radius:20px; }
+      .logo{ width:82px; height:82px; }
+      h2{ font-size:21px; }
     }
   </style>
 </head>
 <body>
 
   <div class="box">
-    <img src="https://siei-tracking.github.io/system/logo.png" class="logo" alt="Logo">
+    <img src="https://siei-tracking.github.io/system/logo.png" class="logo" alt="شعار الشركة">
 
     <h2>تسجيل الدخول</h2>
 
     <div class="sub">
-      منصة تتبع اوامر العمل<br>
+      منصة تتبع أوامر العمل<br>
       الشركة العامة للفحص والتأهيل الهندسي
     </div>
 
-    <input type="text" id="username" placeholder="أدخل اسم المستخدم" autocomplete="off">
-    <input type="password" id="pass" placeholder="أدخل كلمة المرور" autocomplete="off">
+    <div class="input-wrap">
+      <span class="icon"><i class="fas fa-user"></i></span>
+      <input type="text" id="username" placeholder="اسم المستخدم" autocomplete="username">
+    </div>
 
-    <button id="btnLogin" type="button">دخول</button>
+    <div class="input-wrap">
+      <span class="icon"><i class="fas fa-lock"></i></span>
+      <input type="password" id="pass" placeholder="كلمة المرور" autocomplete="current-password">
+      <button type="button" class="toggle-pass" id="togglePass" aria-label="إظهار/إخفاء كلمة المرور">
+        <i class="fas fa-eye" id="eyeIcon"></i>
+      </button>
+    </div>
 
-    <div id="msg"></div>
+    <button id="btnLogin" type="button">
+      <span id="btnText">دخول</span>
+    </button>
+
+    <div id="msg" role="alert" aria-live="polite"></div>
   </div>
 
+  <!-- Font Awesome للأيقونات -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
 <script>
-const API_BASE = "https://script.google.com/macros/s/AKfycbzd_W_zuOMA7wrMRrtn9etfu7SrJlOhAG3lk0NZS76dVYJWIKzrPPQoYWxQF9H8vxEe/exec";
+  const API_BASE = "https://script.google.com/macros/s/AKfycbwtWELrbvCU6O-GToUfyVUEYR5RYyjBEFpTMwhkP7imoji_ApvgJwaMGKs-zQed-5nb/exec";
 
-const params = new URLSearchParams(window.location.search);
-const PAGE = String(params.get("p") || "main").trim().toLowerCase();
+  const params = new URLSearchParams(window.location.search);
+  const PAGE   = String(params.get("p") || "main").trim().toLowerCase();
 
-const STORAGE_KEY_PAGE = "tracking_session_token_" + PAGE;
-const STORAGE_KEY_GLOBAL = "tracking_session_token";
+  /* ── تأمين: لا نقبل pages تحتوي على أحرف غير مسموحة ── */
+  const ALLOWED_PAGE = /^[a-z0-9_-]+$/.test(PAGE) ? PAGE : "main";
 
-function setMsg(text, isOk = false){
-  const el = document.getElementById("msg");
-  el.textContent = text || "";
-  el.className = isOk ? "ok" : "";
-}
+  const STORAGE_KEY_PAGE   = "tracking_session_token_" + ALLOWED_PAGE;
+  const STORAGE_KEY_GLOBAL = "tracking_session_token";
 
-function clearAllSessionTokens(){
-  try{
-    Object.keys(sessionStorage).forEach(function(key){
-      if(key.indexOf("tracking_session_token") === 0){
-        sessionStorage.removeItem(key);
-      }
-    });
+  let isLoggingIn = false;  /* debounce: منع طلبات متوازية */
 
-    Object.keys(localStorage).forEach(function(key){
-      if(key.indexOf("tracking_session_token") === 0){
-        localStorage.removeItem(key);
-      }
-    });
-  }catch(err){}
-}
-
-function saveSessionAndGo(token){
-  const safeToken = String(token || "").trim();
-
-  if(!safeToken){
-    setMsg("لم يتم استلام رمز الجلسة !");
-    return;
+  /* ============================================================
+   * UI HELPERS
+   * ============================================================ */
+  function setMsg(text, isOk){
+    const el = document.getElementById("msg");
+    el.textContent = text || "";
+    el.className   = isOk ? "ok" : "";
   }
 
-  clearAllSessionTokens();
-
-  // تخزين مؤقت
-  sessionStorage.setItem(STORAGE_KEY_PAGE, safeToken);
-  sessionStorage.setItem(STORAGE_KEY_GLOBAL, safeToken);
-
-  // تخزين دائم (المهم 👇)
-  localStorage.setItem(STORAGE_KEY_PAGE, safeToken);
-  localStorage.setItem(STORAGE_KEY_GLOBAL, safeToken);
-
-  window.location.href = PAGE + ".html";
-}
-
-
-async function login(){
-  const usernameEl = document.getElementById("username");
-  const passEl = document.getElementById("pass");
-  const btn = document.getElementById("btnLogin");
-
-  const username = usernameEl.value.trim();
-  const pass = passEl.value.trim();
-
-  if(!username){
-    setMsg("⚠️ أدخل اسم المستخدم");
-    usernameEl.focus();
-    return;
+  function setBtnLoading(on){
+    const btn  = document.getElementById("btnLogin");
+    const span = document.getElementById("btnText");
+    btn.disabled  = on;
+    span.textContent = on ? "جاري التحقق..." : "دخول";
   }
 
-  if(!pass){
-    setMsg("⚠️ أدخل كلمة المرور");
-    passEl.focus();
-    return;
-  }
-
-  btn.disabled = true;
-  setMsg("جاري التحقق...", true);
-
-  try{
-    const res = await fetch(API_BASE, {
-      method: "POST",
-      headers: {
-        "Content-Type": "text/plain;charset=utf-8"
-      },
-      body: JSON.stringify({
-        action: "login",
-        username: username,
-        password: pass,
-        page: PAGE
-      })
-    });
-
-    const text = await res.text();
-    let data = null;
-
+  /* ============================================================
+   * SESSION
+   * ============================================================ */
+  function clearAllSessionTokens(){
     try{
-      data = JSON.parse(text);
-    }catch(parseErr){
-      btn.disabled = false;
-      setMsg("❌ استجابة غير صالحة من الخادم");
-      return;
-    }
+      Object.keys(sessionStorage).forEach(function(key){
+        if(key.indexOf("tracking_session_token") === 0) sessionStorage.removeItem(key);
+      });
+      Object.keys(localStorage).forEach(function(key){
+        if(key.indexOf("tracking_session_token") === 0) localStorage.removeItem(key);
+      });
+    }catch(err){}
+  }
 
-    btn.disabled = false;
+  function saveSessionAndGo(token){
+    const safeToken = String(token || "").trim();
+    if(!safeToken){ setMsg("❌ لم يتم استلام رمز الجلسة"); return; }
 
-    if(!data || !data.ok){
-      setMsg((data && data.message) || "❌ فشل تسجيل الدخول");
-      return;
-    }
+    clearAllSessionTokens();
+
+    sessionStorage.setItem(STORAGE_KEY_PAGE,   safeToken);
+    sessionStorage.setItem(STORAGE_KEY_GLOBAL, safeToken);
+    localStorage.setItem(STORAGE_KEY_PAGE,     safeToken);
+    localStorage.setItem(STORAGE_KEY_GLOBAL,   safeToken);
 
     setMsg("✅ تم تسجيل الدخول بنجاح", true);
-    saveSessionAndGo(data.token);
-
-  }catch(err){
-    btn.disabled = false;
-    setMsg("❌ خطأ اتصال بالخادم");
+    window.location.href = ALLOWED_PAGE + ".html";
   }
-}
 
-document.getElementById("btnLogin").addEventListener("click", login);
+  /* ============================================================
+   * LOGIN
+   * ============================================================ */
+  async function login(){
+    if(isLoggingIn) return;
 
-document.getElementById("username").addEventListener("keydown", function(e){
-  if(e.key === "Enter") login();
-});
+    const usernameEl = document.getElementById("username");
+    const passEl     = document.getElementById("pass");
 
-document.getElementById("pass").addEventListener("keydown", function(e){
-  if(e.key === "Enter") login();
-});
+    const username = usernameEl.value.trim();
+    const pass     = passEl.value.trim();
+
+    if(!username){ setMsg("⚠️ أدخل اسم المستخدم"); usernameEl.focus(); return; }
+    if(!pass)    { setMsg("⚠️ أدخل كلمة المرور");  passEl.focus();     return; }
+
+    isLoggingIn = true;
+    setBtnLoading(true);
+    setMsg("جاري التحقق...", true);
+
+    try{
+      const res  = await fetch(API_BASE, {
+        method:  "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body:    JSON.stringify({ action:"login", username, password:pass, page:ALLOWED_PAGE })
+      });
+
+      /* لا نتحقق من res.ok هنا لأن Google Apps Script يُرجع 200 دائماً */
+      const text = await res.text();
+      let data = null;
+
+      try{ data = JSON.parse(text); }
+      catch(parseErr){
+        setBtnLoading(false);
+        isLoggingIn = false;
+        setMsg("❌ استجابة غير صالحة من الخادم");
+        return;
+      }
+
+      setBtnLoading(false);
+      isLoggingIn = false;
+
+      if(!data || !data.ok){
+        setMsg((data && data.message) || "❌ اسم المستخدم أو كلمة المرور غير صحيحة");
+        passEl.value = "";
+        passEl.focus();
+        return;
+      }
+
+      saveSessionAndGo(data.token);
+
+    }catch(err){
+      setBtnLoading(false);
+      isLoggingIn = false;
+      setMsg("❌ خطأ في الاتصال بالخادم");
+    }
+  }
+
+  /* ============================================================
+   * إظهار / إخفاء كلمة المرور
+   * ============================================================ */
+  document.getElementById("togglePass").addEventListener("click", function(){
+    const passEl  = document.getElementById("pass");
+    const eyeIcon = document.getElementById("eyeIcon");
+    const isHidden = passEl.type === "password";
+    passEl.type         = isHidden ? "text" : "password";
+    eyeIcon.className   = isHidden ? "fas fa-eye-slash" : "fas fa-eye";
+  });
+
+  /* ============================================================
+   * EVENTS
+   * ============================================================ */
+  document.getElementById("btnLogin").addEventListener("click", login);
+
+  ["username", "pass"].forEach(function(id){
+    document.getElementById(id).addEventListener("keydown", function(e){
+      if(e.key === "Enter") login();
+    });
+  });
+
+  /* تركيز تلقائي عند الفتح */
+  window.addEventListener("load", function(){
+    document.getElementById("username").focus();
+  });
 </script>
 
 </body>
