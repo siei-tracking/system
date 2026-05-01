@@ -726,41 +726,39 @@
   /* ============================================================
    * فتح / إغلاق قائمة الإشعارات
    * ============================================================ */
-  /* تتبع موقع القائمة أثناء التمرير */
+
   let _nwScrollFn = null;
 
-  function _positionNotifBox() {
+  function _setNotifBoxPos() {
     const box  = $("notifBox");
     const icon = $("notifIcon");
-    if (!box || !icon || box.style.display !== "block") return;
+    if (!box || !icon) return;
     const r = icon.getBoundingClientRect();
     box.style.top   = (r.bottom + 6) + "px";
     box.style.right = Math.max(4, window.innerWidth - r.right) + "px";
   }
 
   function toggleNotifBox() {
-    const box  = $("notifBox");
-    const icon = $("notifIcon");
+    const box = $("notifBox");
     if (!box) return;
     const open = box.style.display !== "block";
 
-    if (open && icon) {
-      _positionNotifBox();
+    if (open) {
+      /* ١. حدّد الموقع أولاً */
+      _setNotifBoxPos();
+      /* ٢. أظهر القائمة فوراً */
+      box.style.display = "block";
+      /* ٣. تتبع التمرير */
       if (!_nwScrollFn) {
-        _nwScrollFn = _positionNotifBox;
-        window.addEventListener("scroll", _nwScrollFn, { passive: true });
-        window.addEventListener("resize", _nwScrollFn, { passive: true });
+        _nwScrollFn = _setNotifBoxPos;
+        window.addEventListener("scroll",  _nwScrollFn, { passive: true });
+        window.addEventListener("resize",  _nwScrollFn, { passive: true });
       }
+      /* ٤. حمّل الإشعارات في الخلفية بعد الظهور */
+      loadNotifications();
     } else {
-      if (_nwScrollFn) {
-        window.removeEventListener("scroll", _nwScrollFn);
-        window.removeEventListener("resize", _nwScrollFn);
-        _nwScrollFn = null;
-      }
+      closeNotifBox();
     }
-
-    box.style.display = open ? "block" : "none";
-    if (open) loadNotifications();
   }
 
   function closeNotifBox() {
@@ -804,21 +802,22 @@
           'display:none;align-items:center;justify-content:center;line-height:1;}' +
         '@keyframes nwRing{0%,100%{transform:rotate(0)}10%{transform:rotate(-8deg)}20%{transform:rotate(8deg)}30%{transform:rotate(-5deg)}40%{transform:rotate(5deg)}50%{transform:rotate(0)}}' +
         '#notifIcon.notif-on img{animation:nwRing 2.8s ease-in-out infinite;}' +
-        /* ─── الأنماط الخاصة بـ notifBox — ملحق بالـ body مباشرة ─── */
+        /* ─── أنماط القائمة — ستُلحق بالـ body ─── */
         '#notifBox{display:none;position:fixed;z-index:2147483647;' +
-          'width:310px;max-width:calc(100vw - 20px);max-height:360px;overflow:auto;' +
+          'width:310px;max-width:calc(100vw - 20px);max-height:360px;overflow-y:auto;overflow-x:hidden;' +
           'background:#fff !important;border-radius:14px;' +
-          'box-shadow:0 14px 30px rgba(0,0,0,.30);border:1px solid #e6edf4;color:#223243 !important;}' +
+          'box-shadow:0 14px 30px rgba(0,0,0,.30);border:1px solid #e6edf4;' +
+          'color:#223243 !important;font-family:"Cairo",Arial,sans-serif;direction:rtl;}' +
         '.nw-hdr{padding:10px 14px;border-bottom:1px solid #eef2f6;font-weight:900;font-size:14px;color:#223243;}' +
         '.nw-item{padding:11px 14px;border-bottom:1px solid #eef2f6;cursor:pointer;' +
           'text-align:right;font-weight:800;font-size:14px;transition:background .12s;' +
           'color:#223243 !important;}' +
-        '.nw-item:hover{filter:brightness(0.95);cursor:pointer;}' +
+        '.nw-item:hover{filter:brightness(0.95);}' +
         '.nw-item:last-child{border-bottom:none;}' +
         '.nw-item div{color:#223243 !important;}' +
         '.nw-unread{border-right:3px solid #f5a623;}' +
         '.nw-dt{font-size:11px;color:#758292 !important;margin-top:4px;font-weight:700;}' +
-        '.nw-empty{padding:20px;color:#758292 !important;font-weight:900;text-align:center;background:#fff;}' +
+        '.nw-empty{padding:20px;color:#758292 !important;font-weight:900;text-align:center;}' +
         '@media(max-width:700px){' +
           '#nwRoot{top:10px;right:10px;}' +
           '#notifIcon{width:44px;height:44px;}' +
@@ -832,17 +831,18 @@
         '</button>';
       header.appendChild(right);
 
-      /* ── notifBox يُلحق بـ body مباشرة — خارج أي overflow:hidden ── */
-      const box = document.createElement("div");
-      box.id = "notifBox";
-      box.setAttribute("role", "dialog");
-      box.setAttribute("aria-label", "الإشعارات");
-      box.innerHTML =
-        '<div class="nw-hdr"><span>الإشعارات</span></div>' +
-        '<div id="notifList"><div class="nw-empty">جاري التحميل...</div></div>';
-      document.body.appendChild(box);
+      /* ── notifBox مباشرة في body — خارج أي overflow:hidden ── */
+      if (!$("notifBox")) {
+        const box = document.createElement("div");
+        box.id = "notifBox";
+        box.setAttribute("role", "dialog");
+        box.setAttribute("aria-label", "الإشعارات");
+        box.innerHTML =
+          '<div class="nw-hdr"><span>الإشعارات</span></div>' +
+          '<div id="notifList"><div class="nw-empty">جاري التحميل...</div></div>';
+        document.body.appendChild(box);
+      }
 
-      /* تحديث شكل الجرس فور البناء */
       setTimeout(updateBellShape, 50);
     }
 
