@@ -55,8 +55,105 @@
     }
 
     /* ===== PAGE WRAP ===== */
-    #pageWrap { display: none; }
-    #pageWrap.show { display: block; }
+    #pageWrap { display: block; }
+
+    /* ===== PAGE SKELETON (يظهر قبل تحقق الجلسة) ===== */
+    #pageSkeleton {
+      display: block;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      transition: opacity .35s ease;
+    }
+
+    #pageSkeleton.hiding {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #pageSkeleton.hidden { display: none; }
+
+    .sk-logo {
+      width: 80px; height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(90deg,#dde3ea 25%,#c8d0da 50%,#dde3ea 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+    }
+
+    .sk-title {
+      width: 260px; height: 22px; border-radius: 8px;
+      background: linear-gradient(90deg,#dde3ea 25%,#c8d0da 50%,#dde3ea 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+    }
+
+    .sk-sub {
+      width: 180px; height: 14px; border-radius: 6px;
+      background: linear-gradient(90deg,#dde3ea 25%,#c8d0da 50%,#dde3ea 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite .1s;
+    }
+
+    .sk-bar {
+      width: min(560px, 90vw); height: 10px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: #dde3ea;
+      margin-top: 10px;
+    }
+
+    .sk-bar-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, var(--accent), var(--accent-dark));
+      transition: width .4s ease;
+    }
+
+    .sk-hint {
+      font-family: 'Cairo', sans-serif;
+      font-weight: 900;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    /* ===== TOP PROGRESS BAR ===== */
+    #topProgress {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      z-index: 99999;
+      background: transparent;
+      pointer-events: none;
+    }
+
+    #topProgress .tp-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), #fff8, var(--accent));
+      background-size: 200% 100%;
+      border-radius: 0 2px 2px 0;
+      transition: width .3s ease;
+      animation: tpShimmer 1.2s infinite linear;
+    }
+
+    @keyframes tpShimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    #topProgress.done .tp-fill {
+      width: 100% !important;
+      opacity: 0;
+      transition: width .2s ease, opacity .4s ease .1s;
+    }
 
     /* ===== HEADER ===== */
     .company-header {
@@ -855,6 +952,18 @@
 </head>
 
 <body>
+  <!-- شريط التقدم العلوي -->
+  <div id="topProgress"><div class="tp-fill" id="tpFill"></div></div>
+
+  <!-- Skeleton شاشة التحميل الأولية -->
+  <div id="pageSkeleton">
+    <div class="sk-logo"></div>
+    <div class="sk-title"></div>
+    <div class="sk-sub"></div>
+    <div class="sk-bar"><div class="sk-bar-fill" id="skBarFill"></div></div>
+    <div class="sk-hint" id="skHint">جاري التحقق من الجلسة...</div>
+  </div>
+
   <div id="pageWrap">
     <header class="company-header">
       <img src="https://siei-tracking.github.io/system/logo.png" class="company-logo" alt="شعار الشركة" loading="lazy">
@@ -964,8 +1073,34 @@
   let CURRENT_USER_ROLE = "";
   let CURRENT_USER_NAME = "";
   let CURRENT_USERNAME  = "";
-  let sessionFailCount = 0;         // ← جديد: عداد فشل الجلسة
-  const MAX_SESSION_FAILS = 3;      // ← 3 فشل متتالي قبل التحويل
+  let sessionFailCount = 0;
+  let liveSessionInterval = null;   // ← لحفظ الـ interval وإلغائه عند الخروج
+  let dataAlreadyLoaded = false;    // ← منع تحميل البيانات مرتين (race condition)
+  let isLoadingData = false;        // ← debounce: منع طلبات متوازية
+  const MAX_SESSION_FAILS = 3;
+
+  /* ============================================================
+   * SKELETON & PROGRESS HELPERS
+   * ============================================================ */
+  function skSetHint(msg){ const el = document.getElementById("skHint"); if(el) el.textContent = msg; }
+  function skSetProgress(pct){
+    const el = document.getElementById("skBarFill");
+    if(el) el.style.width = Math.min(100, pct) + "%";
+    const tp = document.getElementById("tpFill");
+    if(tp) tp.style.width = Math.min(98, pct) + "%";
+  }
+  function skHide(){
+    const sk = document.getElementById("pageSkeleton");
+    const tp = document.getElementById("topProgress");
+    if(sk){
+      sk.classList.add("hiding");
+      setTimeout(function(){ sk.classList.add("hidden"); }, 370);
+    }
+    if(tp){
+      tp.classList.add("done");
+      setTimeout(function(){ tp.style.display = "none"; }, 700);
+    }
+  }
 
   /* ============================================================
    * SESSION HELPERS
@@ -997,10 +1132,13 @@
 
   function redirectToLogin(){
     clearSessionToken();
+    if(liveSessionInterval){ clearInterval(liveSessionInterval); liveSessionInterval = null; }
     window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
   }
 
   function isAdminUser(){
+    /* الأولوية للـ role الذي يحدده السيرفر، مع fallback لاسم "admin" */
+    if(CURRENT_USER_ROLE === "admin") return true;
     return String(CURRENT_USERNAME || "").trim().toLowerCase() === "admin";
   }
 
@@ -1013,6 +1151,9 @@
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body:    JSON.stringify(payload)
     });
+    if(!response.ok){
+      throw new Error("HTTP " + response.status + ": " + response.statusText);
+    }
     const text = await response.text();
     try {
       return JSON.parse(text);
@@ -1030,7 +1171,17 @@
     CURRENT_USER_ROLE = isAdminUser() ? "admin" : "user";
     document.getElementById("welcomeUser").innerHTML =
       '<i class="fas fa-user-shield"></i> المستخدم: ' + escapeHtml(CURRENT_USER_NAME);
-    document.getElementById("pageWrap").classList.add("show");
+    showAdminButton();
+    /* لا نُخفي الـ skeleton هنا — يُخفى بعد اكتمال تحميل البيانات */
+  }
+
+  /* دالة مشتركة لتحديث واجهة المستخدم بعد التحقق من الجلسة */
+  function applySessionResult(result){
+    CURRENT_USER_NAME = result.user || result.userName || "مخول غير معروف";
+    CURRENT_USERNAME  = result.username || "";
+    CURRENT_USER_ROLE = (result.role === "admin" || String(CURRENT_USERNAME).trim().toLowerCase() === "admin") ? "admin" : "user";
+    document.getElementById("welcomeUser").innerHTML =
+      '<i class="fas fa-user-shield"></i> المستخدم: ' + escapeHtml(CURRENT_USER_NAME);
     showAdminButton();
   }
 
@@ -1038,35 +1189,47 @@
     const token = getSessionToken();
     if(!token){ redirectToLogin(); return; }
 
+    skSetProgress(10);
+    skSetHint("جاري التحقق من الجلسة...");
+
     /* ── محاولة عرض الصفحة فوراً من الـ cache ── */
     let usedCache = false;
     try {
       const raw = sessionStorage.getItem(SESSION_CACHE_KEY) || localStorage.getItem(SESSION_CACHE_KEY);
       if(raw){
         const cached = JSON.parse(raw);
-        /* استخدم الـ cache إذا كان أقل من 10 دقائق */
         if(cached && cached.token === token && (Date.now() - (cached.ts || 0)) < 600000){
           applySessionCache(cached);
           usedCache = true;
-          /* حمّل البيانات فوراً بدون انتظار checkSession */
-          loadSheetOptions().catch(function(){});
-          loadOpen().catch(function(){});
-          if(typeof window.loadNotifications === 'function') window.loadNotifications();
+          skSetProgress(40);
+          skSetHint("جاري تحميل البيانات...");
+
+          if(!dataAlreadyLoaded){
+            dataAlreadyLoaded = true;
+            skSetProgress(55);
+            /* تشغيل بالتوازي */
+            await Promise.all([
+              loadSheetOptions().catch(function(){}),
+              loadOpen().catch(function(){})
+            ]);
+            if(typeof window.loadNotifications === 'function') window.loadNotifications();
+          }
+          skSetProgress(100);
+          skHide();
         }
       }
     } catch(e){}
 
-    /* ── تحقق من السيرفر (في الخلفية إذا استخدمنا cache) ── */
+    /* ── تحقق من السيرفر في الخلفية ── */
     try{
+      if(!usedCache) skSetHint("جاري الاتصال بالسيرفر...");
       const result = await apiPost({ action:"checkSession", token, page:PAGE_NAME });
 
       if(result && result.ok){
         setSessionToken(token);
         sessionFailCount = 0;
-
-        CURRENT_USER_NAME = result.user || result.userName || "مخول غير معروف";
-        CURRENT_USERNAME  = result.username || "";
-        CURRENT_USER_ROLE = isAdminUser() ? "admin" : "user";
+        applySessionResult(result);
+        skSetProgress(50);
 
         /* حفظ بيانات الجلسة في الـ cache */
         try {
@@ -1075,33 +1238,30 @@
           localStorage.setItem(SESSION_CACHE_KEY, cacheData);
         } catch(e){}
 
-        if(!usedCache){
-          /* أول مرة: عرض الصفحة وتحميل البيانات */
-          document.getElementById("welcomeUser").innerHTML =
-            '<i class="fas fa-user-shield"></i> المستخدم: ' + escapeHtml(CURRENT_USER_NAME);
-          document.getElementById("pageWrap").classList.add("show");
-          showAdminButton();
-          await loadSheetOptions();
-          await loadOpen();
+        if(!dataAlreadyLoaded){
+          dataAlreadyLoaded = true;
+          skSetHint("جاري تحميل البيانات...");
+          skSetProgress(65);
+          /* تشغيل بالتوازي */
+          await Promise.all([
+            loadSheetOptions(),
+            loadOpen()
+          ]);
           if(typeof window.loadNotifications === 'function') window.loadNotifications();
-        } else {
-          /* تحديث اسم المستخدم إذا تغيّر */
-          document.getElementById("welcomeUser").innerHTML =
-            '<i class="fas fa-user-shield"></i> المستخدم: ' + escapeHtml(CURRENT_USER_NAME);
-          showAdminButton();
+          skSetProgress(100);
+          skHide();
         }
       } else {
-        /* الجلسة منتهية — امسح الـ cache وحوّل للـ login */
         try { sessionStorage.removeItem(SESSION_CACHE_KEY); localStorage.removeItem(SESSION_CACHE_KEY); } catch(e){}
         if(!usedCache) redirectToLogin();
         else { showMsg("⚠️ انتهت الجلسة، سيتم تسجيل الخروج...", "warn"); setTimeout(redirectToLogin, 2000); }
       }
     } catch(error){
       if(!usedCache){
+        skSetHint("❌ تعذر الاتصال");
         showMsg("❌ تعذر التحقق من الجلسة", "err");
         setTimeout(redirectToLogin, 900);
       } else {
-        /* إذا عندنا cache نتجاهل خطأ الشبكة المؤقت */
         console.warn("Session check failed (using cache):", error);
       }
     }
@@ -1153,6 +1313,7 @@
   }
 
   function setLoading(on){
+    isLoadingData = on;
     const ids = ["btnOpen","btnDelayed","btnDone","btnSearchDone","sheetSelect","dateFrom","dateTo","qDone","btnExport","btnExportExcel","btnExportPDF"];
     ids.forEach(function(id){
       const el = document.getElementById(id);
@@ -1180,36 +1341,52 @@
   /* ============================================================
    * SHEET OPTIONS
    * ============================================================ */
+  const SHEET_CACHE_KEY = "tracking_sheet_options_" + PAGE_NAME;
+
   async function loadSheetOptions(){
     const token = getSessionToken();
     if(!token) return;
 
+    /* ── محاولة تحميل من الـ cache أولاً (صالح 30 دقيقة) ── */
+    try {
+      const raw = sessionStorage.getItem(SHEET_CACHE_KEY);
+      if(raw){
+        const cached = JSON.parse(raw);
+        if(cached && (Date.now() - (cached.ts || 0)) < 1800000 && Array.isArray(cached.sheets)){
+          applySheetOptions(cached.sheets);
+          return;
+        }
+      }
+    } catch(e){}
+
     try{
       const res = await apiPost({ action:"getMainSearchSheets", token, page:PAGE_NAME });
       const sheets = Array.isArray(res && res.items) ? res.items : (Array.isArray(res) ? res : []);
-      const select = document.getElementById("sheetSelect");
-      if(!select) return;
-
-      select.innerHTML = "";
-
-      if(!sheets || !sheets.length){
-        const opt = document.createElement("option");
-        opt.value = ""; opt.textContent = "لا توجد سنوات";
-        select.appendChild(opt);
-        return;
-      }
-
-      sheets.forEach(function(name){
-        const opt = document.createElement("option");
-        opt.value = name; opt.textContent = name;
-        select.appendChild(opt);
-      });
-
-      const currentYear = new Date().getFullYear().toString();
-      select.value = sheets.includes(currentYear) ? currentYear : sheets[0];
+      applySheetOptions(sheets);
+      /* حفظ في الـ cache */
+      try { sessionStorage.setItem(SHEET_CACHE_KEY, JSON.stringify({ sheets, ts: Date.now() })); } catch(e){}
     } catch(err){
       console.warn("sheet options error:", safeErr(err));
     }
+  }
+
+  function applySheetOptions(sheets){
+    const select = document.getElementById("sheetSelect");
+    if(!select) return;
+    select.innerHTML = "";
+    if(!sheets || !sheets.length){
+      const opt = document.createElement("option");
+      opt.value = ""; opt.textContent = "لا توجد سنوات";
+      select.appendChild(opt);
+      return;
+    }
+    sheets.forEach(function(name){
+      const opt = document.createElement("option");
+      opt.value = name; opt.textContent = name;
+      select.appendChild(opt);
+    });
+    const currentYear = new Date().getFullYear().toString();
+    select.value = sheets.includes(currentYear) ? currentYear : sheets[0];
   }
 
   /* ============================================================
@@ -1423,8 +1600,11 @@
 
       const sub = formatSub(val, done, cls, s.key);
 
+      /* تأمين icon: نسمح فقط بأحرف وأرقام وشرطة */
+      const safeIcon = String(s.icon || "").replace(/[^a-z0-9\-]/g, "");
+
       html += '<div class="' + cls + '">'
-            +   '<div class="circle"><i class="fas ' + s.icon + '"></i></div>'
+            +   '<div class="circle"><i class="fas ' + safeIcon + '"></i></div>'
             +   '<div class="label">' + escapeHtml(s.label) + '</div>'
             +   '<div class="sub">' + sub + '</div>'
             + '</div>';
@@ -1750,6 +1930,7 @@
   async function loadOpen(){
     const token = getSessionToken();
     if(!token){ redirectToLogin(); return; }
+    if(isLoadingData) return;
     showSkeletons(4);
     setLoading(true);
     try{
@@ -1766,6 +1947,7 @@
   async function loadDelayed(){
     const token = getSessionToken();
     if(!token){ redirectToLogin(); return; }
+    if(isLoadingData) return;
     showSkeletons(4);
     setLoading(true);
     try{
@@ -1782,6 +1964,7 @@
   async function loadDone(){
     const token = getSessionToken();
     if(!token){ redirectToLogin(); return; }
+    if(isLoadingData) return;
 
     const from = String(document.getElementById("dateFrom").value || "").trim();
     const to   = String(document.getElementById("dateTo").value   || "").trim();
@@ -1797,6 +1980,10 @@
       setLoading(false);
       renderList(res, "done");
       if(from && to) showMsg("✅ تم تحميل النتائج حسب التاريخ", "ok");
+      /* تحذير إذا اقتربت من الحد الأقصى */
+      if(res && res.items && res.items.length >= 5000){
+        showMsg("⚠️ النتائج مقطوعة عند 5000 سجل، حدد نطاق تاريخ أضيق", "warn");
+      }
     } catch(err){
       setLoading(false);
       setStatus("❌ done error: " + safeErr(err), false);
@@ -1807,6 +1994,7 @@
   async function searchAny(){
     const token = getSessionToken();
     if(!token){ redirectToLogin(); return; }
+    if(isLoadingData) return;
 
     const id        = String(document.getElementById("qDone").value       || "").trim();
     const sheetName = String(document.getElementById("sheetSelect").value || "").trim();
@@ -1917,7 +2105,7 @@
 
     /* بدء التطبيق */
     ensurePageSession();
-    setInterval(checkLiveSession,   10000);
+    liveSessionInterval = setInterval(checkLiveSession, 10000);
   });
 
   </script>
