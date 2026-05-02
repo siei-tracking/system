@@ -727,7 +727,7 @@
 </div>
 
 <script>
-  const API_BASE = "https://script.google.com/macros/s/AKfycbyKu-xe3LKfSF40KyQF1IP6k-eXQsTy5TDhKgqe2hTBnN6M5ECETYpznsZOIGShBtwL/exec";
+  const API_BASE = "https://script.google.com/macros/s/AKfycbyw1SENEE0xPDkIP_8qCcwtza1aR6L8gDZThNVEVW3vv2B6ePQYfiFAOmmI2tX7Xwwm/exec";
   const PAGE_NAME = "admin";
   const STORAGE_KEY_PAGE   = "tracking_session_token_" + PAGE_NAME;
   const STORAGE_KEY_GLOBAL = "tracking_session_token";
@@ -1288,6 +1288,16 @@ function renderPages(pages){
     window.scrollTo({ top:0, behavior:"smooth" });
     setStatus("تمت تعبئة بيانات المستخدم: " + escapeHtml(user.name || u), true);
   }
+
+function togglePass(btn, realPass){
+  const span = btn.previousElementSibling;
+
+  if(span.textContent === "••••••"){
+    span.textContent = realPass;
+  } else {
+    span.textContent = "••••••";
+  }
+}
 
   function goToMain(){
     const token = getSessionToken();
