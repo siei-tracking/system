@@ -1063,42 +1063,79 @@ function renderPages(pages){
     document.getElementById("usersBody").innerHTML = html;
   }
 
-  function renderUsersTable(list){
-    USERS_CACHE = Array.isArray(list) ? list.slice() : [];
-    const body  = document.getElementById("usersBody");
-    if(!USERS_CACHE.length){
-      body.innerHTML = '<tr><td colspan="5" class="empty">لا توجد بيانات</td></tr>';
-      return;
-    }
-    let html = "";
-    USERS_CACHE.forEach(function(u){
-      const username = escapeHtml(String(u.username || "").trim());
-      const pass     = escapeHtml(String(u.password || "").trim());
-      const name     = escapeHtml(String(u.name     || "").trim());
-      let pagesArr   = Array.isArray(u.pages)
-        ? u.pages
-        : String(u.pages || "").split(",");
-      pagesArr = pagesArr
-        .map(function(p){ return String(p||"").trim(); })
-        .filter(function(p){ return p && p.toLowerCase() !== "admin" && p.toLowerCase() !== "login"; });
-      const pages = escapeHtml(pagesArr.join(", ") || "—");
-      html += '<tr>';
-      html +=   '<td>' + username + '</td>';
-      html += '<td>' +
-  '<span class="pass-text">••••••</span> ' +
-  '<button class="btn btn-ghost" style="padding:4px 8px;font-size:12px" onclick="togglePass(this, \'' + pass + '\')">👁️</button>' +
-'</td>';
-      html +=   '<td>' + name     + '</td>';
-      html +=   '<td class="pages-cell">' + pages + '</td>';
-      html +=   '<td class="action-cell"><div class="action-box">';
-      html +=     '<button class="btn btn-primary btn-fill-user" type="button" data-username="' + username + '"><i class="fas fa-pen"></i> تعبئة</button>';
-      html +=     '<button class="btn btn-danger btn-remove-user" type="button" data-username="' + username + '"><i class="fas fa-trash"></i> حذف</button>';
-      html +=   '</div></td>';
-      html += '</tr>';
-    });
-    body.innerHTML = html;
+function renderUsersTable(list){
+  USERS_CACHE = Array.isArray(list) ? list.slice() : [];
+  const body  = document.getElementById("usersBody");
+
+  if(!USERS_CACHE.length){
+    body.innerHTML = '<tr><td colspan="5" class="empty">لا توجد بيانات</td></tr>';
+    return;
   }
 
+  // 🔥 تعريف أسماء الصفحات مرة واحدة
+  const PAGE_NAMES = {
+    main: "الرئيسية",
+    plan: "أصدار أمر العمل و التسعيرة",
+    finance: "التسديد",
+    lab1: "قسم المختبرات",
+    workshop: "القسم الهندسي / الورشة",
+    elev: "قسم المصاعد",
+    testresults: "نتائج الفحص",
+    results: "تسليم النتائج",
+    barcode: "الباركود",
+    official: "الكتاب الرسمي",
+    email: "الإيميل"
+  };
+
+  let html = "";
+
+  USERS_CACHE.forEach(function(u){
+    const username = escapeHtml(String(u.username || "").trim());
+    const pass     = escapeHtml(String(u.password || "").trim());
+    const name     = escapeHtml(String(u.name     || "").trim());
+
+    let pagesArr = Array.isArray(u.pages)
+      ? u.pages
+      : String(u.pages || "").split(",");
+
+    pagesArr = pagesArr
+      .map(function(p){ return String(p||"").trim(); })
+      .filter(function(p){
+        const lower = p.toLowerCase();
+        return p && lower !== "admin" && lower !== "login";
+      });
+
+    // 🔥 تحويل أسماء الصفحات إلى عربي
+    const pages = escapeHtml(
+      pagesArr.map(function(p){
+        return PAGE_NAMES[p] || p;
+      }).join(", ") || "—"
+    );
+
+    html += '<tr>';
+
+    html += '<td>' + username + '</td>';
+
+    // 👁️ زر إظهار الباسورد
+    html += '<td>' +
+      '<span class="pass-text">••••••</span> ' +
+      '<button class="btn btn-ghost" style="padding:4px 8px;font-size:12px" onclick="togglePass(this, \'' + pass + '\')">👁️</button>' +
+    '</td>';
+
+    html += '<td>' + name + '</td>';
+
+    html += '<td class="pages-cell">' + pages + '</td>';
+
+    html += '<td class="action-cell"><div class="action-box">';
+    html += '<button class="btn btn-primary btn-fill-user" type="button" data-username="' + username + '"><i class="fas fa-pen"></i> تعبئة</button>';
+    html += '<button class="btn btn-danger btn-remove-user" type="button" data-username="' + username + '"><i class="fas fa-trash"></i> حذف</button>';
+    html += '</div></td>';
+
+    html += '</tr>';
+  });
+
+  body.innerHTML = html;
+}
   /* ============================================================
    * CONFIRM BOX
    * ============================================================ */
