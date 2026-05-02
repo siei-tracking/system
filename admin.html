@@ -1096,7 +1096,7 @@ function renderUsersTable(list){
 
     let pagesArr = Array.isArray(u.pages)
       ? u.pages
-      : String(u.pages || "").split(" , ");
+      : String(u.pages || "").split("  ,  ");
 
     pagesArr = pagesArr
       .map(function(p){ return String(p||"").trim(); })
