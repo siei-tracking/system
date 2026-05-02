@@ -696,7 +696,10 @@
       /* حفظ العدد في الـ cache للتحميل السريع */
       try { localStorage.setItem("nw_last_unread_count", String(unread)); } catch(e){}
 
-      if (newItems.length > 0) showBrowserNotif("إشعار جديد", newItems[0].message || "لديك إشعار جديد");
+      if (newItems.length > 0) {
+  showBrowserNotif("إشعار جديد", newItems[0].message || "لديك إشعار جديد");
+  playNotifSound(); // 🔊 تشغيل الصوت
+}
 
       /* مسح الـ cache المحلي للإشعارات المؤكدة من السيرفر */
       items.forEach(function(n) {
@@ -733,9 +736,17 @@
     const box  = $("notifBox");
     const icon = $("notifIcon");
     if (!box || !icon) return;
-    const r = icon.getBoundingClientRect();
-    box.style.top   = (r.bottom + 6) + "px";
-    box.style.right = Math.max(4, window.innerWidth - r.right) + "px";
+    const r    = icon.getBoundingClientRect();
+    const boxW = box.offsetWidth || 310;
+    /* top: موقع الجرس من أعلى الشاشة + ارتفاعه + 6 بكسل فراغ */
+    const top   = r.bottom + 6;
+    /* right: المسافة من يمين الشاشة مع ضمان عدم الخروج */
+    const right = Math.max(4, window.innerWidth - r.right);
+    /* تأكد أن القائمة لا تخرج من اليسار */
+    const leftEdge = window.innerWidth - right - boxW;
+    const safeRight = leftEdge < 4 ? window.innerWidth - boxW - 4 : right;
+    box.style.top   = top + "px";
+    box.style.right = Math.max(4, safeRight) + "px";
   }
 
   function toggleNotifBox() {
@@ -840,6 +851,8 @@
         box.innerHTML =
           '<div class="nw-hdr"><span>الإشعارات</span></div>' +
           '<div id="notifList"><div class="nw-empty">جاري التحميل...</div></div>';
+        /* منع إغلاق القائمة عند النقر بداخلها */
+        box.addEventListener("click", function(e){ e.stopPropagation(); });
         document.body.appendChild(box);
       }
 
@@ -924,7 +937,6 @@
     if (icon && !icon._nwBound) {
       icon.addEventListener("click", function (e) {
         e.stopPropagation();
-        /* نعتمد على class الجرس كمصدر الحقيقة الوحيد */
         if (icon.classList.contains("notif-on")) {
           toggleNotifBox();
         } else {
@@ -943,14 +955,33 @@
       btnInstall._nwBound = true;
     }
     /* إغلاق عند النقر خارج القائمة */
-    if (!window._nwOutsideBound) {
-      document.addEventListener("click", function (e) {
-        const root = $("nwRoot") || $("notifWrapper");
-        if (root && !root.contains(e.target)) closeNotifBox();
-      });
-      window._nwOutsideBound = true;
+if (!window._nwOutsideBound) {
+  document.addEventListener("click", function (e) {
+    const root = $("nwRoot") || $("notifWrapper");
+    const box  = $("notifBox");
+
+    if (
+      root && !root.contains(e.target) &&
+      box  && !box.contains(e.target)
+    ) {
+      closeNotifBox();
     }
+  });
+  window._nwOutsideBound = true;
+}
   }
+
+function playNotifSound(){
+  try {
+    const audio = new Audio("/system/notify.mp3");
+    audio.volume = 0.7; // تقدر تغيره
+    audio.play().catch(function(e){
+      console.log("🔇 المتصفح منع تشغيل الصوت:", e);
+    });
+  } catch(e){
+    console.warn("sound error:", e);
+  }
+}
 
   /* ============================================================
    * CLEAR DATA — متاح لجميع المستخدمين
