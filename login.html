@@ -387,11 +387,61 @@
       if(e.key === "Enter") login();
     });
   });
+window.addEventListener("load", function(){
 
-  /* تركيز تلقائي عند الفتح */
-  window.addEventListener("load", function(){
+  let token =
+    sessionStorage.getItem(STORAGE_KEY_PAGE) ||
+    sessionStorage.getItem(STORAGE_KEY_GLOBAL) ||
+    localStorage.getItem(STORAGE_KEY_PAGE) ||
+    localStorage.getItem(STORAGE_KEY_GLOBAL);
+
+  // فقط إذا ماكو جلسة
+  if(!token){
     document.getElementById("username").focus();
-  });
+  }
+
+});
+
+/* ============================================================
+ * AUTO LOGIN (حل مشكلة الموبايل)
+ * ============================================================ */
+(function(){
+  try{
+    let token =
+      sessionStorage.getItem(STORAGE_KEY_PAGE) ||
+      sessionStorage.getItem(STORAGE_KEY_GLOBAL) ||
+      localStorage.getItem(STORAGE_KEY_PAGE) ||
+      localStorage.getItem(STORAGE_KEY_GLOBAL);
+
+    if(token){
+      sessionStorage.setItem(STORAGE_KEY_PAGE, token);
+      sessionStorage.setItem(STORAGE_KEY_GLOBAL, token);
+
+      fetch(API_BASE, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({
+          action: "checkSession",
+          token: token,
+          page: ALLOWED_PAGE
+        })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if(data && data.ok){
+          window.location.href = ALLOWED_PAGE + ".html";
+        } else {
+          clearAllSessionTokens();
+        }
+      })
+      .catch(function(){
+        // لا نحذف التوكن عند خطأ اتصال مؤقت
+      });
+    }
+  }catch(e){}
+})();
+
+
 </script>
 
 </body>
