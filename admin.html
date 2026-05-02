@@ -727,7 +727,7 @@
 </div>
 
 <script>
-  const API_BASE = "https://script.google.com/macros/s/AKfycbyaHqmHweYM70XiaJioBjU1EMTtDnvLlPntGqEZCqgPUb6DPrVAYYJaa2PcE5tuIk8l/exec";
+  const API_BASE = "https://script.google.com/macros/s/AKfycbyKu-xe3LKfSF40KyQF1IP6k-eXQsTy5TDhKgqe2hTBnN6M5ECETYpznsZOIGShBtwL/exec";
   const PAGE_NAME = "admin";
   const STORAGE_KEY_PAGE   = "tracking_session_token_" + PAGE_NAME;
   const STORAGE_KEY_GLOBAL = "tracking_session_token";
@@ -1084,7 +1084,10 @@ function renderPages(pages){
       const pages = escapeHtml(pagesArr.join(", ") || "—");
       html += '<tr>';
       html +=   '<td>' + username + '</td>';
-      html +=   '<td>' + pass     + '</td>';
+      html += '<td>' +
+  '<span class="pass-text">••••••</span> ' +
+  '<button class="btn btn-ghost" style="padding:4px 8px;font-size:12px" onclick="togglePass(this, \'' + pass + '\')">👁️</button>' +
+'</td>';
       html +=   '<td>' + name     + '</td>';
       html +=   '<td class="pages-cell">' + pages + '</td>';
       html +=   '<td class="action-cell"><div class="action-box">';
