@@ -727,7 +727,7 @@
 </div>
 
 <script>
-  const API_BASE = "https://script.google.com/macros/s/AKfycbwtWELrbvCU6O-GToUfyVUEYR5RYyjBEFpTMwhkP7imoji_ApvgJwaMGKs-zQed-5nb/exec";
+  const API_BASE = "https://script.google.com/macros/s/AKfycbyaHqmHweYM70XiaJioBjU1EMTtDnvLlPntGqEZCqgPUb6DPrVAYYJaa2PcE5tuIk8l/exec";
   const PAGE_NAME = "admin";
   const STORAGE_KEY_PAGE   = "tracking_session_token_" + PAGE_NAME;
   const STORAGE_KEY_GLOBAL = "tracking_session_token";
@@ -1009,24 +1009,48 @@
   /* ============================================================
    * RENDER
    * ============================================================ */
-  function renderPages(pages){
-    ALL_PAGES_CACHE = Array.isArray(pages) ? pages.slice() : [];
-    const box = document.getElementById("pagesBox");
-    box.innerHTML = "";
-    if(!ALL_PAGES_CACHE.length){
-      box.innerHTML = '<div class="empty">لا توجد صفحات</div>';
-      return;
-    }
-    ALL_PAGES_CACHE.forEach(function(p){
-      const page  = String(p || "").trim();
-      const lower = page.toLowerCase();
-      if(lower === "index" || lower === "login" || lower === "admin") return;
-      const item = document.createElement("label");
-      item.className = "page-item";
-      item.innerHTML = '<input type="checkbox" value="' + escapeHtml(page) + '"><span>' + escapeHtml(page) + '</span>';
-      box.appendChild(item);
-    });
+function renderPages(pages){
+  ALL_PAGES_CACHE = Array.isArray(pages) ? pages.slice() : [];
+  const box = document.getElementById("pagesBox");
+  box.innerHTML = "";
+
+  if(!ALL_PAGES_CACHE.length){
+    box.innerHTML = '<div class="empty">لا توجد صفحات</div>';
+    return;
   }
+
+  // 🔥 هنا مرة واحدة فقط
+  const PAGE_NAMES = {
+    main: "الرئيسية",
+    plan: "قسم التخطيط",
+    finance: "القسم المالي",
+    lab1: "استلام المختبر",
+    lab2: "معالجة المختبر",
+    workshop: "الورشة",
+    testresults: "إدخال النتائج",
+    results: "تسليم النتائج",
+    barcode: "الباركود",
+    official: "الكتب الرسمية",
+    email: "الإيميل"
+  };
+
+  ALL_PAGES_CACHE.forEach(function(p){
+    const page  = String(p || "").trim();
+    const lower = page.toLowerCase();
+
+    if(lower === "index" || lower === "login" || lower === "admin") return;
+
+    const displayName = PAGE_NAMES[page] || page;
+
+    const item = document.createElement("label");
+    item.className = "page-item";
+    item.innerHTML =
+      '<input type="checkbox" value="' + escapeHtml(page) + '">' +
+      '<span>' + escapeHtml(displayName) + '</span>';
+
+    box.appendChild(item);
+  });
+}
 
   /* skeleton للجدول أثناء التحميل */
   function showTableSkeleton(){
