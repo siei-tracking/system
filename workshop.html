@@ -2,6 +2,7 @@
 <html dir="rtl" lang="ar">
 <head>
   <meta charset="UTF-8">
+  <script src="/system/config.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="watermark.css">
   <title>القسم الهندسي / الورشة - منصة تتبع أوامر العمل</title>
@@ -339,7 +340,7 @@
 
 <script>
   /* API مختلف عن باقي الصفحات — خاص بالقسم الهندسي */
-  const API_BASE  = "https://script.google.com/macros/s/AKfycbz_Ct6rbSoj0XcJiQLxQn0VhPXqIgBUvrc3klC8nazFDcsBmPBIxDdEuC_zwnWfsM_f/exec";
+  const API_BASE = window.APP_CONFIG.API_BASE;
   const PAGE_NAME = "workshop";
 
   const STORAGE_KEY_PAGE   = "tracking_session_token_" + PAGE_NAME;
