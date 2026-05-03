@@ -603,21 +603,42 @@
     } catch (e) { console.warn("autoRefreshToken:", e); }
   }
 
-  /* ============================================================
-   * استقبال الرسائل Foreground
-   * ============================================================ */
-  function setupForeground() {
-    try {
-      if (!messaging) return;
-      messaging.onMessage(function (payload) {
-        const title = (payload && payload.notification && payload.notification.title) || "إشعار جديد";
-        const body  = (payload && payload.notification && payload.notification.body)  || "";
-        callShowMsg(title + (body ? " - " + body : ""), "ok");
-        showBrowserNotif(title, body);
+let lastMsgId = null;
+
+function setupForeground() {
+  try {
+    if (!messaging) return;
+
+    messaging.onMessage(function (payload) {
+
+      const title = payload?.notification?.title || "إشعار جديد";
+      const body  = payload?.notification?.body  || "";
+
+      // 🔥 منع التكرار
+      const msgId = payload?.messageId || (title + "|" + body);
+      if (msgId === lastMsgId) return;
+      lastMsgId = msgId;
+
+      // 🔔 عرض
+      callShowMsg(title + (body ? " - " + body : ""), "ok");
+
+      // 🌐 إشعار متصفح
+      showBrowserNotif(title, body);
+
+      // 🔊 صوت
+      playNotifSound();
+
+      // 🔄 تحديث القائمة فوراً
+      if (typeof loadNotifications === "function") {
         loadNotifications();
-      });
-    } catch (e) { console.warn("setupForeground:", e); }
+      }
+
+    });
+
+  } catch (e) {
+    console.warn("setupForeground:", e);
   }
+}
 
   /* ============================================================
    * تحميل الإشعارات من السيرفر
@@ -696,9 +717,10 @@
       /* حفظ العدد في الـ cache للتحميل السريع */
       try { localStorage.setItem("nw_last_unread_count", String(unread)); } catch(e){}
 
-      if (newItems.length > 0) {
-  showBrowserNotif("إشعار جديد", newItems[0].message || "لديك إشعار جديد");
-  playNotifSound(); // 🔊 تشغيل الصوت
+      // ❌ لا تعرض إشعار هنا
+// فقط حدّث القائمة
+if (newItems.length > 0) {
+  console.log("New notifications received");
 }
 
       /* مسح الـ cache المحلي للإشعارات المؤكدة من السيرفر */
