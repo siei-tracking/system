@@ -2,6 +2,7 @@
 <html dir="rtl" lang="ar">
 <head>
   <meta charset="UTF-8">
+  <script src="/system/config.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="watermark.css">
   <title>منصة تتبع أوامر العمل</title>
@@ -572,7 +573,7 @@
 </div>
 
 <script>
-  const API_BASE = "https://script.google.com/macros/s/AKfycbz_Ct6rbSoj0XcJiQLxQn0VhPXqIgBUvrc3klC8nazFDcsBmPBIxDdEuC_zwnWfsM_f/exec";
+  const API_BASE = window.APP_CONFIG.API_BASE;
 
   let isLoading  = false;
   let toastTimer = null;
