@@ -2,6 +2,7 @@
 <html dir="rtl" lang="ar">
 <head>
   <meta charset="UTF-8" />
+  <script src="/system/config.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>المعاملات - منصة تتبع أوامر العمل</title>
   <link rel="icon" href="https://siei-tracking.github.io/system/logo.png">
@@ -962,7 +963,7 @@
   /* ============================================================
    * CONFIG
    * ============================================================ */
-  const API_BASE      = "https://script.google.com/macros/s/AKfycbz_Ct6rbSoj0XcJiQLxQn0VhPXqIgBUvrc3klC8nazFDcsBmPBIxDdEuC_zwnWfsM_f/exec";
+  const API_BASE = window.APP_CONFIG.API_BASE;
   const PAGE_NAME     = "main";
   const STORAGE_KEY      = "tracking_session_token_" + PAGE_NAME;
   const STORAGE_KEY_G    = "tracking_session_token";
