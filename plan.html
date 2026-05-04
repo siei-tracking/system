@@ -919,7 +919,7 @@ async function savePrice(){
     price:    String(document.getElementById("pVal").value  || "").trim(),
     days:     String(document.getElementById("pDays").value || "").trim(),
     testType: type,
-    labPath:  (type === "مختبرات") ? document.getElementById("pLabVal").value : "",
+    labPath:  (type === "مختبرات") ? document.getElementById("pLabVal").value: "",
     userName: currentUserName
   };
 
