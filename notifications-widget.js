@@ -4,7 +4,7 @@
    الاستخدام: أضف هذا السطر قبل </body> في كل صفحة:
    <script src="/system/notifications-widget.js" defer></script>
    ⚠️ تأكد أن الصفحة تعرض:
-       window.PAGE_NAME , window.apiPost , window.getSessionToken
+       window.PAGE_NAME, window.apiPost, window.getSessionToken
        (أو أن هذه الدوال معرّفة في النطاق العام)
 ========================================================= */
 (function () {
@@ -102,49 +102,114 @@
    * - Samsung: نعتمد على فقدان sessionStorage بين الجلسات
    * ============================================================ */
   function saveWithKeepingSession(storeFn, clearFn) {
-    /* احفظ توكنات الجلسة قبل المسح ثم أعدها */
-    const keep = {};
-    try {
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (k && k.indexOf("tracking_session_token") === 0) keep["ls_" + k] = localStorage.getItem(k);
-      }
-      for (let i = 0; i < sessionStorage.length; i++) {
-        const k = sessionStorage.key(i);
-        if (k && k.indexOf("tracking_session_token") === 0) keep["ss_" + k] = sessionStorage.getItem(k);
-      }
-    } catch(e) {}
+  const keep = {};
 
-    clearFn();
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (
+        k &&
+        (
+          k.indexOf("tracking_session_token") === 0 ||
+          k === "authToken" ||
+          k === "fcm_push_token"
+        )
+      ) {
+        keep["ls_" + k] = localStorage.getItem(k);
+      }
+    }
 
-    try {
-      Object.keys(keep).forEach(function(k) {
-        const val = keep[k];
-        if (k.startsWith("ls_")) localStorage.setItem(k.slice(3), val);
-        else sessionStorage.setItem(k.slice(3), val);
-      });
-    } catch(e) {}
-  }
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const k = sessionStorage.key(i);
+      if (
+        k &&
+        (
+          k.indexOf("tracking_session_token") === 0 ||
+          k === "authToken"
+        )
+      ) {
+        keep["ss_" + k] = sessionStorage.getItem(k);
+      }
+    }
+  } catch(e) {}
+
+  clearFn();
+
+  try {
+    Object.keys(keep).forEach(function(k) {
+      const val = keep[k];
+      if (k.startsWith("ls_")) localStorage.setItem(k.slice(3), val);
+      else if (k.startsWith("ss_")) sessionStorage.setItem(k.slice(3), val);
+    });
+  } catch(e) {}
+}
 
   async function doClear() {
-    console.log("[PWA] تنظيف تلقائي...");
-    saveWithKeepingSession(null, function() {
-      /* احتفظ بحالة التثبيت حتى لا يظهر الزر مجدداً بعد المسح */
-      const keepInstalled   = localStorage.getItem("pwa_installed_v2");
-      const keepInstalledOld = localStorage.getItem("pwa_installed");
-      localStorage.clear();
-      sessionStorage.clear();
-      if (keepInstalled)    localStorage.setItem("pwa_installed_v2", keepInstalled);
-      if (keepInstalledOld) localStorage.setItem("pwa_installed", keepInstalledOld);
-    });
-    try {
-      if ("caches" in window) {
-        const keys = await caches.keys();
-        keys.forEach(function(k){ caches.delete(k); });
+  console.log("[PWA] تنظيف تلقائي مع الحفاظ على الجلسة...");
+
+  try {
+    const keep = {};
+
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (
+        k &&
+        (
+          k.indexOf("tracking_session_token") === 0 ||
+          k === "authToken" ||
+          k === "fcm_push_token"
+        )
+      ) {
+        keep["ls_" + k] = localStorage.getItem(k);
       }
-    } catch(e) {}
-    console.log("[PWA] تنظيف اكتمل ✅");
+    }
+
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const k = sessionStorage.key(i);
+      if (
+        k &&
+        (
+          k.indexOf("tracking_session_token") === 0 ||
+          k === "authToken"
+        )
+      ) {
+        keep["ss_" + k] = sessionStorage.getItem(k);
+      }
+    }
+
+    const keepInstalled = localStorage.getItem("pwa_installed_v2");
+    const keepInstalledOld = localStorage.getItem("pwa_installed");
+    const keepVersion = localStorage.getItem("pwa_version");
+
+    localStorage.clear();
+    sessionStorage.clear();
+
+    Object.keys(keep).forEach(function(k) {
+      const val = keep[k];
+      if (k.indexOf("ls_") === 0) {
+        localStorage.setItem(k.slice(3), val);
+      } else if (k.indexOf("ss_") === 0) {
+        sessionStorage.setItem(k.slice(3), val);
+      }
+    });
+
+    if (keepInstalled) localStorage.setItem("pwa_installed_v2", keepInstalled);
+    if (keepInstalledOld) localStorage.setItem("pwa_installed", keepInstalledOld);
+    if (keepVersion) localStorage.setItem("pwa_version", keepVersion);
+
+    if ("caches" in window) {
+      const keys = await caches.keys();
+      keys.forEach(function(k) {
+        caches.delete(k);
+      });
+    }
+
+  } catch (e) {
+    console.warn("[PWA] doClear error:", e);
   }
+
+  console.log("[PWA] تنظيف اكتمل مع الحفاظ على الجلسة ✅");
+}
 
   async function autoClearIfUninstalled() {
     try {
@@ -1008,43 +1073,85 @@ function playNotifSound(){
 }
 
   /* ============================================================
-   * CLEAR DATA — متاح لجميع المستخدمين
-   * ============================================================ */
-  async function clearDataAndReload() {
-    try {
-      /* احفظ توكنات الجلسة */
-      const keep = {}, ssKeep = {};
-      for (let i = 0; i < localStorage.length; i++) {
-        const k = localStorage.key(i);
-        if (k && k.indexOf("tracking_session_token") === 0) keep[k] = localStorage.getItem(k);
+ * CLEAR DATA — متاح لجميع المستخدمين
+ * ============================================================ */
+async function clearDataAndReload() {
+  try {
+    const keep = {};
+    const ssKeep = {};
+
+    /* احفظ بيانات localStorage المهمة */
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+
+      if (
+        k &&
+        (
+          k.indexOf("tracking_session_token") === 0 ||
+          k === "authToken" ||
+          k === "fcm_push_token"
+        )
+      ) {
+        keep[k] = localStorage.getItem(k);
       }
-      for (let i = 0; i < sessionStorage.length; i++) {
-        const k = sessionStorage.key(i);
-        if (k && k.indexOf("tracking_session_token") === 0) ssKeep[k] = sessionStorage.getItem(k);
-      }
-      /* امسح كل شيء */
-      localStorage.clear();
-      sessionStorage.clear();
-      /* أعد الجلسة */
-      Object.keys(keep).forEach(function(k){ localStorage.setItem(k, keep[k]); });
-      Object.keys(ssKeep).forEach(function(k){ sessionStorage.setItem(k, ssKeep[k]); });
-      /* مسح Cache */
-      if ("caches" in window) {
-        const keys = await caches.keys();
-        keys.forEach(function(k){ caches.delete(k); });
-      }
-      /* إلغاء SW */
-      if ("serviceWorker" in navigator) {
-        const regs = await navigator.serviceWorker.getRegistrations();
-        regs.forEach(function(r){ r.unregister(); });
-      }
-      callShowMsg("✅ تم المسح — جاري إعادة التحميل...", "ok");
-      setTimeout(function(){ location.reload(true); }, 800);
-    } catch(e) {
-      callShowMsg("❌ خطأ في المسح", "err");
-      console.warn("clearDataAndReload:", e);
     }
+
+    /* احفظ بيانات sessionStorage المهمة */
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const k = sessionStorage.key(i);
+
+      if (
+        k &&
+        (
+          k.indexOf("tracking_session_token") === 0 ||
+          k === "authToken"
+        )
+      ) {
+        ssKeep[k] = sessionStorage.getItem(k);
+      }
+    }
+
+    localStorage.clear();
+    sessionStorage.clear();
+
+    Object.keys(keep).forEach(function(k) {
+      localStorage.setItem(k, keep[k]);
+    });
+
+    Object.keys(ssKeep).forEach(function(k) {
+      sessionStorage.setItem(k, ssKeep[k]);
+    });
+
+    if ("caches" in window) {
+      const keys = await caches.keys();
+      keys.forEach(function(k) {
+        caches.delete(k);
+      });
+    }
+
+    
+    if ("serviceWorker" in navigator) {
+  const regs = await navigator.serviceWorker.getRegistrations();
+
+  regs.forEach(function(r) {
+    if (r && typeof r.update === "function") {
+      r.update();
+    }
+  });
+}
+
+
+    callShowMsg("✅ تم المسح مع الحفاظ على الجلسة — جاري إعادة التحميل...", "ok");
+
+    setTimeout(function() {
+      location.reload(true);
+    }, 800);
+
+  } catch(e) {
+    callShowMsg("❌ خطأ في المسح", "err");
+    console.warn("clearDataAndReload:", e);
   }
+}
 
   /* ============================================================
    * تهيئة رئيسية
