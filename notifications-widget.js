@@ -227,7 +227,6 @@
         localStorage.removeItem("pwa_installed");
         localStorage.removeItem("pwa_installed_v2");
         localStorage.removeItem("app_installed");
-        localStorage.removeItem("fcm_push_token");
         localStorage.removeItem("pwa_last_standalone");
 
         /* 2. إلغاء تسجيل Service Workers القديمة */
