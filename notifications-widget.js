@@ -219,26 +219,20 @@
     try {
       const storedVersion = localStorage.getItem("pwa_version");
 
-      /* إذا الإصدار تغيير أو لا يوجد — نظّف كل شيء */
+      /* إذا الإصدار تغيّر أو لا يوجد — نظّف فقط الـ Cache والـ PWA flags */
       if (storedVersion !== PWA_VERSION) {
         console.log("[PWA] إصدار جديد — تنظيف البيانات القديمة");
 
-        /* 1. مسح مفاتيح PWA */
+        /* 1. مسح مفاتيح PWA فقط — ✅ نحتفظ بـ fcm_push_token لعدم فقد الإشعارات */
         localStorage.removeItem("pwa_installed");
         localStorage.removeItem("pwa_installed_v2");
         localStorage.removeItem("app_installed");
         localStorage.removeItem("pwa_last_standalone");
+        /* ✅ لا نمسح fcm_push_token — الإشعارات تبقى مفعّلة بعد التحديث */
 
-        /* 2. إلغاء تسجيل Service Workers القديمة */
-        if ("serviceWorker" in navigator) {
-          const regs = await navigator.serviceWorker.getRegistrations();
-          for (const reg of regs) {
-            await reg.unregister();
-            console.log("[PWA] SW unregistered:", reg.scope);
-          }
-        }
+        /* 2. ✅ لا نلغي تسجيل الـ SW — يبقى نشطاً لاستقبال الإشعارات */
 
-        /* 3. مسح الـ Cache القديم */
+        /* 3. مسح الـ Cache القديم فقط */
         if ("caches" in window) {
           const keys = await caches.keys();
           for (const key of keys) {
@@ -716,10 +710,16 @@ function setupForeground() {
       /* حفظ العدد في الـ cache للتحميل السريع */
       try { localStorage.setItem("nw_last_unread_count", String(unread)); } catch(e){}
 
-      // ❌ لا تعرض إشعار هنا
-// فقط حدّث القائمة
+      // ✅ عرض إشعار المتصفح عند وصول إشعارات جديدة عبر الـ polling
 if (newItems.length > 0) {
-  console.log("New notifications received");
+  console.log("New notifications received:", newItems.length);
+  newItems.forEach(function(n) {
+    showBrowserNotif(
+      n.message || "إشعار جديد",
+      "أمر العمل رقم " + (n.orderId || "")
+    );
+  });
+  playNotifSound();
 }
 
       /* مسح الـ cache المحلي للإشعارات المؤكدة من السيرفر */
