@@ -219,7 +219,6 @@
     try {
       const storedVersion = localStorage.getItem("pwa_version");
 
-      /* إذا الإصدار تغيّر أو لا يوجد — نظّف فقط الـ Cache والـ PWA flags */
       if (storedVersion !== PWA_VERSION) {
         console.log("[PWA] إصدار جديد — تنظيف البيانات القديمة");
 
@@ -237,7 +236,6 @@
           const keys = await caches.keys();
           for (const key of keys) {
             await caches.delete(key);
-            console.log("[PWA] Cache deleted:", key);
           }
         }
 
@@ -604,8 +602,13 @@ function setupForeground() {
 
     messaging.onMessage(function (payload) {
 
-      const title = payload?.notification?.title || "إشعار جديد";
-      const body  = payload?.notification?.body  || "";
+      /* ✅ قراءة العنوان والنص من notification أو data */
+      const title = payload?.notification?.title
+                 || payload?.data?.title
+                 || "إشعار جديد";
+      const body  = payload?.notification?.body
+                 || payload?.data?.body
+                 || "";
 
       // 🔥 منع التكرار
       const msgId = payload?.messageId || (title + "|" + body);
