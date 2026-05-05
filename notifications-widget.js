@@ -786,7 +786,7 @@ if (newItems.length > 0) {
   newItems.forEach(function(n) {
     showBrowserNotif(
       n.message || "إشعار جديد",
-      "أمر العمل رقم " + (n.orderId || "")
+      ""
     );
   });
   playNotifSound();
