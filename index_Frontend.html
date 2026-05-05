@@ -1,0 +1,733 @@
+﻿<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>نظام تتبع أوامر العمل</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root{
+      --primary:#223243;
+      --primary-dark:#17232e;
+      --accent:#f5a623;
+      --accent-dark:#e59712;
+      --bg:#eef2f6;
+      --card:rgba(255,255,255,0.94);
+      --line:#e4eaf0;
+      --text:#223243;
+      --muted:#758292;
+      --ok:#27ae60;
+      --danger:#e74c3c;
+      --warn:#f39c12;
+      --shadow:0 15px 40px rgba(34,50,67,0.10);
+      --radius:24px;
+    }
+
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    html, body{
+      margin:0;
+      padding:0;
+      width:100%;
+      min-height:100%;
+      font-family:'Cairo', sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      overflow-x:hidden;
+      scroll-behavior:smooth;
+    }
+
+    body{
+      background:
+        radial-gradient(circle at top right, rgba(245,166,35,0.11), transparent 25%),
+        radial-gradient(circle at bottom left, rgba(34,50,67,0.08), transparent 28%),
+        linear-gradient(180deg, #f8fafc 0%, #eef2f6 100%);
+    }
+
+    a{
+      text-decoration:none;
+    }
+
+    .container{
+      width:min(1400px, calc(100% - 32px));
+      margin:auto;
+    }
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:1000;
+      backdrop-filter:blur(10px);
+      background:rgba(23,35,46,0.88);
+      border-bottom:1px solid rgba(255,255,255,0.08);
+    }
+
+    .topbar-inner{
+      min-height:74px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+      flex-wrap:wrap;
+      padding:12px 0;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      min-width:0;
+    }
+
+    .brand-logo{
+      width:56px;
+      height:56px;
+      border-radius:18px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:linear-gradient(135deg, rgba(245,166,35,0.25), rgba(255,255,255,0.10));
+      border:1px solid rgba(255,255,255,0.14);
+      color:#fff;
+      font-size:24px;
+      flex:0 0 auto;
+    }
+
+    .brand-text{
+      min-width:0;
+    }
+
+    .brand-text h1{
+      margin:0;
+      color:#fff;
+      font-size:clamp(19px, 2.4vw, 28px);
+      font-weight:900;
+      line-height:1.3;
+    }
+
+    .brand-text p{
+      margin:3px 0 0;
+      color:rgba(255,255,255,0.75);
+      font-size:13px;
+      line-height:1.7;
+    }
+
+    .top-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .top-btn{
+      height:44px;
+      padding:0 18px;
+      border-radius:14px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      border:1px solid rgba(255,255,255,0.12);
+      color:#fff;
+      background:rgba(255,255,255,0.08);
+      font-size:14px;
+      font-weight:800;
+      transition:.25s ease;
+    }
+
+    .top-btn:hover{
+      transform:translateY(-2px);
+      background:rgba(255,255,255,0.12);
+    }
+
+    .hero{
+      padding:42px 0 26px;
+    }
+
+    .hero-grid{
+      display:grid;
+      grid-template-columns:1.15fr .85fr;
+      gap:22px;
+      align-items:stretch;
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid rgba(255,255,255,0.72);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      backdrop-filter:blur(12px);
+    }
+
+    .hero-main{
+      padding:34px 30px;
+      min-height:470px;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      width:max-content;
+      max-width:100%;
+      padding:10px 15px;
+      border-radius:999px;
+      background:rgba(245,166,35,0.14);
+      color:#9a6300;
+      font-size:13px;
+      font-weight:800;
+      margin-bottom:18px;
+    }
+
+    .hero-main h2{
+      margin:0 0 14px;
+      font-size:clamp(28px, 4vw, 48px);
+      line-height:1.35;
+      color:var(--primary);
+      font-weight:900;
+    }
+
+    .hero-main p{
+      margin:0 0 26px;
+      font-size:16px;
+      color:#586777;
+      line-height:2;
+      max-width:860px;
+    }
+
+    .btns{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-bottom:22px;
+    }
+
+    .btn{
+      min-height:52px;
+      padding:0 24px;
+      border-radius:15px;
+      border:none;
+      cursor:pointer;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      font-family:'Cairo',sans-serif;
+      font-size:15px;
+      font-weight:900;
+      transition:.25s ease;
+      white-space:nowrap;
+    }
+
+    .btn-primary{
+      background:linear-gradient(135deg, var(--accent), var(--accent-dark));
+      color:#fff;
+      box-shadow:0 12px 24px rgba(245,166,35,0.28);
+    }
+
+    .btn-primary:hover{
+      transform:translateY(-2px);
+      box-shadow:0 15px 28px rgba(245,166,35,0.35);
+    }
+
+    .btn-secondary{
+      background:#fff;
+      color:var(--primary);
+      border:1px solid var(--line);
+    }
+
+    .btn-secondary:hover{
+      transform:translateY(-2px);
+      box-shadow:0 10px 22px rgba(34,50,67,0.08);
+    }
+
+    .quick-stats{
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:14px;
+      margin-top:6px;
+    }
+
+    .mini-stat{
+      background:linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+      border:1px solid var(--line);
+      border-radius:18px;
+      padding:16px;
+      text-align:center;
+    }
+
+    .mini-stat i{
+      font-size:20px;
+      color:var(--accent-dark);
+      margin-bottom:8px;
+      display:block;
+    }
+
+    .mini-stat strong{
+      display:block;
+      font-size:15px;
+      color:var(--primary);
+      margin-bottom:5px;
+    }
+
+    .mini-stat span{
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.7;
+    }
+
+    .hero-side{
+      padding:24px;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+      justify-content:center;
+      min-height:470px;
+    }
+
+    .side-box{
+      padding:18px;
+      border-radius:18px;
+      border:1px solid var(--line);
+      background:linear-gradient(180deg, #fff 0%, #f8fafc 100%);
+    }
+
+    .side-box .head{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-size:16px;
+      font-weight:900;
+      color:var(--primary);
+      margin-bottom:8px;
+    }
+
+    .side-box .head i{
+      color:var(--accent-dark);
+      width:20px;
+      text-align:center;
+    }
+
+    .side-box p{
+      margin:0;
+      font-size:14px;
+      color:#5f6d7c;
+      line-height:1.9;
+    }
+
+    .section{
+      padding:10px 0 30px;
+    }
+
+    .section-title{
+      text-align:center;
+      margin-bottom:20px;
+    }
+
+    .section-title h3{
+      margin:0 0 8px;
+      font-size:32px;
+      color:var(--primary);
+      font-weight:900;
+    }
+
+    .section-title p{
+      margin:0;
+      color:var(--muted);
+      font-size:15px;
+      line-height:1.9;
+    }
+
+    .services{
+      display:grid;
+      grid-template-columns:repeat(4, 1fr);
+      gap:16px;
+    }
+
+    .service{
+      padding:22px 18px;
+      text-align:center;
+      transition:.25s ease;
+    }
+
+    .service:hover{
+      transform:translateY(-4px);
+    }
+
+    .service .icon{
+      width:62px;
+      height:62px;
+      margin:0 auto 14px;
+      border-radius:20px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(34,50,67,0.06);
+      color:var(--primary);
+      font-size:24px;
+    }
+
+    .service h4{
+      margin:0 0 8px;
+      font-size:17px;
+      color:var(--primary);
+      font-weight:900;
+    }
+
+    .service p{
+      margin:0 0 16px;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.9;
+      min-height:78px;
+    }
+
+    .service a{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      min-height:42px;
+      padding:0 14px;
+      border-radius:12px;
+      font-size:14px;
+      font-weight:800;
+      color:var(--primary);
+      background:#fff;
+      border:1px solid var(--line);
+    }
+
+    .service a:hover{
+      background:#f9fbfd;
+    }
+
+    .footer{
+      padding:18px 0 28px;
+    }
+
+    .footer-card{
+      padding:16px 20px;
+      text-align:center;
+      color:#667586;
+      font-size:13px;
+      line-height:1.9;
+    }
+
+    .toast{
+      position:fixed;
+      left:50%;
+      bottom:20px;
+      transform:translateX(-50%);
+      background:#223243;
+      color:#fff;
+      padding:12px 18px;
+      border-radius:14px;
+      box-shadow:0 12px 28px rgba(0,0,0,0.18);
+      z-index:9999;
+      display:none;
+      font-size:14px;
+      font-weight:700;
+      max-width:min(92vw, 520px);
+      text-align:center;
+    }
+
+    @media (max-width:1100px){
+      .hero-grid{
+        grid-template-columns:1fr;
+      }
+
+      .services{
+        grid-template-columns:repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width:720px){
+      .container{
+        width:min(100% - 20px, 1400px);
+      }
+
+      .topbar-inner{
+        justify-content:center;
+      }
+
+      .brand{
+        width:100%;
+      }
+
+      .top-actions{
+        width:100%;
+      }
+
+      .top-btn{
+        flex:1;
+      }
+
+      .hero{
+        padding-top:26px;
+      }
+
+      .hero-main{
+        padding:24px 18px;
+        min-height:auto;
+      }
+
+      .hero-side{
+        padding:18px;
+        min-height:auto;
+      }
+
+      .btns{
+        flex-direction:column;
+      }
+
+      .btn{
+        width:100%;
+      }
+
+      .quick-stats{
+        grid-template-columns:1fr;
+      }
+
+      .services{
+        grid-template-columns:1fr;
+      }
+
+      .section-title h3{
+        font-size:26px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="brand">
+        <div class="brand-logo">
+          <i class="fa-solid fa-clipboard-check"></i>
+        </div>
+        <div class="brand-text">
+          <h1>نظام تتبع أوامر العمل</h1>
+          <p>واجهة Frontend مستقلة تعمل مباشرة من Apps Script Web App</p>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <a href="#services" class="top-btn">
+          <i class="fa-solid fa-layer-group"></i>
+          الأقسام
+        </a>
+        <a href="#" class="top-btn" onclick="openMain();return false;">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          فتح النظام
+        </a>
+      </div>
+    </div>
+  </header>
+
+  
+
+  <section class="section" id="services">
+    <div class="container">
+      <div class="section-title">
+        <h3>أقسام النظام</h3>
+        <p>يمكنك ربط هذه الأزرار بصفحاتك الحقيقية داخل نظام تتبع أوامر العمل</p>
+      </div>
+
+      <div class="services">
+        <div class="card service">
+          <div class="icon"><i class="fa-solid fa-house"></i></div>
+          <h4>الصفحة الرئيسية</h4>
+          <p>واجهة الدخول العامة وعرض الأقسام الرئيسية للنظام والإجراءات السريعة.</p>
+          <a href="#" onclick="openPage('main');return false;">
+            <i class="fa-solid fa-arrow-left"></i>
+            فتح
+          </a>
+        </div>
+
+        <div class="card service">
+          <div class="icon"><i class="fa-solid fa-magnifying-glass"></i></div>
+          <h4>التتبع</h4>
+          <p>متابعة أوامر العمل، حالة الإنجاز، والبحث عن المعاملات بشكل مباشر.</p>
+          <a href="#" onclick="openPage('index');return false;">
+            <i class="fa-solid fa-arrow-left"></i>
+            فتح
+          </a>
+        </div>
+
+        <div class="card service">
+          <div class="icon"><i class="fa-solid fa-diagram-project"></i></div>
+          <h4>التخطيط</h4>
+          <p>عرض التوجيه ونوع الفحص وخطوات المعاملة قبل انتقالها للأقسام التالية.</p>
+          <a href="#" onclick="openPage('plan');return false;">
+            <i class="fa-solid fa-arrow-left"></i>
+            فتح
+          </a>
+        </div>
+
+        <div class="card service">
+          <div class="icon"><i class="fa-solid fa-money-bill-wave"></i></div>
+          <h4>المالية</h4>
+          <p>إدارة التسعيرة، أيام الإنجاز، وحالة التسديد الخاصة بأوامر العمل.</p>
+          <a href="#" onclick="openPage('finance');return false;">
+            <i class="fa-solid fa-arrow-left"></i>
+            فتح
+          </a>
+        </div>
+
+        <div class="card service">
+          <div class="icon"><i class="fa-solid fa-flask"></i></div>
+          <h4>المختبرات</h4>
+          <p>استلام وفحص المعاملات المختبرية ومتابعة مراحل الإنجاز المرتبطة بها.</p>
+          <a href="#" onclick="openPage('lab1');return false;">
+            <i class="fa-solid fa-arrow-left"></i>
+            فتح
+          </a>
+        </div>
+
+        <div class="card service">
+          <div class="icon"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+          <h4>الورشة</h4>
+          <p>متابعة الأعمال الفنية والورشة وما يرتبط بها من تنفيذ وإحالة داخلية.</p>
+          <a href="#" onclick="openPage('workshop');return false;">
+            <i class="fa-solid fa-arrow-left"></i>
+            فتح
+          </a>
+        </div>
+
+        <div class="card service">
+          <div class="icon"><i class="fa-solid fa-file-lines"></i></div>
+          <h4>الكتاب الرسمي</h4>
+          <p>إدارة مرحلة إصدار الكتاب الرسمي بعد اكتمال النتائج والإجراءات المطلوبة.</p>
+          <a href="#" onclick="openPage('official');return false;">
+            <i class="fa-solid fa-arrow-left"></i>
+            فتح
+          </a>
+        </div>
+
+        <div class="card service">
+          <div class="icon"><i class="fa-solid fa-envelope"></i></div>
+          <h4>النتائج والإيميل</h4>
+          <p>إرسال الإيميلات واستلام النتائج النهائية وربط المعاملة بملفاتها.</p>
+          <a href="#" onclick="openPage('results');return false;">
+            <i class="fa-solid fa-arrow-left"></i>
+            فتح
+          </a>
+        </div>
+
+        <div class="card service">
+          <div class="icon"><i class="fa-solid fa-elevator"></i></div>
+          <h4>المصعد</h4>
+          <p>متابعة أوامر العمل المتعلقة بفحص المصاعد وإجراءاتها الفنية.</p>
+          <a href="#" onclick="openPage('elev');return false;">
+            <i class="fa-solid fa-arrow-left"></i>
+            فتح
+          </a>
+        </div>
+
+        <div class="card service">
+          <div class="icon"><i class="fa-solid fa-clipboard-list"></i></div>
+          <h4>نتائج الفحص</h4>
+          <p>عرض وتسجيل نتائج الفحوصات الفنية المرتبطة بأوامر العمل.</p>
+          <a href="#" onclick="openPage('testresults');return false;">
+            <i class="fa-solid fa-arrow-left"></i>
+            فتح
+          </a>
+        </div>
+
+        <div class="card service">
+          <div class="icon"><i class="fa-solid fa-barcode"></i></div>
+          <h4>الباركود</h4>
+          <p>مسح وطباعة الباركود الخاص بأوامر العمل وربطها بالمعاملات.</p>
+          <a href="#" onclick="openPage('barcode');return false;">
+            <i class="fa-solid fa-arrow-left"></i>
+            فتح
+          </a>
+        </div>
+
+        <div class="card service">
+          <div class="icon"><i class="fa-solid fa-at"></i></div>
+          <h4>الإيميل</h4>
+          <p>إدارة وإرسال الإيميلات المرتبطة بالمعاملات والإشعارات.</p>
+          <a href="#" onclick="openPage('email');return false;">
+            <i class="fa-solid fa-arrow-left"></i>
+            فتح
+          </a>
+        </div>
+
+        <div class="card service">
+          <div class="icon"><i class="fa-solid fa-house-chimney"></i></div>
+          <h4>الرئيسية</h4>
+          <p>الصفحة الرئيسية للنظام وعرض الملخص العام لأوامر العمل.</p>
+          <a href="#" onclick="openPage('main');return false;">
+            <i class="fa-solid fa-arrow-left"></i>
+            فتح
+          </a>
+        </div>
+
+        <div class="card service">
+          <div class="icon"><i class="fa-solid fa-user-shield"></i></div>
+          <h4>الإدارة</h4>
+          <p>لوحة تحكم المشرف وإدارة المستخدمين والصلاحيات والإعدادات.</p>
+          <a href="#" onclick="openPage('admin');return false;">
+            <i class="fa-solid fa-arrow-left"></i>
+            فتح
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="card footer-card">
+        الشركة العامة للفحص والتأهيل الهندسي — واجهة مستقلة لنظام تتبع أوامر العمل
+      </div>
+    </div>
+  </footer>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const APP_URL = "https://script.google.com/macros/s/AKfycbxFTME-jHvoLIk__vdEB5_zyHuESmcCIASnEtKW20SRv2Z_8_8-osjG6SWmWnYERzTv/exec"; 
+    // ضع هنا رابط Web App الأساسي إذا أردت التنقل بين الصفحات
+    // مثال:
+    // const APP_URL = "https://script.google.com/macros/s/AKfycbxxxxxxxxxxxxxxxx/exec";
+
+    function showMsg(text){
+      const t = document.getElementById('toast');
+      t.textContent = text || '';
+      t.style.display = 'block';
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => {
+        t.style.display = 'none';
+      }, 2500);
+    }
+
+    function openMain(){
+      if(APP_URL){
+        window.location.href = APP_URL + "?p=main";
+      }else{
+        showMsg("ضع رابط Web App داخل المتغير APP_URL أولاً.");
+      }
+    }
+
+    function openPage(page){
+      if(APP_URL){
+        window.location.href = APP_URL + "?p=" + encodeURIComponent(page);
+      }else{
+        showMsg("ضع رابط Web App داخل المتغير APP_URL أولاً.");
+      }
+    }
+  </script>
+</body>
+</html>
