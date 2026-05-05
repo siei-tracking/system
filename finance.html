@@ -507,7 +507,7 @@ input::placeholder{
   </div>
 </div>
 
-<div id="toast"></div>
+
 
 <script>
 const API_BASE = window.APP_CONFIG.API_BASE;
@@ -648,18 +648,7 @@ function escapeHtml(text){
     .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 }
 
-function showMsg(text, type){
-  if(!text) return;
-  const t = document.getElementById("toast");
-  t.className = "";
-  if(type === "ok")     t.classList.add("ok");
-  else if(type === "warn")  t.classList.add("warn");
-  else if(type === "err")   t.classList.add("err");
-  t.textContent = text;
-  t.style.display = "block";
-  clearTimeout(window.__toastTimer);
-  window.__toastTimer = setTimeout(function(){ t.style.display = "none"; }, 3000);
-}
+function showMsg(text, type){ }
 
 /* دالة مشتركة للتحقق من انتهاء الجلسة */
 function handleSessionExpiry(msg){
