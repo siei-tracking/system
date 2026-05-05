@@ -680,16 +680,10 @@ function setupForeground() {
       if (msgId === lastMsgId) return;
       lastMsgId = msgId;
 
-      // 🔔 عرض
-      callShowMsg(title + (body ? " - " + body : ""), "ok");
-
-      // 🌐 إشعار متصفح
-      showBrowserNotif(title, body);
-
       // 🔊 صوت
       playNotifSound();
 
-      // 🔄 تحديث القائمة فوراً
+      // 🔄 تحديث القائمة فوراً (الـ polling سيعرض إشعار المتصفح)
       if (typeof loadNotifications === "function") {
         loadNotifications();
       }
