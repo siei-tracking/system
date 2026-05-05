@@ -729,6 +729,8 @@ function setupForeground() {
         list.innerHTML = '<div class="nw-empty" style="padding:20px;text-align:center;color:#758292;font-weight:900;">لا توجد إشعارات</div>';
         count.textContent = "0";
         count.style.display = "none";
+        /* مسح الـ cache حتى لا يظهر عدد من صفحة أخرى */
+        try { localStorage.setItem("nw_last_unread_count", "0"); } catch(e){}
         lastNotifIds = [];
         notifReady   = true;
         return;
