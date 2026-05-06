@@ -695,38 +695,15 @@
     </div>
   </footer>
 
-  <div id="toast" class="toast"></div>
-
   <script>
-    const APP_URL = "https://script.google.com/macros/s/AKfycbxFTME-jHvoLIk__vdEB5_zyHuESmcCIASnEtKW20SRv2Z_8_8-osjG6SWmWnYERzTv/exec"; 
-    // ضع هنا رابط Web App الأساسي إذا أردت التنقل بين الصفحات
-    // مثال:
-    // const APP_URL = "https://script.google.com/macros/s/AKfycbxxxxxxxxxxxxxxxx/exec";
-
-    function showMsg(text){
-      const t = document.getElementById('toast');
-      t.textContent = text || '';
-      t.style.display = 'block';
-      clearTimeout(window.__toastTimer);
-      window.__toastTimer = setTimeout(() => {
-        t.style.display = 'none';
-      }, 2500);
-    }
+    const BASE_URL = "https://siei-tracking.github.io/system/";
 
     function openMain(){
-      if(APP_URL){
-        window.location.href = APP_URL + "?p=main";
-      }else{
-        showMsg("ضع رابط Web App داخل المتغير APP_URL أولاً.");
-      }
+      window.location.href = BASE_URL + "main";
     }
 
     function openPage(page){
-      if(APP_URL){
-        window.location.href = APP_URL + "?p=" + encodeURIComponent(page);
-      }else{
-        showMsg("ضع رابط Web App داخل المتغير APP_URL أولاً.");
-      }
+      window.location.href = BASE_URL + page;
     }
   </script>
 </body>
