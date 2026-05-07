@@ -1,33 +1,40 @@
 /**
- * pwa-install.js  v2.0
- * يُعدّل <link rel="manifest"> ليشير للملف الثابت manifest.webmanifest
- * ويحدّث theme-color وعنوان الصفحة حسب الصفحة الحالية
+ * pwa-install.js  v3.0
+ * يُشير لملف manifest خاص بكل صفحة
+ * بحيث start_url = الصفحة التي ثبّت منها المستخدم
  *
  * الاستخدام: <script src="/system/pwa-install.js"></script>
- * يشترط وجود: /system/manifest.webmanifest  (ملف ثابت على السيرفر)
+ * يشترط رفع ملفات manifest في /system/ بالأسماء:
+ *   manifest-main.webmanifest , manifest-elev.webmanifest ... إلخ
  */
 (function () {
   "use strict";
 
-  /* ── أسماء الصفحات بالعربي (كاملة) ── */
-  var PAGE_NAMES = { 
-    "plan":        "خطة العمل",
-    "finance":     "الشؤون المالية",
-    "lab1":        "المختبر",
+  var PAGE_NAMES = {
+  "index":       "تتبع اوامر العمل",
+  "plan":        "اصدار امر العمل وتثبت السعر",
+    "finance":     "التسديد",
+    "lab1":        "المختبرات",
     "workshop":    "الورشة",
-    "elev":        "الرفع والمناولة",
+    "elev":        "المصاعد",
     "testresults": "نتائج الفحص",
-    "official":    "المراسلات الرسمية",
+    "official":    "الكتاب الرسمي",
     "barcode":     "الباركود",
-    "email":       "البريد الإلكتروني",
-    "results":     "نتائج البحث",
-  "main":        "المعاملات المفتوحة"
+    "email":       "الإيميل",
+    "results":     "تسليم النتائج",
+    "main":        "المعاملات"
   };
 
-  var THEME_COLOR    = "#223243";
-  var MANIFEST_PATH  = "/system/manifest.webmanifest";
+  var PAGES_WITH_MANIFEST = [
+    "main","results","plan","finance","lab1",
+    "workshop","elev","testresults","official","barcode","email"
+  ];
 
-  /* ── استخراج مفتاح الصفحة من الـ URL ── */
+  var THEME_COLOR      = "#223243";
+  var MANIFEST_BASE    = "/system/manifest-";
+  var MANIFEST_EXT     = ".webmanifest";
+  var MANIFEST_DEFAULT = "/system/manifest-main.webmanifest";
+
   function getCurrentPageKey() {
     var path = window.location.pathname;
     var file = path.split("/").pop()
@@ -36,24 +43,27 @@
     return file || "main";
   }
 
-  /* ── تعديل <link rel="manifest"> ليشير للملف الثابت ── */
-  function injectManifestLink() {
+  function getManifestPath(pageKey) {
+    if (PAGES_WITH_MANIFEST.indexOf(pageKey) !== -1) {
+      return MANIFEST_BASE + pageKey + MANIFEST_EXT;
+    }
+    return MANIFEST_DEFAULT;
+  }
+
+  function injectManifestLink(manifestPath) {
     var existing = document.querySelector('link[rel="manifest"]');
     if (existing) {
-      /* إذا كان يشير لـ blob أو مسار خاطئ — صحّحه */
-      if (existing.href.indexOf("blob:") === 0 ||
-          existing.href.indexOf(MANIFEST_PATH) === -1) {
-        existing.href = MANIFEST_PATH;
+      if (existing.getAttribute("href") !== manifestPath) {
+        existing.setAttribute("href", manifestPath);
       }
-      return; /* موجود وصحيح */
+      return;
     }
-    var link  = document.createElement("link");
+    var link = document.createElement("link");
     link.rel  = "manifest";
-    link.href = MANIFEST_PATH;
+    link.setAttribute("href", manifestPath);
     document.head.appendChild(link);
   }
 
-  /* ── تعيين theme-color ── */
   function injectThemeColor() {
     var meta = document.querySelector('meta[name="theme-color"]');
     if (!meta) {
@@ -64,35 +74,31 @@
     meta.content = THEME_COLOR;
   }
 
-  /* ── تعيين apple-mobile-web-app-title ── */
-  function injectAppleMeta() {
-    var pageKey  = getCurrentPageKey();
-    var pageName = PAGE_NAMES[pageKey] || pageKey;
-
-    /* عنوان التطبيق على iOS */
-    var appleTitleMeta = document.querySelector('meta[name="apple-mobile-web-app-title"]');
-    if (!appleTitleMeta) {
-      appleTitleMeta = document.createElement("meta");
-      appleTitleMeta.name = "apple-mobile-web-app-title";
-      document.head.appendChild(appleTitleMeta);
-    }
-    appleTitleMeta.content = pageName;
-
-    /* قابل للتثبيت على iOS */
-    var appleCapable = document.querySelector('meta[name="apple-mobile-web-app-capable"]');
-    if (!appleCapable) {
-      appleCapable = document.createElement("meta");
-      appleCapable.name    = "apple-mobile-web-app-capable";
-      appleCapable.content = "yes";
-      document.head.appendChild(appleCapable);
-    }
+  function injectAppleMeta(pageName) {
+    var pairs = [
+      ["apple-mobile-web-app-title",            pageName],
+      ["apple-mobile-web-app-capable",          "yes"],
+      ["apple-mobile-web-app-status-bar-style", "black-translucent"]
+    ];
+    pairs.forEach(function (pair) {
+      var meta = document.querySelector('meta[name="' + pair[0] + '"]');
+      if (!meta) {
+        meta = document.createElement("meta");
+        meta.name = pair[0];
+        document.head.appendChild(meta);
+      }
+      meta.content = pair[1];
+    });
   }
 
-  /* ── التشغيل ── */
   function init() {
-    injectManifestLink();
+    var pageKey      = getCurrentPageKey();
+    var pageName     = PAGE_NAMES[pageKey] || pageKey;
+    var manifestPath = getManifestPath(pageKey);
+
+    injectManifestLink(manifestPath);
     injectThemeColor();
-    injectAppleMeta();
+    injectAppleMeta(pageName);
   }
 
   if (document.readyState === "loading") {
