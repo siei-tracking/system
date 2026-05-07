@@ -1,96 +1,104 @@
 /**
- * pwa-install.js
- * يُولّد manifest ديناميكي بحيث start_url = الصفحة الحالية
- * أضفه في كل صفحة HTML:  <script src="/system/pwa-install.js"></script>
+ * pwa-install.js  v2.0
+ * يُعدّل <link rel="manifest"> ليشير للملف الثابت manifest.webmanifest
+ * ويحدّث theme-color وعنوان الصفحة حسب الصفحة الحالية
+ *
+ * الاستخدام: <script src="/system/pwa-install.js"></script>
+ * يشترط وجود: /system/manifest.webmanifest  (ملف ثابت على السيرفر)
  */
-(function(){
+(function () {
   "use strict";
 
-  /* ── أسماء الصفحات بالعربي ── */
-  var PAGE_NAMES = {
-    "main":    "المعاملات المفتوحة",
-    "results": "نتائج البحث",
-    "admin":   "إدارة المستخدمين",
-    "login":   "تسجيل الدخول"
+  /* ── أسماء الصفحات بالعربي (كاملة) ── */
+  var PAGE_NAMES = { 
+    "plan":        "خطة العمل",
+    "finance":     "الشؤون المالية",
+    "lab1":        "المختبر",
+    "workshop":    "الورشة",
+    "elev":        "الرفع والمناولة",
+    "testresults": "نتائج الفحص",
+    "official":    "المراسلات الرسمية",
+    "barcode":     "الباركود",
+    "email":       "البريد الإلكتروني",
+    "results":     "نتائج البحث",
+  "main":        "المعاملات المفتوحة"
   };
 
-  /* ── بيانات الـ manifest الثابتة ── */
-  var BASE_MANIFEST = {
-    name:             "منصة تتبع أوامر العمل",
-    short_name:       "تتبع العمل",
-    description:      "منصة تتبع أوامر العمل - الشركة العامة للفحص والتأهيل الهندسي",
-    scope:            "/system/",
-    display:          "standalone",
-    background_color: "#223243",
-    theme_color:      "#223243",
-    lang:             "ar",
-    dir:              "rtl",
-    orientation:      "portrait-primary",
-    categories:       ["business", "productivity"],
-    icons: [
-      { src:"/system/logo-192.png",          sizes:"192x192", type:"image/png", purpose:"any"      },
-      { src:"/system/logo-192-maskable.png", sizes:"192x192", type:"image/png", purpose:"maskable" },
-      { src:"/system/logo-512.png",          sizes:"512x512", type:"image/png", purpose:"any"      },
-      { src:"/system/logo-512-maskable.png", sizes:"512x512", type:"image/png", purpose:"maskable" }
-    ]
-  };
+  var THEME_COLOR    = "#223243";
+  var MANIFEST_PATH  = "/system/manifest.webmanifest";
 
-  function getCurrentPageKey(){
-    var path = window.location.pathname;           // e.g. /system/main.html
-    var file = path.split("/").pop()               // main.html
-                   .replace(/\.html?$/i, "")       // main
+  /* ── استخراج مفتاح الصفحة من الـ URL ── */
+  function getCurrentPageKey() {
+    var path = window.location.pathname;
+    var file = path.split("/").pop()
+                   .replace(/\.html?$/i, "")
                    .toLowerCase();
     return file || "main";
   }
 
-  function buildManifest(){
-    var pageKey  = getCurrentPageKey();
-    var pageName = PAGE_NAMES[pageKey] || pageKey;
-    var startUrl = window.location.pathname + "?source=pwa";
-
-    var manifest = Object.assign({}, BASE_MANIFEST, {
-      start_url:  startUrl,
-      short_name: pageName,           /* اسم الأيقونة يعكس الصفحة */
-      shortcuts: [
-        {
-          name:       "المعاملات المفتوحة",
-          short_name: "معاملات",
-          url:        "/system/main.html?source=pwa-shortcut",
-          icons:      [{ src:"/system/logo-192.png", sizes:"192x192" }]
-        },
-        {
-          name:       "نتائج البحث",
-          short_name: "نتائج",
-          url:        "/system/results.html?source=pwa-shortcut",
-          icons:      [{ src:"/system/logo-192.png", sizes:"192x192" }]
-        }
-      ]
-    });
-
-    return JSON.stringify(manifest);
-  }
-
-  function injectManifest(){
-    /* احذف أي manifest موجود */
+  /* ── تعديل <link rel="manifest"> ليشير للملف الثابت ── */
+  function injectManifestLink() {
     var existing = document.querySelector('link[rel="manifest"]');
-    if(existing) existing.parentNode.removeChild(existing);
-
-    /* أنشئ Blob URL من الـ manifest الديناميكي */
-    var json = buildManifest();
-    var blob = new Blob([json], { type:"application/manifest+json" });
-    var url  = URL.createObjectURL(blob);
-
-    var link = document.createElement("link");
+    if (existing) {
+      /* إذا كان يشير لـ blob أو مسار خاطئ — صحّحه */
+      if (existing.href.indexOf("blob:") === 0 ||
+          existing.href.indexOf(MANIFEST_PATH) === -1) {
+        existing.href = MANIFEST_PATH;
+      }
+      return; /* موجود وصحيح */
+    }
+    var link  = document.createElement("link");
     link.rel  = "manifest";
-    link.href = url;
+    link.href = MANIFEST_PATH;
     document.head.appendChild(link);
   }
 
-  /* ── تشغيل عند جهوزية الـ DOM ── */
-  if(document.readyState === "loading"){
-    document.addEventListener("DOMContentLoaded", injectManifest);
+  /* ── تعيين theme-color ── */
+  function injectThemeColor() {
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (!meta) {
+      meta = document.createElement("meta");
+      meta.name = "theme-color";
+      document.head.appendChild(meta);
+    }
+    meta.content = THEME_COLOR;
+  }
+
+  /* ── تعيين apple-mobile-web-app-title ── */
+  function injectAppleMeta() {
+    var pageKey  = getCurrentPageKey();
+    var pageName = PAGE_NAMES[pageKey] || pageKey;
+
+    /* عنوان التطبيق على iOS */
+    var appleTitleMeta = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+    if (!appleTitleMeta) {
+      appleTitleMeta = document.createElement("meta");
+      appleTitleMeta.name = "apple-mobile-web-app-title";
+      document.head.appendChild(appleTitleMeta);
+    }
+    appleTitleMeta.content = pageName;
+
+    /* قابل للتثبيت على iOS */
+    var appleCapable = document.querySelector('meta[name="apple-mobile-web-app-capable"]');
+    if (!appleCapable) {
+      appleCapable = document.createElement("meta");
+      appleCapable.name    = "apple-mobile-web-app-capable";
+      appleCapable.content = "yes";
+      document.head.appendChild(appleCapable);
+    }
+  }
+
+  /* ── التشغيل ── */
+  function init() {
+    injectManifestLink();
+    injectThemeColor();
+    injectAppleMeta();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
   } else {
-    injectManifest();
+    init();
   }
 
 })();
