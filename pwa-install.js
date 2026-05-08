@@ -78,7 +78,8 @@
     var pairs = [
       ["apple-mobile-web-app-title",            pageName],
       ["apple-mobile-web-app-capable",          "yes"],
-      ["apple-mobile-web-app-status-bar-style", "black-translucent"]
+      ["apple-mobile-web-app-status-bar-style", "black-translucent"],
+      ["mobile-web-app-capable",                "yes"]   // ✅ أضف هذا
     ];
     pairs.forEach(function (pair) {
       var meta = document.querySelector('meta[name="' + pair[0] + '"]');
