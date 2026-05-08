@@ -1348,6 +1348,18 @@ function togglePass(btn, realPass){
    * ============================================================ */
   window.addEventListener("load", function(){
 
+  /* ── الاستماع لرسائل تسجيل الخروج الفوري من تبويبات أخرى ── */
+  try {
+    const bc = new BroadcastChannel("siei_session");
+    bc.onmessage = function(e) {
+      if (e.data && e.data.type === "FORCE_LOGOUT") {
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
+      }
+    };
+  } catch(e) {}
+
     /* Table delegation */
     document.getElementById("usersBody").addEventListener("click", function(e){
       const fillBtn   = e.target.closest(".btn-fill-user");

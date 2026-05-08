@@ -1962,6 +1962,18 @@
     if(openSheetBtn) openSheetBtn.addEventListener("click", openArchiveSheet);
     if(adminBtn)     adminBtn.addEventListener("click",     openAdminPage);
 
+  /* ── الاستماع لرسائل تسجيل الخروج الفوري من تبويبات أخرى ── */
+  try {
+    const bc = new BroadcastChannel("siei_session");
+    bc.onmessage = function(e) {
+      if (e.data && e.data.type === "FORCE_LOGOUT") {
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
+      }
+    };
+  } catch(e) {}
+
     /* بدء التطبيق */
     ensurePageSession();
     liveSessionInterval = setInterval(checkLiveSession, 10000);
