@@ -437,7 +437,7 @@
     }
   }
 
-  /* ── مسح جلسات كل الصفحات (يستدعي runClearAllSessions من Apps Script) ── */
+  /* ── مسح جلسات كل الصفحات + إشعار كل التبويبات فوراً ── */
   async function clearSessions() {
     if (!confirm("⚠️ سيتم مسح جلسات تسجيل الدخول لجميع المستخدمين وجميع الأجهزة.\nهل أنت متأكد؟")) return;
     try {
@@ -446,18 +446,21 @@
       /* أ) استدعاء runClearAllSessions من Apps Script */
       if (token) {
         try {
-          const res = await apiPost({ action: "runClearAllSessions", token, page: PAGE_NAME });
-          if (res && res.ok) {
-            console.log("[Session] تم حذف " + res.deleted + " جلسة من السيرفر");
-          } else {
-            console.warn("[Session]", res && res.message);
-          }
+          const res = await apiPost({ action:"runClearAllSessions", token, page:PAGE_NAME });
+          console.log("[Session] تم حذف " + (res && res.deleted) + " جلسة من السيرفر");
         } catch(e) {
           console.warn("[Session] تعذر الاتصال بالسيرفر:", e);
         }
       }
 
-      /* ب) مسح من هذا الجهاز */
+      /* ب) إرسال رسالة لكل التبويبات المفتوحة — تُخرجها فوراً */
+      try {
+        const bc = new BroadcastChannel("siei_session");
+        bc.postMessage({ type: "FORCE_LOGOUT" });
+        bc.close();
+      } catch(e) {}
+
+      /* ج) مسح هذا الجهاز */
       localStorage.clear();
       sessionStorage.clear();
 
@@ -467,6 +470,18 @@
       alert("❌ حدث خطأ: " + e.message);
     }
   }
+
+  /* ── الاستماع لرسائل تسجيل الخروج من تبويبات أخرى ── */
+  try {
+    const bc = new BroadcastChannel("siei_session");
+    bc.onmessage = function(e) {
+      if (e.data && e.data.type === "FORCE_LOGOUT") {
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
+      }
+    };
+  } catch(e) {}
 
   /* ── حالة النظام ── */
   async function showSystemStatus() {
