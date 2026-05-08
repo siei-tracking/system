@@ -1,5 +1,5 @@
 /**
- * pwa-install.js  v3.0
+ * pwa-install.js  v3.1
  * يُشير لملف manifest خاص بكل صفحة
  * بحيث start_url = الصفحة التي ثبّت منها المستخدم
  *
@@ -11,8 +11,8 @@
   "use strict";
 
   var PAGE_NAMES = {
-  "index":       "تتبع اوامر العمل",
-  "plan":        "اصدار امر العمل وتثبت السعر",
+    "index":       "تتبع اوامر العمل",
+    "plan":        "اصدار امر العمل وتثبت السعر",
     "finance":     "التسديد",
     "lab1":        "المختبرات",
     "workshop":    "الورشة",
@@ -34,6 +34,22 @@
   var MANIFEST_BASE    = "/system/manifest-";
   var MANIFEST_EXT     = ".webmanifest";
   var MANIFEST_DEFAULT = "/system/manifest-main.webmanifest";
+
+  /* ── معرف الجهاز — ينشأ مرة واحدة ويبقى ثابتاً ── */
+  function ensureDeviceId() {
+    var key = "pwa_device_id";
+    try {
+      var id = localStorage.getItem(key);
+      if (!id) {
+        id = "dev_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 9);
+        localStorage.setItem(key, id);
+      }
+      /* اجعله متاحاً لكل الملفات الأخرى */
+      window.PWA_DEVICE_ID = id;
+    } catch(e) {
+      window.PWA_DEVICE_ID = "unknown";
+    }
+  }
 
   function getCurrentPageKey() {
     var path = window.location.pathname;
@@ -79,7 +95,7 @@
       ["apple-mobile-web-app-title",            pageName],
       ["apple-mobile-web-app-capable",          "yes"],
       ["apple-mobile-web-app-status-bar-style", "black-translucent"],
-      ["mobile-web-app-capable",                "yes"]   // ✅ أضف هذا
+      ["mobile-web-app-capable",                "yes"]
     ];
     pairs.forEach(function (pair) {
       var meta = document.querySelector('meta[name="' + pair[0] + '"]');
@@ -93,6 +109,8 @@
   }
 
   function init() {
+    ensureDeviceId();   /* ✅ أنشئ Device ID فوراً عند أول فتح */
+
     var pageKey      = getCurrentPageKey();
     var pageName     = PAGE_NAMES[pageKey] || pageKey;
     var manifestPath = getManifestPath(pageKey);
