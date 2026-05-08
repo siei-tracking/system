@@ -1,5 +1,4 @@
 {
-  "name":             "منصة تتبع أوامر العمل",
   "short_name":       "المعاملات",
   "description":      "منصة تتبع أوامر العمل - الشركة العامة للفحص والتأهيل الهندسي",
   "start_url":        "/system/main.html?source=pwa",

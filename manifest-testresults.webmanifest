@@ -1,5 +1,4 @@
 {
-  "name":             "منصة تتبع أوامر العمل",
   "short_name":       "نتائج الفحص",
   "description":      "منصة تتبع أوامر العمل - الشركة العامة للفحص والتأهيل الهندسي",
   "start_url":        "/system/testresults.html?source=pwa",

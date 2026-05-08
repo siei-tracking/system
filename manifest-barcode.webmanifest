@@ -1,5 +1,4 @@
 {
-  "name":             "منصة تتبع أوامر العمل",
   "short_name":       "الباركود",
   "description":      "منصة تتبع أوامر العمل - الشركة العامة للفحص والتأهيل الهندسي",
   "start_url":        "/system/barcode.html?source=pwa",

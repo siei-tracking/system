@@ -1,5 +1,4 @@
 {
-  "name":             "منصة تتبع أوامر العمل",
   "short_name":       "المصاعد",
   "description":      "منصة تتبع أوامر العمل - الشركة العامة للفحص والتأهيل الهندسي",
   "start_url":        "/system/elev.html?source=pwa",
