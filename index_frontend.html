@@ -267,7 +267,7 @@
 <script>
   const BASE_URL   = "https://siei-tracking.github.io/system/";
   const API_BASE   = window.APP_CONFIG.API_BASE;
-  const PAGE_NAME  = "index_frontend";
+  const PAGE_NAME  = "index_Frontend";
 
   const STORAGE_KEY_PAGE   = "tracking_session_token_" + PAGE_NAME;
   const STORAGE_KEY_GLOBAL = "tracking_session_token";
@@ -405,6 +405,33 @@
       }
       alert("✅ تم مسح كل التكوين — ستنتقل لصفحة الدخول");
       goToLogin();
+    } catch(e) {
+      alert("❌ حدث خطأ: " + e.message);
+    }
+  }
+
+  /* ── مسح جلسات كل الصفحات (ب + أ) ── */
+  async function clearSessions() {
+    if (!confirm("⚠️ سيتم مسح جلسات تسجيل الدخول لجميع الصفحات وجميع الأجهزة.\nهل أنت متأكد؟")) return;
+    try {
+      const token = getSessionToken();
+
+      /* أ) مسح من السيرفر — يُخرج كل المستخدمين من كل الأجهزة */
+      if (token) {
+        try {
+          const res = await apiPost({ action:"clearAllSessions", token, page:PAGE_NAME });
+          console.log("[Session]", res && res.message);
+        } catch(e) {
+          console.warn("[Session] تعذر الاتصال بالسيرفر:", e);
+        }
+      }
+
+      /* ب) مسح من هذا الجهاز — يُخرج من كل الصفحات محلياً */
+      localStorage.clear();
+      sessionStorage.clear();
+
+      alert("✅ تم مسح جميع الجلسات — ستنتقل لصفحة الدخول");
+      window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
     } catch(e) {
       alert("❌ حدث خطأ: " + e.message);
     }
