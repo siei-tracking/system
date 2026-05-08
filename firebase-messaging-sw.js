@@ -60,10 +60,10 @@ self.addEventListener("notificationclick", function(event){
    Cache بسيط لتشغيل الـ PWA offline
    يكفي لإزالة تحذير "Page does not work offline"
 ========================================================= */
-const CACHE_NAME = "siei-pwa-v1";
+const CACHE_NAME = "siei-pwa-v2";
 const CACHE_URLS = [
   "/system/main.html",
-  "/system/manifest.webmanifest",
+  "/system/manifest-main.webmanifest",
   "/system/logo-192.png",
   "/system/logo-512.png"
 ];
