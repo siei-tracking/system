@@ -69,6 +69,7 @@
     .err{ background:#fdedec; color:#922b21; }
     .status-close{ margin-top:18px; width:100%; padding:10px; border:none; border-radius:12px; background:#223243; color:#fff; font-family:Cairo,sans-serif; font-size:14px; font-weight:700; cursor:pointer; }
 
+    .page-overlay{display:flex;position:fixed;inset:0;background:rgba(22,35,46,0.97);z-index:99999;align-items:center;justify-content:center;}
     @media(max-width:1100px){.services{grid-template-columns:repeat(2,1fr);}}
     @media(max-width:600px){
       .services{grid-template-columns:repeat(2,1fr);}
@@ -81,6 +82,16 @@
   </style>
 </head>
 <body>
+
+<!-- شاشة التحقق من الجلسة -->
+<div class="page-overlay" id="pageOverlay">
+  <div style="text-align:center;color:#fff;font-family:Cairo,sans-serif;direction:rtl">
+    <img src="https://siei-tracking.github.io/system/logo.png"
+         style="width:72px;height:72px;border-radius:50%;border:3px solid #fff;margin-bottom:16px;display:block;margin-left:auto;margin-right:auto">
+    <div style="font-size:17px;font-weight:900;margin-bottom:6px">منصة تتبع أوامر العمل</div>
+    <div style="font-size:13px;opacity:0.75">جاري التحقق من الجلسة...</div>
+  </div>
+</div>
 
 <header class="topbar">
   <div class="container topbar-inner">
@@ -222,9 +233,109 @@
 </div>
 
 <script>
-  const BASE_URL = "https://siei-tracking.github.io/system/";
-  function openMain(){ window.location.href = BASE_URL + "main"; }
-  function openPage(page){ window.location.href = BASE_URL + page; }
+  const BASE_URL   = "https://siei-tracking.github.io/system/";
+  const API_BASE   = window.APP_CONFIG.API_BASE;
+  const PAGE_NAME  = "index";
+
+  const STORAGE_KEY_PAGE   = "tracking_session_token_" + PAGE_NAME;
+  const STORAGE_KEY_GLOBAL = "tracking_session_token";
+  const SESSION_CACHE_KEY  = "tracking_session_cache_" + PAGE_NAME;
+
+  let liveSessionInterval = null;
+  let sessionFailCount    = 0;
+  const MAX_SESSION_FAILS = 3;
+
+  function getSessionToken(){
+    return sessionStorage.getItem(STORAGE_KEY_PAGE)
+        || sessionStorage.getItem(STORAGE_KEY_GLOBAL)
+        || localStorage.getItem(STORAGE_KEY_PAGE)
+        || localStorage.getItem(STORAGE_KEY_GLOBAL)
+        || "";
+  }
+
+  function setSessionToken(token){
+    if(!token) return;
+    sessionStorage.setItem(STORAGE_KEY_PAGE,   token);
+    sessionStorage.setItem(STORAGE_KEY_GLOBAL, token);
+    localStorage.setItem(STORAGE_KEY_PAGE,     token);
+    localStorage.setItem(STORAGE_KEY_GLOBAL,   token);
+  }
+
+  function clearSessionToken(){
+    [STORAGE_KEY_PAGE, STORAGE_KEY_GLOBAL, SESSION_CACHE_KEY].forEach(function(k){
+      sessionStorage.removeItem(k); localStorage.removeItem(k);
+    });
+  }
+
+  function goToLogin(){
+    clearSessionToken();
+    if(liveSessionInterval){ clearInterval(liveSessionInterval); liveSessionInterval = null; }
+    window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
+  }
+
+  async function apiPost(payload){
+    const res = await fetch(API_BASE, {
+      method:  "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body:    JSON.stringify(payload)
+    });
+    if(!res.ok) throw new Error("HTTP " + res.status);
+    const text = await res.text();
+    try{ return JSON.parse(text); } catch(e){ throw new Error(text); }
+  }
+
+  async function ensurePageSession(){
+    const token = getSessionToken();
+    if(!token){ goToLogin(); return; }
+
+    let usedCache = false;
+    try{
+      const raw = sessionStorage.getItem(SESSION_CACHE_KEY) || localStorage.getItem(SESSION_CACHE_KEY);
+      if(raw){
+        const cached = JSON.parse(raw);
+        if(cached && cached.token === token && (Date.now() - (cached.ts||0)) < 600000){
+          document.getElementById("pageOverlay").style.display = "none";
+          usedCache = true;
+        }
+      }
+    }catch(e){}
+
+    try{
+      const result = await apiPost({ action:"checkSession", token, page:PAGE_NAME });
+      if(result && result.ok){
+        setSessionToken(token);
+        sessionFailCount = 0;
+        document.getElementById("pageOverlay").style.display = "none";
+        try{
+          const cd = JSON.stringify({ token, ts:Date.now() });
+          sessionStorage.setItem(SESSION_CACHE_KEY, cd);
+          localStorage.setItem(SESSION_CACHE_KEY, cd);
+        }catch(e){}
+        liveSessionInterval = setInterval(checkLiveSession, 300000);
+      }else{
+        try{ sessionStorage.removeItem(SESSION_CACHE_KEY); localStorage.removeItem(SESSION_CACHE_KEY); }catch(e){}
+        if(!usedCache) goToLogin();
+        else setTimeout(goToLogin, 2000);
+      }
+    }catch(e){
+      if(!usedCache) setTimeout(goToLogin, 900);
+    }
+  }
+
+  async function checkLiveSession(){
+    const token = getSessionToken();
+    if(!token){ goToLogin(); return; }
+    try{
+      const res = await apiPost({ action:"checkSession", token, page:PAGE_NAME });
+      if(!res || !res.ok){ sessionFailCount++; if(sessionFailCount >= MAX_SESSION_FAILS) goToLogin(); }
+      else sessionFailCount = 0;
+    }catch(e){ sessionFailCount++; if(sessionFailCount >= MAX_SESSION_FAILS) goToLogin(); }
+  }
+
+  window.addEventListener("load", ensurePageSession);
+
+  function openMain(){ window.open(BASE_URL + "main.html", "_blank"); }
+  function openPage(page){ window.open(BASE_URL + page + ".html", "_blank"); }
 
   /* ── مسح الكاش فقط (يحافظ على localStorage) ── */
   async function clearCache() {
@@ -261,7 +372,7 @@
         await Promise.all(regs.map(r => r.unregister()));
       }
       alert("✅ تم مسح كل التكوين — ستنتقل لصفحة الدخول");
-      window.location.href = BASE_URL + "login";
+      goToLogin();
     } catch(e) {
       alert("❌ حدث خطأ: " + e.message);
     }
