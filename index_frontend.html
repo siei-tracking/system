@@ -108,6 +108,7 @@
       <a href="#" class="top-btn" onclick="showSystemStatus();return false;"><i class="fa-solid fa-circle-info"></i> حالة النظام</a>
       <a href="#" class="top-btn btn-warn" onclick="clearCache();return false;"><i class="fa-solid fa-broom"></i> مسح الكاش</a>
       <a href="#" class="top-btn btn-danger" onclick="clearAll();return false;"><i class="fa-solid fa-trash"></i> مسح التكوين</a>
+      <a href="#" class="top-btn btn-danger" onclick="clearSessions();return false;"><i class="fa-solid fa-right-from-bracket"></i> مسح الجلسات</a>
     </div>
   </div>
 </header>
@@ -373,6 +374,27 @@
       }
       alert("✅ تم مسح كل التكوين — ستنتقل لصفحة الدخول");
       goToLogin();
+    } catch(e) {
+      alert("❌ حدث خطأ: " + e.message);
+    }
+  }
+
+  /* ── مسح الجلسات فقط (بدون مسح الكاش) ── */
+  function clearSessions() {
+    if (!confirm("هل تريد مسح جلسات تسجيل الدخول لجميع الصفحات؟\nسيتم تسجيل خروجك وستنتقل لصفحة الدخول.")) return;
+    try {
+      /* مسح كل tokens الجلسات */
+      const keysToDelete = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && (k.indexOf("tracking_session_token") === 0 || k.indexOf("tracking_session_cache") === 0)) {
+          keysToDelete.push(k);
+        }
+      }
+      keysToDelete.forEach(k => { localStorage.removeItem(k); sessionStorage.removeItem(k); });
+      sessionStorage.clear();
+      alert("✅ تم مسح جميع الجلسات — ستنتقل لصفحة الدخول");
+      window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
     } catch(e) {
       alert("❌ حدث خطأ: " + e.message);
     }
