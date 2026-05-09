@@ -253,23 +253,25 @@
       الشركة العامة للفحص والتأهيل الهندسي
     </div>
 
+    <form id="loginForm" autocomplete="on" onsubmit="login();return false;" style="margin:0">
     <div class="input-wrap">
       <span class="icon"><i class="fas fa-user"></i></span>
-      <input type="text" id="username" placeholder="اسم المستخدم" autocomplete="username">
+      <input type="text" id="username" name="username" placeholder="اسم المستخدم" autocomplete="username">
     </div>
 
     <div class="input-wrap">
       <span class="icon"><i class="fas fa-lock"></i></span>
-      <input type="password" id="pass" placeholder="كلمة المرور" autocomplete="current-password">
+      <input type="password" id="pass" name="password" placeholder="كلمة المرور" autocomplete="current-password">
 
       <button type="button" class="toggle-pass" id="togglePass" aria-label="إظهار/إخفاء كلمة المرور">
         <i class="fas fa-eye" id="eyeIcon"></i>
       </button>
     </div>
 
-    <button id="btnLogin" type="button">
+    <button id="btnLogin" type="submit">
       <span id="btnText">دخول</span>
     </button>
+    </form>
 
     <div id="msg" role="alert" aria-live="polite"></div>
   </div>
