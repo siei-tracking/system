@@ -101,6 +101,24 @@
     .status-close{ margin-top:18px; width:100%; padding:10px; border:none; border-radius:12px; background:#223243; color:#fff; font-family:Cairo,sans-serif; font-size:14px; font-weight:700; cursor:pointer; }
 
     .page-overlay{display:flex;position:fixed;inset:0;background:rgba(22,35,46,0.97);z-index:99999;align-items:center;justify-content:center;}
+
+    /* مودال إرسال إشعار */
+    .notif-modal{ display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:99998; align-items:center; justify-content:center; }
+    .notif-modal.open{ display:flex; }
+    .notif-box{ background:#fff; border-radius:20px; padding:28px; width:min(92vw,440px); direction:rtl; font-family:Cairo,sans-serif; }
+    .notif-box h3{ margin:0 0 18px; font-size:18px; color:#223243; font-weight:900; }
+    .notif-box label{ display:block; font-size:13px; font-weight:700; color:#223243; margin-bottom:6px; }
+    .notif-box input, .notif-box textarea{ width:100%; padding:10px 14px; border:1.5px solid #dde3ea; border-radius:10px; font-family:Cairo,sans-serif; font-size:14px; color:#223243; margin-bottom:14px; outline:none; }
+    .notif-box input:focus, .notif-box textarea:focus{ border-color:#223243; }
+    .notif-box textarea{ resize:vertical; min-height:80px; }
+    .notif-box .notif-result{ font-size:13px; min-height:20px; margin-bottom:12px; font-weight:700; }
+    .notif-box .notif-result.ok{ color:#1e8449; }
+    .notif-box .notif-result.err{ color:#c0392b; }
+    .notif-btns{ display:flex; gap:10px; }
+    .notif-btns button{ flex:1; padding:11px; border:none; border-radius:10px; font-family:Cairo,sans-serif; font-size:14px; font-weight:900; cursor:pointer; }
+    .notif-btns .btn-send{ background:#223243; color:#fff; }
+    .notif-btns .btn-send:hover{ background:#17232e; }
+    .notif-btns .btn-close{ background:#eee; color:#223243; }
     @media(max-width:1100px){.services{grid-template-columns:repeat(2,1fr);}}
     @media(max-width:600px){
       .services{grid-template-columns:repeat(2,1fr);}
@@ -124,6 +142,20 @@
   </div>
 </div>
 
+<!-- مودال إرسال إشعار تجريبي -->
+<div class="notif-modal" id="notifModal">
+  <div class="notif-box">
+    <h3>🔔 إرسال إشعار تجريبي</h3>
+    <label>اسم المستخدم (username)</label>
+    <input type="text" id="notifUser" placeholder="مثال: admin أو h" />
+    <div class="notif-result" id="notifResult"></div>
+    <div class="notif-btns">
+      <button class="btn-send" onclick="sendTestNotif()">إرسال</button>
+      <button class="btn-close" onclick="closeNotifModal()">إغلاق</button>
+    </div>
+  </div>
+</div>
+
 <header class="topbar">
   <div class="container topbar-inner">
     <div class="brand">
@@ -140,6 +172,7 @@
       <a href="#" class="top-btn btn-warn" onclick="clearCache();return false;"><i class="fa-solid fa-broom"></i> مسح الكاش</a>
       <a href="#" class="top-btn btn-danger" onclick="clearAll();return false;"><i class="fa-solid fa-trash"></i> مسح التكوين</a>
       <a href="#" class="top-btn btn-danger" onclick="clearSessions();return false;"><i class="fa-solid fa-right-from-bracket"></i> مسح الجلسات</a>
+      <a href="#" class="top-btn" style="background:rgba(39,174,96,0.2);border-color:rgba(39,174,96,0.4);" onclick="openNotifModal();return false;"><i class="fa-solid fa-bell"></i> إشعار تجريبي</a>
     </div>
   </div>
 </header>
@@ -482,6 +515,58 @@
       }
     };
   } catch(e) {}
+
+  /* ── إرسال إشعار تجريبي ── */
+  function openNotifModal() {
+    document.getElementById("notifResult").textContent = "";
+    document.getElementById("notifResult").className = "notif-result";
+    document.getElementById("notifModal").classList.add("open");
+    document.getElementById("notifUser").focus();
+  }
+
+  function closeNotifModal() {
+    document.getElementById("notifModal").classList.remove("open");
+  }
+
+  async function sendTestNotif() {
+    const targetUser = document.getElementById("notifUser").value.trim();
+    const resEl      = document.getElementById("notifResult");
+
+    if (!targetUser) { resEl.textContent = "⚠️ أدخل اسم المستخدم"; resEl.className = "notif-result err"; return; }
+
+    resEl.textContent = "جاري الإرسال...";
+    resEl.className   = "notif-result";
+
+    try {
+      const token = getSessionToken();
+      const res   = await apiPost({
+        action:     "sendTestNotification",
+        token,
+        page:       PAGE_NAME,
+        targetUser,
+        orderId:    "TEST",
+        message:    "test"
+      });
+
+      if (res && res.ok) {
+        resEl.textContent = res.message;
+        resEl.className   = "notif-result ok";
+        setTimeout(closeNotifModal, 2000);
+      } else {
+        resEl.textContent = (res && res.message) || "❌ فشل الإرسال";
+        resEl.className   = "notif-result err";
+      }
+    } catch(e) {
+      resEl.textContent = "❌ خطأ في الاتصال";
+      resEl.className   = "notif-result err";
+    }
+  }
+
+  /* إغلاق المودال عند النقر خارجه */
+  document.addEventListener("click", function(e) {
+    const modal = document.getElementById("notifModal");
+    if (modal && e.target === modal) closeNotifModal();
+  });
 
   /* ── حالة النظام ── */
   async function showSystemStatus() {
