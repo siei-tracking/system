@@ -223,6 +223,27 @@
 
     #msg.ok{ color:var(--ok); }
 
+    .remember-row{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin-bottom:14px;
+      justify-content:flex-end;
+      cursor:pointer;
+    }
+    .remember-row input[type="checkbox"]{
+      width:18px;
+      height:18px;
+      accent-color:var(--primary);
+      cursor:pointer;
+    }
+    .remember-row label{
+      font-size:14px;
+      font-weight:700;
+      color:#6b7785;
+      cursor:pointer;
+    }
+
     @media (max-width:420px){
       .box{
         padding:26px 18px 22px;
@@ -266,6 +287,11 @@
       <button type="button" class="toggle-pass" id="togglePass" aria-label="إظهار/إخفاء كلمة المرور">
         <i class="fas fa-eye" id="eyeIcon"></i>
       </button>
+    </div>
+
+    <div class="remember-row">
+      <label for="rememberMe">تذكرني</label>
+      <input type="checkbox" id="rememberMe">
     </div>
 
     <button id="btnLogin" type="submit">
@@ -359,6 +385,14 @@
 
     sessionStorage.setItem(STORAGE_KEY_PAGE, safeToken);
     sessionStorage.setItem(STORAGE_KEY_GLOBAL, safeToken);
+
+    /* ── تذكرني — حفظ اسم المستخدم فقط ── */
+    const rememberMe = document.getElementById("rememberMe");
+    if(rememberMe && rememberMe.checked){
+      localStorage.setItem("saved_username", document.getElementById("username").value.trim());
+    } else {
+      localStorage.removeItem("saved_username");
+    }
 
     setMsg("✅ تم تسجيل الدخول بنجاح", true);
 
@@ -493,7 +527,22 @@
     });
   });
 
-  window.addEventListener("load", checkExistingSession);
+  /* ── تعبئة اسم المستخدم المحفوظ ── */
+  window.addEventListener("load", function(){
+    const savedUsername = localStorage.getItem("saved_username");
+    if(savedUsername){
+      const usernameEl = document.getElementById("username");
+      const rememberEl = document.getElementById("rememberMe");
+      if(usernameEl) usernameEl.value = savedUsername;
+      if(rememberEl) rememberEl.checked = true;
+      /* انتقل مباشرة لحقل الباسورد */
+      setTimeout(function(){
+        const passEl = document.getElementById("pass");
+        if(passEl) passEl.focus();
+      }, 300);
+    }
+    checkExistingSession();
+  });
 </script>
 
 </body>
