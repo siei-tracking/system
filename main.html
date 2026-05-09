@@ -961,6 +961,20 @@
    * ============================================================ */
   const API_BASE = window.APP_CONFIG.API_BASE;
   const PAGE_NAME     = "main";
+  /* ── Cookie helpers ── */
+  function setCookie(name, value, hours) {
+    const exp = new Date(Date.now() + hours * 3600000).toUTCString();
+    document.cookie = name + "=" + encodeURIComponent(value) + ";expires=" + exp + ";path=/;SameSite=Lax";
+  }
+  function getCookie(name) {
+    const match = document.cookie.match(new RegExp("(?:^|; )" + name + "=([^;]*)"));
+    return match ? decodeURIComponent(match[1]) : "";
+  }
+  function deleteCookie(name) {
+    document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+  }
+
+
   const STORAGE_KEY      = "tracking_session_token_" + PAGE_NAME;
   const STORAGE_KEY_G    = "tracking_session_token";
   const SESSION_CACHE_KEY = "tracking_session_cache_" + PAGE_NAME;  /* cache بيانات الجلسة */
@@ -1961,18 +1975,6 @@
     const adminBtn      = document.getElementById("btnAdmin");
     if(openSheetBtn) openSheetBtn.addEventListener("click", openArchiveSheet);
     if(adminBtn)     adminBtn.addEventListener("click",     openAdminPage);
-
-  /* ── الاستماع لرسائل تسجيل الخروج الفوري من تبويبات أخرى ── */
-  try {
-    const bc = new BroadcastChannel("siei_session");
-    bc.onmessage = function(e) {
-      if (e.data && e.data.type === "FORCE_LOGOUT") {
-        localStorage.clear();
-        sessionStorage.clear();
-        window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
-      }
-    };
-  } catch(e) {}
 
     /* بدء التطبيق */
     ensurePageSession();

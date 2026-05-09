@@ -223,27 +223,6 @@
 
     #msg.ok{ color:var(--ok); }
 
-    .remember-row{
-      display:flex;
-      align-items:center;
-      gap:8px;
-      margin-bottom:14px;
-      justify-content:flex-end;
-      cursor:pointer;
-    }
-    .remember-row input[type="checkbox"]{
-      width:18px;
-      height:18px;
-      accent-color:var(--primary);
-      cursor:pointer;
-    }
-    .remember-row label{
-      font-size:14px;
-      font-weight:700;
-      color:#6b7785;
-      cursor:pointer;
-    }
-
     @media (max-width:420px){
       .box{
         padding:26px 18px 22px;
@@ -274,36 +253,45 @@
       الشركة العامة للفحص والتأهيل الهندسي
     </div>
 
-    <form id="loginForm" autocomplete="on" onsubmit="login();return false;" style="margin:0">
     <div class="input-wrap">
       <span class="icon"><i class="fas fa-user"></i></span>
-      <input type="text" id="username" name="username" placeholder="اسم المستخدم" autocomplete="username">
+      <input type="text" id="username" placeholder="اسم المستخدم" autocomplete="username">
     </div>
 
     <div class="input-wrap">
       <span class="icon"><i class="fas fa-lock"></i></span>
-      <input type="password" id="pass" name="password" placeholder="كلمة المرور" autocomplete="current-password">
+      <input type="password" id="pass" placeholder="كلمة المرور" autocomplete="current-password">
 
       <button type="button" class="toggle-pass" id="togglePass" aria-label="إظهار/إخفاء كلمة المرور">
         <i class="fas fa-eye" id="eyeIcon"></i>
       </button>
     </div>
 
-    <div class="remember-row">
-      <label for="rememberMe">تذكرني</label>
-      <input type="checkbox" id="rememberMe">
-    </div>
-
-    <button id="btnLogin" type="submit">
+    <button id="btnLogin" type="button">
       <span id="btnText">دخول</span>
     </button>
-    </form>
 
     <div id="msg" role="alert" aria-live="polite"></div>
   </div>
 
 <script>
   const API_BASE = window.APP_CONFIG.API_BASE;
+
+  /* ── Cookie helpers — نسخة احتياطية من الـ token تبقى 12 ساعة ── */
+  function setCookie(name, value, hours) {
+    const exp = new Date(Date.now() + hours * 3600000).toUTCString();
+    document.cookie = name + "=" + encodeURIComponent(value) +
+                      ";expires=" + exp + ";path=/;SameSite=Lax";
+  }
+
+  function getCookie(name) {
+    const match = document.cookie.match(new RegExp("(?:^|; )" + name + "=([^;]*)"));
+    return match ? decodeURIComponent(match[1]) : "";
+  }
+
+  function deleteCookie(name) {
+    document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+  }
 
   const params = new URLSearchParams(window.location.search);
   const PAGE   = String(params.get("p") || "main").trim().toLowerCase();
@@ -342,6 +330,9 @@
           localStorage.removeItem(key);
         }
       });
+
+      /* مسح Cookie أيضاً */
+      deleteCookie("tracking_session_token");
     }catch(err){}
   }
 
@@ -352,6 +343,7 @@
         localStorage.getItem(STORAGE_KEY_GLOBAL) ||
         sessionStorage.getItem(STORAGE_KEY_PAGE) ||
         sessionStorage.getItem(STORAGE_KEY_GLOBAL) ||
+        getCookie("tracking_session_token") ||  /* ← Cookie احتياطي */
         ""
       );
     }catch(e){
@@ -386,13 +378,8 @@
     sessionStorage.setItem(STORAGE_KEY_PAGE, safeToken);
     sessionStorage.setItem(STORAGE_KEY_GLOBAL, safeToken);
 
-    /* ── تذكرني — حفظ اسم المستخدم فقط ── */
-    const rememberMe = document.getElementById("rememberMe");
-    if(rememberMe && rememberMe.checked){
-      localStorage.setItem("saved_username", document.getElementById("username").value.trim());
-    } else {
-      localStorage.removeItem("saved_username");
-    }
+    /* ── حفظ في Cookie كنسخة احتياطية لمدة 12 ساعة ── */
+    setCookie("tracking_session_token", safeToken, 12);
 
     setMsg("✅ تم تسجيل الدخول بنجاح", true);
 
@@ -527,22 +514,7 @@
     });
   });
 
-  /* ── تعبئة اسم المستخدم المحفوظ ── */
-  window.addEventListener("load", function(){
-    const savedUsername = localStorage.getItem("saved_username");
-    if(savedUsername){
-      const usernameEl = document.getElementById("username");
-      const rememberEl = document.getElementById("rememberMe");
-      if(usernameEl) usernameEl.value = savedUsername;
-      if(rememberEl) rememberEl.checked = true;
-      /* انتقل مباشرة لحقل الباسورد */
-      setTimeout(function(){
-        const passEl = document.getElementById("pass");
-        if(passEl) passEl.focus();
-      }, 300);
-    }
-    checkExistingSession();
-  });
+  window.addEventListener("load", checkExistingSession);
 </script>
 
 </body>

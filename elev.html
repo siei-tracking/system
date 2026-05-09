@@ -349,6 +349,20 @@
 <script>
   const API_BASE = window.APP_CONFIG.API_BASE;
   const PAGE_NAME = "elev";
+  /* ── Cookie helpers ── */
+  function setCookie(name, value, hours) {
+    const exp = new Date(Date.now() + hours * 3600000).toUTCString();
+    document.cookie = name + "=" + encodeURIComponent(value) + ";expires=" + exp + ";path=/;SameSite=Lax";
+  }
+  function getCookie(name) {
+    const match = document.cookie.match(new RegExp("(?:^|; )" + name + "=([^;]*)"));
+    return match ? decodeURIComponent(match[1]) : "";
+  }
+  function deleteCookie(name) {
+    document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+  }
+
+
 
   const STORAGE_KEY_PAGE   = "tracking_session_token_" + PAGE_NAME;
   const STORAGE_KEY_GLOBAL = "tracking_session_token";
@@ -382,12 +396,14 @@
     sessionStorage.setItem(STORAGE_KEY_GLOBAL, token);
     localStorage.setItem(STORAGE_KEY_PAGE,     token);
     localStorage.setItem(STORAGE_KEY_GLOBAL,   token);
+    setCookie("tracking_session_token", token, 12);
   }
 
   function clearSessionToken(){
     [STORAGE_KEY_PAGE, STORAGE_KEY_GLOBAL, SESSION_CACHE_KEY].forEach(function(k){
       sessionStorage.removeItem(k); localStorage.removeItem(k);
     });
+    deleteCookie("tracking_session_token");
   }
 
   function goToLogin(){
@@ -653,19 +669,7 @@
   /* ============================================================
    * INIT
    * ============================================================ */
-    /* ── الاستماع لرسائل تسجيل الخروج الفوري من تبويبات أخرى ── */
-  try {
-    const bc = new BroadcastChannel("siei_session");
-    bc.onmessage = function(e) {
-      if (e.data && e.data.type === "FORCE_LOGOUT") {
-        localStorage.clear();
-        sessionStorage.clear();
-        window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
-      }
-    };
-  } catch(e) {}
-
-window.addEventListener("load", function(){
+  window.addEventListener("load", function(){
     ensurePageSession();
     liveSessionInterval = setInterval(checkLiveSession, 10000);
 
