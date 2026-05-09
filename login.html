@@ -232,10 +232,34 @@
       cursor:pointer;
     }
     .remember-row input[type="checkbox"]{
-      width:18px;
-      height:18px;
-      accent-color:var(--primary);
+      appearance:none !important;
+      -webkit-appearance:none !important;
+      width:20px !important;
+      height:20px !important;
+      min-height:20px !important;
+      padding:0 !important;
+      border:2px solid #ccd5dd !important;
+      background:#fff !important;
+      box-shadow:none !important;
+      border-radius:6px !important;
       cursor:pointer;
+      flex:0 0 20px;
+      position:relative;
+      transition:.15s ease;
+    }
+    .remember-row input[type="checkbox"]:checked{
+      background:var(--primary) !important;
+      border-color:var(--primary) !important;
+    }
+    .remember-row input[type="checkbox"]:checked::after{
+      content:"✓";
+      position:absolute;
+      top:50%;
+      left:50%;
+      transform:translate(-50%,-50%);
+      color:#fff;
+      font-size:13px;
+      font-weight:900;
     }
     .remember-row label{
       font-size:14px;
