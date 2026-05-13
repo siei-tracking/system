@@ -1,0 +1,594 @@
+﻿<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <script src="/system/config.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>تسجيل الدخول - منصة تتبع أوامر العمل</title>
+
+  <link rel="icon" href="https://siei-tracking.github.io/system/logo.png">
+
+  <!-- Font Cairo -->
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome للأيقونات — داخل head لمنع ظهور مربعات فارغة -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root{
+      --primary:#223243;
+      --accent:#f5a623;
+      --line:#ccd5dd;
+      --ok:#1e8449;
+      --danger:#c0392b;
+      --transition-fast:.15s ease;
+      --radius-md:14px;
+    }
+
+    *, *::before, *::after{ box-sizing:border-box; }
+
+    html, body{
+      width:100%;
+      overflow-x:hidden;
+    }
+
+    body{
+      margin:0;
+      font-family:'Cairo',sans-serif;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:16px;
+      background:
+        linear-gradient(rgba(34,50,67,.45), rgba(34,50,67,.45)),
+        url('https://siei-tracking.github.io/system/company.jpg');
+      background-size:cover;
+      background-position:center;
+      background-repeat:no-repeat;
+    }
+
+    .box{
+      width:100%;
+      max-width:400px;
+      background:rgba(255,255,255,.97);
+      border-radius:24px;
+      padding:34px 28px 28px;
+      text-align:center;
+      box-shadow:
+        0 24px 64px rgba(0,0,0,.32),
+        0 8px 20px rgba(0,0,0,.14);
+      backdrop-filter:blur(8px);
+      -webkit-backdrop-filter:blur(8px);
+      animation:boxIn .4s ease;
+    }
+
+    @keyframes boxIn{
+      from{ transform:translateY(18px); opacity:0; }
+      to{ transform:translateY(0); opacity:1; }
+    }
+
+    .logo{
+      width:96px;
+      height:96px;
+      object-fit:cover;
+      border-radius:50%;
+      border:3px solid #fff;
+      box-shadow:0 8px 24px rgba(0,0,0,.22);
+      margin:0 auto 16px;
+      display:block;
+      background:#fff;
+    }
+
+    h2{
+      margin:0 0 6px;
+      color:var(--primary);
+      font-size:24px;
+      font-weight:900;
+    }
+
+    .sub{
+      margin:0 0 22px;
+      color:#6b7785;
+      font-size:14px;
+      font-weight:700;
+      line-height:1.8;
+    }
+
+    .input-wrap{
+      position:relative;
+      margin-bottom:14px;
+    }
+
+    .input-wrap .icon{
+      position:absolute;
+      right:14px;
+      top:50%;
+      transform:translateY(-50%);
+      color:#9aa6b2;
+      font-size:16px;
+      pointer-events:none;
+    }
+
+    input{
+      width:100%;
+      padding:13px 40px 13px 14px;
+      border-radius:var(--radius-md);
+      border:1.5px solid var(--line);
+      font-size:15px;
+      font-family:'Cairo',sans-serif;
+      font-weight:800;
+      outline:none;
+      text-align:right;
+      background:#fff;
+      color:#1f2d3a;
+      transition:border-color var(--transition-fast), box-shadow var(--transition-fast);
+      min-height:48px;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    input:focus{
+      border-color:var(--primary);
+      box-shadow:0 0 0 4px rgba(34,50,67,.10);
+    }
+
+    input::placeholder{
+      color:#9aa6b2;
+      font-weight:700;
+    }
+
+    .toggle-pass{
+      position:absolute;
+      left:12px;
+      top:50%;
+      transform:translateY(-50%);
+      background:none;
+      border:none;
+      cursor:pointer;
+      color:#9aa6b2;
+      font-size:16px;
+      padding:4px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      width:auto;
+      min-height:auto;
+      border-radius:6px;
+      transition:color var(--transition-fast);
+    }
+
+    .toggle-pass:hover{
+      color:var(--primary);
+      transform:translateY(-50%);
+      box-shadow:none;
+    }
+
+    button{
+      width:100%;
+      padding:14px;
+      border:none;
+      background:linear-gradient(135deg, var(--primary), #2f4356);
+      color:#fff;
+      border-radius:var(--radius-md);
+      font-size:16px;
+      font-family:'Cairo',sans-serif;
+      font-weight:900;
+      cursor:pointer;
+      transition:transform var(--transition-fast), box-shadow var(--transition-fast), opacity var(--transition-fast);
+      position:relative;
+      overflow:hidden;
+      min-height:50px;
+      touch-action:manipulation;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    button::before{
+      content:"";
+      position:absolute;
+      top:0;
+      right:-120%;
+      width:120%;
+      height:100%;
+      background:linear-gradient(120deg, transparent 20%, rgba(255,255,255,.18) 50%, transparent 80%);
+      transition:.65s;
+    }
+
+    button:hover::before{ right:120%; }
+
+    button:hover{
+      transform:translateY(-1px);
+      box-shadow:0 10px 20px rgba(0,0,0,.2);
+    }
+
+    button:active{
+      transform:translateY(0);
+      opacity:.92;
+    }
+
+    button:disabled{
+      opacity:.6;
+      cursor:not-allowed;
+      transform:none;
+      box-shadow:none;
+    }
+
+    #msg{
+      margin-top:14px;
+      min-height:22px;
+      font-size:14px;
+      font-weight:800;
+      color:var(--danger);
+      transition:color var(--transition-fast);
+    }
+
+    #msg.ok{ color:var(--ok); }
+
+    .remember-row{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      margin-bottom:14px;
+      justify-content:flex-end;
+      cursor:pointer;
+    }
+    .remember-row input[type="checkbox"]{
+      appearance:none !important;
+      -webkit-appearance:none !important;
+      width:20px !important;
+      height:20px !important;
+      min-height:20px !important;
+      padding:0 !important;
+      border:2px solid #ccd5dd !important;
+      background:#fff !important;
+      box-shadow:none !important;
+      border-radius:6px !important;
+      cursor:pointer;
+      flex:0 0 20px;
+      position:relative;
+      transition:.15s ease;
+    }
+    .remember-row input[type="checkbox"]:checked{
+      background:var(--primary) !important;
+      border-color:var(--primary) !important;
+    }
+    .remember-row input[type="checkbox"]:checked::after{
+      content:"✓";
+      position:absolute;
+      top:50%;
+      left:50%;
+      transform:translate(-50%,-50%);
+      color:#fff;
+      font-size:13px;
+      font-weight:900;
+    }
+    .remember-row label{
+      font-size:14px;
+      font-weight:700;
+      color:#6b7785;
+      cursor:pointer;
+    }
+
+    @media (max-width:420px){
+      .box{
+        padding:26px 18px 22px;
+        border-radius:20px;
+      }
+
+      .logo{
+        width:82px;
+        height:82px;
+      }
+
+      h2{
+        font-size:21px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="box">
+    <img src="https://siei-tracking.github.io/system/logo.png" class="logo" alt="شعار الشركة">
+
+    <h2>تسجيل الدخول</h2>
+
+    <div class="sub">
+      منصة تتبع أوامر العمل<br>
+      الشركة العامة للفحص والتأهيل الهندسي
+    </div>
+
+    <div class="input-wrap">
+      <span class="icon"><i class="fas fa-user"></i></span>
+      <input type="text" id="username" placeholder="اسم المستخدم" autocomplete="username">
+    </div>
+
+    <div class="input-wrap">
+      <span class="icon"><i class="fas fa-lock"></i></span>
+      <input type="password" id="pass" placeholder="كلمة المرور" autocomplete="current-password">
+
+      <button type="button" class="toggle-pass" id="togglePass" aria-label="إظهار/إخفاء كلمة المرور">
+        <i class="fas fa-eye" id="eyeIcon"></i>
+      </button>
+    </div>
+
+    <div class="remember-row">
+      <label for="rememberMe">تذكرني</label>
+      <input type="checkbox" id="rememberMe">
+    </div>
+
+    <button id="btnLogin" type="button">
+      <span id="btnText">دخول</span>
+    </button>
+
+    <div id="msg" role="alert" aria-live="polite"></div>
+
+  </div>
+
+<script>
+  const API_BASE = window.APP_CONFIG.API_BASE;
+
+  /* ── Cookie helpers — نسخة احتياطية من الـ token تبقى 12 ساعة ── */
+  function setCookie(name, value, hours) {
+    const exp = new Date(Date.now() + hours * 3600000).toUTCString();
+    document.cookie = name + "=" + encodeURIComponent(value) +
+                      ";expires=" + exp + ";path=/;SameSite=Lax";
+  }
+
+  function getCookie(name) {
+    const match = document.cookie.match(new RegExp("(?:^|; )" + name + "=([^;]*)"));
+    return match ? decodeURIComponent(match[1]) : "";
+  }
+
+  function deleteCookie(name) {
+    document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const PAGE   = String(params.get("p") || "main").trim().toLowerCase();
+
+  const ALLOWED_PAGE = /^[a-z0-9_-]+$/.test(PAGE) ? PAGE : "main";
+
+  const STORAGE_KEY_PAGE   = "tracking_session_token_" + ALLOWED_PAGE;
+  const STORAGE_KEY_GLOBAL = "tracking_session_token";
+
+  let isLoggingIn = false;
+
+  function setMsg(text, isOk){
+    const el = document.getElementById("msg");
+    el.textContent = text || "";
+    el.className = isOk ? "ok" : "";
+  }
+
+  function setBtnLoading(on){
+    const btn  = document.getElementById("btnLogin");
+    const span = document.getElementById("btnText");
+
+    btn.disabled = on;
+    span.textContent = on ? "جاري التحقق..." : "دخول";
+  }
+
+  function clearAllSessionTokens(){
+    try{
+      Object.keys(sessionStorage).forEach(function(key){
+        if(key.indexOf("tracking_session_token") === 0){
+          sessionStorage.removeItem(key);
+        }
+      });
+
+      Object.keys(localStorage).forEach(function(key){
+        if(key.indexOf("tracking_session_token") === 0){
+          localStorage.removeItem(key);
+        }
+      });
+
+      /* مسح Cookie أيضاً */
+      deleteCookie("tracking_session_token");
+    }catch(err){}
+  }
+
+  function getSavedToken(){
+    try{
+      return (
+        localStorage.getItem(STORAGE_KEY_PAGE) ||
+        localStorage.getItem(STORAGE_KEY_GLOBAL) ||
+        sessionStorage.getItem(STORAGE_KEY_PAGE) ||
+        sessionStorage.getItem(STORAGE_KEY_GLOBAL) ||
+        getCookie("tracking_session_token") ||  /* ← Cookie احتياطي */
+        ""
+      );
+    }catch(e){
+      return "";
+    }
+  }
+
+  function restoreSessionToSessionStorage(token){
+    try{
+      if(!token) return;
+
+      sessionStorage.setItem(STORAGE_KEY_PAGE, token);
+      sessionStorage.setItem(STORAGE_KEY_GLOBAL, token);
+      localStorage.setItem(STORAGE_KEY_PAGE, token);
+      localStorage.setItem(STORAGE_KEY_GLOBAL, token);
+    }catch(e){}
+  }
+
+  function saveSessionAndGo(token){
+    const safeToken = String(token || "").trim();
+
+    if(!safeToken){
+      setMsg("❌ لم يتم استلام رمز الجلسة");
+      return;
+    }
+
+    clearAllSessionTokens();
+
+    localStorage.setItem(STORAGE_KEY_PAGE, safeToken);
+    localStorage.setItem(STORAGE_KEY_GLOBAL, safeToken);
+
+    sessionStorage.setItem(STORAGE_KEY_PAGE, safeToken);
+    sessionStorage.setItem(STORAGE_KEY_GLOBAL, safeToken);
+
+    /* ── حفظ في Cookie كنسخة احتياطية لمدة 12 ساعة ── */
+    setCookie("tracking_session_token", safeToken, 12);
+
+    /* ── تذكرني — حفظ اسم المستخدم فقط ── */
+    const rememberMe = document.getElementById("rememberMe");
+    if(rememberMe && rememberMe.checked){
+      localStorage.setItem("saved_username", document.getElementById("username").value.trim());
+    } else {
+      localStorage.removeItem("saved_username");
+    }
+
+    setMsg("✅ تم تسجيل الدخول بنجاح", true);
+
+    setTimeout(function(){
+      window.location.href = ALLOWED_PAGE + ".html";
+    }, 250);
+  }
+
+  async function checkExistingSession(){
+    const token = String(getSavedToken() || "").trim();
+
+    if(!token){
+      const username = document.getElementById("username");
+      if(username) username.focus();
+      return;
+    }
+
+    restoreSessionToSessionStorage(token);
+    setMsg("جاري التحقق من الجلسة...", true);
+
+    try{
+      const res = await fetch(API_BASE, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({
+          action: "checkSession",
+          token: token,
+          page: ALLOWED_PAGE
+        })
+      });
+
+      const data = await res.json();
+
+      if(data && data.ok){
+        window.location.href = ALLOWED_PAGE + ".html";
+      }else{
+        clearAllSessionTokens();
+        setMsg("");
+        const username = document.getElementById("username");
+        if(username) username.focus();
+      }
+    }catch(e){
+      setMsg("");
+      const username = document.getElementById("username");
+      if(username) username.focus();
+    }
+  }
+
+  async function login(){
+    if(isLoggingIn) return;
+
+    const usernameEl = document.getElementById("username");
+    const passEl     = document.getElementById("pass");
+
+    const username = usernameEl.value.trim();
+    const pass     = passEl.value.trim();
+
+    if(!username){
+      setMsg("⚠️ أدخل اسم المستخدم");
+      usernameEl.focus();
+      return;
+    }
+
+    if(!pass){
+      setMsg("⚠️ أدخل كلمة المرور");
+      passEl.focus();
+      return;
+    }
+
+    isLoggingIn = true;
+    setBtnLoading(true);
+    setMsg("جاري التحقق...", true);
+
+    try{
+      const res = await fetch(API_BASE, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({
+          action: "login",
+          username: username,
+          password: pass,
+          page: ALLOWED_PAGE
+        })
+      });
+
+      const text = await res.text();
+      let data = null;
+
+      try{
+        data = JSON.parse(text);
+      }catch(parseErr){
+        setBtnLoading(false);
+        isLoggingIn = false;
+        setMsg("❌ استجابة غير صالحة من الخادم");
+        return;
+      }
+
+      setBtnLoading(false);
+      isLoggingIn = false;
+
+      if(!data || !data.ok){
+        setMsg((data && data.message) || "❌ اسم المستخدم أو كلمة المرور غير صحيحة");
+        passEl.value = "";
+        passEl.focus();
+        return;
+      }
+
+      saveSessionAndGo(data.token);
+
+    }catch(err){
+      setBtnLoading(false);
+      isLoggingIn = false;
+      setMsg("❌ خطأ في الاتصال بالخادم");
+    }
+  }
+
+  document.getElementById("togglePass").addEventListener("click", function(){
+    const passEl  = document.getElementById("pass");
+    const eyeIcon = document.getElementById("eyeIcon");
+
+    const isHidden = passEl.type === "password";
+
+    passEl.type = isHidden ? "text" : "password";
+    eyeIcon.className = isHidden ? "fas fa-eye-slash" : "fas fa-eye";
+  });
+
+  document.getElementById("btnLogin").addEventListener("click", login);
+
+  ["username", "pass"].forEach(function(id){
+    document.getElementById(id).addEventListener("keydown", function(e){
+      if(e.key === "Enter") login();
+    });
+  });
+
+  /* ── تعبئة اسم المستخدم المحفوظ ── */
+  window.addEventListener("load", function(){
+    const savedUsername = localStorage.getItem("saved_username");
+    if(savedUsername){
+      const usernameEl = document.getElementById("username");
+      const rememberEl = document.getElementById("rememberMe");
+      if(usernameEl) usernameEl.value = savedUsername;
+      if(rememberEl) rememberEl.checked = true;
+      setTimeout(function(){
+        const passEl = document.getElementById("pass");
+        if(passEl) passEl.focus();
+      }, 300);
+    }
+    checkExistingSession();
+  });
+</script>
+
+</body>
+</html>

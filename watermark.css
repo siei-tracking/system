@@ -1,0 +1,47 @@
+﻿<style>
+.page-shell{
+  position:relative;
+  min-height:100vh;
+  isolation:isolate;
+}
+
+.page-shell::before{
+  content:"";
+  position:fixed;
+  left:50%;
+  top:52%;
+  transform:translate(-50%, -50%);
+  width:600px;
+  height:600px;
+  background-image:url('https://siei-tracking.github.io/system/logo.png');
+  background-size:contain;
+  background-repeat:no-repeat;
+  background-position:center;
+  opacity:0.06;
+  filter:grayscale(100%) contrast(105%);
+  pointer-events:none;
+  z-index:0;
+}
+
+.page-content{
+  position:relative;
+  z-index:1;
+}
+
+@media (max-width:768px){
+  .page-shell::before{
+    width:380px;
+    height:380px;
+    top:54%;
+    opacity:0.055;
+  }
+}
+
+@media (max-width:480px){
+  .page-shell::before{
+    width:280px;
+    height:280px;
+    top:55%;
+    opacity:0.05;
+  }
+}
