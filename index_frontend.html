@@ -582,7 +582,8 @@
     btn.textContent = "⏳ جاري الفحص...";
     btn.disabled = true;
     try {
-      const res = await apiCall({ action: "healthCheck" });
+      const token = getSessionToken();
+      const res = await apiPost({ action: "healthCheck", token: token });
       if (res.ok && res.items) {
         const rows = res.items.map(item => {
           const cls = item.status === "ok" ? "ok" : item.status === "warn" ? "warn" : "err";
