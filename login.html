@@ -487,6 +487,16 @@
     }
   }
 
+  async function getClientIP() {
+    try {
+      const res = await fetch('https://api.ipify.org?format=json');
+      const data = await res.json();
+      return data.ip || "—";
+    } catch(e) {
+      return "—";
+    }
+  }
+
   async function login(){
     if(isLoggingIn) return;
 
@@ -512,6 +522,8 @@
     setBtnLoading(true);
     setMsg("جاري التحقق...", true);
 
+    const clientIp = await getClientIP();
+
     try{
       const res = await fetch(API_BASE, {
         method: "POST",
@@ -521,7 +533,8 @@
           username: username,
           password: pass,
           page: ALLOWED_PAGE,
-          userAgent: navigator.userAgent
+          userAgent: navigator.userAgent,
+          clientIp: clientIp
         })
       });
 
