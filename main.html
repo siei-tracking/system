@@ -405,45 +405,6 @@
       color: #1f2d3a;
     }
 
-    /* ===== CUSTOM DATE PICKER ===== */
-    .custom-date-wrap {
-      position: relative;
-    }
-
-    .date-hidden {
-      position: absolute;
-      opacity: 0;
-      width: 100%;
-      height: 100%;
-      top: 0;
-      left: 0;
-      cursor: pointer;
-      z-index: 2;
-    }
-
-    .date-display {
-      min-width: 181px;
-      width: 181px;
-      height: 50px;
-      padding: 0 14px;
-      border-radius: var(--radius-md);
-      border: 1.5px solid var(--line);
-      font-family: 'Cairo', sans-serif;
-      font-weight: 900;
-      font-size: 16px;
-      background: #fff;
-      color: #1f2d3a;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      user-select: none;
-    }
-
-    .date-display:hover {
-      border-color: var(--gold);
-    }
-
     /* ===== STATUS ===== */
     #status {
       padding: 10px 18px;
@@ -818,9 +779,7 @@
       .bar-right { justify-content: space-between; }
       .bar-left  { justify-content: stretch; }
 
-      .date-input { width: 100%; min-width: 0; height: 50px; }
-      .date-display { width: 100%; min-width: 0; height: 50px; }
-      .custom-date-wrap { width: 100%; }
+      .date-input { width: 100%; min-width: 0; height: 50px; text-align: center; padding: 0 14px; }
       .stat { flex: 1 1 calc(50% - 5px); justify-content: center; }
 
       .list { padding: 12px 12px 18px; }
@@ -967,18 +926,8 @@
           </div>
 
           <div class="bar-left">
-            <div class="custom-date-wrap">
-              <input type="date" id="dateFrom" class="date-input date-hidden" aria-label="من تاريخ">
-              <div class="date-display" id="dateFromDisplay" onclick="document.getElementById('dateFrom').showPicker && document.getElementById('dateFrom').showPicker(); document.getElementById('dateFrom').focus();">
-                <span id="dateFromText">من تاريخ</span>
-              </div>
-            </div>
-            <div class="custom-date-wrap">
-              <input type="date" id="dateTo" class="date-input date-hidden" aria-label="إلى تاريخ">
-              <div class="date-display" id="dateToDisplay" onclick="document.getElementById('dateTo').showPicker && document.getElementById('dateTo').showPicker(); document.getElementById('dateTo').focus();">
-                <span id="dateToText">إلى تاريخ</span>
-              </div>
-            </div>
+            <input type="date" id="dateFrom" class="date-input" aria-label="من تاريخ">
+            <input type="date" id="dateTo"   class="date-input" aria-label="إلى تاريخ">
 
             <button class="btn btn-ok" id="btnDone" type="button">
               <i class="fas fa-check-circle"></i> الإنجاز
@@ -1117,28 +1066,6 @@
     document.getElementById("pageWrap").classList.remove("loading");
     showAdminButton();
   }
-
-  /* تحديث عرض التاريخ */
-  function formatDateDisplay(val) {
-    if (!val) return "";
-    const parts = val.split("-");
-    if (parts.length !== 3) return val;
-    return parts[2] + "/" + parts[1] + "/" + parts[0];
-  }
-
-  document.getElementById("dateFrom").addEventListener("change", function() {
-    const txt = document.getElementById("dateFromText");
-    txt.textContent = this.value ? formatDateDisplay(this.value) : "من تاريخ";
-    const display = document.getElementById("dateFromDisplay");
-    display.style.borderColor = this.value ? "var(--gold)" : "";
-  });
-
-  document.getElementById("dateTo").addEventListener("change", function() {
-    const txt = document.getElementById("dateToText");
-    txt.textContent = this.value ? formatDateDisplay(this.value) : "إلى تاريخ";
-    const display = document.getElementById("dateToDisplay");
-    display.style.borderColor = this.value ? "var(--gold)" : "";
-  });
 
   /* دالة مشتركة لتحديث واجهة المستخدم بعد التحقق من الجلسة */
   function applySessionResult(result){
