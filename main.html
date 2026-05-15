@@ -780,6 +780,9 @@
       .bar-left  { justify-content: stretch; }
 
       .date-input { width: 100%; min-width: 0; height: 50px; text-align: center; padding: 0 14px; }
+      .date-input::-webkit-date-and-time-value { text-align: center; }
+      .date-input::-webkit-inner-spin-button,
+      .date-input::-webkit-calendar-picker-indicator { margin: auto; }
       .stat { flex: 1 1 calc(50% - 5px); justify-content: center; }
 
       .list { padding: 12px 12px 18px; }
