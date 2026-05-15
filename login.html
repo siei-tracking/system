@@ -487,14 +487,30 @@
     }
   }
 
-  async function getClientIP() {
-    try {
-      const res = await fetch('https://api.ipify.org?format=json');
-      const data = await res.json();
-      return data.ip || "—";
-    } catch(e) {
-      return "—";
-    }
+  function getClientIP() {
+    return new Promise(function(resolve) {
+      try {
+        var script = document.createElement("script");
+        var timeout = setTimeout(function() {
+          resolve("—");
+          document.body.removeChild(script);
+        }, 3000);
+        window._ipCallback = function(data) {
+          clearTimeout(timeout);
+          resolve(data.ip || "—");
+          try { document.body.removeChild(script); } catch(e) {}
+          delete window._ipCallback;
+        };
+        script.src = "https://api.ipify.org?format=jsonp&callback=_ipCallback";
+        script.onerror = function() {
+          clearTimeout(timeout);
+          resolve("—");
+        };
+        document.body.appendChild(script);
+      } catch(e) {
+        resolve("—");
+      }
+    });
   }
 
   async function login(){
