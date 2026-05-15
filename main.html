@@ -370,6 +370,15 @@
 
     .bar-left { justify-content: center; }
 
+    .date-range-wrap {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      width: 100%;
+    }
+
     /* ===== STATS ===== */
     .stat {
       display: inline-flex;
@@ -780,6 +789,7 @@
       .bar-left  { justify-content: center; }
 
       .date-input { width: 100%; min-width: 0; height: 50px; }
+      .date-range-wrap { justify-content: center; }
       .stat { flex: 1 1 calc(50% - 5px); justify-content: center; }
 
       .list { padding: 12px 12px 18px; }
@@ -926,8 +936,10 @@
           </div>
 
           <div class="bar-left">
-            <input type="date" id="dateFrom" class="date-input" aria-label="من تاريخ">
-            <input type="date" id="dateTo"   class="date-input" aria-label="إلى تاريخ">
+            <div class="date-range-wrap">
+              <input type="date" id="dateFrom" class="date-input" aria-label="من تاريخ">
+              <input type="date" id="dateTo"   class="date-input" aria-label="إلى تاريخ">
+            </div>
 
             <button class="btn btn-ok" id="btnDone" type="button">
               <i class="fas fa-check-circle"></i> الإنجاز
