@@ -424,10 +424,23 @@ input::placeholder{
   color:#999;
   opacity:1;
 }
+  /* ── Toast ── */
+  .toast-alert{
+    position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px);
+    background:linear-gradient(180deg,#f3b43b,#eba31c);
+    color:#fff; font-weight:700; font-size:15px;
+    padding:13px 28px; border-radius:14px;
+    box-shadow:0 4px 18px rgba(0,0,0,.18);
+    opacity:0; pointer-events:none;
+    transition:opacity .25s, transform .25s;
+    z-index:9999; white-space:nowrap;
+  }
+  .toast-alert.show{ opacity:1; transform:translateX(-50%) translateY(0); }
 </style>
 </head>
 
 <body>
+<div id="toastAlert" class="toast-alert"></div>
 
 <div id="pageWrap" class="loading">
   <div class="page-shell">
@@ -659,7 +672,18 @@ function escapeHtml(text){
     .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 }
 
-function showMsg(text, type){ }
+function showMsg(text, type){
+  const toast = document.getElementById("toastAlert");
+  toast.textContent = text || "";
+  toast.style.background = (type === "err")
+    ? "linear-gradient(180deg,#e74c3c,#c0392b)"
+    : (type === "ok")
+    ? "linear-gradient(180deg,#2ebf68,#26a65b)"
+    : "linear-gradient(180deg,#f3b43b,#eba31c)";
+  toast.classList.add("show");
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(function(){ toast.classList.remove("show"); }, 3500);
+}
 
 /* دالة مشتركة للتحقق من انتهاء الجلسة */
 function handleSessionExpiry(msg){
