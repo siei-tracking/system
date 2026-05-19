@@ -1560,12 +1560,18 @@
       + "-" + String(now.getMinutes()).padStart(2,"0");
 
     /* ── بناء بيانات الجدول ── */
-    const headers = ["رقم أمر العمل", "تاريخ أمر العمل", "الجهة المستفيدة", "آخر مرحلة"];
+    const headers = ["رقم أمر العمل", "تاريخ أمر العمل", "الجهة المستفيدة", "التسعيرة", "آخر مرحلة"];
     const dataRows = CURRENT_ITEMS.map(function(it){
+      /* استخراج رقم التسعيرة من النص */
+      const pricingRaw = String(it.pricing || "").trim();
+      const priceMatch = pricingRaw.match(/[\d]+(?:\.\d+)?/);
+      const priceVal   = priceMatch ? priceMatch[0] : "—";
+
       return [
         String(it.orderNo    || "").trim() || "—",
         String(it.orderDate  || "").trim() || "—",
         String(it.clientName || "").trim() || "—",
+        priceVal,
         String(it.lastStage  || "").trim() || "—"
       ];
     });
@@ -1580,6 +1586,7 @@
       { wch: 18 },
       { wch: 18 },
       { wch: 36 },
+      { wch: 15 },
       { wch: 22 }
     ];
 
@@ -1632,10 +1639,15 @@
     if(!token){ redirectToLogin(); return; }
 
     const rows = CURRENT_ITEMS.map(function(it){
+      const pricingRaw = String(it.pricing || "").trim();
+      const priceMatch = pricingRaw.match(/[\d]+(?:\.\d+)?/);
+      const priceVal   = priceMatch ? priceMatch[0] : "—";
+
       return {
         orderNo:    String(it.orderNo    || "").trim() || "—",
         orderDate:  String(it.orderDate  || "").trim() || "—",
         clientName: String(it.clientName || "").trim() || "—",
+        pricing:    priceVal,
         lastStage:  String(it.lastStage  || "").trim() || "—"
       };
     });
