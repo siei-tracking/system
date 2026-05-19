@@ -1,4 +1,4 @@
 ﻿window.APP_CONFIG = {
-  API_BASE: "https://script.google.com/macros/s/AKfycbyS8tC3OFIl2UxYTUEwtc0RtEXM3b6A50Z0TM38uYI1mD5MBxnPrnhbMySmwJRuujbC/exec",
+  API_BASE: "https://script.google.com/macros/s/AKfycbx_23E0QcwYwjPG1k5UAa3JdNray9LDnOroq0tXCDPYLgUe-DmqvBo4FBTp1ZD2MAf9/exec",
   VERSION: "1.0.2"
 };
