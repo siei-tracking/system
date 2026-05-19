@@ -661,17 +661,20 @@ input::placeholder{
           </div>
         </div>
 
-      <div class="card success" id="cardSuccess">
-        <i class="fas fa-check-circle"></i>
-        <h2>تم الحفظ بنجاح</h2>
-        <p id="successText">تم توثيق العملية في السجل الموحد.</p>
-
-        <button class="again" type="button" onclick="resetAll()">
-          <i class="fas fa-plus"></i>
-          معاملة جديدة
-        </button>
-      </div>
     </main>
+  </div>
+</div>
+
+<!-- بطاقة النجاح كـ overlay فوق كل شيء -->
+<div id="cardSuccess" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(238,242,246,0.97); justify-content:center; align-items:center;">
+  <div style="background:#fff; border-radius:22px; padding:40px 30px; max-width:480px; width:90%; text-align:center; box-shadow:0 20px 50px rgba(0,0,0,.15);">
+    <i class="fas fa-check-circle" style="font-size:74px; color:#27ae60; margin-bottom:12px; display:block;"></i>
+    <h2 style="margin:0 0 10px; font-weight:900; color:#1f2b36; font-size:24px; font-family:'Cairo',sans-serif;">تم الحفظ بنجاح</h2>
+    <p id="successText" style="margin:0 0 18px; color:#758292; font-weight:800; font-size:18px; font-family:'Cairo',sans-serif;">تم توثيق العملية في السجل الموحد.</p>
+    <button class="again" type="button" onclick="resetAll()">
+      <i class="fas fa-plus"></i>
+      معاملة جديدة
+    </button>
   </div>
 </div>
 
@@ -899,14 +902,13 @@ function toggleLab(v){
 
 function showSuccess(text){
   document.getElementById("successText").innerText = text || "تم توثيق العملية في السجل الموحد.";
-  document.getElementById("cardForm").style.display    = "none";
-  document.getElementById("cardSuccess").style.display = "block";
+  const overlay = document.getElementById("cardSuccess");
+  overlay.style.display = "flex";
   isSubmitting = false;
 }
 
 function resetAll(){
   document.getElementById("cardSuccess").style.display = "none";
-  document.getElementById("cardForm").style.display    = "block";
 
   document.querySelectorAll("#secNew input, #secPrice input, #secEdit input").forEach(function(i){ i.value = ""; });
   document.querySelectorAll("#secPrice select").forEach(function(s){ s.selectedIndex = 0; });
