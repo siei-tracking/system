@@ -661,18 +661,20 @@ input::placeholder{
           </div>
         </div>
 
+      </div><!-- end cardForm -->
+
+      <div class="card success" id="cardSuccess">
+        <i class="fas fa-check-circle"></i>
+        <h2>تم الحفظ بنجاح</h2>
+        <p id="successText">تم توثيق العملية في السجل الموحد.</p>
+        <button class="again" type="button" onclick="resetAll()">
+          <i class="fas fa-plus"></i>
+          معاملة جديدة
+        </button>
+      </div>
+
     </main>
   </div>
-</div>
-
-<div id="cardSuccess" class="card success" style="display:none; max-width:820px; margin:-40px auto 30px; position:relative; z-index:2;">
-  <i class="fas fa-check-circle"></i>
-  <h2>تم الحفظ بنجاح</h2>
-  <p id="successText">تم توثيق العملية في السجل الموحد.</p>
-  <button class="again" type="button" onclick="resetAll()">
-    <i class="fas fa-plus"></i>
-    معاملة جديدة
-  </button>
 </div>
 
 <div id="toast" class="toast"></div>
