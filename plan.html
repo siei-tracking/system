@@ -635,6 +635,7 @@ input::placeholder{
 
         <div class="section" id="secEdit">
           <div class="field">
+            <label>رقم أمر العمل</label>
             <input id="eID" type="text" placeholder="ادخل رقم أمر العمل" inputmode="numeric">
           </div>
 
@@ -1057,6 +1058,8 @@ async function saveEditPrice(){
     const msg = String((r && (r.message || r.result)) || "");
 
     if(r && r.ok){
+      document.getElementById("editFields").style.display = "none";
+      document.getElementById("eID").value = "";
       showSuccess("تم تعديل التسعيرة وحفظ التغييرات بنجاح");
       showToast(msg || "تم التعديل بنجاح", "success");
     }else{
