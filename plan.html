@@ -565,11 +565,6 @@ input::placeholder{
             <i class="fas fa-receipt"></i>
             تثبيت التسعيرة
           </button>
-
-          <button class="tab-btn ghost" id="tabEdit" type="button" onclick="switchTab('edit')">
-            <i class="fas fa-edit"></i>
-            تعديل التسعيرة
-          </button>
         </div>
 
         <div class="section active" id="secNew">
@@ -632,34 +627,6 @@ input::placeholder{
           </button>
         </div>
       </div>
-
-        <div class="section" id="secEdit">
-          <div class="field">
-            <label>رقم أمر العمل</label>
-            <input id="eID" type="text" placeholder="ادخل رقم أمر العمل" inputmode="numeric">
-          </div>
-
-          <button class="main-action" id="btnLoad" type="button" onclick="loadOrderPrice()" style="background:linear-gradient(180deg,#4a90d9,#357abd); box-shadow:0 10px 20px rgba(74,144,217,.20); margin-bottom:8px;">
-            <i class="fas fa-search"></i> جلب البيانات الحالية
-          </button>
-
-          <div id="editFields" style="display:none;">
-            <div class="row-2">
-              <div class="field">
-                <label>التسعيرة الجديدة</label>
-                <input id="eVal" type="number" placeholder="0">
-              </div>
-              <div class="field">
-                <label>عدد الأيام الجديد</label>
-                <input id="eDays" type="number" placeholder="0">
-              </div>
-            </div>
-
-            <button class="main-action" id="btnEdit" type="button" onclick="saveEditPrice()">
-              <i class="fas fa-save"></i> حفظ التعديل
-            </button>
-          </div>
-        </div>
 
       <div class="card success" id="cardSuccess">
         <i class="fas fa-check-circle"></i>
@@ -880,17 +847,11 @@ function setBtnLoading(btn, on){
  * UI FUNCTIONS
  * ============================================================ */
 function switchTab(which){
-  const isNew   = which === "new";
-  const isPrice = which === "price";
-  const isEdit  = which === "edit";
-
+  const isNew = which === "new";
   document.getElementById("secNew").classList.toggle("active", isNew);
-  document.getElementById("secPrice").classList.toggle("active", isPrice);
-  document.getElementById("secEdit").classList.toggle("active", isEdit);
-
-  document.getElementById("tabNew").className   = "tab-btn " + (isNew   ? "primary" : "ghost");
-  document.getElementById("tabPrice").className = "tab-btn " + (isPrice ? "primary" : "ghost");
-  document.getElementById("tabEdit").className  = "tab-btn " + (isEdit  ? "primary" : "ghost");
+  document.getElementById("secPrice").classList.toggle("active", !isNew);
+  document.getElementById("tabNew").className   = "tab-btn " + (isNew  ? "primary" : "ghost");
+  document.getElementById("tabPrice").className = "tab-btn " + (!isNew ? "primary" : "ghost");
 }
 
 function toggleLab(v){
@@ -908,11 +869,10 @@ function resetAll(){
   document.getElementById("cardSuccess").style.display = "none";
   document.getElementById("cardForm").style.display    = "block";
 
-  document.querySelectorAll("#secNew input, #secPrice input, #secEdit input").forEach(function(i){ i.value = ""; });
+  document.querySelectorAll("#secNew input, #secPrice input").forEach(function(i){ i.value = ""; });
   document.querySelectorAll("#secPrice select").forEach(function(s){ s.selectedIndex = 0; });
 
   toggleLab("");
-  document.getElementById("editFields").style.display = "none";
   switchTab("new");
   isSubmitting = false;
 
@@ -990,79 +950,6 @@ async function savePrice(){
     }else{
       if(handleSessionExpiry(msg)) return;
       showToast(msg || "تعذر حفظ البيانات", "error");
-      setBtnLoading(btn, false);
-      isSubmitting = false;
-    }
-  }catch(err){
-    showToast("خطأ في الاتصال", "error");
-    setBtnLoading(btn, false);
-    isSubmitting = false;
-  }
-}
-
-/* ============================================================
- * EDIT PRICE FUNCTIONS
- * ============================================================ */
-async function loadOrderPrice(){
-  const token = getSessionToken();
-  if(!token){ goToLogin(); return; }
-
-  const id = String(document.getElementById("eID").value || "").trim();
-  if(!id){ showToast("أدخل رقم أمر العمل", "warn"); return; }
-
-  const btn = document.getElementById("btnLoad");
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الجلب...';
-
-  try{
-    const r = await apiPost({ action:"getOrderPrice", token, page:PAGE_NAME, orderNo:id });
-    if(r && r.ok){
-      document.getElementById("eVal").value  = r.price  || "";
-      document.getElementById("eDays").value = r.days   || "";
-      document.getElementById("editFields").style.display = "block";
-      showToast("تم جلب البيانات", "success");
-    }else{
-      const msg = String((r && (r.message || r.result)) || "");
-      if(handleSessionExpiry(msg)) return;
-      showToast(msg || "لم يتم العثور على أمر العمل", "error");
-      document.getElementById("editFields").style.display = "none";
-    }
-  }catch(err){
-    showToast("خطأ في الاتصال", "error");
-  }finally{
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fas fa-search"></i> جلب البيانات الحالية';
-  }
-}
-
-async function saveEditPrice(){
-  if(isSubmitting) return;
-  const token = getSessionToken();
-  if(!token){ goToLogin(); return; }
-
-  const d = {
-    orderNo: String(document.getElementById("eID").value   || "").trim(),
-    price:   String(document.getElementById("eVal").value  || "").trim(),
-    days:    String(document.getElementById("eDays").value || "").trim(),
-    userName: currentUserName
-  };
-
-  if(!d.orderNo || !d.price){ showToast("اكمل الحقول المطلوبة", "warn"); return; }
-
-  isSubmitting = true;
-  const btn = document.getElementById("btnEdit");
-  setBtnLoading(btn, true);
-
-  try{
-    const r   = await apiPost({ action:"editOrderPrice", token, page:PAGE_NAME, data:d });
-    const msg = String((r && (r.message || r.result)) || "");
-
-    if(r && r.ok){
-      showSuccess("تم تعديل التسعيرة وحفظ التغييرات بنجاح");
-      showToast(msg || "تم التعديل بنجاح", "success");
-    }else{
-      if(handleSessionExpiry(msg)) return;
-      showToast(msg || "تعذر حفظ التعديل", "error");
       setBtnLoading(btn, false);
       isSubmitting = false;
     }
