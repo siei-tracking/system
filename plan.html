@@ -700,6 +700,8 @@ const STORAGE_KEY_GLOBAL = "tracking_session_token";
 const SESSION_CACHE_KEY  = "tracking_session_cache_" + PAGE_NAME;
 
 let currentUserName     = "";
+let currentUsername     = ""; /* اسم المستخدم للتحقق من الصلاحيات */
+const EDIT_PRICE_ALLOWED = ["zianab", "mayada"]; /* المخولون بتعديل التسعيرة */
 let sessionFailCount    = 0;
 let liveSessionInterval = null;   // لحفظ الـ interval وإلغائه عند الخروج
 let isSubmitting        = false;  // debounce: منع إرسال مزدوج
@@ -759,11 +761,16 @@ async function apiPost(payload){
 /* ============================================================
  * SESSION CHECK — مع cache مثل main.html
  * ============================================================ */
-function applySessionUI(userName){
+function applySessionUI(userName, username){
   currentUserName = userName;
+  currentUsername = String(username || "").trim().toLowerCase();
   document.getElementById("welcomeUser").innerHTML =
     '<i class="fas fa-user-shield"></i> المستخدم: ' + escapeHtml(userName);
   document.getElementById("pageWrap").classList.remove("loading");
+
+  /* إظهار/إخفاء تاب تعديل التسعيرة حسب الصلاحية */
+  const canEdit = EDIT_PRICE_ALLOWED.indexOf(currentUsername) !== -1;
+  document.getElementById("tabEdit").style.display = canEdit ? "" : "none";
 }
 
 async function ensurePageSession(){
@@ -777,7 +784,7 @@ async function ensurePageSession(){
     if(raw){
       const cached = JSON.parse(raw);
       if(cached && cached.token === token && (Date.now() - (cached.ts || 0)) < 600000){
-        applySessionUI(cached.userName || "مخول غير معروف");
+        applySessionUI(cached.userName || "مخول غير معروف", cached.username || "");
         usedCache = true;
       }
     }
@@ -792,11 +799,12 @@ async function ensurePageSession(){
       sessionFailCount = 0;
 
       const userName = result.user || result.userName || "مخول غير معروف";
-      applySessionUI(userName);
+      const username = result.username || "";
+      applySessionUI(userName, username);
 
       /* حفظ في الـ cache */
       try{
-        const cd = JSON.stringify({ token, userName, ts:Date.now() });
+        const cd = JSON.stringify({ token, userName, username, ts:Date.now() });
         sessionStorage.setItem(SESSION_CACHE_KEY, cd);
         localStorage.setItem(SESSION_CACHE_KEY, cd);
       }catch(e){}
@@ -1040,6 +1048,12 @@ async function saveEditPrice(){
   if(isSubmitting) return;
   const token = getSessionToken();
   if(!token){ goToLogin(); return; }
+
+  /* تحقق من الصلاحية */
+  if(EDIT_PRICE_ALLOWED.indexOf(currentUsername) === -1){
+    showToast("غير مصرح لك بتعديل التسعيرة", "error");
+    return;
+  }
 
   const d = {
     orderNo: String(document.getElementById("eID").value   || "").trim(),
