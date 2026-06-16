@@ -1908,9 +1908,17 @@
         return;
       }
 
-      const item = Object.assign({}, res.item ? res.item : res, { orderNo: (res.item && res.item.orderNo) || id });
-      renderList({ at:(res.at || "—"), items:[item] }, "search");
-      setStatus("✅ تم العثور على أمر العمل " + escapeHtml(id) + " في " + escapeHtml(item.sourceSheet || sheetName), true);
+      /* ── دعم النتائج المتعددة (res.items) والنتيجة الواحدة (res.item) ── */
+      let foundItems;
+      if(Array.isArray(res.items) && res.items.length){
+        foundItems = res.items;
+      } else {
+        const single = Object.assign({}, res.item ? res.item : res, { orderNo: (res.item && res.item.orderNo) || id });
+        foundItems = [single];
+      }
+      renderList({ at:(res.at || "—"), items: foundItems }, "search");
+      const firstItem = foundItems[0];
+      setStatus("✅ تم العثور على " + foundItems.length + " نتيجة للرقم " + escapeHtml(id) + " في " + escapeHtml((firstItem && firstItem.sourceSheet) || sheetName), true);
       showMsg("✅ تم العثور على المعاملة", "ok");
     } catch(err){
       setLoading(false);
