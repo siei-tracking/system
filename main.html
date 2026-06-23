@@ -583,8 +583,9 @@
     .node.done .circle { background: var(--ok); }
     .node.next .circle { background: var(--accent); transform: scale(1.06); box-shadow: 0 8px 20px rgba(245,166,35,.35); }
     .node.skipped .circle { background: var(--accent); transform: scale(1.06); box-shadow: 0 8px 20px rgba(245,166,35,.35); }
-    .node.skipped .label  { }
-    .node.skipped .sub    { }
+    .node.skipped .label  { color: var(--text); }
+    .node.skipped .sub .sub-date { color: var(--text); }
+    .node.skipped:not(.ghost)::after { background: var(--ok); }
 
     .node.done:not(.ghost)::after { background: var(--ok); }
     .node.next:not(.ghost)::after { background: var(--accent); }
