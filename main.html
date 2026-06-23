@@ -1545,8 +1545,8 @@
       } else if(s.key === "payment" && !done){
         /* التسديد فارغ → skipped */
         cls += " skipped";
-      } else if(isAfterPayment && !paymentDone && !stageAfterPaymentDone){
-        /* التسديد غير موثق والمرحلة التي بعده غير موثقة → كل ما بعد التسديد locked */
+      } else if(isAfterPayment && !paymentDone && !done){
+        /* التسديد غير موثق → كل المراحل غير الموثقة بعده locked */
         cls += " locked";
       } else if(!firstPending){
         cls += " next";
