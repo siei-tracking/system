@@ -1531,18 +1531,11 @@
       date = dt2 ? dt2[1].trim() : "";
       const um2 = val.match(/\((.*?)\)/);
       name = (um2 && um2[1]) ? um2[1].trim() : "";
-    }
 
-    if(stepKey === "payment"){
-      name = name.replace("تم التسديد","").trim();
-      date = date.replace("تم التسديد","").trim();
-
-      /* استخراج السعر من خلية التسعيرة — صيغة: ✅ 150000 - (اسم) تاريخ */
+      /* استخراج السعر من نفس خلية التسعيرة — صيغة: ✅ 150000 - (اسم) تاريخ */
       let priceStr = "";
-      if(it && it.pricing){
-        const priceMatch = String(it.pricing).match(/✅\s*([\d,،.]+)/);
-        if(priceMatch && priceMatch[1]) priceStr = priceMatch[1].trim();
-      }
+      const priceMatch = String(val).match(/✅\s*([\d,،.]+)/);
+      if(priceMatch && priceMatch[1]) priceStr = priceMatch[1].trim();
 
       const clean2 = function(s){ return s.replace(/^[\-\–—\s]+/, "").replace(/[\-\–—\s]+$/, "").trim(); };
       name = clean2(name);
@@ -1551,6 +1544,11 @@
       return '<div class="sub-name">'  + escapeHtml(name) + '</div>'
            + '<div class="sub-date">'  + escapeHtml(date) + '</div>'
            + (priceStr ? '<div class="sub-date" style="color:#c0392b;font-weight:900;font-size:16px;display:flex;flex-direction:row;align-items:baseline;gap:3px;justify-content:center;direction:ltr;"><span style="font-size:10px;">د.ع</span><span>' + escapeHtml(priceStr) + '</span></div>' : '');
+    }
+
+    if(stepKey === "payment"){
+      name = name.replace("تم التسديد","").trim();
+      date = date.replace("تم التسديد","").trim();
     }
 
     const clean = function(s){ return s.replace(/^[\-\–—\s]+/, "").replace(/[\-\–—\s]+$/, "").trim(); };
