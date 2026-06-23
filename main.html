@@ -1519,18 +1519,26 @@
 
     let html = '<div class="stepper-scroll"><div class="stepper">';
     let firstPending = false;
+    const paymentDone = isDoneAny(String(it.payment || ""));
 
     for(let i = 0; i < steps.length; i++){
       const s   = steps[i];
       const val = String(it[s.key] || "");
       const done = isDoneAny(val);
 
+      /* هل المرحلة السابقة هي التسديد غير الموثق؟ */
+      const prevStep = steps[i - 1];
+      const afterUnpaidPayment = prevStep && prevStep.key === "payment" && !paymentDone;
+
       let cls = "node";
       if(done){
         cls += " done";
       } else if(s.key === "payment" && !done){
-        /* التسديد فارغ → skipped (لا يأخذ next ولا يوقف التسلسل) */
+        /* التسديد فارغ → skipped */
         cls += " skipped";
+      } else if(afterUnpaidPayment){
+        /* المرحلة مباشرة بعد التسديد غير الموثق → تبقى رمادية locked */
+        cls += " locked";
       } else if(!firstPending){
         cls += " next";
         firstPending = true;
