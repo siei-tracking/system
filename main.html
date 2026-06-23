@@ -582,6 +582,9 @@
 
     .node.done .circle { background: var(--ok); }
     .node.next .circle { background: var(--accent); transform: scale(1.06); box-shadow: 0 8px 20px rgba(245,166,35,.35); }
+    .node.skipped .circle { background: var(--muted); opacity: 0.55; }
+    .node.skipped .label  { opacity: 0.45; }
+    .node.skipped .sub    { opacity: 0.45; }
 
     .node.done:not(.ghost)::after { background: var(--ok); }
     .node.next:not(.ghost)::after { background: var(--accent); }
@@ -1374,6 +1377,9 @@
 
   function formatSub(val, done, cls, stepKey){
     if(!done){
+      if(cls.indexOf("skipped") !== -1){
+        return '<div class="sub-date" style="color:var(--accent);opacity:0.7;">بانتظار</div>';
+      }
       if(cls.indexOf("next") !== -1 && CLICKABLE_STAGES[stepKey]){
         return '<div class="sub-date click-hint">اضغط للتوثيق ▲</div>';
       }
@@ -1521,6 +1527,9 @@
       let cls = "node";
       if(done){
         cls += " done";
+      } else if(s.key === "payment" && !done){
+        /* التسديد فارغ → skipped (لا يأخذ next ولا يوقف التسلسل) */
+        cls += " skipped";
       } else if(!firstPending){
         cls += " next";
         firstPending = true;
