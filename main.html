@@ -2022,13 +2022,13 @@
 
     const label = ACTION_LABELS[action] || "المرحلة";
 
-    /* تأكيد */
     if(!confirm("هل تريد تسجيل توثيق\n\"" + label + "\"\nلأمر العمل: " + orderNo + "؟")){
       if(nodeEl) nodeEl.classList.remove("busy");
       return;
     }
 
     try{
+      /* ── تسجيل التوثيق في السيرفر ── */
       const res = await apiPost({
         action:   action,
         token:    token,
@@ -2040,53 +2040,69 @@
       const msg = (res && (res.message || res.result)) || "";
       const ok  = res && (res.ok || msg.indexOf("✅") !== -1);
 
-      if(ok){
-        showMsg("✅ تم تسجيل " + label, "ok");
-
-        /* بناء الوقت الحالي */
-        const now     = new Date();
-        const dateStr = now.getFullYear()
-          + "-" + String(now.getMonth()+1).padStart(2,"0")
-          + "-" + String(now.getDate()).padStart(2,"0");
-        const timeStr = String(now.getHours()).padStart(2,"0")
-          + ":" + String(now.getMinutes()).padStart(2,"0");
-        const stamp = dateStr + " | " + timeStr;
-
-        /* تحديث الكرة → done */
-        if(nodeEl){
-          nodeEl.classList.remove("next","clickable","busy");
-          nodeEl.classList.add("done");
-
-          /* إزالة onclick من الدائرة */
-          const cEl = circleEl;
-          cEl.removeAttribute("onclick");
-          cEl.removeAttribute("title");
-          cEl.style.cursor = "";
-
-          /* تحديث النص: اسم + تاريخ */
-          const subEl = nodeEl.querySelector(".sub");
-          if(subEl){
-            subEl.innerHTML =
-              '<div class="sub-name">' + escapeHtml(CURRENT_USER_NAME || "") + '</div>'
-            + '<div class="sub-date">' + escapeHtml(stamp) + '</div>';
-          }
-
-          /* الكرة التالية تصبح next */
-          const nextNode = nodeEl.nextElementSibling;
-          if(nextNode && !nextNode.classList.contains("ghost") && nextNode.classList.contains("locked")){
-            nextNode.classList.remove("locked");
-            nextNode.classList.add("next");
-            const nextSubDateEl = nextNode.querySelector(".sub-date");
-            if(nextSubDateEl) nextSubDateEl.textContent = "الخطوة الحالية";
-          }
-        }
-
-
-
-      } else {
+      if(!ok){
         showMsg("❌ " + (msg || "فشل التحديث"), "err");
         if(nodeEl) nodeEl.classList.remove("busy");
+        return;
       }
+
+      showMsg("✅ تم تسجيل " + label, "ok");
+
+      /* ── تحديث الـ CURRENT_ITEMS محلياً ── */
+      /* نبني الـ stamp بنفس صيغة السيرفر: ✅ (الاسم) YYYY-MM-DD | HH:MM */
+      const now     = new Date();
+      const dateStr = now.getFullYear()
+        + "-" + String(now.getMonth()+1).padStart(2,"0")
+        + "-" + String(now.getDate()).padStart(2,"0");
+      const timeStr = String(now.getHours()).padStart(2,"0")
+        + ":" + String(now.getMinutes()).padStart(2,"0");
+      const stampVal = "✅ (" + (CURRENT_USER_NAME||"") + ") " + dateStr + " | " + timeStr;
+
+      /* الحقل المقابل لكل action */
+      var ACTION_FIELD = {
+        mainStampPricing:        "pricing",
+        mainUpdateTestResults:   "testResults",
+        mainUpdateOfficial:      "official",
+        mainUpdateFinalDelivery: "final"
+      };
+      const field = ACTION_FIELD[action];
+
+      /* تحديث الـ item في CURRENT_ITEMS */
+      const idx = CURRENT_ITEMS.findIndex(function(it){
+        return String(it.orderNo||"").trim() === String(orderNo||"").trim();
+      });
+      if(idx !== -1 && field){
+        CURRENT_ITEMS[idx] = Object.assign({}, CURRENT_ITEMS[idx]);
+        CURRENT_ITEMS[idx][field] = stampVal;
+        CURRENT_ITEMS[idx] = normalizeItemsForRender([CURRENT_ITEMS[idx]])[0];
+      }
+
+      /* ── إعادة رسم الـ card كاملاً من البيانات المحدّثة ── */
+      const itemCard = circleEl.closest(".item");
+      if(itemCard && idx !== -1){
+        const freshItem = CURRENT_ITEMS[idx];
+
+        /* تحديث typePills */
+        const idboxEl = itemCard.querySelector(".idbox");
+        if(idboxEl){
+          idboxEl.querySelectorAll(".pill").forEach(function(p){ p.remove(); });
+          idboxEl.insertAdjacentHTML("beforeend", typePills(freshItem));
+        }
+
+        /* تحديث الـ stepper كاملاً — renderStepper يبني الكرات مع onclick صحيح */
+        const tmpDiv = document.createElement("div");
+        tmpDiv.innerHTML = renderStepper(freshItem);
+
+        const scrollEl    = itemCard.querySelector(".stepper-scroll");
+        const newScrollEl = tmpDiv.querySelector(".stepper-scroll");
+        if(scrollEl && newScrollEl) scrollEl.replaceWith(newScrollEl);
+
+        const oldEmpty = itemCard.querySelector(".empty");
+        const newEmpty = tmpDiv.querySelector(".empty");
+        if(oldEmpty) oldEmpty.remove();
+        if(newEmpty) itemCard.appendChild(newEmpty);
+      }
+
     } catch(err){
       showMsg("❌ خطأ: " + safeErr(err), "err");
       if(nodeEl) nodeEl.classList.remove("busy");
