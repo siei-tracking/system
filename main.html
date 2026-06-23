@@ -1641,7 +1641,7 @@
     const TOTAL_SLOTS = 11;
     const pricingDone = isDoneAny(it.pricing);
     const type        = inferType(it);
-    const workflowReady = pricingDone && !!type;
+    const workflowReady = pricingDone;
 
     let html = '<div class="stepper-scroll"><div class="stepper">';
     let firstPending = false;
@@ -2296,9 +2296,11 @@
 
     const label = ACTION_LABELS[action] || "المرحلة";
 
-    if(!confirm("هل تريد تسجيل توثيق\n\"" + label + "\"\nلأمر العمل: " + orderNo + "؟")){
-      if(nodeEl) nodeEl.classList.remove("busy");
-      return;
+    if(action === "mainUpdateFinalDelivery"){
+      if(!confirm("هل تريد تسجيل توثيق\n\"" + label + "\"\nلأمر العمل: " + orderNo + "؟")){
+        if(nodeEl) nodeEl.classList.remove("busy");
+        return;
+      }
     }
 
     try{
