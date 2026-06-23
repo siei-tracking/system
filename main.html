@@ -1438,7 +1438,7 @@
 
       return '<div class="sub-name">'  + escapeHtml(name) + '</div>'
            + '<div class="sub-date">'  + escapeHtml(date) + '</div>'
-           + (priceStr ? '<div class="sub-date" style="color:#c0392b;font-weight:900;font-size:16px;direction:rtl;"><span style="font-size:10px;font-weight:700;">د.ع</span> ' + escapeHtml(priceStr) + '</div>' : '');
+           + (priceStr ? '<div class="sub-date" style="color:#c0392b;font-weight:900;font-size:16px;direction:ltr;">' + escapeHtml(priceStr) + ' <span style="font-size:10px;font-weight:700;">د.ع</span></div>' : '');
     }
 
     const clean = function(s){ return s.replace(/^[\-\–—\s]+/, "").replace(/[\-\–—\s]+$/, "").trim(); };
