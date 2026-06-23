@@ -1376,10 +1376,10 @@
     "final":       "mainUpdateFinalDelivery"
   };
 
-  function formatSub(val, done, cls, stepKey){
+  function formatSub(val, done, cls, stepKey, it){
     if(!done){
       if(cls.indexOf("skipped") !== -1){
-        return '<div class="sub-date">بانتظار</div>';
+        return '<div class="sub-name" style="min-height:0"></div><div class="sub-date">بانتظار</div>';
       }
       if(cls.indexOf("next") !== -1 && CLICKABLE_STAGES[stepKey]){
         return '<div class="sub-date click-hint">اضغط للتوثيق ▲</div>';
@@ -1424,6 +1424,21 @@
     if(stepKey === "payment"){
       name = name.replace("تم التسديد","").trim();
       date = date.replace("تم التسديد","").trim();
+
+      /* استخراج السعر من خلية التسعيرة — صيغة: ✅ 150000 - (اسم) تاريخ */
+      let priceStr = "";
+      if(it && it.pricing){
+        const priceMatch = String(it.pricing).match(/✅\s*([\d,،.]+)/);
+        if(priceMatch && priceMatch[1]) priceStr = priceMatch[1].trim();
+      }
+
+      const clean2 = function(s){ return s.replace(/^[\-\–—\s]+/, "").replace(/[\-\–—\s]+$/, "").trim(); };
+      name = clean2(name);
+      date = clean2(date);
+
+      return '<div class="sub-name">'  + escapeHtml(name) + '</div>'
+           + '<div class="sub-date">'  + escapeHtml(date) + '</div>'
+           + (priceStr ? '<div class="sub-date" style="color:var(--ok);font-weight:900;">' + escapeHtml(priceStr) + ' د.ع</div>' : '');
     }
 
     const clean = function(s){ return s.replace(/^[\-\–—\s]+/, "").replace(/[\-\–—\s]+$/, "").trim(); };
@@ -1562,7 +1577,7 @@
       const isClickable = !done && cls.indexOf("next") !== -1 && !!stageAction;
       if(isClickable) cls += " clickable";
 
-      const sub = formatSub(val, done, cls, s.key);
+      const sub = formatSub(val, done, cls, s.key, it);
 
       /* تأمين icon */
       const safeIcon  = String(s.icon || "").replace(/[^a-z0-9\-]/g, "");
