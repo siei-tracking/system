@@ -590,7 +590,119 @@
     .node.done:not(.ghost)::after { background: var(--ok); }
     .node.next:not(.ghost)::after { background: var(--accent); }
 
-    /* ===== كرات قابلة للضغط ===== */
+    /* ===== Modal التسعيرة ===== */
+    .pricing-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 9000;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      backdrop-filter: blur(3px);
+    }
+    .pricing-modal-overlay.open { display: flex; }
+
+    .pricing-modal {
+      background: #fff;
+      border-radius: 20px;
+      padding: 24px 20px 20px;
+      width: 100%;
+      max-width: 460px;
+      box-shadow: 0 24px 60px rgba(0,0,0,.22);
+      position: relative;
+      animation: modalIn .22s ease;
+    }
+    @keyframes modalIn {
+      from { opacity:0; transform:translateY(20px) scale(.97); }
+      to   { opacity:1; transform:translateY(0)    scale(1);   }
+    }
+
+    .pricing-modal-title {
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--primary);
+      margin: 0 0 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pricing-modal-sub {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+      margin: 0 0 16px;
+    }
+    .pricing-modal-close {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--muted);
+      line-height: 1;
+      padding: 4px;
+    }
+    .pricing-modal-close:hover { color: var(--danger); }
+
+    .pm-field {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 10px;
+    }
+    .pm-field label {
+      font-weight: 900;
+      font-size: 14px;
+      color: #253444;
+    }
+    .pm-field input, .pm-field select {
+      width: 100%;
+      border: 1.5px solid var(--line);
+      border-radius: 10px;
+      padding: 6px 12px;
+      font-weight: 800;
+      font-size: 15px;
+      background: #fff;
+      text-align: right;
+      font-family: var(--font);
+      color: #1f2d3a;
+      outline: none;
+      min-height: 44px;
+      transition: border-color .15s ease, box-shadow .15s ease;
+    }
+    .pm-field input:focus, .pm-field select:focus {
+      border-color: #d8b15d;
+      box-shadow: 0 0 0 4px rgba(245,166,35,.12);
+    }
+    .pm-row2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .pm-lab-box { display: none; }
+
+    .pm-btn {
+      width: 100%;
+      margin-top: 14px;
+      border: none;
+      border-radius: 14px;
+      padding: 12px;
+      background: linear-gradient(180deg, var(--accent), #e59712);
+      color: #fff;
+      font-weight: 900;
+      font-size: 16px;
+      cursor: pointer;
+      font-family: var(--font);
+      box-shadow: 0 10px 20px rgba(245,166,35,.20);
+      transition: transform .15s ease, opacity .15s ease;
+    }
+    .pm-btn:hover { transform: translateY(-1px); opacity: .96; }
+    .pm-btn:active { transform: translateY(0); opacity: .9; }
+    .pm-btn:disabled { opacity: .6; cursor: not-allowed; pointer-events: none; }
     .node.clickable .circle {
       cursor: pointer;
       outline: none;
@@ -1891,7 +2003,7 @@
       const lateDays = Number(it.lateDays || 0);
       const fileUrl  = String(it.barcodeFileUrl || it.barcodeLink || it.fileUrl || it.fileLink || "").trim();
 
-      html += '<div class="item" role="listitem" style="animation-delay:' + (idx * .04) + 's">';
+      html += '<div class="item" data-order="' + escapeHtml(String(it.orderNo||"")) + '" role="listitem" style="animation-delay:' + (idx * .04) + 's">';
       html +=   '<div class="row1">';
       html +=     '<div>';
       html +=       '<div class="idbox">أمر العمل : <span>' + orderNo + '</span> ' + typePills(it) + '</div>';
@@ -2042,6 +2154,121 @@
 
 
   /* ============================================================
+   * PRICING MODAL
+   * ============================================================ */
+  var _pmOrderNo = "";
+
+  function openPricingModal(orderNo){
+    _pmOrderNo = orderNo;
+    document.getElementById("pmOrderLabel").textContent = "أمر العمل: " + orderNo;
+    document.getElementById("pmVal").value   = "";
+    document.getElementById("pmDays").value  = "";
+    document.getElementById("pmType").value  = "";
+    document.getElementById("pmLabVal").value = "ورشة";
+    document.getElementById("pmLabBox").style.display = "none";
+    document.getElementById("pmBtn").disabled = false;
+    document.getElementById("pmBtn").innerHTML = '<i class="fas fa-save"></i> اعتماد وحفظ التسعيرة';
+    document.getElementById("pricingModalOverlay").classList.add("open");
+    setTimeout(function(){ document.getElementById("pmVal").focus(); }, 120);
+  }
+
+  function closePricingModal(e){
+    if(e && e.target !== document.getElementById("pricingModalOverlay")) return;
+    document.getElementById("pricingModalOverlay").classList.remove("open");
+    _pmOrderNo = "";
+  }
+
+  function pmToggleLab(v){
+    document.getElementById("pmLabBox").style.display = (v === "مختبرات") ? "block" : "none";
+  }
+
+  async function submitPricingModal(){
+    const token = getSessionToken();
+    if(!token){ redirectToLogin(); return; }
+
+    const orderNo  = _pmOrderNo;
+    const price    = String(document.getElementById("pmVal").value  || "").trim();
+    const days     = String(document.getElementById("pmDays").value || "").trim();
+    const testType = document.getElementById("pmType").value;
+    const labPath  = (testType === "مختبرات") ? document.getElementById("pmLabVal").value : "";
+
+    if(!orderNo)  { showMsg("❌ رقم أمر العمل مفقود", "err"); return; }
+    if(!testType) { showMsg("❌ اختر نوع الفحص", "err"); return; }
+
+    const btn = document.getElementById("pmBtn");
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+
+    try{
+      const res = await apiPost({
+        action:   "processPlanning",
+        token:    token,
+        page:     PAGE_NAME,
+        data: {
+          orderNo:  orderNo,
+          price:    price,
+          days:     days,
+          testType: testType,
+          labPath:  labPath,
+          userName: CURRENT_USER_NAME
+        }
+      });
+
+      const msg = (res && (res.message || res.result)) || "";
+      const ok  = res && (res.ok || msg.indexOf("✅") !== -1);
+
+      if(ok){
+        document.getElementById("pricingModalOverlay").classList.remove("open");
+        showMsg("✅ تم تثبيت التسعيرة", "ok");
+
+        /* تحديث CURRENT_ITEMS محلياً */
+        const now     = new Date();
+        const dateStr = now.getFullYear()
+          + "-" + String(now.getMonth()+1).padStart(2,"0")
+          + "-" + String(now.getDate()).padStart(2,"0");
+        const timeStr = String(now.getHours()).padStart(2,"0")
+          + ":" + String(now.getMinutes()).padStart(2,"0");
+        const stampVal = "✅ " + (price||"0") + " - (" + (CURRENT_USER_NAME||"") + ") " + dateStr + " | " + timeStr;
+
+        const idx = CURRENT_ITEMS.findIndex(function(it){
+          return String(it.orderNo||"").trim() === String(orderNo||"").trim();
+        });
+        if(idx !== -1){
+          CURRENT_ITEMS[idx] = Object.assign({}, CURRENT_ITEMS[idx]);
+          CURRENT_ITEMS[idx].pricing   = stampVal;
+          CURRENT_ITEMS[idx].testType  = testType;
+          CURRENT_ITEMS[idx].labPath   = labPath;
+          CURRENT_ITEMS[idx] = normalizeItemsForRender([CURRENT_ITEMS[idx]])[0];
+
+          /* إعادة رسم الـ card */
+          const itemCard = document.querySelector('.item[data-order="' + orderNo + '"]');
+          if(itemCard){
+            const freshItem = CURRENT_ITEMS[idx];
+            const idboxEl   = itemCard.querySelector(".idbox");
+            if(idboxEl){
+              idboxEl.querySelectorAll(".pill").forEach(function(p){ p.remove(); });
+              idboxEl.insertAdjacentHTML("beforeend", typePills(freshItem));
+            }
+            const tmpDiv      = document.createElement("div");
+            tmpDiv.innerHTML  = renderStepper(freshItem);
+            const scrollEl    = itemCard.querySelector(".stepper-scroll");
+            const newScrollEl = tmpDiv.querySelector(".stepper-scroll");
+            if(scrollEl && newScrollEl) scrollEl.replaceWith(newScrollEl);
+          }
+        }
+      } else {
+        showMsg("❌ " + (msg || "فشل الحفظ"), "err");
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save"></i> اعتماد وحفظ التسعيرة';
+      }
+    } catch(err){
+      showMsg("❌ خطأ: " + safeErr(err), "err");
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-save"></i> اعتماد وحفظ التسعيرة';
+    }
+  }
+
+  /* ============================================================
    * HANDLE STAGE CLICK — تسجيل التوثيق من صفحة main
    * ============================================================ */
   var ACTION_LABELS = {
@@ -2056,6 +2283,12 @@
 
     const token = getSessionToken();
     if(!token){ redirectToLogin(); return; }
+
+    /* التسعيرة → تفتح modal خاص */
+    if(action === "mainStampPricing"){
+      openPricingModal(orderNo);
+      return;
+    }
 
     /* منع الضغط المزدوج */
     const nodeEl = circleEl.closest(".node");
@@ -2231,6 +2464,47 @@
        ============================================================ -->
  <script>window.PAGE_NAME = "main";</script>
   <script src="/system/notifications-widget.js" defer></script>
+
+<!-- ===== Modal التسعيرة ===== -->
+<div class="pricing-modal-overlay" id="pricingModalOverlay" onclick="closePricingModal(event)">
+  <div class="pricing-modal">
+    <button class="pricing-modal-close" onclick="closePricingModal()" title="إغلاق">✕</button>
+    <div class="pricing-modal-title"><i class="fas fa-receipt"></i> تثبيت التسعيرة</div>
+    <div class="pricing-modal-sub" id="pmOrderLabel">أمر العمل: —</div>
+
+    <div class="pm-row2">
+      <div class="pm-field">
+        <label>التسعيرة</label>
+        <input id="pmVal" type="number" placeholder="0" min="0">
+      </div>
+      <div class="pm-field">
+        <label>عدد الأيام</label>
+        <input id="pmDays" type="number" placeholder="0" min="0">
+      </div>
+    </div>
+
+    <div class="pm-field">
+      <label>نوع الفحص</label>
+      <select id="pmType" onchange="pmToggleLab(this.value)">
+        <option value="">اختر النوع</option>
+        <option value="مختبرات">الفحص المختبري</option>
+        <option value="مصاعد">فحص المصاعد</option>
+      </select>
+    </div>
+
+    <div class="pm-lab-box pm-field" id="pmLabBox">
+      <label>التوجيه</label>
+      <select id="pmLabVal">
+        <option value="ورشة">ورشة</option>
+        <option value="مختبرات فقط">مختبرات فقط</option>
+      </select>
+    </div>
+
+    <button class="pm-btn" id="pmBtn" onclick="submitPricingModal()">
+      <i class="fas fa-save"></i> اعتماد وحفظ التسعيرة
+    </button>
+  </div>
+</div>
 
 </body>
 </html>
