@@ -1521,23 +1521,32 @@
     let firstPending = false;
     const paymentDone = isDoneAny(String(it.payment || ""));
 
+    /* المرحلة مباشرة بعد التسديد — نجد مفتاحها */
+    let paymentIdx = -1;
+    for(let x = 0; x < steps.length; x++){
+      if(steps[x].key === "payment"){ paymentIdx = x; break; }
+    }
+    /* هل المرحلة التي بعد التسديد مباشرة موثقة؟ */
+    const stageAfterPayment = paymentIdx !== -1 ? steps[paymentIdx + 1] : null;
+    const stageAfterPaymentDone = stageAfterPayment
+      ? isDoneAny(String(it[stageAfterPayment.key] || ""))
+      : true;
+
     for(let i = 0; i < steps.length; i++){
       const s   = steps[i];
       const val = String(it[s.key] || "");
       const done = isDoneAny(val);
 
-      /* هل المرحلة السابقة هي التسديد غير الموثق؟ */
-      const prevStep = steps[i - 1];
-      const afterUnpaidPayment = prevStep && prevStep.key === "payment" && !paymentDone;
+      const isAfterPayment = paymentIdx !== -1 && i > paymentIdx;
 
       let cls = "node";
       if(done){
         cls += " done";
       } else if(s.key === "payment" && !done){
-        /* التسديد فارغ → skipped (لا يوقف التسلسل) */
+        /* التسديد فارغ → skipped */
         cls += " skipped";
-      } else if(afterUnpaidPayment && !done){
-        /* المرحلة مباشرة بعد التسديد غير الموثق → locked دائماً */
+      } else if(isAfterPayment && !paymentDone && !stageAfterPaymentDone){
+        /* التسديد غير موثق والمرحلة التي بعده غير موثقة → كل ما بعد التسديد locked */
         cls += " locked";
       } else if(!firstPending){
         cls += " next";
