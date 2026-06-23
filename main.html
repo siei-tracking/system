@@ -2081,12 +2081,7 @@
           }
         }
 
-        /* إعادة تحميل بعد ثانية لضمان التحديث الكامل */
-        setTimeout(function(){
-          if(CURRENT_MODE === "open")         loadOpen();
-          else if(CURRENT_MODE === "delayed") loadDelayed();
-          else if(CURRENT_MODE === "done")    loadDone();
-        }, 1400);
+
 
       } else {
         showMsg("❌ " + (msg || "فشل التحديث"), "err");
