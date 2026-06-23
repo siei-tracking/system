@@ -1534,13 +1534,12 @@
       if(done){
         cls += " done";
       } else if(s.key === "payment" && !done){
-        /* التسديد فارغ → skipped لكن يوقف التسلسل */
+        /* التسديد فارغ → skipped (لا يوقف التسلسل) */
         cls += " skipped";
-        firstPending = true;
-      } else if(afterUnpaidPayment){
-        /* المرحلة مباشرة بعد التسديد غير الموثق → locked */
+      } else if(afterUnpaidPayment && !done){
+        /* المرحلة مباشرة بعد التسديد غير الموثق → locked دائماً */
         cls += " locked";
-      } else if(!firstPending && !afterUnpaidPayment){
+      } else if(!firstPending){
         cls += " next";
         firstPending = true;
       } else {
