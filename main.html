@@ -584,7 +584,7 @@
     .node.next .circle { background: var(--accent); transform: scale(1.06); box-shadow: 0 8px 20px rgba(245,166,35,.35); }
     .node.skipped .circle { background: var(--accent); transform: scale(1.06); box-shadow: 0 8px 20px rgba(245,166,35,.35); }
     .node.skipped .label  { color: var(--text); }
-    .node.skipped .sub .sub-date { color: var(--text); }
+    .node.skipped .sub .sub-date { color: var(--text); font-weight: 400; }
     .node.skipped:not(.ghost)::after { background: var(--ok); }
 
     .node.done:not(.ghost)::after { background: var(--ok); }
@@ -1379,7 +1379,7 @@
   function formatSub(val, done, cls, stepKey){
     if(!done){
       if(cls.indexOf("skipped") !== -1){
-        return '<div class="sub-date" style="color:var(--accent);opacity:0.7;">بانتظار</div>';
+        return '<div class="sub-date">بانتظار</div>';
       }
       if(cls.indexOf("next") !== -1 && CLICKABLE_STAGES[stepKey]){
         return '<div class="sub-date click-hint">اضغط للتوثيق ▲</div>';
