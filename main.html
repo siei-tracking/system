@@ -583,47 +583,55 @@
     .node.done .circle { background: var(--ok); }
     .node.next .circle { background: var(--accent); transform: scale(1.06); box-shadow: 0 8px 20px rgba(245,166,35,.35); }
 
-    /* كرات قابلة للضغط */
+    .node.done:not(.ghost)::after { background: var(--ok); }
+    .node.next:not(.ghost)::after { background: var(--accent); }
+
+    /* ===== كرات قابلة للضغط ===== */
     .node.clickable .circle {
       cursor: pointer;
-      position: relative;
-      transition: background var(--transition-med), transform var(--transition-med), box-shadow var(--transition-med);
+      outline: none;
+      border: none;
+      font-family: inherit;
+      -webkit-tap-highlight-color: transparent;
     }
 
-    .node.clickable .circle::after {
+    .node.clickable .circle::before {
       content: "";
       position: absolute;
-      inset: -4px;
+      inset: -5px;
       border-radius: 50%;
-      border: 2.5px dashed rgba(245,166,35,0.7);
-      animation: pulse-ring 1.6s ease-in-out infinite;
+      border: 2.5px dashed rgba(245,166,35,0.75);
+      animation: clickable-pulse 1.8s ease-in-out infinite;
+      pointer-events: none;
     }
 
-    @keyframes pulse-ring {
-      0%   { opacity: 1;   transform: scale(1); }
-      50%  { opacity: 0.5; transform: scale(1.12); }
-      100% { opacity: 1;   transform: scale(1); }
+    @keyframes clickable-pulse {
+      0%,100% { opacity: 1;   transform: scale(1); }
+      50%      { opacity: 0.4; transform: scale(1.15); }
     }
 
     .node.clickable .circle:hover {
-      transform: scale(1.14);
-      box-shadow: 0 10px 28px rgba(245,166,35,.55);
+      transform: scale(1.15) !important;
+      box-shadow: 0 10px 28px rgba(245,166,35,.6) !important;
     }
 
     .node.clickable .circle:active {
-      transform: scale(0.97);
+      transform: scale(0.96) !important;
     }
 
     .node.clickable.busy .circle {
-      opacity: 0.65;
+      opacity: 0.6;
       cursor: wait;
       pointer-events: none;
     }
 
-    .node.clickable.busy .circle::after { animation: none; }
+    .node.clickable.busy .circle::before { animation: none; }
 
-    .node.done:not(.ghost)::after { background: var(--ok); }
-    .node.next:not(.ghost)::after { background: var(--accent); }
+    .sub-date.click-hint {
+      color: var(--accent);
+      font-weight: 900;
+      font-size: 12px;
+    }
 
     .label    { margin-top: 5px; font-size: 15px; }
     .sub      { margin-top: 5px; min-height: 36px; line-height: 1.2; }
@@ -1356,15 +1364,22 @@
    * ============================================================ */
   function isDoneAny(v){ return String(v || "").indexOf("✅") !== -1; }
 
+  /* المراحل الأربع القابلة للضغط من صفحة main */
+  var CLICKABLE_STAGES = {
+    "pricing":     "mainStampPricing",
+    "testResults": "mainUpdateTestResults",
+    "official":    "mainUpdateOfficial",
+    "final":       "mainUpdateFinalDelivery"
+  };
+
   function formatSub(val, done, cls, stepKey){
     if(!done){
-      if(cls.indexOf("next") !== -1){
-        if(CLICKABLE_STAGES && CLICKABLE_STAGES[stepKey]){
-          return '<div class="sub-date" style="color:var(--accent);font-weight:900;">اضغط للتوثيق</div>';
-        }
-        return '<div class="sub-date">الخطوة الحالية</div>';
+      if(cls.indexOf("next") !== -1 && CLICKABLE_STAGES[stepKey]){
+        return '<div class="sub-date click-hint">اضغط للتوثيق ▲</div>';
       }
-      return '<div class="sub-date">بانتظار</div>';
+      return cls.indexOf("next") !== -1
+        ? '<div class="sub-date">الخطوة الحالية</div>'
+        : '<div class="sub-date">بانتظار</div>';
     }
 
     val = String(val || "")
@@ -1488,14 +1503,6 @@
     return typePill + (pathPill ? " " + pathPill : "");
   }
 
-  /* المراحل الأربع القابلة للضغط من صفحة main */
-  var CLICKABLE_STAGES = {
-    "pricing":     "mainStampPricing",
-    "testResults": "mainUpdateTestResults",
-    "official":    "mainUpdateOfficial",
-    "final":       "mainUpdateFinalDelivery"
-  };
-
   function renderStepper(it){
     const steps       = buildSteps(it);
     const TOTAL_SLOTS = 11;
@@ -1524,20 +1531,20 @@
       if(i === steps.length - 1) cls += " last-real";
 
       /* هل هذه المرحلة قابلة للضغط؟ */
-      const isClickable = !done && cls.indexOf("next") !== -1 && !!CLICKABLE_STAGES[s.key];
+      const stageAction = CLICKABLE_STAGES[s.key];
+      const isClickable = !done && cls.indexOf("next") !== -1 && !!stageAction;
       if(isClickable) cls += " clickable";
 
       const sub = formatSub(val, done, cls, s.key);
 
       /* تأمين icon */
-      const safeIcon = String(s.icon || "").replace(/[^a-z0-9\-]/g, "");
+      const safeIcon  = String(s.icon || "").replace(/[^a-z0-9\-]/g, "");
+      const safeOrder = escapeHtml(String(it.orderNo || ""));
+      const safeAct   = escapeHtml(stageAction || "");
 
-      const orderNo = escapeHtml(String(it.orderNo || ""));
-      const action  = CLICKABLE_STAGES[s.key] || "";
-
-      /* الدائرة: إما قابلة للضغط أو عادية */
+      /* الدائرة — قابلة للضغط أو عادية */
       const circleHtml = isClickable
-        ? '<div class="circle" onclick="handleStageClick(this,\'' + orderNo + '\',\'' + action + '\')" title="اضغط لتسجيل التوثيق"><i class="fas ' + safeIcon + '"></i></div>'
+        ? '<div class="circle" onclick="handleStageClick(this,\'' + safeOrder + '\',\'' + safeAct + '\')" title="اضغط لتسجيل التوثيق"><i class="fas ' + safeIcon + '"></i></div>'
         : '<div class="circle"><i class="fas ' + safeIcon + '"></i></div>';
 
       html += '<div class="' + cls + '">'
@@ -1995,6 +2002,13 @@
   /* ============================================================
    * HANDLE STAGE CLICK — تسجيل التوثيق من صفحة main
    * ============================================================ */
+  var ACTION_LABELS = {
+    mainStampPricing:        "تسعيرة",
+    mainUpdateTestResults:   "نتائج الفحص",
+    mainUpdateOfficial:      "اصدار الكتاب",
+    mainUpdateFinalDelivery: "تسليم النتائج"
+  };
+
   async function handleStageClick(circleEl, orderNo, action){
     if(!orderNo || !action) return;
 
@@ -2006,16 +2020,10 @@
     if(nodeEl && nodeEl.classList.contains("busy")) return;
     if(nodeEl) nodeEl.classList.add("busy");
 
-    const actionLabels = {
-      mainStampPricing:        "تسعيرة",
-      mainUpdateTestResults:   "نتائج الفحص",
-      mainUpdateOfficial:      "اصدار الكتاب",
-      mainUpdateFinalDelivery: "تسليم النتائج"
-    };
-    const label = actionLabels[action] || "المرحلة";
+    const label = ACTION_LABELS[action] || "المرحلة";
 
     /* تأكيد */
-    if(!confirm("هل تريد تسجيل توثيق \"" + label + "\" لأمر العمل " + orderNo + "؟")){
+    if(!confirm("هل تريد تسجيل توثيق\n\"" + label + "\"\nلأمر العمل: " + orderNo + "؟")){
       if(nodeEl) nodeEl.classList.remove("busy");
       return;
     }
@@ -2029,32 +2037,33 @@
         userName: CURRENT_USER_NAME
       });
 
-      if(res && (res.ok || String(res.result||res.message||"").indexOf("✅") !== -1)){
-        showMsg("✅ تم تسجيل " + label + " بنجاح", "ok");
+      const msg = (res && (res.message || res.result)) || "";
+      const ok  = res && (res.ok || msg.indexOf("✅") !== -1);
 
-        /* تحديث الـ UI مباشرة (optimistic) — نجلب الوقت الحالي */
-        const now      = new Date();
-        const dateStr  = now.getFullYear()
+      if(ok){
+        showMsg("✅ تم تسجيل " + label, "ok");
+
+        /* بناء الوقت الحالي */
+        const now     = new Date();
+        const dateStr = now.getFullYear()
           + "-" + String(now.getMonth()+1).padStart(2,"0")
           + "-" + String(now.getDate()).padStart(2,"0");
-        const timeStr  = String(now.getHours()).padStart(2,"0")
+        const timeStr = String(now.getHours()).padStart(2,"0")
           + ":" + String(now.getMinutes()).padStart(2,"0");
         const stamp = dateStr + " | " + timeStr;
 
-        /* تحديث الـ node من next → done */
+        /* تحديث الكرة → done */
         if(nodeEl){
           nodeEl.classList.remove("next","clickable","busy");
           nodeEl.classList.add("done");
 
-          /* تحديث لون الكرة */
-          const cEl = nodeEl.querySelector(".circle");
-          if(cEl){
-            cEl.removeAttribute("onclick");
-            cEl.removeAttribute("title");
-            cEl.style.cssText = "";
-          }
+          /* إزالة onclick من الدائرة */
+          const cEl = circleEl;
+          cEl.removeAttribute("onclick");
+          cEl.removeAttribute("title");
+          cEl.style.cursor = "";
 
-          /* تحديث النص تحت الكرة */
+          /* تحديث النص: اسم + تاريخ */
           const subEl = nodeEl.querySelector(".sub");
           if(subEl){
             subEl.innerHTML =
@@ -2062,35 +2071,29 @@
             + '<div class="sub-date">' + escapeHtml(stamp) + '</div>';
           }
 
-          /* الخط بين الكرات: لون أخضر */
-          if(nodeEl.previousElementSibling){
-            /* يكفي الـ CSS class done على الـ node */
-          }
-
-          /* الكرة التالية — تصبح next */
+          /* الكرة التالية تصبح next */
           const nextNode = nodeEl.nextElementSibling;
           if(nextNode && !nextNode.classList.contains("ghost") && nextNode.classList.contains("locked")){
             nextNode.classList.remove("locked");
             nextNode.classList.add("next");
-            /* هل الكرة التالية من نوع clickable أيضاً؟ */
-            /* نعيد تحميل البيانات بعد ثانية واحدة لضمان التحديث الكامل */
+            const nextSubDateEl = nextNode.querySelector(".sub-date");
+            if(nextSubDateEl) nextSubDateEl.textContent = "الخطوة الحالية";
           }
         }
 
-        /* إعادة تحميل القائمة بعد ثانية */
+        /* إعادة تحميل بعد ثانية لضمان التحديث الكامل */
         setTimeout(function(){
-          if(CURRENT_MODE === "open")    loadOpen();
+          if(CURRENT_MODE === "open")         loadOpen();
           else if(CURRENT_MODE === "delayed") loadDelayed();
           else if(CURRENT_MODE === "done")    loadDone();
-        }, 1200);
+        }, 1400);
 
       } else {
-        const errMsg = (res && (res.message || res.result)) || "فشل التحديث";
-        showMsg("❌ " + errMsg, "err");
+        showMsg("❌ " + (msg || "فشل التحديث"), "err");
         if(nodeEl) nodeEl.classList.remove("busy");
       }
     } catch(err){
-      showMsg("❌ خطأ في الاتصال: " + safeErr(err), "err");
+      showMsg("❌ خطأ: " + safeErr(err), "err");
       if(nodeEl) nodeEl.classList.remove("busy");
     }
   }
