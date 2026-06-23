@@ -583,6 +583,45 @@
     .node.done .circle { background: var(--ok); }
     .node.next .circle { background: var(--accent); transform: scale(1.06); box-shadow: 0 8px 20px rgba(245,166,35,.35); }
 
+    /* كرات قابلة للضغط */
+    .node.clickable .circle {
+      cursor: pointer;
+      position: relative;
+      transition: background var(--transition-med), transform var(--transition-med), box-shadow var(--transition-med);
+    }
+
+    .node.clickable .circle::after {
+      content: "";
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 2.5px dashed rgba(245,166,35,0.7);
+      animation: pulse-ring 1.6s ease-in-out infinite;
+    }
+
+    @keyframes pulse-ring {
+      0%   { opacity: 1;   transform: scale(1); }
+      50%  { opacity: 0.5; transform: scale(1.12); }
+      100% { opacity: 1;   transform: scale(1); }
+    }
+
+    .node.clickable .circle:hover {
+      transform: scale(1.14);
+      box-shadow: 0 10px 28px rgba(245,166,35,.55);
+    }
+
+    .node.clickable .circle:active {
+      transform: scale(0.97);
+    }
+
+    .node.clickable.busy .circle {
+      opacity: 0.65;
+      cursor: wait;
+      pointer-events: none;
+    }
+
+    .node.clickable.busy .circle::after { animation: none; }
+
     .node.done:not(.ghost)::after { background: var(--ok); }
     .node.next:not(.ghost)::after { background: var(--accent); }
 
@@ -1319,9 +1358,13 @@
 
   function formatSub(val, done, cls, stepKey){
     if(!done){
-      return cls.indexOf("next") !== -1
-        ? '<div class="sub-date">الخطوة الحالية</div>'
-        : '<div class="sub-date">بانتظار</div>';
+      if(cls.indexOf("next") !== -1){
+        if(CLICKABLE_STAGES && CLICKABLE_STAGES[stepKey]){
+          return '<div class="sub-date" style="color:var(--accent);font-weight:900;">اضغط للتوثيق</div>';
+        }
+        return '<div class="sub-date">الخطوة الحالية</div>';
+      }
+      return '<div class="sub-date">بانتظار</div>';
     }
 
     val = String(val || "")
@@ -1445,6 +1488,14 @@
     return typePill + (pathPill ? " " + pathPill : "");
   }
 
+  /* المراحل الأربع القابلة للضغط من صفحة main */
+  var CLICKABLE_STAGES = {
+    "pricing":     "mainStampPricing",
+    "testResults": "mainUpdateTestResults",
+    "official":    "mainUpdateOfficial",
+    "final":       "mainUpdateFinalDelivery"
+  };
+
   function renderStepper(it){
     const steps       = buildSteps(it);
     const TOTAL_SLOTS = 11;
@@ -1472,13 +1523,25 @@
 
       if(i === steps.length - 1) cls += " last-real";
 
+      /* هل هذه المرحلة قابلة للضغط؟ */
+      const isClickable = !done && cls.indexOf("next") !== -1 && !!CLICKABLE_STAGES[s.key];
+      if(isClickable) cls += " clickable";
+
       const sub = formatSub(val, done, cls, s.key);
 
-      /* تأمين icon: نسمح فقط بأحرف وأرقام وشرطة */
+      /* تأمين icon */
       const safeIcon = String(s.icon || "").replace(/[^a-z0-9\-]/g, "");
 
+      const orderNo = escapeHtml(String(it.orderNo || ""));
+      const action  = CLICKABLE_STAGES[s.key] || "";
+
+      /* الدائرة: إما قابلة للضغط أو عادية */
+      const circleHtml = isClickable
+        ? '<div class="circle" onclick="handleStageClick(this,\'' + orderNo + '\',\'' + action + '\')" title="اضغط لتسجيل التوثيق"><i class="fas ' + safeIcon + '"></i></div>'
+        : '<div class="circle"><i class="fas ' + safeIcon + '"></i></div>';
+
       html += '<div class="' + cls + '">'
-            +   '<div class="circle"><i class="fas ' + safeIcon + '"></i></div>'
+            +   circleHtml
             +   '<div class="label">' + escapeHtml(s.label) + '</div>'
             +   '<div class="sub">' + sub + '</div>'
             + '</div>';
@@ -1928,6 +1991,109 @@
   }
 
 
+
+  /* ============================================================
+   * HANDLE STAGE CLICK — تسجيل التوثيق من صفحة main
+   * ============================================================ */
+  async function handleStageClick(circleEl, orderNo, action){
+    if(!orderNo || !action) return;
+
+    const token = getSessionToken();
+    if(!token){ redirectToLogin(); return; }
+
+    /* منع الضغط المزدوج */
+    const nodeEl = circleEl.closest(".node");
+    if(nodeEl && nodeEl.classList.contains("busy")) return;
+    if(nodeEl) nodeEl.classList.add("busy");
+
+    const actionLabels = {
+      mainStampPricing:        "تسعيرة",
+      mainUpdateTestResults:   "نتائج الفحص",
+      mainUpdateOfficial:      "اصدار الكتاب",
+      mainUpdateFinalDelivery: "تسليم النتائج"
+    };
+    const label = actionLabels[action] || "المرحلة";
+
+    /* تأكيد */
+    if(!confirm("هل تريد تسجيل توثيق \"" + label + "\" لأمر العمل " + orderNo + "؟")){
+      if(nodeEl) nodeEl.classList.remove("busy");
+      return;
+    }
+
+    try{
+      const res = await apiPost({
+        action:   action,
+        token:    token,
+        orderNo:  orderNo,
+        page:     PAGE_NAME,
+        userName: CURRENT_USER_NAME
+      });
+
+      if(res && (res.ok || String(res.result||res.message||"").indexOf("✅") !== -1)){
+        showMsg("✅ تم تسجيل " + label + " بنجاح", "ok");
+
+        /* تحديث الـ UI مباشرة (optimistic) — نجلب الوقت الحالي */
+        const now      = new Date();
+        const dateStr  = now.getFullYear()
+          + "-" + String(now.getMonth()+1).padStart(2,"0")
+          + "-" + String(now.getDate()).padStart(2,"0");
+        const timeStr  = String(now.getHours()).padStart(2,"0")
+          + ":" + String(now.getMinutes()).padStart(2,"0");
+        const stamp = dateStr + " | " + timeStr;
+
+        /* تحديث الـ node من next → done */
+        if(nodeEl){
+          nodeEl.classList.remove("next","clickable","busy");
+          nodeEl.classList.add("done");
+
+          /* تحديث لون الكرة */
+          const cEl = nodeEl.querySelector(".circle");
+          if(cEl){
+            cEl.removeAttribute("onclick");
+            cEl.removeAttribute("title");
+            cEl.style.cssText = "";
+          }
+
+          /* تحديث النص تحت الكرة */
+          const subEl = nodeEl.querySelector(".sub");
+          if(subEl){
+            subEl.innerHTML =
+              '<div class="sub-name">' + escapeHtml(CURRENT_USER_NAME || "") + '</div>'
+            + '<div class="sub-date">' + escapeHtml(stamp) + '</div>';
+          }
+
+          /* الخط بين الكرات: لون أخضر */
+          if(nodeEl.previousElementSibling){
+            /* يكفي الـ CSS class done على الـ node */
+          }
+
+          /* الكرة التالية — تصبح next */
+          const nextNode = nodeEl.nextElementSibling;
+          if(nextNode && !nextNode.classList.contains("ghost") && nextNode.classList.contains("locked")){
+            nextNode.classList.remove("locked");
+            nextNode.classList.add("next");
+            /* هل الكرة التالية من نوع clickable أيضاً؟ */
+            /* نعيد تحميل البيانات بعد ثانية واحدة لضمان التحديث الكامل */
+          }
+        }
+
+        /* إعادة تحميل القائمة بعد ثانية */
+        setTimeout(function(){
+          if(CURRENT_MODE === "open")    loadOpen();
+          else if(CURRENT_MODE === "delayed") loadDelayed();
+          else if(CURRENT_MODE === "done")    loadDone();
+        }, 1200);
+
+      } else {
+        const errMsg = (res && (res.message || res.result)) || "فشل التحديث";
+        showMsg("❌ " + errMsg, "err");
+        if(nodeEl) nodeEl.classList.remove("busy");
+      }
+    } catch(err){
+      showMsg("❌ خطأ في الاتصال: " + safeErr(err), "err");
+      if(nodeEl) nodeEl.classList.remove("busy");
+    }
+  }
 
   /* ============================================================
    * EXPOSE GLOBALS — للـ notifications-widget.js
