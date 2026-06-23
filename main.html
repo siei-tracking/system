@@ -1532,10 +1532,11 @@
       const um2 = val.match(/\((.*?)\)/);
       name = (um2 && um2[1]) ? um2[1].trim() : "";
 
-      /* استخراج السعر من نفس خلية التسعيرة — صيغة: ✅ 150000 - (اسم) تاريخ */
+      /* استخراج السعر من خلية التسعيرة الخام — صيغة: ✅ 150000 - (اسم) تاريخ */
       let priceStr = "";
-      const priceMatch = String(val).match(/✅\s*([\d,،.]+)/);
-      if(priceMatch && priceMatch[1]) priceStr = priceMatch[1].trim();
+      const rawPricing = (it && it.pricing) ? String(it.pricing) : String(val);
+      const priceMatch = rawPricing.match(/[\d]{3,}/);
+      if(priceMatch) priceStr = priceMatch[0].trim();
 
       const clean2 = function(s){ return s.replace(/^[\-\–—\s]+/, "").replace(/[\-\–—\s]+$/, "").trim(); };
       name = clean2(name);
