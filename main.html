@@ -721,6 +721,12 @@
       pointer-events: none;
     }
 
+    /* كرة التسعيرة بعد التوثيق — هالة خضراء */
+    .node.done.clickable .circle::before {
+      border: 2.5px solid rgba(39,174,96,0.85);
+      animation: clickable-pulse 1.8s ease-in-out infinite;
+    }
+
     @keyframes clickable-pulse {
       0%,100% { opacity: 1;   transform: scale(1); }
       50%      { opacity: 0.4; transform: scale(1.15); }
