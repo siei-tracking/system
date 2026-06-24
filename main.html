@@ -1719,11 +1719,12 @@
 
       /* هل هذه المرحلة قابلة للضغط؟ */
       const stageAction = CLICKABLE_STAGES[s.key];
-      /* التسعيرة تبقى clickable دائماً (للتعديل) — الباقيات فقط عند next أو barcode-skipped */
+      /* التسعيرة تبقى clickable دائماً (للتعديل) ما لم يكتمل التسليم النهائي — الباقيات فقط عند next أو barcode-skipped */
+      const finalDone = isDoneAny(String(it.final || ""));
       const isClickable = !!stageAction && (
-        s.key === "pricing" ||
+        s.key === "pricing" && !finalDone ||
         s.key === "barcode" && (cls.indexOf("next") !== -1 || cls.indexOf("barcode-skipped") !== -1) ||
-        (!done && cls.indexOf("next") !== -1 && s.key !== "barcode")
+        (!done && cls.indexOf("next") !== -1 && s.key !== "barcode" && s.key !== "pricing")
       );
       if(isClickable) cls += " clickable";
 
@@ -2385,11 +2386,23 @@
 
     const isEdit = item && isDoneAny(String(item.pricing||""));
 
+    const paymentIsDone = item && isDoneAny(String(item.payment || ""));
+
     document.getElementById("pmTitle").innerHTML = isEdit
       ? '<i class="fas fa-edit"></i> تعديل التسعيرة'
       : '<i class="fas fa-receipt"></i> تثبيت التسعيرة';
 
     document.getElementById("pmOrderLabel").textContent = (isEdit ? "تعديل — أمر العمل: " : "أمر العمل: ") + orderNo;
+
+    /* قفل المبلغ والأيام إذا تم التسديد */
+    const priceInput = document.getElementById("pmVal");
+    const daysInput  = document.getElementById("pmDays");
+    priceInput.disabled = !!paymentIsDone;
+    daysInput.disabled  = !!paymentIsDone;
+    priceInput.style.opacity = paymentIsDone ? "0.5" : "1";
+    daysInput.style.opacity  = paymentIsDone ? "0.5" : "1";
+    priceInput.title = paymentIsDone ? "لا يمكن تعديل المبلغ بعد التسديد" : "";
+    daysInput.title  = paymentIsDone ? "لا يمكن تعديل الأيام بعد التسديد" : "";
 
     /* استخراج السعر والأيام من الخلية الحالية */
     let curPrice = "", curDays = "", curType = "", curLab = "ورشة";
@@ -2448,8 +2461,13 @@
     const existingItem = CURRENT_ITEMS.find(function(it){
       return String(it.orderNo||"").trim() === String(orderNo||"").trim();
     });
-    const isEdit   = existingItem && isDoneAny(String(existingItem.pricing||""));
-    const pmAction = isEdit ? "editOrderPrice" : "processPlanning";
+    const isEdit      = existingItem && isDoneAny(String(existingItem.pricing||""));
+    const paymentPaid = existingItem && isDoneAny(String(existingItem.payment||""));
+    const pmAction    = isEdit ? "editOrderPrice" : "processPlanning";
+
+    /* إذا التسديد مكتمل — نرسل المبلغ والأيام الأصليين بدون تغيير */
+    const sendPrice = paymentPaid ? (existingItem ? String(existingItem.pricing||"").match(/[\d]{3,}/) || [""] : [""]) [0] : price;
+    const sendDays  = paymentPaid ? (existingItem ? String(existingItem.days||"").match(/[\d]+/) || [""] : [""]) [0] : days;
 
     const btn = document.getElementById("pmBtn");
     btn.disabled = true;
@@ -2462,8 +2480,8 @@
         page:   PAGE_NAME,
         data: {
           orderNo:  orderNo,
-          price:    price,
-          days:     days,
+          price:    sendPrice,
+          days:     sendDays,
           testType: testType,
           labPath:  labPath,
           userName: CURRENT_USER_NAME
