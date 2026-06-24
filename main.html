@@ -704,33 +704,29 @@
     .pm-btn:hover { transform: translateY(-1px); opacity: .96; }
     .pm-btn:active { transform: translateY(0); opacity: .9; }
     .pm-btn:disabled { opacity: .6; cursor: not-allowed; pointer-events: none; }
+    .node.clickable .circle::before { content: none; }
+
     .node.clickable .circle {
       cursor: pointer;
       outline: none;
       border: none;
       font-family: inherit;
       -webkit-tap-highlight-color: transparent;
+      animation: pulse-shadow-yellow 1.8s ease-in-out infinite;
     }
 
-    .node.clickable .circle::before {
-      content: "";
-      position: absolute;
-      inset: -5px;
-      border-radius: 50%;
-      border: 2.5px dashed rgba(245,166,35,0.75);
-      animation: clickable-pulse 1.8s ease-in-out infinite;
-      pointer-events: none;
+    .node.done.clickable .circle {
+      animation: pulse-shadow-green 1.8s ease-in-out infinite;
     }
 
-    /* كرة التسعيرة بعد التوثيق — هالة خضراء */
-    .node.done.clickable .circle::before {
-      border: 2.5px solid rgba(39,174,96,0.85);
-      animation: clickable-pulse 1.8s ease-in-out infinite;
+    @keyframes pulse-shadow-yellow {
+      0%,100% { box-shadow: 0 6px 14px rgba(0,0,0,.12), 0 0 0 0px rgba(245,166,35,0.7); }
+      50%      { box-shadow: 0 6px 14px rgba(0,0,0,.12), 0 0 0 8px rgba(245,166,35,0); }
     }
 
-    @keyframes clickable-pulse {
-      0%,100% { opacity: 1;   transform: scale(1); }
-      50%      { opacity: 0.4; transform: scale(1.15); }
+    @keyframes pulse-shadow-green {
+      0%,100% { box-shadow: 0 6px 14px rgba(0,0,0,.12), 0 0 0 0px rgba(39,174,96,0.7); }
+      50%      { box-shadow: 0 6px 14px rgba(0,0,0,.12), 0 0 0 8px rgba(39,174,96,0); }
     }
 
     .node.clickable .circle:hover {
@@ -1646,9 +1642,9 @@
   function renderStepper(it){
     const steps       = buildSteps(it);
     const TOTAL_SLOTS = 11;
-    const pricingDone = isDoneAny(it.pricing);
-    const type        = inferType(it);
-    const workflowReady = pricingDone;
+    const pricingDone   = isDoneAny(it.pricing);
+    const type          = inferType(it);
+    const workflowReady = pricingDone && !!type;
 
     let html = '<div class="stepper-scroll"><div class="stepper">';
     let firstPending = false;
