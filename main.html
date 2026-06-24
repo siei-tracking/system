@@ -1685,7 +1685,8 @@
 
       /* هل هذه المرحلة قابلة للضغط؟ */
       const stageAction = CLICKABLE_STAGES[s.key];
-      const isClickable = !done && cls.indexOf("next") !== -1 && !!stageAction;
+      /* التسعيرة تبقى clickable دائماً (للتعديل) — الباقيات فقط عند next */
+      const isClickable = !!stageAction && (s.key === "pricing" || (!done && cls.indexOf("next") !== -1));
       if(isClickable) cls += " clickable";
 
       const sub = formatSub(val, done, cls, s.key, it);
@@ -1697,7 +1698,7 @@
 
       /* الدائرة — قابلة للضغط أو عادية */
       const circleHtml = isClickable
-        ? '<div class="circle" onclick="handleStageClick(this,\'' + safeOrder + '\',\'' + safeAct + '\')" title="اضغط لتسجيل التوثيق"><i class="fas ' + safeIcon + '"></i></div>'
+        ? '<div class="circle" onclick="handleStageClick(this,\'' + safeOrder + '\',\'' + safeAct + '\')" title="' + (s.key === "pricing" && done ? "تعديل التسعيرة" : "اضغط لتسجيل التوثيق") + '"><i class="fas ' + safeIcon + '"></i></div>'
         : '<div class="circle"><i class="fas ' + safeIcon + '"></i></div>';
 
       html += '<div class="' + cls + '">'
@@ -2159,14 +2160,46 @@
 
   function openPricingModal(orderNo){
     _pmOrderNo = orderNo;
-    document.getElementById("pmOrderLabel").textContent = "أمر العمل: " + orderNo;
-    document.getElementById("pmVal").value   = "";
-    document.getElementById("pmDays").value  = "";
-    document.getElementById("pmType").value  = "";
-    document.getElementById("pmLabVal").value = "ورشة";
-    document.getElementById("pmLabBox").style.display = "none";
+
+    /* استخراج القيم الحالية من CURRENT_ITEMS */
+    const item = CURRENT_ITEMS.find(function(it){
+      return String(it.orderNo||"").trim() === String(orderNo||"").trim();
+    });
+
+    const isEdit = item && isDoneAny(String(item.pricing||""));
+
+    document.getElementById("pmTitle").innerHTML = isEdit
+      ? '<i class="fas fa-edit"></i> تعديل التسعيرة'
+      : '<i class="fas fa-receipt"></i> تثبيت التسعيرة';
+
+    document.getElementById("pmOrderLabel").textContent = (isEdit ? "تعديل — أمر العمل: " : "أمر العمل: ") + orderNo;
+
+    /* استخراج السعر والأيام من الخلية الحالية */
+    let curPrice = "", curDays = "", curType = "", curLab = "ورشة";
+    if(item){
+      /* السعر من pricing: ✅ 150000 - (اسم) تاريخ */
+      const pm = String(item.pricing||"").match(/[\d]{3,}/);
+      if(pm) curPrice = pm[0];
+
+      /* الأيام من days: ✅ 30 - (اسم) تاريخ */
+      const dm = String(item.days||"").match(/[\d]+/);
+      if(dm) curDays = dm[0];
+
+      curType = item.testType || "";
+      curLab  = item.labPath  || "ورشة";
+    }
+
+    document.getElementById("pmVal").value   = curPrice;
+    document.getElementById("pmDays").value  = curDays;
+    document.getElementById("pmType").value  = curType;
+    document.getElementById("pmLabVal").value = curLab;
+    pmToggleLab(curType);
+
     document.getElementById("pmBtn").disabled = false;
-    document.getElementById("pmBtn").innerHTML = '<i class="fas fa-save"></i> اعتماد وحفظ التسعيرة';
+    document.getElementById("pmBtn").innerHTML = isEdit
+      ? '<i class="fas fa-edit"></i> تعديل وحفظ التسعيرة'
+      : '<i class="fas fa-save"></i> اعتماد وحفظ التسعيرة';
+
     document.getElementById("pricingModalOverlay").classList.add("open");
     setTimeout(function(){ document.getElementById("pmVal").focus(); }, 120);
   }
@@ -2194,15 +2227,22 @@
     if(!orderNo)  { showMsg("❌ رقم أمر العمل مفقود", "err"); return; }
     if(!testType) { showMsg("❌ اختر نوع الفحص", "err"); return; }
 
+    /* تحديد action: تعديل أم توثيق جديد */
+    const existingItem = CURRENT_ITEMS.find(function(it){
+      return String(it.orderNo||"").trim() === String(orderNo||"").trim();
+    });
+    const isEdit   = existingItem && isDoneAny(String(existingItem.pricing||""));
+    const pmAction = isEdit ? "editOrderPrice" : "processPlanning";
+
     const btn = document.getElementById("pmBtn");
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
 
     try{
       const res = await apiPost({
-        action:   "processPlanning",
-        token:    token,
-        page:     PAGE_NAME,
+        action: pmAction,
+        token:  token,
+        page:   PAGE_NAME,
         data: {
           orderNo:  orderNo,
           price:    price,
@@ -2470,7 +2510,7 @@
 <div class="pricing-modal-overlay" id="pricingModalOverlay" onclick="closePricingModal(event)">
   <div class="pricing-modal">
     <button class="pricing-modal-close" onclick="closePricingModal()" title="إغلاق">✕</button>
-    <div class="pricing-modal-title"><i class="fas fa-receipt"></i> تثبيت التسعيرة</div>
+    <div class="pricing-modal-title" id="pmTitle"><i class="fas fa-receipt"></i> تثبيت التسعيرة</div>
     <div class="pricing-modal-sub" id="pmOrderLabel">أمر العمل: —</div>
 
     <div class="pm-row2">
