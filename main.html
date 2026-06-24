@@ -2169,6 +2169,147 @@
 
 
   /* ============================================================
+   * DELIVERY MODAL — تسليم النتائج
+   * ============================================================ */
+  var _dmOrderNo = "";
+
+  function extractDriveFileId(url){
+    if(!url) return "";
+    var m = String(url).match(/\/d\/([a-zA-Z0-9_-]+)/);
+    if(m && m[1]) return m[1];
+    var m2 = String(url).match(/[?&]id=([a-zA-Z0-9_-]+)/);
+    if(m2 && m2[1]) return m2[1];
+    return "";
+  }
+
+  function buildBarcodePreviewHtml(url){
+    var id    = extractDriveFileId(url);
+    var lower = String(url || "").toLowerCase();
+    if(id){
+      return '<iframe src="https://drive.google.com/file/d/' + id + '/preview" style="width:100%;height:260px;border:none;" allow="autoplay"></iframe>';
+    }
+    if(lower.endsWith(".png") || lower.endsWith(".jpg") || lower.endsWith(".jpeg") || lower.endsWith(".webp")){
+      return '<img src="' + escapeHtml(url) + '" style="width:100%;max-height:260px;object-fit:contain;" alt="Barcode">';
+    }
+    return '<div style="text-align:center;padding:30px;color:var(--muted);font-weight:900;"><i class="fas fa-file" style="font-size:40px;opacity:.3;display:block;margin-bottom:10px;"></i>المعاينة غير متاحة</div>';
+  }
+
+  function openDeliveryModal(orderNo){
+    _dmOrderNo = orderNo;
+
+    const item = CURRENT_ITEMS.find(function(it){
+      return String(it.orderNo||"").trim() === String(orderNo||"").trim();
+    });
+
+    /* تحقق من الشروط */
+    if(item){
+      if(!isDoneAny(String(item.payment || ""))){
+        showMsg("❌ يجب التسديد أولاً", "err"); return;
+      }
+      if(!isDoneAny(String(item.official || ""))){
+        showMsg("❌ يجب إصدار الكتاب الرسمي أولاً", "err"); return;
+      }
+      if(!isDoneAny(String(item.barcode || ""))){
+        showMsg("❌ يجب تثبيت الباركود أولاً", "err"); return;
+      }
+    }
+
+    document.getElementById("dmOrderLabel").textContent = "أمر العمل: " + orderNo;
+    document.getElementById("dmBtn").disabled = false;
+    document.getElementById("dmBtn").innerHTML = '<i class="fas fa-check-double"></i> توثيق تسليم النتائج وإغلاق المعاملة';
+
+    const barcodeUrl = (item && item.barcodeFileUrl) ? String(item.barcodeFileUrl).trim() : "";
+
+    if(barcodeUrl){
+      document.getElementById("dmBarcodeSection").style.display = "block";
+      document.getElementById("dmNoBarcodeMsg").style.display   = "none";
+      document.getElementById("dmBarcodeLinkBtn").href          = barcodeUrl;
+      document.getElementById("dmBarcodePreviewWrap").innerHTML = buildBarcodePreviewHtml(barcodeUrl);
+    } else {
+      document.getElementById("dmBarcodeSection").style.display = "none";
+      document.getElementById("dmNoBarcodeMsg").style.display   = "block";
+    }
+
+    document.getElementById("deliveryModalOverlay").classList.add("open");
+  }
+
+  function closeDeliveryModal(e){
+    if(e && e.target !== document.getElementById("deliveryModalOverlay")) return;
+    document.getElementById("deliveryModalOverlay").classList.remove("open");
+    _dmOrderNo = "";
+  }
+
+  async function submitDeliveryModal(){
+    const token = getSessionToken();
+    if(!token){ redirectToLogin(); return; }
+
+    const orderNo = _dmOrderNo;
+    if(!orderNo) return;
+
+    const btn = document.getElementById("dmBtn");
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+
+    try{
+      const res = await apiPost({
+        action:   "mainUpdateFinalDelivery",
+        token:    token,
+        orderNo:  orderNo,
+        page:     PAGE_NAME,
+        userName: CURRENT_USER_NAME
+      });
+
+      const msg = (res && (res.message || res.result)) || "";
+      const ok  = res && (res.ok || msg.indexOf("✅") !== -1);
+
+      if(ok){
+        document.getElementById("deliveryModalOverlay").classList.remove("open");
+        showMsg("✅ تم تسليم النتائج وإغلاق المعاملة", "ok");
+
+        /* تحديث CURRENT_ITEMS محلياً */
+        const now     = new Date();
+        const dateStr = now.getFullYear()
+          + "-" + String(now.getMonth()+1).padStart(2,"0")
+          + "-" + String(now.getDate()).padStart(2,"0");
+        const timeStr = String(now.getHours()).padStart(2,"0")
+          + ":" + String(now.getMinutes()).padStart(2,"0");
+        const stampVal = "✅ (" + (CURRENT_USER_NAME||"") + ") " + dateStr + " | " + timeStr;
+
+        const idx = CURRENT_ITEMS.findIndex(function(it){
+          return String(it.orderNo||"").trim() === String(orderNo||"").trim();
+        });
+        if(idx !== -1){
+          CURRENT_ITEMS[idx] = Object.assign({}, CURRENT_ITEMS[idx]);
+          CURRENT_ITEMS[idx].final = stampVal;
+          CURRENT_ITEMS[idx] = normalizeItemsForRender([CURRENT_ITEMS[idx]])[0];
+
+          /* إزالة الـ card من القائمة لأن المعاملة أُغلقت */
+          const itemCard = document.querySelector('.item[data-order="' + orderNo + '"]');
+          if(itemCard){
+            itemCard.style.transition = "opacity .4s ease, transform .4s ease";
+            itemCard.style.opacity    = "0";
+            itemCard.style.transform  = "scale(.96)";
+            setTimeout(function(){
+              itemCard.remove();
+              CURRENT_ITEMS.splice(idx, 1);
+              const countEl = document.getElementById("count");
+              if(countEl) countEl.textContent = String(Math.max(0, parseInt(countEl.textContent||"0") - 1));
+            }, 420);
+          }
+        }
+      } else {
+        showMsg("❌ " + (msg || "فشل التوثيق"), "err");
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-check-double"></i> توثيق تسليم النتائج وإغلاق المعاملة';
+      }
+    } catch(err){
+      showMsg("❌ خطأ: " + safeErr(err), "err");
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-check-double"></i> توثيق تسليم النتائج وإغلاق المعاملة';
+    }
+  }
+
+  /* ============================================================
    * PRICING MODAL
    * ============================================================ */
   var _pmOrderNo = "";
@@ -2354,6 +2495,66 @@
     if(nodeEl) nodeEl.classList.add("busy");
 
     const label = ACTION_LABELS[action] || "المرحلة";
+
+    /* ── تحقق من المراحل السابقة لنتائج الفحص ── */
+      const item = CURRENT_ITEMS.find(function(it){
+        return String(it.orderNo||"").trim() === String(orderNo||"").trim();
+      });
+      if(item){
+        const type    = String(item.testType || "").trim();
+        const labPath = String(item.labPath  || "").trim();
+
+        if(type === "مصاعد"){
+          if(!isDoneAny(String(item.elev || ""))){
+            showMsg("❌ يجب استلام المصاعد أولاً", "err");
+            if(nodeEl) nodeEl.classList.remove("busy");
+            return;
+          }
+        } else if(type === "مختبرات"){
+          if(labPath === "مختبرات فقط"){
+            if(!isDoneAny(String(item.lab1 || ""))){
+              showMsg("❌ يجب استلام المختبرات أولاً", "err");
+              if(nodeEl) nodeEl.classList.remove("busy");
+              return;
+            }
+          } else {
+            if(!isDoneAny(String(item.lab2 || ""))){
+              showMsg("❌ يجب استلام المختبرات بعد الورشة أولاً", "err");
+              if(nodeEl) nodeEl.classList.remove("busy");
+              return;
+            }
+          }
+        }
+      }
+    }
+
+    /* تسليم النتائج → يفتح modal المعاينة */
+    if(action === "mainUpdateFinalDelivery"){
+      if(nodeEl) nodeEl.classList.remove("busy");
+      openDeliveryModal(orderNo);
+      return;
+    }
+      const item = CURRENT_ITEMS.find(function(it){
+        return String(it.orderNo||"").trim() === String(orderNo||"").trim();
+      });
+      if(item){
+        if(!isDoneAny(String(item.payment || ""))){
+          showMsg("❌ يجب التسديد أولاً", "err");
+          if(nodeEl) nodeEl.classList.remove("busy");
+          return;
+        }
+        if(!isDoneAny(String(item.official || ""))){
+          showMsg("❌ يجب إصدار الكتاب الرسمي أولاً", "err");
+          if(nodeEl) nodeEl.classList.remove("busy");
+          return;
+        }
+        if(!isDoneAny(String(item.barcode || ""))){
+          showMsg("❌ يجب تثبيت الباركود أولاً", "err");
+          if(nodeEl) nodeEl.classList.remove("busy");
+          return;
+        }
+      }
+    }
 
     try{
       /* ── تسجيل التوثيق في السيرفر ── */
@@ -2555,6 +2756,35 @@
 
     <button class="pm-btn" id="pmBtn" onclick="submitPricingModal()">
       <i class="fas fa-save"></i> اعتماد وحفظ التسعيرة
+    </button>
+  </div>
+</div>
+
+<!-- ===== Modal تسليم النتائج ===== -->
+<div class="pricing-modal-overlay" id="deliveryModalOverlay" onclick="closeDeliveryModal(event)">
+  <div class="pricing-modal" style="max-width:520px;">
+    <button class="pricing-modal-close" onclick="closeDeliveryModal()" title="إغلاق">✕</button>
+    <div class="pricing-modal-title"><i class="fas fa-flag-checkered"></i> تسليم النتائج</div>
+    <div class="pricing-modal-sub" id="dmOrderLabel">أمر العمل: —</div>
+
+    <!-- معاينة الباركود -->
+    <div id="dmBarcodeSection" style="margin-bottom:12px;display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+        <span style="font-weight:900;font-size:14px;color:#253444;"><i class="fas fa-qrcode"></i> الباركود</span>
+        <a id="dmBarcodeLinkBtn" href="#" target="_blank" style="font-size:12px;font-weight:900;color:var(--primary);text-decoration:none;">
+          <i class="fas fa-external-link-alt"></i> فتح الملف
+        </a>
+      </div>
+      <div id="dmBarcodePreviewWrap" style="border-radius:12px;overflow:hidden;border:1.5px solid var(--line);background:#f8fafc;"></div>
+    </div>
+
+    <div id="dmNoBarcodeMsg" style="display:none;text-align:center;padding:20px;color:var(--muted);font-weight:900;">
+      <i class="fas fa-qrcode" style="font-size:32px;opacity:.3;display:block;margin-bottom:8px;"></i>
+      لا يوجد باركود مرفق
+    </div>
+
+    <button class="pm-btn" id="dmBtn" onclick="submitDeliveryModal()" style="background:linear-gradient(180deg,#2ebf68,#26a65b);box-shadow:0 10px 20px rgba(39,174,96,.20);">
+      <i class="fas fa-check-double"></i> توثيق تسليم النتائج وإغلاق المعاملة
     </button>
   </div>
 </div>
