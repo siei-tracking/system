@@ -2296,6 +2296,10 @@
             const scrollEl    = itemCard.querySelector(".stepper-scroll");
             const newScrollEl = tmpDiv.querySelector(".stepper-scroll");
             if(scrollEl && newScrollEl) scrollEl.replaceWith(newScrollEl);
+
+            /* إزالة جملة "تظهر بقية المراحل" */
+            const emptyEl = itemCard.querySelector(".empty");
+            if(emptyEl) emptyEl.remove();
           }
         }
       } else {
