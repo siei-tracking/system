@@ -2201,36 +2201,74 @@
       return String(it.orderNo||"").trim() === String(orderNo||"").trim();
     });
 
+    document.getElementById("dmOrderLabel").textContent = "أمر العمل: " + orderNo;
+    document.getElementById("dmBarcodeSection").style.display = "none";
+    document.getElementById("dmNoBarcodeMsg").style.display   = "none";
+
     /* تحقق من الشروط */
+    var blockReason = "";
     if(item){
-      if(!isDoneAny(String(item.payment || ""))){
-        showMsg("❌ يجب التسديد أولاً", "err"); return;
-      }
-      if(!isDoneAny(String(item.official || ""))){
-        showMsg("❌ يجب إصدار الكتاب الرسمي أولاً", "err"); return;
-      }
-      if(!isDoneAny(String(item.barcode || ""))){
-        showMsg("❌ يجب تثبيت الباركود أولاً", "err"); return;
-      }
+      if(!isDoneAny(String(item.payment  || ""))) blockReason = "❌ يجب التسديد أولاً";
+      else if(!isDoneAny(String(item.official || ""))) blockReason = "❌ يجب إصدار الكتاب الرسمي أولاً";
+      else if(!isDoneAny(String(item.barcode  || ""))) blockReason = "❌ يجب تثبيت الباركود أولاً";
     }
 
-    document.getElementById("dmOrderLabel").textContent = "أمر العمل: " + orderNo;
-    document.getElementById("dmBtn").disabled = false;
-    document.getElementById("dmBtn").innerHTML = '<i class="fas fa-check-double"></i> توثيق تسليم النتائج وإغلاق المعاملة';
-
-    const barcodeUrl = (item && item.barcodeFileUrl) ? String(item.barcodeFileUrl).trim() : "";
-
-    if(barcodeUrl){
-      document.getElementById("dmBarcodeSection").style.display = "block";
-      document.getElementById("dmNoBarcodeMsg").style.display   = "none";
-      document.getElementById("dmBarcodeLinkBtn").href          = barcodeUrl;
-      document.getElementById("dmBarcodePreviewWrap").innerHTML = buildBarcodePreviewHtml(barcodeUrl);
+    const btn = document.getElementById("dmBtn");
+    if(blockReason){
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-lock"></i> ' + blockReason;
+      btn.style.background = "#bdc3c7";
+      btn.style.boxShadow  = "none";
     } else {
-      document.getElementById("dmBarcodeSection").style.display = "none";
-      document.getElementById("dmNoBarcodeMsg").style.display   = "block";
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-check-double"></i> توثيق تسليم النتائج وإغلاق المعاملة';
+      btn.style.background = "linear-gradient(180deg,#2ebf68,#26a65b)";
+      btn.style.boxShadow  = "0 10px 20px rgba(39,174,96,.20)";
     }
 
     document.getElementById("deliveryModalOverlay").classList.add("open");
+
+    /* جلب الباركود من السيرفر */
+    const token = getSessionToken();
+    if(!token) return;
+
+    /* أولاً: حاول من البيانات المحلية */
+    const localUrl = (item && item.barcodeFileUrl) ? String(item.barcodeFileUrl).trim() : "";
+    if(localUrl){
+      _showDeliveryBarcode(localUrl);
+      return;
+    }
+
+    /* ثانياً: اجلب من السيرفر */
+    document.getElementById("dmNoBarcodeMsg").style.display = "block";
+    document.getElementById("dmNoBarcodeMsg").innerHTML =
+      '<i class="fas fa-spinner fa-spin" style="font-size:24px;display:block;margin-bottom:8px;"></i>جاري التحميل...';
+
+    apiPost({ action:"getResultsDetails", token, page:PAGE_NAME, orderNo:orderNo })
+      .then(function(data){
+        if(data && data.found){
+          const url = String(data.barcodeFileUrl || data.barcodeLink || "").trim();
+          if(url){
+            _showDeliveryBarcode(url);
+            /* حفظ في CURRENT_ITEMS */
+            if(item) item.barcodeFileUrl = url;
+          } else {
+            document.getElementById("dmNoBarcodeMsg").innerHTML =
+              '<i class="fas fa-qrcode" style="font-size:32px;opacity:.3;display:block;margin-bottom:8px;"></i>لا يوجد باركود مرفق';
+          }
+        }
+      })
+      .catch(function(){
+        document.getElementById("dmNoBarcodeMsg").innerHTML =
+          '<i class="fas fa-qrcode" style="font-size:32px;opacity:.3;display:block;margin-bottom:8px;"></i>لا يوجد باركود مرفق';
+      });
+  }
+
+  function _showDeliveryBarcode(url){
+    document.getElementById("dmNoBarcodeMsg").style.display   = "none";
+    document.getElementById("dmBarcodeSection").style.display = "block";
+    document.getElementById("dmBarcodeLinkBtn").href          = url;
+    document.getElementById("dmBarcodePreviewWrap").innerHTML = buildBarcodePreviewHtml(url);
   }
 
   function closeDeliveryModal(e){
@@ -2533,27 +2571,6 @@
       if(nodeEl) nodeEl.classList.remove("busy");
       openDeliveryModal(orderNo);
       return;
-    }
-      const item = CURRENT_ITEMS.find(function(it){
-        return String(it.orderNo||"").trim() === String(orderNo||"").trim();
-      });
-      if(item){
-        if(!isDoneAny(String(item.payment || ""))){
-          showMsg("❌ يجب التسديد أولاً", "err");
-          if(nodeEl) nodeEl.classList.remove("busy");
-          return;
-        }
-        if(!isDoneAny(String(item.official || ""))){
-          showMsg("❌ يجب إصدار الكتاب الرسمي أولاً", "err");
-          if(nodeEl) nodeEl.classList.remove("busy");
-          return;
-        }
-        if(!isDoneAny(String(item.barcode || ""))){
-          showMsg("❌ يجب تثبيت الباركود أولاً", "err");
-          if(nodeEl) nodeEl.classList.remove("busy");
-          return;
-        }
-      }
     }
 
     try{
