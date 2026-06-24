@@ -712,21 +712,31 @@
       border: none;
       font-family: inherit;
       -webkit-tap-highlight-color: transparent;
-      animation: pulse-shadow-yellow 1.8s ease-in-out infinite;
     }
 
-    .node.done.clickable .circle {
-      animation: pulse-shadow-green 1.8s ease-in-out infinite;
+    .node.next.clickable .circle::before {
+      content: "";
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      border: 2.5px dashed rgba(245,166,35,0.85);
+      animation: clickable-pulse 1.8s ease-in-out infinite;
+      pointer-events: none;
     }
 
-    @keyframes pulse-shadow-yellow {
-      0%,100% { box-shadow: 0 6px 14px rgba(0,0,0,.12), 0 0 0 0px rgba(245,166,35,0.7); }
-      50%      { box-shadow: 0 6px 14px rgba(0,0,0,.12), 0 0 0 8px rgba(245,166,35,0); }
+    .node.done.clickable .circle::before {
+      content: "";
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      border: 2.5px dashed rgba(39,174,96,0.85);
+      animation: clickable-pulse 1.8s ease-in-out infinite;
+      pointer-events: none;
     }
 
-    @keyframes pulse-shadow-green {
-      0%,100% { box-shadow: 0 6px 14px rgba(0,0,0,.12), 0 0 0 0px rgba(39,174,96,0.7); }
-      50%      { box-shadow: 0 6px 14px rgba(0,0,0,.12), 0 0 0 8px rgba(39,174,96,0); }
+    @keyframes clickable-pulse {
+      0%,100% { opacity: 1;   transform: scale(1); }
+      50%      { opacity: 0.3; transform: scale(1.14); }
     }
 
     .node.clickable .circle:hover {
