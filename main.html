@@ -2353,13 +2353,6 @@
 
     const label = ACTION_LABELS[action] || "المرحلة";
 
-    if(action === "mainUpdateFinalDelivery"){
-      if(!confirm("هل تريد تسجيل توثيق\n\"" + label + "\"\nلأمر العمل: " + orderNo + "؟")){
-        if(nodeEl) nodeEl.classList.remove("busy");
-        return;
-      }
-    }
-
     try{
       /* ── تسجيل التوثيق في السيرفر ── */
       const res = await apiPost({
