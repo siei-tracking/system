@@ -587,7 +587,6 @@
     .node.skipped .label  { color: var(--text); }
     .node.skipped .sub .sub-date { color: var(--text); }
     .node.skipped:not(.ghost)::after { background: var(--ok); }
-
     .node.done:not(.ghost)::after { background: var(--ok); }
     .node.next:not(.ghost)::after { background: var(--accent); }
 
@@ -1683,6 +1682,9 @@
         cls += " done";
       } else if(s.key === "payment" && !done){
         /* التسديد فارغ → skipped */
+        cls += " skipped";
+      } else if(s.key === "email" && !done){
+        /* الايميل فارغ → skipped */
         cls += " skipped";
       } else if(isAfterPayment && !paymentDone && !stageAfterPaymentDone && !done){
         /* التسديد غير موثق والمرحلة المباشرة بعده غير موثقة → locked */
