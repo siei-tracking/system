@@ -2562,7 +2562,7 @@
     const token = getSessionToken();
     if(!token){ redirectToLogin(); return; }
 
-    /* الباركود → toggle skip مع حفظ في السيرفر */
+    /* الباركود → toggle skip مع كتابة في الشيت */
     if(action === "mainToggleBarcodeSkip"){
       const idx = CURRENT_ITEMS.findIndex(function(it){
         return String(it.orderNo||"").trim() === String(orderNo||"").trim();
@@ -2571,6 +2571,20 @@
         const newSkipped = !CURRENT_ITEMS[idx].barcodeSkipped;
         CURRENT_ITEMS[idx] = Object.assign({}, CURRENT_ITEMS[idx]);
         CURRENT_ITEMS[idx].barcodeSkipped = newSkipped;
+
+        /* تحديث قيمة barcode محلياً لتعكس حالة الشيت */
+        if(newSkipped){
+          const now = new Date();
+          const ts  = now.getFullYear()
+            + "-" + String(now.getMonth()+1).padStart(2,"0")
+            + "-" + String(now.getDate()).padStart(2,"0")
+            + " | " + String(now.getHours()).padStart(2,"0")
+            + ":" + String(now.getMinutes()).padStart(2,"0");
+          CURRENT_ITEMS[idx].barcode = "✅ تجاوز - (" + (CURRENT_USER_NAME||"") + ") " + ts;
+        } else {
+          CURRENT_ITEMS[idx].barcode = "";
+        }
+
         const freshItem = normalizeItemsForRender([CURRENT_ITEMS[idx]])[0];
         CURRENT_ITEMS[idx] = freshItem;
 
@@ -2586,10 +2600,10 @@
 
         showMsg(newSkipped ? "⏭ تم تجاوز الباركود" : "↩ تم إلغاء تجاوز الباركود", "ok");
 
-        /* حفظ في السيرفر بشكل غير متزامن */
-        const token = getSessionToken();
-        if(token){
-          apiPost({ action:"mainSetBarcodeSkip", token, page:PAGE_NAME, orderNo:orderNo, skipped:newSkipped })
+        /* حفظ في السيرفر */
+        const tkn = getSessionToken();
+        if(tkn){
+          apiPost({ action:"mainSetBarcodeSkip", token:tkn, page:PAGE_NAME, orderNo:orderNo, skipped:newSkipped, userName:CURRENT_USER_NAME })
             .catch(function(e){ console.warn("mainSetBarcodeSkip failed:", e); });
         }
       }
