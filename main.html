@@ -1723,7 +1723,7 @@
       const finalDone = isDoneAny(String(it.final || ""));
       const isClickable = !!stageAction && (
         s.key === "pricing" && !finalDone ||
-        s.key === "barcode" && (cls.indexOf("next") !== -1 || cls.indexOf("barcode-skipped") !== -1) ||
+        s.key === "barcode" && !finalDone && (cls.indexOf("next") !== -1 || cls.indexOf("barcode-skipped") !== -1) ||
         (!done && cls.indexOf("next") !== -1 && s.key !== "barcode" && s.key !== "pricing")
       );
       if(isClickable) cls += " clickable";
