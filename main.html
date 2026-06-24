@@ -1519,10 +1519,10 @@
         return '<div class="sub-name" style="min-height:0"></div><div class="sub-date">بانتظار</div>';
       }
       if(cls.indexOf("barcode-skipped") !== -1){
-        return '<div class="sub-date" style="color:var(--muted);font-style:italic;">تم التجاوز ↩</div>';
+        return '<div class="sub-date" style="color:var(--accent);font-style:italic;">اضغط للإلغاء ↩</div>';
       }
       if(cls.indexOf("next") !== -1 && CLICKABLE_STAGES[stepKey]){
-        return '<div class="sub-date click-hint">اضغط للتوثيق ▲</div>';
+        return '<div class="sub-date click-hint">' + (stepKey === "barcode" ? "اضغط للتجاوز ⏭" : "اضغط للتوثيق ▲") + '</div>';
       }
       return cls.indexOf("next") !== -1
         ? '<div class="sub-date">الخطوة الحالية</div>'
