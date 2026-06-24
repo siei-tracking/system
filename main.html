@@ -705,6 +705,19 @@
     .pm-btn:disabled { opacity: .6; cursor: not-allowed; pointer-events: none; }
     .node.clickable .circle::before { content: none; }
 
+    /* باركود skipped بواسطة المستخدم */
+    .node.barcode-skipped .circle {
+      background: var(--muted) !important;
+      opacity: 0.75;
+      cursor: pointer;
+      box-shadow: none !important;
+      transform: none !important;
+    }
+    .node.barcode-skipped .circle::before { content: none !important; animation: none !important; }
+    .node.barcode-skipped .label { color: var(--muted); }
+    .node.barcode-skipped .sub .sub-date { color: var(--muted); font-style: italic; }
+    .node.barcode-skipped:not(.ghost)::after { background: var(--ok); }
+
     .node.clickable .circle {
       cursor: pointer;
       outline: none;
@@ -1497,13 +1510,17 @@
     "pricing":     "mainStampPricing",
     "testResults": "mainUpdateTestResults",
     "official":    "mainUpdateOfficial",
-    "final":       "mainUpdateFinalDelivery"
+    "final":       "mainUpdateFinalDelivery",
+    "barcode":     "mainToggleBarcodeSkip"
   };
 
   function formatSub(val, done, cls, stepKey, it){
     if(!done){
       if(cls.indexOf("skipped") !== -1){
         return '<div class="sub-name" style="min-height:0"></div><div class="sub-date">بانتظار</div>';
+      }
+      if(cls.indexOf("barcode-skipped") !== -1){
+        return '<div class="sub-date" style="color:var(--muted);font-style:italic;">تم التجاوز ↩</div>';
       }
       if(cls.indexOf("next") !== -1 && CLICKABLE_STAGES[stepKey]){
         return '<div class="sub-date click-hint">اضغط للتوثيق ▲</div>';
@@ -1683,8 +1700,11 @@
       } else if(s.key === "payment" && !done){
         /* التسديد فارغ → skipped */
         cls += " skipped";
-      } else if(s.key === "email" && !done && isDoneAny(String(it.barcode || ""))){
-        /* الايميل فارغ والباركود مكتمل → skipped */
+      } else if(s.key === "barcode" && !done && it.barcodeSkipped){
+        /* الباركود تجاوزه المستخدم → barcode-skipped (قابل للعكس) */
+        cls += " barcode-skipped";
+      } else if(s.key === "email" && !done && (isDoneAny(String(it.barcode || "")) || it.barcodeSkipped)){
+        /* الايميل فارغ والباركود مكتمل أو متجاوز → skipped */
         cls += " skipped";
       } else if(isAfterPayment && !paymentDone && !stageAfterPaymentDone && !done){
         /* التسديد غير موثق والمرحلة المباشرة بعده غير موثقة → locked */
@@ -1700,8 +1720,12 @@
 
       /* هل هذه المرحلة قابلة للضغط؟ */
       const stageAction = CLICKABLE_STAGES[s.key];
-      /* التسعيرة تبقى clickable دائماً (للتعديل) — الباقيات فقط عند next */
-      const isClickable = !!stageAction && (s.key === "pricing" || (!done && cls.indexOf("next") !== -1));
+      /* التسعيرة تبقى clickable دائماً (للتعديل) — الباقيات فقط عند next أو barcode-skipped */
+      const isClickable = !!stageAction && (
+        s.key === "pricing" ||
+        s.key === "barcode" && (cls.indexOf("next") !== -1 || cls.indexOf("barcode-skipped") !== -1) ||
+        (!done && cls.indexOf("next") !== -1 && s.key !== "barcode")
+      );
       if(isClickable) cls += " clickable";
 
       const sub = formatSub(val, done, cls, s.key, it);
@@ -1713,7 +1737,7 @@
 
       /* الدائرة — قابلة للضغط أو عادية */
       const circleHtml = isClickable
-        ? '<div class="circle" onclick="handleStageClick(this,\'' + safeOrder + '\',\'' + safeAct + '\')" title="' + (s.key === "pricing" && done ? "تعديل التسعيرة" : "اضغط لتسجيل التوثيق") + '"><i class="fas ' + safeIcon + '"></i></div>'
+        ? '<div class="circle" onclick="handleStageClick(this,\'' + safeOrder + '\',\'' + safeAct + '\')" title="' + (s.key === "pricing" && done ? "تعديل التسعيرة" : s.key === "barcode" ? (it.barcodeSkipped ? "إلغاء تجاوز الباركود" : "تجاوز الباركود") : "اضغط لتسجيل التوثيق") + '"><i class="fas ' + safeIcon + '"></i></div>'
         : '<div class="circle"><i class="fas ' + safeIcon + '"></i></div>';
 
       html += '<div class="' + cls + '">'
@@ -2520,6 +2544,32 @@
 
     const token = getSessionToken();
     if(!token){ redirectToLogin(); return; }
+
+    /* الباركود → toggle skip محلي بدون سيرفر */
+    if(action === "mainToggleBarcodeSkip"){
+      const idx = CURRENT_ITEMS.findIndex(function(it){
+        return String(it.orderNo||"").trim() === String(orderNo||"").trim();
+      });
+      if(idx !== -1){
+        CURRENT_ITEMS[idx] = Object.assign({}, CURRENT_ITEMS[idx]);
+        CURRENT_ITEMS[idx].barcodeSkipped = !CURRENT_ITEMS[idx].barcodeSkipped;
+        const freshItem = normalizeItemsForRender([CURRENT_ITEMS[idx]])[0];
+        CURRENT_ITEMS[idx] = freshItem;
+
+        /* إعادة رسم الـ card */
+        const itemCard = circleEl.closest(".item");
+        if(itemCard){
+          const tmpDiv = document.createElement("div");
+          tmpDiv.innerHTML = renderStepper(freshItem);
+          const scrollEl    = itemCard.querySelector(".stepper-scroll");
+          const newScrollEl = tmpDiv.querySelector(".stepper-scroll");
+          if(scrollEl && newScrollEl) scrollEl.replaceWith(newScrollEl);
+        }
+
+        showMsg(CURRENT_ITEMS[idx].barcodeSkipped ? "⏭ تم تجاوز الباركود" : "↩ تم إلغاء تجاوز الباركود", "ok");
+      }
+      return;
+    }
 
     /* التسعيرة → تفتح modal خاص */
     if(action === "mainStampPricing"){
