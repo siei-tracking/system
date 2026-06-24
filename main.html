@@ -1683,8 +1683,8 @@
       } else if(s.key === "payment" && !done){
         /* التسديد فارغ → skipped */
         cls += " skipped";
-      } else if(s.key === "email" && !done){
-        /* الايميل فارغ → skipped */
+      } else if(s.key === "email" && !done && isDoneAny(String(it.barcode || ""))){
+        /* الايميل فارغ والباركود مكتمل → skipped */
         cls += " skipped";
       } else if(isAfterPayment && !paymentDone && !stageAfterPaymentDone && !done){
         /* التسديد غير موثق والمرحلة المباشرة بعده غير موثقة → locked */
