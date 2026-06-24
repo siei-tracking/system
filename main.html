@@ -1702,8 +1702,8 @@
       } else if(s.key === "barcode" && !done && it.barcodeSkipped){
         /* الباركود تجاوزه المستخدم → barcode-skipped (قابل للعكس) */
         cls += " barcode-skipped";
-      } else if(s.key === "email" && !done && (isDoneAny(String(it.barcode || "")) || it.barcodeSkipped)){
-        /* الايميل فارغ والباركود مكتمل أو متجاوز → skipped */
+      } else if(s.key === "email" && !done && (isDoneAny(String(it.barcode || "")) || it.barcodeSkipped || isDoneAny(String(it.final || "")))){
+        /* الايميل فارغ والباركود مكتمل أو متجاوز أو الاستلام النهائي مكتمل → skipped */
         cls += " skipped";
       } else if(isAfterPayment && !paymentDone && !stageAfterPaymentDone && !done){
         /* التسديد غير موثق والمرحلة المباشرة بعده غير موثقة → locked */
