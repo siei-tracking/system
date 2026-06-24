@@ -707,15 +707,14 @@
 
     /* باركود skipped بواسطة المستخدم */
     .node.barcode-skipped .circle {
-      background: var(--muted) !important;
-      opacity: 0.75;
+      background: var(--accent) !important;
+      transform: scale(1.06) !important;
+      box-shadow: 0 8px 20px rgba(245,166,35,.35) !important;
       cursor: pointer;
-      box-shadow: none !important;
-      transform: none !important;
     }
     .node.barcode-skipped .circle::before { content: none !important; animation: none !important; }
-    .node.barcode-skipped .label { color: var(--muted); }
-    .node.barcode-skipped .sub .sub-date { color: var(--muted); font-style: italic; }
+    .node.barcode-skipped .label { color: var(--text); }
+    .node.barcode-skipped .sub .sub-date { color: var(--text); font-style: italic; }
     .node.barcode-skipped:not(.ghost)::after { background: var(--ok); }
 
     .node.clickable .circle {
@@ -2234,7 +2233,7 @@
     if(item){
       if(!isDoneAny(String(item.payment  || ""))) blockReason = "❌ يجب التسديد أولاً";
       else if(!isDoneAny(String(item.official || ""))) blockReason = "❌ يجب إصدار الكتاب الرسمي أولاً";
-      else if(!isDoneAny(String(item.barcode  || ""))) blockReason = "❌ يجب تثبيت الباركود أولاً";
+      else if(!isDoneAny(String(item.barcode  || "")) && !item.barcodeSkipped) blockReason = "❌ يجب تثبيت الباركود أولاً";
     }
 
     const btn = document.getElementById("dmBtn");
