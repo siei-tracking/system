@@ -2282,8 +2282,19 @@
         });
         if(idx !== -1){
           CURRENT_ITEMS[idx] = Object.assign({}, CURRENT_ITEMS[idx]);
-          CURRENT_ITEMS[idx].orderNo     = newOrderNo;
-          CURRENT_ITEMS[idx].clientName  = clientName;
+          CURRENT_ITEMS[idx].orderNo    = newOrderNo;
+          CURRENT_ITEMS[idx].clientName = clientName;
+
+          /* تحديث inspection محلياً بنفس صيغة السيرفر */
+          const now2    = new Date();
+          const ts2     = now2.getFullYear()
+            + "-" + String(now2.getMonth()+1).padStart(2,"0")
+            + "-" + String(now2.getDate()).padStart(2,"0")
+            + " | " + String(now2.getHours()).padStart(2,"0")
+            + ":" + String(now2.getMinutes()).padStart(2,"0");
+          const baseInsp = String(CURRENT_ITEMS[idx].inspection || "")
+            .replace(/\s*\(تعديل:[^)]*\)\s*\d{4}-\d{2}-\d{2}.*$/, "").trim();
+          CURRENT_ITEMS[idx].inspection = baseInsp + " (تعديل:" + (CURRENT_USER_NAME||"") + ") " + ts2;
           const freshItem = normalizeItemsForRender([CURRENT_ITEMS[idx]])[0];
           CURRENT_ITEMS[idx] = freshItem;
 
