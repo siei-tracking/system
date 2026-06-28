@@ -1565,12 +1565,20 @@
     }
 
     if(done && stepKey === "inspection"){
-      val = String(val || "")
-        .replace("✅","").replace("استلام -","").replace("استلام","").trim();
-      const umI = val.match(/\((.*?)\)/);
-      const dtI = val.match(/(\d{4}-\d{2}-\d{2}\s*\|\s*\d{2}:\d{2})/);
-      const nameI = umI ? umI[1].trim() : "";
-      const dateI = dtI ? dtI[1].trim() : "";
+      val = String(val || "").replace("✅","").replace("استلام -","").replace("استلام","").trim();
+      /* هل يوجد تعديل؟ */
+      const editMatch = val.match(/\(تعديل:([^)]*)\)/);
+      const userMatch = val.match(/\(([^)]*)\)/);
+      const dtMatch   = val.match(/(\d{4}-\d{2}-\d{2}\s*\|\s*\d{2}:\d{2})/);
+      const dateI = dtMatch ? dtMatch[1].trim() : "";
+      let nameI;
+      if(editMatch){
+        nameI = "تعديل:" + editMatch[1].trim();
+      } else if(userMatch){
+        nameI = userMatch[1].trim();
+      } else {
+        nameI = "";
+      }
       return '<div class="sub-name">' + escapeHtml(nameI) + '</div>'
            + '<div class="sub-date">' + escapeHtml(dateI) + '</div>';
     }
