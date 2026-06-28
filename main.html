@@ -1507,6 +1507,7 @@
 
   /* المراحل الأربع القابلة للضغط من صفحة main */
   var CLICKABLE_STAGES = {
+    "inspection": "mainEditOrderInfo",
     "pricing":     "mainStampPricing",
     "testResults": "mainUpdateTestResults",
     "official":    "mainUpdateOfficial",
@@ -1731,9 +1732,10 @@
       /* التسعيرة تبقى clickable دائماً (للتعديل) ما لم يكتمل التسليم النهائي — الباقيات فقط عند next أو barcode-skipped */
       const finalDone = isDoneAny(String(it.final || ""));
       const isClickable = !!stageAction && (
+        s.key === "inspection" ||
         s.key === "pricing" && !finalDone ||
         s.key === "barcode" && !finalDone && (cls.indexOf("next") !== -1 || cls.indexOf("barcode-skipped") !== -1) ||
-        (!done && !barcodeIsSkipped && cls.indexOf("next") !== -1 && s.key !== "barcode" && s.key !== "pricing")
+        (!done && !barcodeIsSkipped && cls.indexOf("next") !== -1 && s.key !== "barcode" && s.key !== "pricing" && s.key !== "inspection")
       );
       if(isClickable) cls += " clickable";
 
@@ -1746,7 +1748,7 @@
 
       /* الدائرة — قابلة للضغط أو عادية */
       const circleHtml = isClickable
-        ? '<div class="circle" onclick="handleStageClick(this,\'' + safeOrder + '\',\'' + safeAct + '\')" title="' + (s.key === "pricing" && done ? "تعديل التسعيرة" : s.key === "barcode" ? (it.barcodeSkipped ? "إلغاء تجاوز الباركود" : "تجاوز الباركود") : "اضغط لتسجيل التوثيق") + '"><i class="fas ' + safeIcon + '"></i></div>'
+        ? '<div class="circle" onclick="handleStageClick(this,\'' + safeOrder + '\',\'' + safeAct + '\')" title="' + (s.key === "inspection" ? "تعديل بيانات أمر العمل" : s.key === "pricing" && done ? "تعديل التسعيرة" : s.key === "barcode" ? (isBarcodeSkipped(val) || it.barcodeSkipped ? "إلغاء تجاوز الباركود" : "تجاوز الباركود") : "اضغط لتسجيل التوثيق") + '"><i class="fas ' + safeIcon + '"></i></div>'
         : '<div class="circle"><i class="fas ' + safeIcon + '"></i></div>';
 
       html += '<div class="' + cls + '">'
@@ -2202,6 +2204,105 @@
 
 
   /* ============================================================
+   * ORDER INFO MODAL — تعديل بيانات أمر العمل
+   * ============================================================ */
+  var _oiOldOrderNo = "";
+
+  function openOrderInfoModal(orderNo){
+    _oiOldOrderNo = orderNo;
+    const item = CURRENT_ITEMS.find(function(it){
+      return String(it.orderNo||"").trim() === String(orderNo||"").trim();
+    });
+    document.getElementById("oiOrderLabel").textContent = "أمر العمل: " + orderNo;
+    document.getElementById("oiOrderNo").value    = orderNo;
+    document.getElementById("oiClientName").value = (item && item.clientName) ? String(item.clientName).trim() : "";
+    document.getElementById("oiBtn").disabled = false;
+    document.getElementById("oiBtn").innerHTML = '<i class="fas fa-save"></i> حفظ التعديلات';
+    document.getElementById("orderInfoModalOverlay").classList.add("open");
+    setTimeout(function(){ document.getElementById("oiOrderNo").focus(); }, 120);
+  }
+
+  function closeOrderInfoModal(e){
+    if(e && e.target !== document.getElementById("orderInfoModalOverlay")) return;
+    document.getElementById("orderInfoModalOverlay").classList.remove("open");
+    _oiOldOrderNo = "";
+  }
+
+  async function submitOrderInfoModal(){
+    const token = getSessionToken();
+    if(!token){ redirectToLogin(); return; }
+
+    const newOrderNo  = String(document.getElementById("oiOrderNo").value  || "").trim();
+    const clientName  = String(document.getElementById("oiClientName").value || "").trim();
+    const oldOrderNo  = _oiOldOrderNo;
+
+    if(!newOrderNo) { showMsg("❌ رقم أمر العمل مطلوب", "err"); return; }
+    if(!clientName)  { showMsg("❌ اسم الجهة مطلوب", "err"); return; }
+
+    const btn = document.getElementById("oiBtn");
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+
+    try{
+      const res = await apiPost({
+        action: "mainEditOrderInfo",
+        token, page: PAGE_NAME,
+        oldOrderNo, newOrderNo, clientName,
+        userName: CURRENT_USER_NAME
+      });
+
+      const msg = (res && (res.message || res.result)) || "";
+      const ok  = res && (res.ok || msg.indexOf("✅") !== -1);
+
+      if(ok){
+        document.getElementById("orderInfoModalOverlay").classList.remove("open");
+        showMsg("✅ تم تعديل بيانات أمر العمل", "ok");
+
+        /* تحديث CURRENT_ITEMS محلياً */
+        const idx = CURRENT_ITEMS.findIndex(function(it){
+          return String(it.orderNo||"").trim() === String(oldOrderNo||"").trim();
+        });
+        if(idx !== -1){
+          CURRENT_ITEMS[idx] = Object.assign({}, CURRENT_ITEMS[idx]);
+          CURRENT_ITEMS[idx].orderNo     = newOrderNo;
+          CURRENT_ITEMS[idx].clientName  = clientName;
+          const freshItem = normalizeItemsForRender([CURRENT_ITEMS[idx]])[0];
+          CURRENT_ITEMS[idx] = freshItem;
+
+          /* تحديث الـ card */
+          const itemCard = document.querySelector('.item[data-order="' + oldOrderNo + '"]');
+          if(itemCard){
+            itemCard.setAttribute("data-order", newOrderNo);
+
+            /* تحديث رقم أمر العمل في الـ header */
+            const orderNoEl = itemCard.querySelector(".order-no");
+            if(orderNoEl) orderNoEl.textContent = newOrderNo;
+
+            /* تحديث اسم الجهة */
+            const clientEl = itemCard.querySelector(".client-name");
+            if(clientEl) clientEl.textContent = clientName;
+
+            /* إعادة رسم الـ stepper */
+            const tmpDiv = document.createElement("div");
+            tmpDiv.innerHTML = renderStepper(freshItem);
+            const scrollEl    = itemCard.querySelector(".stepper-scroll");
+            const newScrollEl = tmpDiv.querySelector(".stepper-scroll");
+            if(scrollEl && newScrollEl) scrollEl.replaceWith(newScrollEl);
+          }
+        }
+      } else {
+        showMsg("❌ " + (msg || "فشل التعديل"), "err");
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save"></i> حفظ التعديلات';
+      }
+    } catch(err){
+      showMsg("❌ خطأ: " + safeErr(err), "err");
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-save"></i> حفظ التعديلات';
+    }
+  }
+
+  /* ============================================================
    * DELIVERY MODAL — تسليم النتائج
    * ============================================================ */
   var _dmOrderNo = "";
@@ -2620,6 +2721,13 @@
       return;
     }
 
+    /* تعديل بيانات أمر العمل → modal */
+    if(action === "mainEditOrderInfo"){
+      if(nodeEl) nodeEl.classList.remove("busy");
+      openOrderInfoModal(orderNo);
+      return;
+    }
+
     /* التسعيرة → تفتح modal خاص */
     if(action === "mainStampPricing"){
       openPricingModal(orderNo);
@@ -2902,6 +3010,29 @@
 
     <button class="pm-btn" id="dmBtn" onclick="submitDeliveryModal()" style="background:linear-gradient(180deg,#2ebf68,#26a65b);box-shadow:0 10px 20px rgba(39,174,96,.20);">
       <i class="fas fa-check-double"></i> توثيق تسليم النتائج وإغلاق المعاملة
+    </button>
+  </div>
+</div>
+
+<!-- ===== Modal تعديل بيانات أمر العمل ===== -->
+<div class="pricing-modal-overlay" id="orderInfoModalOverlay" onclick="closeOrderInfoModal(event)">
+  <div class="pricing-modal" style="max-width:420px;">
+    <button class="pricing-modal-close" onclick="closeOrderInfoModal()" title="إغلاق">✕</button>
+    <div class="pricing-modal-title"><i class="fas fa-edit"></i> تعديل بيانات أمر العمل</div>
+    <div class="pricing-modal-sub" id="oiOrderLabel">أمر العمل: —</div>
+
+    <div class="pm-field">
+      <label>رقم أمر العمل</label>
+      <input id="oiOrderNo" type="text" placeholder="رقم أمر العمل" style="text-align:center;font-size:18px;font-weight:900;">
+    </div>
+
+    <div class="pm-field">
+      <label>اسم الجهة المستفيدة</label>
+      <input id="oiClientName" type="text" placeholder="اسم الجهة">
+    </div>
+
+    <button class="pm-btn" id="oiBtn" onclick="submitOrderInfoModal()">
+      <i class="fas fa-save"></i> حفظ التعديلات
     </button>
   </div>
 </div>
