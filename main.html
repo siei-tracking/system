@@ -2244,7 +2244,7 @@
     if(!token){ redirectToLogin(); return; }
 
     const oldOrderNo  = _oiOldOrderNo;
-    const newOrderNo  = oldOrderNo;
+    const newOrderNo  = String(document.getElementById("oiOrderNo").value || "").trim() || oldOrderNo;
     const clientName  = String(document.getElementById("oiClientName").value || "").trim();
 
     if(!clientName) { showMsg("❌ اسم الجهة مطلوب", "err"); return; }
@@ -2285,12 +2285,17 @@
             itemCard.setAttribute("data-order", newOrderNo);
 
             /* تحديث رقم أمر العمل في الـ header */
-            const orderNoEl = itemCard.querySelector(".order-no");
+            const orderNoEl = itemCard.querySelector(".idbox span");
             if(orderNoEl) orderNoEl.textContent = newOrderNo;
 
             /* تحديث اسم الجهة */
             const clientEl = itemCard.querySelector(".client");
             if(clientEl) clientEl.innerHTML = '<i class="fas fa-building"></i> ' + escapeHtml(clientName);
+
+            /* تحديث رقم أمر العمل */
+            const orderNoEl = itemCard.querySelector(".idbox span");
+            if(orderNoEl) orderNoEl.textContent = newOrderNo;
+            itemCard.setAttribute("data-order", newOrderNo);
 
             /* إعادة رسم الـ stepper */
             const tmpDiv = document.createElement("div");
@@ -3033,7 +3038,7 @@
     <div class="pricing-modal-title"><i class="fas fa-edit"></i> تعديل بيانات أمر العمل</div>
     <div class="pricing-modal-sub" id="oiOrderLabel">أمر العمل: —</div>
 
-    <div class="pm-field" style="display:none;">
+    <div class="pm-field">
       <label>رقم أمر العمل</label>
       <input id="oiOrderNo" type="text" placeholder="رقم أمر العمل" style="text-align:center;font-size:18px;font-weight:900;">
     </div>
