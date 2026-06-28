@@ -1564,6 +1564,18 @@
       }
     }
 
+    if(done && stepKey === "inspection"){
+      val = String(val || "")
+        .replace("✅","").replace("استلام -","").replace("استلام","").trim();
+      const umI = val.match(/\((.*?)\)/);
+      const dtI = val.match(/(\d{4}-\d{2}-\d{2}\s*\|\s*\d{2}:\d{2})/);
+      const nameI = umI ? umI[1].trim() : "";
+      const dateI = dtI ? dtI[1].trim() : "";
+      return '<div class="sub-name">' + escapeHtml(nameI) + '</div>'
+           + '<div class="sub-date">' + escapeHtml(dateI) + '</div>'
+           + '<div class="sub-date" style="color:var(--ok);font-size:10px;font-weight:700;">✎ اضغط للتعديل</div>';
+    }
+
     if(stepKey === "pricing"){
       const dt2 = val.match(/(\d{4}-\d{2}-\d{2}\s*\|\s*\d{2}:\d{2})/);
       date = dt2 ? dt2[1].trim() : "";
