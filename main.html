@@ -2292,11 +2292,6 @@
             const clientEl = itemCard.querySelector(".client");
             if(clientEl) clientEl.innerHTML = '<i class="fas fa-building"></i> ' + escapeHtml(clientName);
 
-            /* تحديث رقم أمر العمل */
-            const orderNoEl = itemCard.querySelector(".idbox span");
-            if(orderNoEl) orderNoEl.textContent = newOrderNo;
-            itemCard.setAttribute("data-order", newOrderNo);
-
             /* إعادة رسم الـ stepper */
             const tmpDiv = document.createElement("div");
             tmpDiv.innerHTML = renderStepper(freshItem);
