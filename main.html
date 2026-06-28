@@ -2672,6 +2672,9 @@
     const token = getSessionToken();
     if(!token){ redirectToLogin(); return; }
 
+    /* تعريف nodeEl مبكراً لاستخدامه في كل الحالات */
+    const nodeEl = circleEl.closest(".node");
+
     if(action === "mainToggleBarcodeSkip"){
       const idx = CURRENT_ITEMS.findIndex(function(it){
         return String(it.orderNo||"").trim() === String(orderNo||"").trim();
@@ -2735,7 +2738,6 @@
     }
 
     /* منع الضغط المزدوج */
-    const nodeEl = circleEl.closest(".node");
     if(nodeEl && nodeEl.classList.contains("busy")) return;
     if(nodeEl) nodeEl.classList.add("busy");
 
