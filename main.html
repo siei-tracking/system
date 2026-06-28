@@ -1751,7 +1751,7 @@
       /* التسعيرة تبقى clickable دائماً (للتعديل) ما لم يكتمل التسليم النهائي — الباقيات فقط عند next أو barcode-skipped */
       const finalDone = isDoneAny(String(it.final || ""));
       const isClickable = !!stageAction && (
-        s.key === "inspection" ||
+        s.key === "inspection" && !finalDone ||
         s.key === "pricing" && !finalDone ||
         s.key === "barcode" && !finalDone && (cls.indexOf("next") !== -1 || cls.indexOf("barcode-skipped") !== -1) ||
         (!done && !barcodeIsSkipped && cls.indexOf("next") !== -1 && s.key !== "barcode" && s.key !== "pricing" && s.key !== "inspection")
