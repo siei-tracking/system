@@ -558,12 +558,7 @@ input::placeholder{
         <div class="tabs">
           <button class="tab-btn primary" id="tabNew" type="button" onclick="switchTab('new')">
             <i class="fas fa-plus-circle"></i>
-            إضافة أمر عمل
-          </button>
-
-          <button class="tab-btn ghost" id="tabPrice" type="button" onclick="switchTab('price')">
-            <i class="fas fa-receipt"></i>
-            تثبيت التسعيرة
+            إضافة أمر عمل وتثبيت التسعيرة
           </button>
 
           <button class="tab-btn ghost" id="tabEdit" type="button" onclick="switchTab('edit')">
@@ -583,17 +578,6 @@ input::placeholder{
               <label>اسم الجهة المستفيدة</label>
               <input id="nClient" type="text" placeholder="اسم الجهة">
             </div>
-          </div>
-
-          <button class="main-action" id="btnNew" type="button" onclick="saveNew()">
-            اعتماد وحفظ البيانات
-          </button>
-        </div>
-
-        <div class="section" id="secPrice">
-          <div class="field">
-            <label>رقم أمر العمل</label>
-            <input id="pID" type="text" placeholder="ادخل رقم أمر العمل" inputmode="numeric">
           </div>
 
           <div class="row-2">
@@ -627,8 +611,8 @@ input::placeholder{
             </div>
           </div>
 
-          <button class="main-action" id="btnPrice" type="button" onclick="savePrice()">
-            اعتماد وحفظ البيانات
+          <button class="main-action" id="btnNew" type="button" onclick="saveNew()">
+            <i class="fas fa-save"></i> اعتماد وحفظ البيانات
           </button>
         </div>
 
@@ -889,17 +873,14 @@ function setBtnLoading(btn, on){
  * UI FUNCTIONS
  * ============================================================ */
 function switchTab(which){
-  const isNew   = which === "new";
-  const isPrice = which === "price";
-  const isEdit  = which === "edit";
+  const isNew  = which === "new";
+  const isEdit = which === "edit";
 
   document.getElementById("secNew").classList.toggle("active", isNew);
-  document.getElementById("secPrice").classList.toggle("active", isPrice);
   document.getElementById("secEdit").classList.toggle("active", isEdit);
 
-  document.getElementById("tabNew").className   = "tab-btn " + (isNew   ? "primary" : "ghost");
-  document.getElementById("tabPrice").className = "tab-btn " + (isPrice ? "primary" : "ghost");
-  document.getElementById("tabEdit").className  = "tab-btn " + (isEdit  ? "primary" : "ghost");
+  document.getElementById("tabNew").className  = "tab-btn " + (isNew  ? "primary" : "ghost");
+  document.getElementById("tabEdit").className = "tab-btn " + (isEdit ? "primary" : "ghost");
 }
 
 function toggleLab(v){
@@ -917,16 +898,15 @@ function resetAll(){
   document.getElementById("cardSuccess").style.display = "none";
   document.getElementById("cardForm").style.display    = "block";
 
-  document.querySelectorAll("#secNew input, #secPrice input, #secEdit input").forEach(function(i){ i.value = ""; });
-  document.querySelectorAll("#secPrice select").forEach(function(s){ s.selectedIndex = 0; });
+  document.querySelectorAll("#secNew input, #secEdit input").forEach(function(i){ i.value = ""; });
+  document.querySelectorAll("#secNew select").forEach(function(s){ s.selectedIndex = 0; });
 
   toggleLab("");
   document.getElementById("editFields").style.display = "none";
   switchTab("new");
   isSubmitting = false;
 
-  setBtnLoading(document.getElementById("btnNew"),   false);
-  setBtnLoading(document.getElementById("btnPrice"), false);
+  setBtnLoading(document.getElementById("btnNew"), false);
 
   document.getElementById("nID").focus();
 }
@@ -939,28 +919,50 @@ async function saveNew(){
   const token = getSessionToken();
   if(!token){ goToLogin(); return; }
 
-  const id = String(document.getElementById("nID").value     || "").trim();
-  const cl = String(document.getElementById("nClient").value || "").trim();
+  const id     = String(document.getElementById("nID").value     || "").trim();
+  const cl     = String(document.getElementById("nClient").value || "").trim();
+  const price  = String(document.getElementById("pVal").value    || "").trim();
+  const days   = String(document.getElementById("pDays").value   || "").trim();
+  const type   = document.getElementById("pType").value;
+  const labPath = (type === "مختبرات") ? document.getElementById("pLabVal").value : "";
 
-  if(!id || !cl){ showToast("اكمل البيانات", "warn"); return; }
+  if(!id || !cl){          showToast("أدخل رقم أمر العمل واسم الجهة", "warn"); return; }
+  if(!type){               showToast("اختر نوع الفحص", "warn"); return; }
 
   isSubmitting = true;
   const btn = document.getElementById("btnNew");
   setBtnLoading(btn, true);
 
   try{
-    const r   = await apiPost({ action:"addNewOrder", token, page:PAGE_NAME, orderNo:id, clientName:cl, userName:currentUserName });
-    const msg = String((r && (r.message || r.result)) || "");
+    /* الخطوة ١: إضافة أمر العمل */
+    const r1  = await apiPost({ action:"addNewOrder", token, page:PAGE_NAME, orderNo:id, clientName:cl, userName:currentUserName });
+    const m1  = String((r1 && (r1.message || r1.result)) || "");
 
-    if(r && r.ok){
-      showSuccess("تم إضافة أمر العمل وتوثيقه");
-      showToast(msg || "تم الحفظ بنجاح", "success");
-    }else{
-      if(handleSessionExpiry(msg)) return;
-      showToast(msg || "تعذر حفظ البيانات", "error");
+    if(!r1 || !r1.ok){
+      if(handleSessionExpiry(m1)) return;
+      showToast(m1 || "تعذر إضافة أمر العمل", "error");
       setBtnLoading(btn, false);
       isSubmitting = false;
+      return;
     }
+
+    /* الخطوة ٢: تثبيت التسعيرة */
+    const r2  = await apiPost({ action:"processPlanning", token, page:PAGE_NAME, data:{
+      orderNo: id, price, days, testType: type, labPath, userName: currentUserName
+    }});
+    const m2  = String((r2 && (r2.message || r2.result)) || "");
+
+    if(!r2 || !r2.ok){
+      if(handleSessionExpiry(m2)) return;
+      showToast(m2 || "تم إضافة أمر العمل لكن تعذرت التسعيرة", "warn");
+      setBtnLoading(btn, false);
+      isSubmitting = false;
+      return;
+    }
+
+    showSuccess("تم إضافة أمر العمل وتثبيت التسعيرة بنجاح");
+    showToast("✅ تم الحفظ بنجاح", "success");
+
   }catch(err){
     showToast("خطأ في الاتصال", "error");
     setBtnLoading(btn, false);
