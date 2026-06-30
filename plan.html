@@ -927,6 +927,7 @@ async function saveNew(){
   const labPath = (type === "مختبرات") ? document.getElementById("pLabVal").value : "";
 
   if(!id || !cl){          showToast("أدخل رقم أمر العمل واسم الجهة", "warn"); return; }
+  if(!price || !days){     showToast("أدخل التسعيرة وعدد الأيام", "warn"); return; }
   if(!type){               showToast("اختر نوع الفحص", "warn"); return; }
 
   isSubmitting = true;
