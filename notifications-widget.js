@@ -27,7 +27,7 @@
   const SW_SCOPE        = "/system/";
   const POLL_INTERVAL   = 30000;   /* 30 ثانية */
   const INIT_DELAY      = 0;       /* لا تأخير — الـ widget يبدأ فوراً */
-  const PWA_VERSION     = "v2";    /* غيّر هذا عند كل نشر جديد */
+  const PWA_VERSION     = "v3";    /* غيّر هذا عند كل نشر جديد */
 
   /* ============================================================
    * ⚙️ إعدادات الأزرار — عدّل هنا بسهولة
@@ -112,7 +112,9 @@
         (
           k.indexOf("tracking_session_token") === 0 ||
           k === "authToken" ||
-          k === "fcm_push_token"
+          k === "fcm_push_token" ||
+          k === "nw_device_id" ||
+          k === "nw_native_push"
         )
       ) {
         keep["ls_" + k] = localStorage.getItem(k);
@@ -157,7 +159,9 @@
         (
           k.indexOf("tracking_session_token") === 0 ||
           k === "authToken" ||
-          k === "fcm_push_token"
+          k === "fcm_push_token" ||
+          k === "nw_device_id" ||
+          k === "nw_native_push"
         )
       ) {
         keep["ls_" + k] = localStorage.getItem(k);
@@ -213,6 +217,8 @@
 
   async function autoClearIfUninstalled() {
     try {
+      /* داخل تطبيق الموبايل الأصلي لا يوجد "تثبيت/مسح" PWA */
+      if (IS_NATIVE) return;
       const isStandalone = window.matchMedia("(display-mode: standalone)").matches
                         || window.navigator.standalone === true;
 
@@ -323,8 +329,49 @@
   const IS_SAMSUNG  = /samsungbrowser/i.test(UA);
   const IS_CHROME   = /chrome|chromium/i.test(UA) && !/edg/i.test(UA) && !IS_SAMSUNG;
   const IS_EDGE     = /edg\//i.test(UA);
-  /* هل المتصفح يدعم Firebase FCM؟ — لا يدعمه iOS ولا Firefox */
-  const SUPPORTS_FCM = !IS_IOS && !IS_FF && ("serviceWorker" in navigator) && ("PushManager" in window);
+  /* داخل تطبيق الموبايل (Capacitor) */
+  const IS_NATIVE = !!(window.Capacitor && typeof window.Capacitor.isNativePlatform === "function"
+                       && window.Capacitor.isNativePlatform());
+  const NATIVE_PLATFORM = IS_NATIVE && window.Capacitor.getPlatform ? window.Capacitor.getPlatform() : "";
+
+  /* آيفون: الإشعارات تعمل فقط بعد «إضافة إلى الشاشة الرئيسية» (iOS 16.4+) */
+  function isStandaloneNow() {
+    return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  }
+
+  /* معرّف ثابت لكل جهاز — حتى لا يمسح توكن جهاز توكنَ جهاز آخر لنفس المستخدم */
+  function getDeviceId() {
+    let id = "";
+    try { id = localStorage.getItem("nw_device_id") || ""; } catch (e) {}
+    if (id) return id;
+    const kind = IS_NATIVE ? ("app-" + (NATIVE_PLATFORM || "native"))
+               : IS_IOS ? "ios-pwa"
+               : /android/i.test(UA) ? "android-web"
+               : "desktop";
+    id = kind + "-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
+    try { localStorage.setItem("nw_device_id", id); } catch (e) {}
+    return id;
+  }
+
+  /* إضافة وسوم آيفون للتثبيت على الشاشة الرئيسية إذا لم تكن في الصفحة */
+  function ensureAppleMeta() {
+    try {
+      const head = document.head;
+      if (!document.querySelector('link[rel="apple-touch-icon"]')) {
+        const l = document.createElement("link");
+        l.rel = "apple-touch-icon"; l.href = "/system/logo-192.png"; head.appendChild(l);
+      }
+      [["apple-mobile-web-app-capable", "yes"],
+       ["mobile-web-app-capable", "yes"],
+       ["apple-mobile-web-app-status-bar-style", "default"],
+       ["apple-mobile-web-app-title", "تتبع الأوامر"]].forEach(function (m) {
+        if (!document.querySelector('meta[name="' + m[0] + '"]')) {
+          const el = document.createElement("meta");
+          el.name = m[0]; el.content = m[1]; head.appendChild(el);
+        }
+      });
+    } catch (e) {}
+  }
   /* Samsung Internet يدعم beforeinstallprompt لكن يتأخر أحياناً */
   const PROMPT_TIMEOUT = IS_SAMSUNG ? 4000 : 0;
 
@@ -497,6 +544,9 @@
   /* ── إعداد مستمعات PWA ── */
   function setupPWA() {
 
+    /* داخل التطبيق الأصلي — لا حاجة لزر التثبيت */
+    if (IS_NATIVE) { hideInstallBtn(); return; }
+
     /* إذا مثبت مسبقاً — أخفِ الزر وانتهِ */
     if (isInstalled()) {
       hideInstallBtn();
@@ -554,8 +604,8 @@
    * ============================================================ */
   async function ensureFirebase() {
     if (!window.firebase) {
-      await loadScript("https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js");
-      await loadScript("https://www.gstatic.com/firebasejs/9.22.2/firebase-messaging-compat.js");
+      await loadScript("https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js");
+      await loadScript("https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js");
     }
     if (!window.firebase.apps || !window.firebase.apps.length) {
       window.firebase.initializeApp(FIREBASE_CONFIG);
@@ -604,6 +654,20 @@
   async function enableNotifications() {
     try {
       if (!hasPageFunctions())          { callShowMsg("❌ الصفحة غير جاهزة بعد، حاول مجدداً", "err"); return; }
+
+      /* ── تطبيق الموبايل: إشعارات أصلية ── */
+      if (IS_NATIVE) {
+        const ok = await setupNativePush(true);
+        if (ok) { closeNotifBox(); }
+        return;
+      }
+
+      /* ── آيفون: يجب التثبيت على الشاشة الرئيسية أولاً ── */
+      if (IS_IOS && !isStandaloneNow()) {
+        callShowMsg("📱 لتفعيل الإشعارات على الآيفون: افتح الموقع في Safari ← زر المشاركة ↑ ← «إضافة إلى الشاشة الرئيسية»، ثم افتح التطبيق من الشاشة الرئيسية واضغط الجرس", "warn");
+        return;
+      }
+
       if (!("Notification" in window))  { callShowMsg("❌ هذا المتصفح لا يدعم الإشعارات", "err"); return; }
 
       const permission = await Notification.requestPermission();
@@ -622,7 +686,8 @@
         action: "savePushToken",
         token:  sessionToken,
         page:   getPageName(),
-        pushToken
+        pushToken,
+        deviceId: getDeviceId()
       });
 
       if (res && res.ok) {
@@ -646,7 +711,8 @@
    * ============================================================ */
   async function autoRefreshToken() {
     try {
-      if (Notification.permission !== "granted") return;
+      if (IS_NATIVE) { await setupNativePush(false); return; }
+      if (!("Notification" in window) || Notification.permission !== "granted") return;
       if (!messaging) await ensureFirebase();
       const reg = swReg || await registerSW();
       const current = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: reg });
@@ -654,9 +720,91 @@
       if (localStorage.getItem("fcm_push_token") === current) return;
       const sessionToken = callGetSessionToken();
       if (!sessionToken) return;
-      const res = await callApiPost({ action:"savePushToken", token:sessionToken, page:getPageName(), pushToken:current });
+      const res = await callApiPost({ action:"savePushToken", token:sessionToken, page:getPageName(), pushToken:current, deviceId:getDeviceId() });
       if (res && res.ok) localStorage.setItem("fcm_push_token", current);
     } catch (e) { console.warn("autoRefreshToken:", e); }
+  }
+
+  /* ============================================================
+   * تطبيق الموبايل (Android / iOS عبر Capacitor) — إشعارات أصلية
+   * تصل حتى والتطبيق مغلق، وتمر عبر نفس Firebase ونفس السيرفر
+   * ============================================================ */
+  let nativeListenersBound = false;
+  let nativeManualAsk      = false;   /* لعرض رسالة النجاح فقط عند الضغط على الجرس */
+
+  function getNativePush() {
+    return (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.PushNotifications) || null;
+  }
+
+  async function saveNativeToken(pushToken) {
+    try {
+      if (!pushToken) return;
+      const sessionToken = callGetSessionToken();
+      if (!sessionToken) return;
+      if (localStorage.getItem("fcm_push_token") === pushToken &&
+          localStorage.getItem("nw_native_saved") === "yes") { updateBellShape(); return; }
+      const res = await callApiPost({
+        action: "savePushToken", token: sessionToken, page: getPageName(),
+        pushToken: pushToken, deviceId: getDeviceId()
+      });
+      if (res && res.ok) {
+        localStorage.setItem("fcm_push_token", pushToken);
+        localStorage.setItem("nw_native_saved", "yes");
+        updateBellShape();
+      }
+    } catch (e) { console.warn("saveNativeToken:", e); }
+  }
+
+  async function setupNativePush(askPermission) {
+    const PN = getNativePush();
+    if (!PN) { if (askPermission) callShowMsg("❌ مكوّن الإشعارات غير متوفر في التطبيق", "err"); return false; }
+
+    if (!nativeListenersBound) {
+      nativeListenersBound = true;
+      try {
+        await PN.createChannel({
+          id: "work_orders", name: "أوامر العمل",
+          description: "إشعارات مراحل أوامر العمل",
+          importance: 5, visibility: 1, sound: "default", vibration: true, lights: true
+        });
+      } catch (e) { /* iOS لا يدعم القنوات */ }
+
+      PN.addListener("registration", function (t) {
+        saveNativeToken(t && t.value).then(function () {
+          if (nativeManualAsk) { nativeManualAsk = false; callShowMsg("✅ تم تفعيل الإشعارات بنجاح", "ok"); }
+        });
+      });
+      PN.addListener("registrationError", function (err) {
+        console.warn("native registrationError:", err);
+        callShowMsg("❌ فشل تسجيل الإشعارات في التطبيق", "err");
+      });
+      /* الإشعار وصل والتطبيق مفتوح */
+      PN.addListener("pushNotificationReceived", function () {
+        playNotifSound();
+        loadNotifications();
+      });
+      /* المستخدم ضغط على الإشعار */
+      PN.addListener("pushNotificationActionPerformed", function (action) {
+        const data = (action && action.notification && action.notification.data) || {};
+        if (data.url && String(location.href).indexOf(data.url) === -1) location.href = data.url;
+        else loadNotifications();
+      });
+    }
+
+    let perm = await PN.checkPermissions();
+    if (perm.receive !== "granted") {
+      if (!askPermission) return false;
+      perm = await PN.requestPermissions();
+    }
+    if (perm.receive !== "granted") {
+      callShowMsg("⚠️ لم يتم منح إذن الإشعارات — فعّله من إعدادات الهاتف ← التطبيقات ← تتبع الأوامر ← الإشعارات", "warn");
+      return false;
+    }
+
+    localStorage.setItem("nw_native_push", "granted");
+    if (askPermission) { nativeManualAsk = true; localStorage.removeItem("nw_native_saved"); }   /* إعادة حفظ التوكن عند التفعيل اليدوي */
+    await PN.register();
+    return true;
   }
 
 let lastMsgId = null;
@@ -1085,7 +1233,9 @@ async function clearDataAndReload() {
         (
           k.indexOf("tracking_session_token") === 0 ||
           k === "authToken" ||
-          k === "fcm_push_token"
+          k === "fcm_push_token" ||
+          k === "nw_device_id" ||
+          k === "nw_native_push"
         )
       ) {
         keep[k] = localStorage.getItem(k);
@@ -1165,8 +1315,10 @@ async function clearDataAndReload() {
     const icon = document.getElementById("notifIcon");
     const img  = document.getElementById("nwBellImg");
     if (!icon || !img) return;
-    const granted = ("Notification" in window) && Notification.permission === "granted"
-                    && !!localStorage.getItem("fcm_push_token");
+    const granted = IS_NATIVE
+      ? (localStorage.getItem("nw_native_push") === "granted" && !!localStorage.getItem("fcm_push_token"))
+      : (("Notification" in window) && Notification.permission === "granted"
+         && !!localStorage.getItem("fcm_push_token"));
     if (granted) {
       icon.classList.remove("notif-off");
       icon.classList.add("notif-on");
@@ -1185,6 +1337,7 @@ async function clearDataAndReload() {
     initialized = true;
 
     /* ── الخطوات الفورية: بناء الـ UI بدون أي انتظار ── */
+    ensureAppleMeta();
     buildWidget();
     bindButtons();
     setupPWA();
@@ -1196,6 +1349,13 @@ async function clearDataAndReload() {
     pollTimer = setInterval(loadNotifications, POLL_INTERVAL);
 
     /* ── المهام الثقيلة تعمل بالتوازي في الخلفية ── */
+    /* ── تطبيق الموبايل: إشعارات أصلية بدل Firebase Web ── */
+    if (IS_NATIVE) {
+      setupNativePush(false).catch(function(e){ console.warn("native push:", e); })
+        .then(function(){ updateBellShape(); });
+      return;
+    }
+
     Promise.all([
       cleanupOnVersionChange().catch(function(){}),
       autoClearIfUninstalled().catch(function(){})

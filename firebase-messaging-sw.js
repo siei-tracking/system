@@ -1,17 +1,22 @@
 ﻿/* =========================================================
-   firebase-messaging-sw.js
+   firebase-messaging-sw.js  v3
    ارفعه في: /system/firebase-messaging-sw.js
+
+   ✅ إصلاحات v3:
+   - منع ظهور الإشعار مرتين (Firebase يعرضه تلقائياً عند وجود notification)
+   - tag لكل أمر عمل: الإشعار الجديد يحلّ محل القديم بدل التكدّس
+   - HTML من الشبكة أولاً (كانت الصفحات القديمة تبقى في الكاش بعد التحديث)
+   - Firebase 10 (يدعم Safari / آيفون عند الإضافة للشاشة الرئيسية)
 ========================================================= */
 
-importScripts("https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js");
-importScripts("https://www.gstatic.com/firebasejs/9.22.2/firebase-messaging-compat.js");
+importScripts("https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js");
+importScripts("https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js");
 
-self.addEventListener("message", function(event) {
+self.addEventListener("message", function (event) {
   if (event.data && event.data.type === "SKIP_WAITING") {
     self.skipWaiting();
   }
 });
-
 
 firebase.initializeApp({
   apiKey: "AIzaSyBhWJtOWJKlBk04Ii7mm93rhfECuQLKRbM",
@@ -25,42 +30,56 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-messaging.onBackgroundMessage(function(payload){
-  const title = payload?.notification?.title || payload?.data?.title || "إشعار جديد";
-  const body = payload?.notification?.body || payload?.data?.body || "";
-  const url = payload?.data?.url || "/system/main.html";
+messaging.onBackgroundMessage(function (payload) {
+  /* إذا وصلت الرسالة مع notification فـ Firebase عرضها بنفسه — لا نكررها */
+  if (payload && payload.notification) return;
 
-  self.registration.showNotification(title, {
+  /* رسائل data فقط (من نسخ قديمة من السيرفر) */
+  const data  = (payload && payload.data) || {};
+  const title = data.title || "إشعار جديد";
+  const body  = data.body  || "";
+  const url   = data.url   || "/system/main.html";
+  const tag   = "wo-" + String(data.orderId || data.page || "general");
+
+  return self.registration.showNotification(title, {
     body: body,
     icon: "/system/logo-192.png",
     badge: "/system/logo-192.png",
     dir: "rtl",
     lang: "ar",
+    tag: tag,
+    renotify: true,
+    vibrate: [200, 100, 200],
     data: { url: url }
   });
 });
 
-self.addEventListener("notificationclick", function(event){
+self.addEventListener("notificationclick", function (event) {
   event.notification.close();
-  const targetUrl = event.notification?.data?.url || "/system/main.html";
+  const n = event.notification || {};
+  const d = n.data || {};
+  /* Firebase يضع الرابط في FCM_MSG عند العرض التلقائي */
+  const targetUrl = d.url
+    || (d.FCM_MSG && d.FCM_MSG.data && d.FCM_MSG.data.url)
+    || "/system/main.html";
 
   event.waitUntil(
-    clients.matchAll({ type: "window", includeUncontrolled: true }).then(function(clientList){
-      for(const client of clientList){
-        if(client.url.indexOf(targetUrl) !== -1 && "focus" in client){
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then(function (clientList) {
+      for (const client of clientList) {
+        if (client.url.indexOf(targetUrl) !== -1 && "focus" in client) {
           return client.focus();
         }
       }
-      if(clients.openWindow) return clients.openWindow(targetUrl);
+      if (clients.openWindow) return clients.openWindow(targetUrl);
     })
   );
 });
 
 /* =========================================================
-   Cache بسيط لتشغيل الـ PWA offline
-   يكفي لإزالة تحذير "Page does not work offline"
+   Cache — للعمل بدون إنترنت فقط
+   الصفحات (HTML) من الشبكة أولاً حتى تصل التحديثات فوراً
 ========================================================= */
-const CACHE_NAME = "siei-pwa-v2";
+const CACHE_NAME = "siei-pwa-v3";
 const CACHE_URLS = [
   "/system/main.html",
   "/system/manifest-main.webmanifest",
@@ -68,44 +87,61 @@ const CACHE_URLS = [
   "/system/logo-512.png"
 ];
 
-self.addEventListener("install", function(event){
+self.addEventListener("install", function (event) {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(function(cache){
+    caches.open(CACHE_NAME).then(function (cache) {
       return cache.addAll(CACHE_URLS);
     })
   );
   self.skipWaiting();
 });
 
-self.addEventListener("activate", function(event){
+self.addEventListener("activate", function (event) {
   event.waitUntil(
-    caches.keys().then(function(keys){
+    caches.keys().then(function (keys) {
       return Promise.all(
-        keys.filter(function(k){ return k !== CACHE_NAME; })
-            .map(function(k){ return caches.delete(k); })
+        keys.filter(function (k) { return k !== CACHE_NAME; })
+            .map(function (k) { return caches.delete(k); })
       );
     })
   );
   self.clients.claim();
 });
 
-self.addEventListener("fetch", function(event){
-  /* فقط للـ GET requests */
-  if(event.request.method !== "GET") return;
+self.addEventListener("fetch", function (event) {
+  const req = event.request;
+  if (req.method !== "GET") return;
 
-  /* تجاهل طلبات الـ API */
-  if(event.request.url.indexOf("script.google.com") !== -1) return;
-  if(event.request.url.indexOf("googleapis.com") !== -1) return;
+  const url = req.url;
+  if (url.indexOf("script.google.com") !== -1) return;
+  if (url.indexOf("googleapis.com") !== -1) return;
+  if (url.indexOf("gstatic.com") !== -1) return;
 
-  event.respondWith(
-    caches.match(event.request).then(function(cached){
-      /* إذا موجود في الـ cache أرجعه، وإلا اطلبه من الشبكة */
-      return cached || fetch(event.request).catch(function(){
-        /* إذا الشبكة منقطعة وطلب main.html أرجع من الـ cache */
-        if(event.request.url.indexOf("main.html") !== -1){
-          return caches.match("/system/main.html");
+  const isPage = req.mode === "navigate" || /\.html(\?|$)/.test(url) ||
+                 /\.(js|css|webmanifest)(\?|$)/.test(url);
+
+  if (isPage) {
+    /* الشبكة أولاً، والكاش عند انقطاع الإنترنت */
+    event.respondWith(
+      fetch(req).then(function (res) {
+        if (res && res.ok && url.indexOf(self.location.origin) === 0) {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then(function (c) { c.put(req, copy); });
         }
-      });
+        return res;
+      }).catch(function () {
+        return caches.match(req).then(function (cached) {
+          return cached || caches.match("/system/main.html");
+        });
+      })
+    );
+    return;
+  }
+
+  /* الصور والأصوات: الكاش أولاً */
+  event.respondWith(
+    caches.match(req).then(function (cached) {
+      return cached || fetch(req);
     })
   );
 });

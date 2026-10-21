@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>تثبيت تطبيق تتبع أوامر العمل</title>
+<link rel="icon" href="/system/logo-192.png">
+<link rel="apple-touch-icon" href="/system/logo-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f4f6f9; --card:#ffffff; --ink:#1f2d3a; --muted:#5b6b7b;
+    --brand:#1e3c72; --brand2:#2a5298; --ok:#1f9d55; --warn:#b7791f; --line:#e3e8ef;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Tajawal,system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.8}
+  header{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;text-align:center;padding:28px 16px 56px}
+  header img{width:84px;height:84px;background:#fff;border-radius:50%;padding:6px}
+  header h1{margin:10px 0 4px;font-size:22px;font-weight:900}
+  header p{margin:0;opacity:.9;font-size:15px}
+  main{max-width:720px;margin:-36px auto 32px;padding:0 16px}
+  .tabs{display:flex;gap:8px;background:var(--card);padding:6px;border-radius:14px;box-shadow:0 4px 16px rgba(0,0,0,.06)}
+  .tab{flex:1;border:0;background:transparent;font:inherit;font-weight:700;font-size:16px;padding:10px;border-radius:10px;color:var(--muted);cursor:pointer}
+  .tab.on{background:var(--brand);color:#fff}
+  section{display:none;margin-top:14px}
+  section.on{display:block}
+  .card{background:var(--card);border-radius:16px;padding:18px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.05)}
+  .card h2{margin:0 0 8px;font-size:18px}
+  ol{margin:0;padding-inline-start:22px}
+  li{margin:6px 0}
+  .btn{display:block;text-align:center;text-decoration:none;background:var(--ok);color:#fff;font-weight:900;font-size:18px;
+       padding:14px;border-radius:14px;margin:6px 0 4px}
+  .note{background:#fff8e6;border:1px solid #f1d9a0;color:#6b4d0f;border-radius:12px;padding:10px 12px;font-size:14px}
+  .muted{color:var(--muted);font-size:14px}
+  b{font-weight:900}
+  .brand-list{margin:6px 0 0;padding-inline-start:18px}
+</style>
+</head>
+<body>
+<header>
+  <img src="/system/logo-192.png" alt="">
+  <h1>تطبيق تتبع أوامر العمل</h1>
+  <p>الشركة العامة للفحص والتأهيل الهندسي</p>
+</header>
+
+<main>
+  <div class="tabs" role="tablist">
+    <button class="tab" data-t="android" role="tab">أندرويد</button>
+    <button class="tab" data-t="ios" role="tab">آيفون</button>
+  </div>
+
+  <!-- ═════════════ أندرويد ═════════════ -->
+  <section id="android">
+    <div class="card">
+      <h2>١. تنزيل التطبيق</h2>
+      <a class="btn" href="https://github.com/siei-tracking/siei-tracking-app/releases/latest/download/siei-tracking.apk">⬇️ تنزيل التطبيق (APK)</a>
+      <p class="muted">افتح الملف بعد التنزيل. إذا ظهرت رسالة «لا يُسمح بتثبيت تطبيقات من هذا المصدر» اضغط <b>الإعدادات</b> ثم فعّل <b>السماح من هذا المصدر</b> وارجع واضغط <b>تثبيت</b>.</p>
+      <p class="note">قد يظهر تحذير Play Protect لأن التطبيق داخلي وغير منشور في المتجر — اضغط <b>تفاصيل أكثر</b> ← <b>التثبيت على أي حال</b>.</p>
+    </div>
+
+    <div class="card">
+      <h2>٢. تفعيل الإشعارات</h2>
+      <ol>
+        <li>افتح التطبيق وسجّل الدخول باسم المستخدم وكلمة المرور.</li>
+        <li>اضغط أيقونة الجرس 🔔 في أعلى الصفحة.</li>
+        <li>اختر <b>السماح</b> عند سؤال الإشعارات.</li>
+        <li>يتحول الجرس إلى الشكل المفعّل وتظهر رسالة «تم تفعيل الإشعارات».</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h2>٣. منع الهاتف من إيقاف الإشعارات (مهم)</h2>
+      <p>اضغط مطولاً على أيقونة التطبيق ← <b>معلومات التطبيق</b> ← <b>البطارية</b> ← اختر <b>غير مقيّد</b> (Unrestricted).</p>
+      <ul class="brand-list">
+        <li><b>Samsung:</b> البطارية ← غير مقيّد. وتأكد أن التطبيق ليس ضمن «التطبيقات النائمة».</li>
+        <li><b>Xiaomi / Redmi / Poco:</b> فعّل <b>التشغيل التلقائي</b> (Autostart)، وموفّر البطارية ← <b>بلا قيود</b>.</li>
+        <li><b>Oppo / Realme / Vivo:</b> البطارية ← اسمح بالنشاط في الخلفية.</li>
+        <li><b>Huawei:</b> تشغيل التطبيق ← إدارة يدوية ← فعّل كل الخيارات.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ═════════════ آيفون ═════════════ -->
+  <section id="ios">
+    <div class="card">
+      <h2>١. إضافة النظام إلى الشاشة الرئيسية</h2>
+      <ol>
+        <li>افتح هذا الرابط في <b>Safari</b> (وليس Chrome):<br><span class="muted">siei-tracking.github.io/system/login.html</span></li>
+        <li>اضغط زر <b>المشاركة</b> ⬆️ في أسفل الشاشة.</li>
+        <li>اختر <b>إضافة إلى الشاشة الرئيسية</b> ثم <b>إضافة</b>.</li>
+      </ol>
+      <p class="note">الإشعارات على الآيفون تعمل فقط من الأيقونة على الشاشة الرئيسية، وتحتاج نظام <b>iOS 16.4</b> أو أحدث (الإعدادات ← عام ← حول).</p>
+    </div>
+
+    <div class="card">
+      <h2>٢. تفعيل الإشعارات</h2>
+      <ol>
+        <li>افتح النظام <b>من الأيقونة الجديدة</b> على الشاشة الرئيسية وسجّل الدخول.</li>
+        <li>اضغط الجرس 🔔 واختر <b>السماح</b>.</li>
+        <li>إذا لم يظهر سؤال الإذن: الإعدادات ← الإشعارات ← <b>تتبع الأوامر</b> ← فعّل السماح بالإشعارات.</li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h2>ملاحظة</h2>
+      <p class="muted">لا تحذف الأيقونة وتعيد إضافتها إلا عند الحاجة — عند إعادة الإضافة تحتاج تفعيل الإشعارات من جديد. وضع «التركيز» (Focus) أو «عدم الإزعاج» يخفي الإشعارات.</p>
+    </div>
+  </section>
+</main>
+
+<script>
+  (function(){
+    var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+    function show(t){
+      document.querySelectorAll(".tab").forEach(function(b){ b.classList.toggle("on", b.dataset.t===t); });
+      document.querySelectorAll("section").forEach(function(s){ s.classList.toggle("on", s.id===t); });
+    }
+    document.querySelectorAll(".tab").forEach(function(b){ b.addEventListener("click", function(){ show(b.dataset.t); }); });
+    show(isIOS ? "ios" : "android");
+  })();
+</script>
+</body>
+</html>
