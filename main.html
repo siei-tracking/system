@@ -2533,15 +2533,15 @@
 
     document.getElementById("pmOrderLabel").textContent = (isEdit ? "تعديل — أمر العمل: " : "أمر العمل: ") + orderNo;
 
-    /* قفل المبلغ والأيام إذا تم التسديد */
+    /* المبلغ والأيام قابلان للتعديل ما دام الأمر غير منجز (السيرفر يمنع المنجز والمؤرشف) */
     const priceInput = document.getElementById("pmVal");
     const daysInput  = document.getElementById("pmDays");
-    priceInput.disabled = !!paymentIsDone;
-    daysInput.disabled  = !!paymentIsDone;
-    priceInput.style.opacity = paymentIsDone ? "0.5" : "1";
-    daysInput.style.opacity  = paymentIsDone ? "0.5" : "1";
-    priceInput.title = paymentIsDone ? "لا يمكن تعديل المبلغ بعد التسديد" : "";
-    daysInput.title  = paymentIsDone ? "لا يمكن تعديل الأيام بعد التسديد" : "";
+    priceInput.disabled = false;
+    daysInput.disabled  = false;
+    priceInput.style.opacity = "1";
+    daysInput.style.opacity  = "1";
+    priceInput.title = "";
+    daysInput.title  = "";
 
     /* استخراج السعر والأيام من الخلية الحالية */
     let curPrice = "", curDays = "", curType = "", curLab = "ورشة";
@@ -2605,8 +2605,8 @@
     const pmAction    = isEdit ? "editOrderPrice" : "processPlanning";
 
     /* إذا التسديد مكتمل — نرسل المبلغ والأيام الأصليين بدون تغيير */
-    const sendPrice = paymentPaid ? (existingItem ? String(existingItem.pricing||"").match(/[\d]{3,}/) || [""] : [""]) [0] : price;
-    const sendDays  = paymentPaid ? (existingItem ? String(existingItem.days||"").match(/[\d]+/) || [""] : [""]) [0] : days;
+    const sendPrice = price;
+    const sendDays  = days;
 
     const btn = document.getElementById("pmBtn");
     btn.disabled = true;
@@ -2632,7 +2632,7 @@
 
       if(ok){
         document.getElementById("pricingModalOverlay").classList.remove("open");
-        showMsg("✅ تم تثبيت التسعيرة", "ok");
+        showMsg(msg && msg.indexOf("✅") !== -1 ? msg : "✅ تم تثبيت التسعيرة", "ok");
 
         /* تحديث CURRENT_ITEMS محلياً */
         const now     = new Date();
@@ -2649,6 +2649,7 @@
         if(idx !== -1){
           CURRENT_ITEMS[idx] = Object.assign({}, CURRENT_ITEMS[idx]);
           CURRENT_ITEMS[idx].pricing   = stampVal;
+          if(sendDays) CURRENT_ITEMS[idx].days = "✅ " + sendDays + " - (" + (CURRENT_USER_NAME||"") + ") " + dateStr + " | " + timeStr;
           CURRENT_ITEMS[idx].testType  = testType;
           CURRENT_ITEMS[idx].labPath   = labPath;
           CURRENT_ITEMS[idx] = normalizeItemsForRender([CURRENT_ITEMS[idx]])[0];
