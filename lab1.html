@@ -469,6 +469,54 @@
       color:#999;
       opacity:1;
     }
+    /* ===== تذكير: الأوامر المنتظرة ===== */
+    .pending-wrap{ position:relative; margin-bottom:10px; z-index:5; }
+    .pending-btn{
+      width:100%; display:flex; align-items:center; justify-content:space-between; gap:8px;
+      border:1px dashed var(--accent); background:#fff8ec; color:#8a5a00;
+      border-radius:var(--radius-md); padding:8px 12px; min-height:44px;
+      font-family:'Cairo',sans-serif; font-weight:900; font-size:15px; cursor:pointer;
+      transition:background var(--transition-fast);
+    }
+    .pending-btn:hover{ background:#fff1d6; }
+    .pending-btn .count{
+      min-width:28px; height:28px; padding:0 8px; border-radius:999px;
+      background:var(--accent); color:#fff; display:inline-flex; align-items:center; justify-content:center;
+      font-size:14px;
+    }
+    .pending-btn .count.zero{ background:var(--ok); }
+    .pending-btn .chev{ transition:transform var(--transition-fast); }
+    .pending-wrap.open .pending-btn .chev{ transform:rotate(180deg); }
+    .pending-list{
+      display:none; margin-top:6px;
+      background:#fff; border:1px solid var(--line); border-radius:var(--radius-md);
+      box-shadow:0 16px 36px rgba(0,0,0,.14); max-height:340px; overflow-y:auto;
+    }
+    .pending-wrap.open .pending-list{ display:block; }
+    .pending-head{
+      display:flex; justify-content:space-between; align-items:center; gap:8px;
+      padding:8px 12px; border-bottom:1px solid var(--line); font-size:13px; color:var(--muted); font-weight:700;
+      position:sticky; top:0; background:#fff;
+    }
+    .pending-head button{
+      border:none; background:transparent; color:var(--primary); cursor:pointer;
+      font-family:'Cairo',sans-serif; font-weight:900; font-size:13px;
+    }
+    .pending-item{
+      display:flex; align-items:center; justify-content:center; gap:10px;
+      padding:10px 12px; border-bottom:1px solid var(--line); cursor:pointer; text-align:right;
+    }
+    .pending-item:last-child{ border-bottom:none; }
+    .pending-item:hover{ background:var(--soft); }
+    .pending-item .no{ font-weight:900; font-size:16px; color:var(--primary); }
+    .pending-item .cl{ font-size:13px; color:var(--muted); font-weight:700; word-break:break-word; }
+    .pending-item .tags{ display:flex; flex-direction:column; align-items:flex-end; gap:4px; flex-shrink:0; }
+    .tag{ font-size:12px; font-weight:900; padding:2px 8px; border-radius:999px; white-space:nowrap; }
+    .tag.lab1{ background:#eaf4ff; color:#1f5fa8; }
+    .tag.lab2{ background:#f3ecff; color:#6b3fb3; }
+    .tag.days{ background:#fdeeee; color:#b23b3b; }
+    .tag.days.fresh{ background:#eaf7ef; color:#1f7a45; }
+    .pending-empty{ padding:16px; text-align:center; color:var(--muted); font-weight:700; }
   </style>
 </head>
 
@@ -497,6 +545,20 @@
 
           <div class="card" id="cardForm">
             <div id="inputForm">
+
+              <!-- تذكير: أوامر العمل المفروض استلامها -->
+              <div class="pending-wrap" id="pendingWrap">
+                <button type="button" class="pending-btn" id="pendingBtn" onclick="togglePending()">
+                  <span><i class="fas fa-bell"></i> أوامر العمل المنتظرة للاستلام</span>
+                  <span style="display:inline-flex;align-items:center;gap:8px;">
+                    <span class="count" id="pendingCount">…</span>
+                    <i class="fas fa-chevron-down chev"></i>
+                  </span>
+                </button>
+                <div class="pending-list" id="pendingList">
+                  <div class="pending-empty">جاري التحميل...</div>
+                </div>
+              </div>
 
               <div class="input-group">
                 <label><i class="fas fa-barcode"></i> رقم أمر العمل الموحد</label>
@@ -886,6 +948,9 @@
       const msg = String((r && (r.message || r.result)) || "");
 
       if(r && r.ok){
+        /* إزالة الأمر من قائمة التذكير فوراً */
+        pendingItems = pendingItems.filter(function(it){ return String(it.orderNo) !== id; });
+        renderPending();
         document.getElementById("detailsText").innerText       = txt;
         document.getElementById("cardForm").style.display      = "none";
         document.getElementById("successMessage").style.display = "block";
@@ -901,6 +966,75 @@
       isReceiving = false;
     }
   }
+
+  /* ============================================================
+   * تذكير: أوامر العمل المنتظرة للاستلام
+   * ============================================================ */
+  let pendingItems   = [];
+  let pendingLoading = false;
+
+  async function loadPendingOrders(){
+    if(pendingLoading) return;
+    const token = getSessionToken();
+    if(!token) return;
+    pendingLoading = true;
+    try{
+      const res = await apiPost({ action:"getLabPendingOrders", token, page:PAGE_NAME });
+      if(res && res.ok === false && res.message){
+        if(handleSessionExpiry(res.message)) return;
+      }
+      pendingItems = (res && Array.isArray(res.items)) ? res.items : [];
+      renderPending(res && res.at);
+    }catch(e){
+      document.getElementById("pendingList").innerHTML =
+        '<div class="pending-empty">❌ تعذر تحميل القائمة</div>';
+    }finally{
+      pendingLoading = false;
+    }
+  }
+
+  function renderPending(at){
+    const countEl = document.getElementById("pendingCount");
+    countEl.textContent = String(pendingItems.length);
+    countEl.classList.toggle("zero", pendingItems.length === 0);
+
+    const list = document.getElementById("pendingList");
+    let html = "";
+
+    if(!pendingItems.length){
+      html = '<div class="pending-empty">✅ لا توجد أوامر عمل بانتظار الاستلام</div>';
+    }else{
+      /* رقم أمر العمل فقط */
+      pendingItems.forEach(function(it){
+        html += '<div class="pending-item" data-no="' + escapeHtml(it.orderNo) + '">'
+              +   '<span class="no">' + escapeHtml(it.orderNo) + '</span>'
+              + '</div>';
+      });
+    }
+    list.innerHTML = html;
+  }
+
+  function togglePending(){
+    const wrap = document.getElementById("pendingWrap");
+    const open = !wrap.classList.contains("open");
+    wrap.classList.toggle("open", open);
+    if(open) loadPendingOrders();
+  }
+
+  /* اختيار أمر من القائمة: يملأ الرقم ويجلب البيانات */
+  document.addEventListener("click", function(e){
+    const item = e.target.closest && e.target.closest(".pending-item");
+    if(item){
+      document.getElementById("orderID").value = item.getAttribute("data-no") || "";
+      document.getElementById("pendingWrap").classList.remove("open");
+      if(document.getElementById("successMessage").style.display === "block") resetPage();
+      document.getElementById("orderID").value = item.getAttribute("data-no") || "";
+      fetchLabData();
+      return;
+    }
+    const wrap = document.getElementById("pendingWrap");
+    if(wrap && !wrap.contains(e.target)) wrap.classList.remove("open");
+  });
 
   /* ============================================================
    * RESET
@@ -940,6 +1074,10 @@
   window.addEventListener("load", function(){
     ensurePageSession();
     liveSessionInterval = setInterval(checkLiveSession, 10000);
+
+    /* تحميل عدد الأوامر المنتظرة عند فتح الصفحة، وتحديثه كل دقيقتين */
+    loadPendingOrders();
+    setInterval(loadPendingOrders, 120000);
 
     document.getElementById("orderID").addEventListener("keydown", function(e){
       if(e.key === "Enter") fetchLabData();
