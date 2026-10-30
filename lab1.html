@@ -1004,10 +1004,11 @@
     if(!pendingItems.length){
       html = '<div class="pending-empty">✅ لا توجد أوامر عمل بانتظار الاستلام</div>';
     }else{
-      /* رقم أمر العمل فقط */
+      /* رقم أمر العمل فقط، ومع أوامر ما بعد الورشة تُكتب «بعد الورشة» */
       pendingItems.forEach(function(it){
         html += '<div class="pending-item" data-no="' + escapeHtml(it.orderNo) + '">'
               +   '<span class="no">' + escapeHtml(it.orderNo) + '</span>'
+              +   (it.stage === "LAB2" ? '<span class="tag lab2">بعد الورشة</span>' : '')
               + '</div>';
       });
     }
