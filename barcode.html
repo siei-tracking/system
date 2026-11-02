@@ -317,6 +317,38 @@
     }
 
     #orderID::placeholder{ font-size:16px; font-weight:600; color:#999; opacity:1; }
+    /* ===== تذكير: الأوامر المنتظرة ===== */
+    .pending-wrap{ position:relative; margin-bottom:10px; z-index:5; }
+    .pending-btn{
+      width:100%; display:flex; align-items:center; justify-content:space-between; gap:8px;
+      border:1px dashed var(--accent); background:#fff8ec; color:#8a5a00;
+      border-radius:var(--radius-md); padding:8px 12px; min-height:44px;
+      font-family:'Cairo',sans-serif; font-weight:900; font-size:15px; cursor:pointer;
+      transition:background var(--transition-fast);
+    }
+    .pending-btn:hover{ background:#fff1d6; }
+    .pending-btn .count{
+      min-width:28px; height:28px; padding:0 8px; border-radius:999px;
+      background:var(--accent); color:#fff; display:inline-flex; align-items:center; justify-content:center;
+      font-size:14px;
+    }
+    .pending-btn .count.zero{ background:var(--ok); }
+    .pending-btn .chev{ transition:transform var(--transition-fast); }
+    .pending-wrap.open .pending-btn .chev{ transform:rotate(180deg); }
+    .pending-list{
+      display:none; margin-top:6px;
+      background:#fff; border:1px solid var(--line); border-radius:var(--radius-md);
+      box-shadow:0 16px 36px rgba(0,0,0,.14); max-height:340px; overflow-y:auto;
+    }
+    .pending-wrap.open .pending-list{ display:block; }
+    .pending-item{
+      display:flex; align-items:center; justify-content:center; gap:10px;
+      padding:10px 12px; border-bottom:1px solid var(--line); cursor:pointer;
+    }
+    .pending-item:last-child{ border-bottom:none; }
+    .pending-item:hover{ background:var(--soft); }
+    .pending-item .no{ font-weight:900; font-size:16px; color:var(--primary); }
+    .pending-empty{ padding:16px; text-align:center; color:var(--muted); font-weight:700; }
   </style>
 </head>
 
@@ -340,6 +372,21 @@
           <div class="card" id="cardForm">
 
             <div id="inputForm">
+
+              <!-- تذكير: أوامر العمل الجاهزة للباركود -->
+              <div class="pending-wrap" id="pendingWrap">
+                <button type="button" class="pending-btn" id="pendingBtn" onclick="togglePending()">
+                  <span><i class="fas fa-bell"></i> أوامر العمل الجاهزة للباركود</span>
+                  <span style="display:inline-flex;align-items:center;gap:8px;">
+                    <span class="count" id="pendingCount">…</span>
+                    <i class="fas fa-chevron-down chev"></i>
+                  </span>
+                </button>
+                <div class="pending-list" id="pendingList">
+                  <div class="pending-empty">جاري التحميل...</div>
+                </div>
+              </div>
+
               <div class="input-group">
                 <input type="text" id="orderID" placeholder="أدخل رقم أمر العمل">
               </div>
@@ -775,6 +822,9 @@
         const msg = String((confirmRes && (confirmRes.message || confirmRes.result)) || "");
 
         if(confirmRes && confirmRes.ok){
+          /* إزالة الأمر من قائمة التذكير فوراً */
+          pendingItems = pendingItems.filter(function(it){ return String(it.orderNo) !== id; });
+          renderPending();
           document.getElementById("cardForm").style.display  = "none";
           document.getElementById("successCard").style.display = "block";
         }else{
@@ -792,6 +842,73 @@
 
     reader.readAsDataURL(file);
   }
+
+  /* ============================================================
+   * تذكير: أوامر العمل الجاهزة للباركود
+   * ============================================================ */
+  let pendingItems   = [];
+  let pendingLoading = false;
+
+  async function loadPendingOrders(){
+    if(pendingLoading) return;
+    const token = getSessionToken();
+    if(!token) return;
+    pendingLoading = true;
+    try{
+      const res = await apiPost({ action:"getStagePendingOrders", token, page:PAGE_NAME });
+      if(res && res.ok === false && res.message){
+        if(handleSessionExpiry(res.message)) return;
+      }
+      pendingItems = (res && Array.isArray(res.items)) ? res.items : [];
+      renderPending();
+    }catch(e){
+      document.getElementById("pendingList").innerHTML =
+        '<div class="pending-empty">❌ تعذر تحميل القائمة</div>';
+    }finally{
+      pendingLoading = false;
+    }
+  }
+
+  function renderPending(){
+    const countEl = document.getElementById("pendingCount");
+    countEl.textContent = String(pendingItems.length);
+    countEl.classList.toggle("zero", pendingItems.length === 0);
+
+    let html = "";
+    if(!pendingItems.length){
+      html = '<div class="pending-empty">✅ لا توجد أوامر عمل جاهزة للباركود</div>';
+    }else{
+      /* رقم أمر العمل فقط */
+      pendingItems.forEach(function(it){
+        html += '<div class="pending-item" data-no="' + escapeHtml(it.orderNo) + '">'
+              +   '<span class="no">' + escapeHtml(it.orderNo) + '</span>'
+              + '</div>';
+      });
+    }
+    document.getElementById("pendingList").innerHTML = html;
+  }
+
+  function togglePending(){
+    const wrap = document.getElementById("pendingWrap");
+    const open = !wrap.classList.contains("open");
+    wrap.classList.toggle("open", open);
+    if(open) loadPendingOrders();
+  }
+
+  /* اختيار أمر من القائمة: يملأ الرقم ويجلب البيانات */
+  document.addEventListener("click", function(e){
+    const item = e.target.closest && e.target.closest(".pending-item");
+    if(item){
+      const no = item.getAttribute("data-no") || "";
+      document.getElementById("pendingWrap").classList.remove("open");
+      if(document.getElementById("successCard").style.display === "block") resetForm();
+      document.getElementById("orderID").value = no;
+      fetchData();
+      return;
+    }
+    const wrap = document.getElementById("pendingWrap");
+    if(wrap && !wrap.contains(e.target)) wrap.classList.remove("open");
+  });
 
   /* ============================================================
    * RESET
@@ -823,6 +940,10 @@
   window.addEventListener("load", function(){
     ensurePageSession();
     liveSessionInterval = setInterval(checkLiveSession, 10000);
+
+    /* تحميل عدد الأوامر المنتظرة عند فتح الصفحة، وتحديثه كل دقيقتين */
+    loadPendingOrders();
+    setInterval(loadPendingOrders, 120000);
 
     document.getElementById("orderID").addEventListener("keydown", function(e){
       if(e.key === "Enter") fetchData();
