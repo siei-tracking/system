@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <script src="/system/config.js"></script>
   <script src="/system/pwa-install.js"></script>
+  <script src="/system/cost-catalog.js"></script>
   <link rel="manifest" href="/system/manifest-costform.webmanifest">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="watermark.css">
@@ -284,12 +285,19 @@
     .notice.ok{ display:block; background:#eafaf1; color:#1e7a46; border-right:4px solid var(--ok); }
 
     .tbl-wrap{ overflow-x:auto; border:1px solid var(--line); border-radius:var(--radius-md); background:#fff; }
-    table.work{ width:100%; border-collapse:collapse; min-width:760px; }
+    table.work{ width:100%; border-collapse:collapse; min-width:1020px; }
     table.work th{ background:var(--primary); color:#fff; font-weight:900; font-size:13px; padding:8px 6px; }
     table.work td{ border-top:1px solid var(--line); padding:6px; vertical-align:top; }
     table.work td.n{ width:34px; text-align:center; font-weight:900; color:var(--muted); padding-top:14px; }
     table.work td.x{ width:40px; text-align:center; }
     table.work input, table.work select, table.work textarea{ min-height:38px; font-size:13px; }
+    table.work td.r-line{ font-weight:900; color:var(--primary); text-align:center; padding-top:14px; white-space:nowrap; }
+    .r-per{ font-size:11px; color:var(--muted); font-weight:700; text-align:center; margin-top:2px; }
+    .r-hint{ display:flex; flex-wrap:wrap; gap:4px; margin-top:4px; }
+    .r-hint .tag{ background:#fff8ec; color:#8a5a00; border:1px solid #f3d9a6; border-radius:8px; padding:1px 8px; font-size:11.5px; font-weight:800; }
+    .extra-btn{ border:1px solid var(--ok); background:#eafaf1; color:#1e7a46; border-radius:8px; padding:2px 8px; font-family:'Cairo',sans-serif; font-weight:800; font-size:11.5px; cursor:pointer; }
+    .extra-btn:disabled{ opacity:.6; cursor:default; }
+    input.warn-range{ border-color:var(--warn) !important; background:#fff8ec; }
     .del-btn{ border:none; background:#fdecea; color:var(--danger); border-radius:8px; width:34px; height:34px; cursor:pointer; margin-top:2px; }
     .add-btn{
       margin-top:8px; border:1px dashed var(--primary); background:#f4f7fa; color:var(--primary);
@@ -320,6 +328,18 @@
 
     @media (max-width:640px){
       .grid, .grid3{ grid-template-columns:1fr; }
+      /* الجدول يتحول إلى بطاقات على الموبايل */
+      .tbl-wrap{ border:none; background:transparent; overflow:visible; }
+      table.work{ min-width:0; }
+      table.work thead{ display:none; }
+      table.work, table.work tbody, table.work tr, table.work td{ display:block; width:100%; }
+      table.work tr{ position:relative; background:#fff; border:1px solid var(--line); border-radius:var(--radius-md); padding:8px 10px 4px; margin-bottom:10px; box-shadow:0 4px 12px rgba(0,0,0,.05); }
+      table.work td{ border:none; padding:4px 0; }
+      table.work td[data-l]::before{ content:attr(data-l); display:block; font-size:12px; font-weight:900; color:var(--muted); margin-bottom:2px; }
+      table.work td.n{ position:absolute; top:6px; left:48px; width:auto; padding:0; font-size:13px; }
+      table.work td.n::before{ content:"#"; }
+      table.work td.x{ position:absolute; top:4px; left:8px; width:auto; padding:0; }
+      table.work td.r-line{ text-align:right; padding-top:4px; }
       .actions{ grid-template-columns:1fr; }
     }
 
@@ -403,11 +423,13 @@
                   <thead>
                     <tr>
                       <th>ت</th>
-                      <th style="width:19%">القسم المنفذ للفحص</th>
-                      <th>تفاصيل العمل</th>
-                      <th style="width:13%">المدة الزمنية للإنجاز</th>
-                      <th style="width:13%">الكلفة للنموذج (دينار)</th>
-                      <th style="width:16%">المسؤول عن التنفيذ</th>
+                      <th style="width:15%">القسم / المختبر</th>
+                      <th style="width:27%">نوع الفحص / الخدمة</th>
+                      <th style="width:8%">العدد</th>
+                      <th style="width:11%">كلفة الوحدة</th>
+                      <th style="width:11%">المجموع</th>
+                      <th style="width:9%">مدة الإنجاز</th>
+                      <th style="width:12%">المسؤول عن التنفيذ</th>
                       <th></th>
                     </tr>
                   </thead>
@@ -637,7 +659,8 @@
   /* ============================================================
    * استمارة تنفيذ العمل وتحديد الكلفة
    * ============================================================ */
-  const UNITS = ["قسم المختبرات", "القسم الهندسي / الورشة", "قسم المصاعد", "أخرى"];
+  const CATALOG = Array.isArray(window.COST_CATALOG) ? window.COST_CATALOG : [];
+  const OTHER = "__other";
   let currentForm  = null;   /* آخر نسخة محفوظة/محمّلة */
   let totalTouched = false;  /* هل عدّل المستخدم الإجمالي يدوياً */
   let isSaving     = false;
@@ -652,24 +675,65 @@
     n.textContent = text || "";
   }
 
+  function secById(id){ return CATALOG.find(function(s){ return s.id === id; }) || null; }
+  function secByName(name){ return CATALOG.find(function(s){ return s.name === name; }) || null; }
+  function itemOf(sec, name){ return sec ? (sec.items.find(function(i){ return i.name === name; }) || null) : null; }
+
+  function rangeText(it){
+    if(!it) return "";
+    if(it.min && it.max) return fmtNum(it.min) + " – " + fmtNum(it.max);
+    if(it.min) return "أكثر من " + fmtNum(it.min);
+    return "";
+  }
+
   /* ---------- جدول الأعمال ---------- */
+  function sectionOptions(selId){
+    let h = '<option value="">— اختر القسم —</option>';
+    CATALOG.forEach(function(s){
+      h += '<option value="' + s.id + '"' + (s.id === selId ? " selected" : "") + '>' + escapeHtml(s.name) + '</option>';
+    });
+    h += '<option value="' + OTHER + '"' + (selId === OTHER ? " selected" : "") + '>أخرى…</option>';
+    return h;
+  }
+
+  function testOptions(sec, selName){
+    if(!sec) return '<option value="">— اختر القسم أولاً —</option>';
+    let h = '<option value="">— اختر الفحص / الخدمة —</option>';
+    sec.items.forEach(function(it){
+      const price = it.price != null ? " — " + fmtNum(it.price) : (rangeText(it) ? " — " + rangeText(it) : " — حسب العمل");
+      h += '<option value="' + escapeHtml(it.name) + '"' + (it.name === selName ? " selected" : "") + '>'
+         + escapeHtml(it.name + price) + '</option>';
+    });
+    const custom = selName && !itemOf(sec, selName);
+    h += '<option value="' + OTHER + '"' + (custom ? " selected" : "") + '>أخرى (اكتب)…</option>';
+    return h;
+  }
+
   function rowHtml(r){
     r = r || {};
-    const known = UNITS.indexOf(r.unit) !== -1;
-    let opts = '<option value="">— اختر —</option>';
-    UNITS.forEach(function(u){
-      const sel = (r.unit === u || (!known && r.unit && u === "أخرى")) ? " selected" : "";
-      opts += '<option' + sel + '>' + escapeHtml(u) + '</option>';
-    });
-    const other = (!known && r.unit) ? r.unit : "";
+    /* توافق مع الاستمارات القديمة: القسم يُستنتج من الاسم */
+    let secId = r.sectionId || "";
+    if(!secId && r.unit){ const s = secByName(r.unit); secId = s ? s.id : OTHER; }
+    const sec = secById(secId);
+    const customSec = secId === OTHER ? (r.unit || "") : "";
+    const customTest = (sec && r.test && !itemOf(sec, r.test)) || secId === OTHER ? (r.test || "") : "";
+    const qty = r.qty || 1;
+
     return '<tr>'
       + '<td class="n"></td>'
-      + '<td><select class="r-unit" onchange="onUnitChange(this)">' + opts + '</select>'
-      +   '<input class="r-unit-other" placeholder="اسم القسم" style="margin-top:4px;' + (other || (!known && r.unit) ? '' : 'display:none;') + '" value="' + escapeHtml(other) + '"></td>'
-      + '<td><textarea class="r-details" rows="1" maxlength="500">' + escapeHtml(r.details || "") + '</textarea></td>'
-      + '<td><input class="r-duration" maxlength="60" value="' + escapeHtml(r.duration || "") + '"></td>'
-      + '<td><input class="r-cost" inputmode="numeric" oninput="recalcTotal(false)" value="' + escapeHtml(r.cost || "") + '"></td>'
-      + '<td><input class="r-resp" maxlength="120" value="' + escapeHtml(r.responsible || "") + '"></td>'
+      + '<td data-l="القسم / المختبر"><select class="r-sec" onchange="onSecChange(this)">' + sectionOptions(secId) + '</select>'
+      +   '<input class="r-sec-other" placeholder="اسم القسم" style="margin-top:4px;' + (secId === OTHER ? '' : 'display:none;') + '" value="' + escapeHtml(customSec) + '"></td>'
+      + '<td class="test-cell" data-l="نوع الفحص / الخدمة">'
+      +   '<select class="r-test" onchange="onTestChange(this)"' + (secId === OTHER ? ' style="display:none;"' : '') + '>' + testOptions(sec, r.test) + '</select>'
+      +   '<input class="r-test-other" placeholder="اسم الفحص / الخدمة" style="margin-top:4px;' + (customTest || secId === OTHER ? '' : 'display:none;') + '" value="' + escapeHtml(customTest) + '">'
+      +   '<input class="r-details" placeholder="تفاصيل إضافية (اختياري)" maxlength="500" style="margin-top:4px;" value="' + escapeHtml(r.details || "") + '">'
+      +   '<div class="r-hint"></div>'
+      + '</td>'
+      + '<td data-l="العدد"><input class="r-qty" type="number" min="1" step="1" value="' + escapeHtml(qty) + '" oninput="onRowCalc(this)"><div class="r-per"></div></td>'
+      + '<td data-l="كلفة الوحدة"><input class="r-cost" inputmode="numeric" oninput="onRowCalc(this)" value="' + escapeHtml(fmtNum(r.cost)) + '"></td>'
+      + '<td class="r-line" data-l="المجموع">' + escapeHtml(fmtNum(numVal(r.cost) * numVal(qty))) + '</td>'
+      + '<td data-l="مدة الإنجاز"><input class="r-duration" maxlength="60" value="' + escapeHtml(r.duration || "") + '"></td>'
+      + '<td data-l="المسؤول عن التنفيذ"><input class="r-resp" maxlength="120" value="' + escapeHtml(r.responsible || "") + '"></td>'
       + '<td class="x"><button type="button" class="del-btn" title="حذف" onclick="delRow(this)"><i class="fas fa-trash"></i></button></td>'
       + '</tr>';
   }
@@ -680,10 +744,14 @@
     });
   }
 
-  function addRow(r){
-    if($("rowsBody").querySelectorAll("tr").length >= 20){ showMsg("⚠️ الحد الأقصى 20 سطراً", "warn"); return; }
-    $("rowsBody").insertAdjacentHTML("beforeend", rowHtml(r));
+  function addRow(r, afterTr){
+    if($("rowsBody").querySelectorAll("tr").length >= 20){ showMsg("⚠️ الحد الأقصى 20 سطراً", "warn"); return null; }
+    if(afterTr) afterTr.insertAdjacentHTML("afterend", rowHtml(r));
+    else $("rowsBody").insertAdjacentHTML("beforeend", rowHtml(r));
+    const tr = afterTr ? afterTr.nextElementSibling : $("rowsBody").lastElementChild;
     renumber();
+    updateHint(tr);
+    return tr;
   }
 
   function delRow(btn){
@@ -694,32 +762,122 @@
     recalcTotal(false);
   }
 
-  function onUnitChange(sel){
-    const other = sel.parentNode.querySelector(".r-unit-other");
-    other.style.display = sel.value === "أخرى" ? "" : "none";
-    if(sel.value === "أخرى") other.focus();
+  function rowSec(tr){ return secById(tr.querySelector(".r-sec").value); }
+  function rowItem(tr){ return itemOf(rowSec(tr), tr.querySelector(".r-test").value); }
+
+  function onSecChange(sel){
+    const tr = sel.closest("tr");
+    const isOther = sel.value === OTHER;
+    tr.querySelector(".r-sec-other").style.display = isOther ? "" : "none";
+    const ts = tr.querySelector(".r-test");
+    ts.innerHTML = testOptions(secById(sel.value), "");
+    ts.style.display = isOther ? "none" : "";
+    tr.querySelector(".r-test-other").style.display = isOther ? "" : "none";
+    tr.querySelector(".r-test-other").value = "";
+    tr.querySelector(".r-cost").value = "";
+    if(isOther) tr.querySelector(".r-sec-other").focus();
+    else ts.focus();
+    onRowCalc(sel);
+    updateHint(tr);
+  }
+
+  function onTestChange(sel){
+    const tr = sel.closest("tr");
+    const other = tr.querySelector(".r-test-other");
+    other.style.display = sel.value === OTHER ? "" : "none";
+    if(sel.value === OTHER){ other.focus(); }
+    const it = rowItem(tr);
+    /* السعر الافتراضي من الدليل (يبقى قابلاً للتعديل) */
+    tr.querySelector(".r-cost").value = it && it.price != null ? fmtNum(it.price) : (it && it.min ? fmtNum(it.min) : "");
+    onRowCalc(sel);
+    updateHint(tr);
+  }
+
+  /* ملاحظة + نطاق السعر + زر الكلف الإضافية تحت الفحص */
+  function updateHint(tr){
+    if(!tr) return;
+    const it = rowItem(tr);
+    const hint = tr.querySelector(".r-hint");
+    tr.querySelector(".r-per").textContent = it && it.per ? "لكل " + it.per : "";
+    if(!it){ hint.innerHTML = ""; return; }
+    let h = "";
+    const rg = rangeText(it);
+    if(rg) h += '<span class="tag">النطاق: ' + escapeHtml(rg) + '</span>';
+    if(it.note) h += '<span class="tag">' + escapeHtml(it.note) + '</span>';
+    if(it.extras && it.extras.length){
+      h += '<button type="button" class="extra-btn" onclick="addExtras(this)"><i class="fas fa-plus"></i> إضافة '
+         + escapeHtml(it.extras.map(function(x){ return x.name; }).join(" + ")) + '</button>';
+    }
+    hint.innerHTML = h;
+    checkRange(tr);
+  }
+
+  function checkRange(tr){
+    const it = rowItem(tr);
+    const inp = tr.querySelector(".r-cost");
+    const v = numVal(inp.value);
+    const out = it && v && ((it.min && v < it.min) || (it.max && v > it.max));
+    inp.classList.toggle("warn-range", !!out);
+    inp.title = out ? "السعر خارج النطاق المعتمد (" + rangeText(it) + ")" : "";
+  }
+
+  function addExtras(btn){
+    const tr = btn.closest("tr");
+    const it = rowItem(tr);
+    if(!it || !it.extras) return;
+    let last = tr;
+    it.extras.forEach(function(x){
+      const secId = x.sec || tr.querySelector(".r-sec").value;
+      const sec = secById(secId);
+      const name = x.name;
+      const nt = addRow({
+        sectionId: secId, unit: sec ? sec.name : "", test: name,
+        details: "لفحص: " + it.name, qty: x.once ? 1 : (tr.querySelector(".r-qty").value || 1), cost: x.price
+      }, last);
+      if(nt) last = nt;
+    });
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-check"></i> أُضيفت';
+    recalcTotal(false);
+  }
+
+  function onRowCalc(el){
+    const tr = el.closest("tr");
+    const line = numVal(tr.querySelector(".r-cost").value) * (numVal(tr.querySelector(".r-qty").value) || 0);
+    tr.querySelector(".r-line").textContent = line ? fmtNum(line) : "";
+    checkRange(tr);
+    recalcTotal(false);
   }
 
   function readRows(){
     const out = [];
     Array.prototype.forEach.call($("rowsBody").querySelectorAll("tr"), function(tr){
-      const sel = tr.querySelector(".r-unit").value;
-      const unit = sel === "أخرى" ? (tr.querySelector(".r-unit-other").value.trim() || "أخرى") : sel;
+      const secId = tr.querySelector(".r-sec").value;
+      const sec = secById(secId);
+      const unit = secId === OTHER ? (tr.querySelector(".r-sec-other").value.trim() || "أخرى") : (sec ? sec.name : "");
+      const tsel = tr.querySelector(".r-test").value;
+      const test = (secId === OTHER || tsel === OTHER) ? tr.querySelector(".r-test-other").value.trim() : tsel;
+      const qty = numVal(tr.querySelector(".r-qty").value) || 1;
+      const cost = String(numVal(tr.querySelector(".r-cost").value) || "");
       const r = {
+        sectionId: secId === OTHER ? "" : secId,
         unit: unit,
+        test: test,
         details: tr.querySelector(".r-details").value.trim(),
+        qty: String(qty),
+        cost: cost,
+        lineTotal: String(numVal(cost) * qty || ""),
         duration: tr.querySelector(".r-duration").value.trim(),
-        cost: tr.querySelector(".r-cost").value.trim().replace(/[,٬]/g, ""),
         responsible: tr.querySelector(".r-resp").value.trim()
       };
-      if(r.unit || r.details || r.cost) out.push(r);
+      if(r.unit || r.test || r.details || r.cost) out.push(r);
     });
     return out;
   }
 
   function recalcTotal(force){
     if(totalTouched && !force) return;
-    const sum = readRows().reduce(function(a, r){ return a + numVal(r.cost); }, 0);
+    const sum = readRows().reduce(function(a, r){ return a + numVal(r.lineTotal); }, 0);
     if(force || sum) $("totalCost").value = sum ? fmtNum(sum) : "";
     if(force) totalTouched = false;
     updateTotalWords();
@@ -900,8 +1058,10 @@
     let tr = "";
     for(let i = 0; i < Math.max(rows.length, 5); i++){
       const r = rows[i] || {};
-      tr += '<tr><td>' + (i + 1) + '</td><td>' + e(r.unit || "") + '</td><td style="text-align:right">' + e(r.details || "") + '</td>'
-          + '<td>' + e(r.duration || "") + '</td><td>' + e(fmtNum(r.cost)) + '</td><td>' + e(r.responsible || "") + '</td><td></td></tr>';
+      const work = [r.test, r.details].filter(Boolean).join(" — ");
+      tr += '<tr><td>' + (i + 1) + '</td><td>' + e(r.unit || "") + '</td><td style="text-align:right">' + e(work) + '</td>'
+          + '<td>' + e(r.qty && rows[i] ? r.qty : "") + '</td><td>' + e(fmtNum(r.cost)) + '</td><td>' + e(fmtNum(r.lineTotal)) + '</td>'
+          + '<td>' + e(r.duration || "") + '</td><td>' + e(r.responsible || "") + '</td><td></td></tr>';
     }
     $("printSheet").innerHTML =
         '<div class="p-head">'
@@ -913,7 +1073,7 @@
       + '<div class="p-row"><div>رقم الكتاب الوارد: <span class="f">' + e(f.letterNo) + '</span></div><div>تاريخه: <span class="f">' + e(f.letterDate) + '</span></div></div>'
       + '<div class="p-row"><div>نوع النموذج: <span class="f">' + e(f.sampleType) + '</span></div><div>عدد النماذج: <span class="f">' + e(f.samplesCount) + '</span></div></div>'
       + '<div class="p-row"><div>رقم أمر العمل: <span class="f">' + e(f.orderNo) + '</span></div><div>التاريخ: <span class="f">' + e(f.formDate) + '</span></div></div>'
-      + '<table><thead><tr><th>ت</th><th>القسم المنفذ للفحص</th><th>تفاصيل العمل</th><th>المدة الزمنية للإنجاز</th><th>الكلفة للنموذج</th><th>المسؤول عن التنفيذ</th><th>التوقيع</th></tr></thead>'
+      + '<table><thead><tr><th>ت</th><th>القسم المنفذ للفحص</th><th>تفاصيل العمل</th><th>العدد</th><th>الكلفة للوحدة</th><th>المجموع</th><th>المدة الزمنية للإنجاز</th><th>المسؤول عن التنفيذ</th><th>التوقيع</th></tr></thead>'
       + '<tbody>' + tr + '</tbody></table>'
       + '<div class="p-row"><div><b>إجمالي الكلفة:</b> <span class="f">' + e(fmtNum(f.totalCost)) + '</span> دينار</div></div>'
       + '<div class="sig"><div>مصادقة الجهة المستفيدة<br><br>' + (f.clientApproval ? "✔ " : "") + '...............................</div>'
