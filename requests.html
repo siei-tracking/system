@@ -1,0 +1,1227 @@
+﻿<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <script src="/system/config.js"></script>
+  <script src="/system/pwa-install.js"></script>
+  <script src="/system/cost-catalog.js"></script>
+  <script>
+  /* نسخة احتياطية من دليل الأسعار — تُستخدم فقط إذا لم يُحمَّل ملف cost-catalog.js */
+  if(!Array.isArray(window.COST_CATALOG) || !window.COST_CATALOG.length){
+window.COST_CATALOG = [
+  {
+    id: "struct", name: "المختبر الإنشائي", dept: "قسم الفحص الهندسي والمختبرات",
+    items: [
+      { name: "السمنت (كيمياوي + فيزياوي)", price: 200000 },
+      { name: "انضغاط المكعبات الخرسانية", price: 10000, per: "مكعب" },
+      { name: "فحص الخرسانة بالموجات فوق الصوتية", price: 150000 },
+      { name: "الفحص بمطرقة شميدت", price: 150000 },
+      { name: "كور (لباب خرساني)", price: 50000 },
+      { name: "رمل، حصى، سبيس (فيزياوي + كيمياوي)", price: 200000 },
+      { name: "كربستون", price: 250000 },
+      { name: "حدل", price: 50000 },
+      { name: "مرمر", price: 250000 },
+      { name: "كاشي", price: 200000 },
+      { name: "سيراميك", price: 200000 },
+      { name: "طابوق، بلوك", price: 200000 },
+      { name: "زجاج", price: 200000 },
+      { name: "لباد قيري", price: 200000 },
+      { name: "مادة القير", price: 200000 },
+      { name: "فلانكوت", price: 200000 },
+      { name: "صبغ، إيبوكسي", price: 200000 },
+      { name: "صبغ إيبوكسي (غذائي)", price: 200000 }
+    ]
+  },
+  {
+    id: "chem", name: "المختبر الكيمياوي", dept: "قسم الفحص الهندسي والمختبرات",
+    items: [
+      { name: "الفحص الكيمياوي (سمنت، رمل، حصى)", price: 100000 },
+      { name: "أنابيب شبكات ماء (PVC, PPR, PE)", price: 300000 },
+      { name: "ملحقات أنابيب شبكات ماء (PVC, PPR, PE)", price: 300000 },
+      { name: "أنابيب شبكات المجاري (PVC)", price: 300000 },
+      { name: "ملحقات أنابيب المجاري (PVC)", price: 250000 },
+      { name: "فحص سمك وكمية الغلونة", price: 750000 }
+    ]
+  },
+  {
+    id: "elec", name: "مختبر الكهرباء", dept: "قسم الفحص الهندسي والمختبرات",
+    items: [
+      { name: "أسلاك كهربائية (1.5 – 10 mm)", price: 50000 },
+      { name: "قابلوات كهربائية (ضغط واطئ، موصلات)", price: 150000 },
+      { name: "قابلو معلق / قابلوات ضغط عالي", price: 250000 },
+      { name: "قواطع دورة — أقل من 100A", price: 50000, min: 50000, max: 100000 },
+      { name: "قواطع دورة — من 100A إلى 400A", price: 150000, min: 150000, max: 250000 },
+      { name: "قواطع دورة — أكثر من 400A", price: null, min: 250000, note: "حسب السعة (أكثر من 250,000)" },
+      { name: "محولات توزيع كهربائية — حتى 1M", price: 100000 },
+      { name: "محولات توزيع كهربائية — أعلى من 1M", price: 1000000 },
+      { name: "بوردات كهربائية", price: null, note: "حسب البورد" },
+      { name: "تراكيب إنارة", price: 150000 }
+    ]
+  },
+  {
+    id: "metal", name: "مختبر المعادن والميكانيك", dept: "قسم الفحص الهندسي والمختبرات",
+    items: [
+      { name: "التحليل الكيمياوي للسبائك المعدنية", price: 100000,
+        extras: [{ name: "تحضير النموذج في الورشة", price: 50000, sec: "shop" }], note: "قد يحتاج تحضيراً في الورشة (+50,000)" },
+      { name: "فحص البنية المجهرية", price: 50000,
+        extras: [{ name: "تحضير النموذج في الورشة", price: 50000, sec: "shop" }], note: "قد يحتاج تحضيراً في الورشة (+50,000)" },
+      { name: "مقاومة الشد – الخضوع – الاستطالة", price: 100000,
+        extras: [{ name: "تحضير النموذج في الورشة", price: 100000, sec: "shop" }], note: "قد يحتاج تحضيراً في الورشة (+100,000)" },
+      { name: "الصدمة", price: 50000,
+        extras: [{ name: "تحضير النموذج في الورشة", price: 100000, sec: "shop" }], note: "قد يحتاج تحضيراً في الورشة (+100,000)" },
+      { name: "الصلادة", price: 50000,
+        extras: [{ name: "تحضير النموذج في الورشة", price: 50000, sec: "shop" }], note: "قد يحتاج تحضيراً في الورشة (+50,000)" },
+      { name: "الحني", price: 50000,
+        extras: [{ name: "تحضير النموذج في الورشة", price: 50000, sec: "shop" }], note: "قد يحتاج تحضيراً في الورشة (+50,000)" },
+      { name: "مانع نفاذية (Water Stop)", price: 200000 },
+      { name: "حديد تسليح", price: 250000,
+        extras: [{ name: "تحضير النموذج في الورشة", price: 50000, sec: "shop" }, { name: "كلفة المواصفة", price: 120000, once: true }],
+        note: "تضاف كلفة الورشة (50,000) والمواصفة (120,000)" },
+      { name: "أنابيب الدكتايل", price: 200000,
+        extras: [{ name: "تحضير النموذج في الورشة", price: 100000, sec: "shop" }, { name: "كلفة المواصفة", price: 120000, once: true }],
+        note: "تضاف كلفة الورشة (100,000) والمواصفة (120,000)" }
+    ]
+  },
+  {
+    id: "insp", name: "الفحص الهندسي (موقعي)", dept: "قسم الفحص الهندسي والمختبرات",
+    items: [
+      { name: "رافعة جسرية — داخل بغداد", price: 750000, per: "قطعة" },
+      { name: "رافعة جسرية — خارج بغداد", price: 1500000, per: "قطعة" },
+      { name: "مرجل زيتي — داخل بغداد", price: 750000, per: "قطعة" },
+      { name: "مرجل زيتي — خارج بغداد", price: 1500000, per: "قطعة" },
+      { name: "رافعة شوكية — داخل بغداد", price: 350000, per: "قطعة" },
+      { name: "رافعة شوكية — خارج بغداد", price: 500000, per: "قطعة" },
+      { name: "وعاء ضغط — داخل بغداد", price: 750000, per: "قطعة" },
+      { name: "وعاء ضغط — خارج بغداد", price: 1500000, per: "قطعة" },
+      { name: "مدن الألعاب — داخل بغداد", price: 250000, min: 250000, max: 350000, per: "لعبة", note: "+ كلف الإيفاد" },
+      { name: "مدن الألعاب — خارج بغداد", price: 500000, per: "لعبة", note: "+ كلف الإيفاد" },
+      { name: "الفحص البصري لوصلات اللحام", price: 15000, per: "متر طول" },
+      { name: "الفحص بالأصباغ النافذة", price: 25000, per: "متر طول", note: "+ كلف الإيفاد" },
+      { name: "الفحص بالموجات فوق الصوتية (لحام)", price: 100000, per: "متر طول" },
+      { name: "التصوير الشعاعي", price: 50000, per: "قطعة", note: "+ كلف الإيفاد" },
+      { name: "الفحص بالدقائق المغناطيسية", price: 25000, per: "متر طول" },
+      { name: "الفحص بالصندوق الفراغي", price: 25000, per: "متر طول" },
+      { name: "مقاومة الحرق", price: 100000 },
+      { name: "الفحص الهيدروستاتيكي", price: 1000000, per: "متر طول" },
+      { name: "فحص العازلية", price: 500000, per: "متر طول" },
+      { name: "Holiday Test", price: null, note: "السعر يُحدَّد حسب العمل" },
+      { name: "كلف الإيفاد", price: null, per: "خدمة", note: "تُحدَّد حسب الموقع" }
+    ]
+  },
+  {
+    id: "shop", name: "الورشة", dept: "قسم هندسة الإنتاج",
+    items: [
+      { name: "تحضير النموذج في الورشة", price: 50000, min: 50000, max: 100000, note: "تحضير نموذج لفحوصات المعادن" },
+      { name: "تصنيع عينة شد معدن", price: 125000 },
+      { name: "تصنيع عينة شد بلاستك", price: 75000 },
+      { name: "تصنيع عينة حني معدن", price: 100000 },
+      { name: "تصنيع عينة حني بلاستك", price: 100000 },
+      { name: "تصنيع عينة صدمة", price: 50000 },
+      { name: "قطع معدن", price: 50000 },
+      { name: "قطع بلاستك", price: 50000 },
+      { name: "تنعيم معدن", price: 100000 },
+      { name: "تحميل", price: 50000 },
+      { name: "طرق", price: 50000 },
+      { name: "شنفرة بليت", price: 5000 },
+      { name: "شنفرة بايب", price: 7500 }
+    ]
+  },
+  {
+    id: "elev", name: "المصاعد", dept: "قسم المصاعد",
+    items: [
+      { name: "فحص سلامة وأمان", price: null, min: 250000, max: 1500000, per: "مصعد",
+        note: "250,000 – 1,500,000 حسب الفئة/القطاع + تحميلات إدارية حسب الموقع" }
+    ]
+  }
+];
+  }
+  </script>
+  <link rel="manifest" href="/system/manifest-requests.webmanifest">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="watermark.css">
+  <title>طلبات الزبائن وعروض الأسعار - منصة تتبع أوامر العمل</title>
+  <link rel="icon" href="https://siei-tracking.github.io/system/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root{
+      --primary:#223243;
+      --accent:#f5a623;
+      --accent-dark:#e59712;
+      --bg:#eef2f6;
+      --card:rgba(255,255,255,0.92);
+      --line:#e5ebf1;
+      --muted:#758292;
+      --ok:#27ae60;
+      --danger:#e74c3c;
+      --disabled:#bdc3c7;
+      --warn:#f39c12;
+      --soft:#f8fafc;
+      --transition-fast:.15s ease;
+      --transition-med:.25s ease;
+      --radius-sm:10px;
+      --radius-md:14px;
+      --radius-lg:22px;
+    }
+
+    *, *::before, *::after{ box-sizing:border-box; }
+    html, body{ width:100%; overflow-x:hidden; }
+
+    body{
+      margin:0;
+      font-family:'Cairo',sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(245,166,35,.08), transparent 24%),
+        radial-gradient(circle at top left, rgba(34,50,67,.05), transparent 30%),
+        var(--bg);
+      color:#111;
+    }
+
+    /* ===== PAGE WRAP ===== */
+    #pageWrap{ display:block; }
+    #pageWrap.loading .card,
+    #pageWrap.loading .main-content{ opacity:0; pointer-events:none; }
+    #pageWrap .card,
+    #pageWrap .main-content{ transition:opacity .3s ease; }
+
+    /* ===== HEADER ===== */
+    .company-header{
+      background-image:
+        linear-gradient(rgba(34,50,67,.3), rgba(34,50,67,.3)),
+        url('https://siei-tracking.github.io/system/company.jpg');
+      background-size:cover; background-position:center;
+      padding:28px 5% 60px;
+      display:flex; align-items:center; gap:16px;
+      color:#fff; flex-wrap:wrap; justify-content:center; text-align:center;
+      box-shadow:0 12px 28px rgba(0,0,0,.18);
+      position:relative; overflow:hidden;
+    }
+
+    .logo{
+      width:100px; height:100px; background:#fff;
+      border-radius:50%; padding:5px; object-fit:contain;
+      display:block; flex-shrink:0;
+      box-shadow:0 4px 16px rgba(0,0,0,.25);
+    }
+
+    .header-text{
+      display:flex; flex-direction:column;
+      align-items:center; gap:6px; max-width:100%;
+    }
+
+    .header-text h1{
+      color:#fff; margin:0; font-size:30px;
+      font-weight:900; line-height:1.45;
+      text-shadow:0 2px 8px rgba(0,0,0,.7);
+    }
+
+    .header-text p{
+      color:#fff; margin:0; font-size:18px;
+      font-weight:900; line-height:1.5;
+      text-shadow:0 2px 8px rgba(0,0,0,.7);
+    }
+
+    .user-pill{
+      margin-top:6px;
+      display:inline-flex; align-items:center;
+      justify-content:center; gap:8px;
+      padding:4px 16px; border-radius:999px;
+      background:rgba(128,0,32,0.4);
+      border:1px solid rgba(231,76,60,0.45);
+      color:#fff; font-weight:900; font-size:13px;
+      box-shadow:0 4px 12px rgba(231,76,60,.25);
+      max-width:100%; word-break:break-word;
+    }
+
+    /* ===== LAYOUT ===== */
+    .main-content{
+      padding:0 5% 30px; display:flex;
+      justify-content:center; margin-top:-40px;
+      flex-direction:column; align-items:center;
+    }
+
+    /* ===== CARD ===== */
+    .card{
+      width:100%; max-width:820px;
+      background:rgba(255,255,255,0.92);
+      border-radius:var(--radius-lg); padding:10px 12px;
+      box-shadow:0 20px 50px rgba(0,0,0,.12), 0 6px 18px rgba(0,0,0,.06);
+      position:relative; z-index:2;
+      backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+      transition:transform var(--transition-med), box-shadow var(--transition-med);
+      border:1px solid rgba(255,255,255,.65);
+    }
+
+    .card:hover{
+      transform:translateY(-3px);
+      box-shadow:0 26px 60px rgba(0,0,0,.16), 0 8px 22px rgba(0,0,0,.08);
+    }
+
+    .card::before{
+      content:""; position:absolute;
+      top:0; left:0; right:0; height:60px;
+      background:linear-gradient(to bottom, rgba(255,255,255,.55), transparent);
+      border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+      pointer-events:none;
+    }
+
+    /* ===== FORM ===== */
+    .input-group{ margin-bottom:10px; text-align:right; position:relative; z-index:2; }
+
+    label{ display:block; margin-bottom:4px; font-weight:900; font-size:15px; color:#253444; }
+
+    input{
+      width:100%; border:1.5px solid var(--line);
+      border-radius:var(--radius-sm); padding:7px 10px;
+      font-weight:800; font-size:14px; background:#fff;
+      text-align:center; font-family:'Cairo',sans-serif;
+      color:#1f2d3a; outline:none; min-height:44px;
+      transition:border-color var(--transition-fast), box-shadow var(--transition-fast);
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    input:focus{ border-color:#d8b15d; box-shadow:0 0 0 4px rgba(245,166,35,.12); }
+    input::placeholder{ color:#9aa6b2; font-weight:800; }
+
+    /* ===== BUTTONS ===== */
+    .main-btn, .again{
+      position:relative; overflow:hidden;
+      touch-action:manipulation; -webkit-tap-highlight-color:transparent;
+    }
+
+    .main-btn::before, .again::before{
+      content:""; position:absolute; top:0; right:-120%;
+      width:120%; height:100%;
+      background:linear-gradient(120deg, transparent 20%, rgba(255,255,255,.18) 40%, rgba(255,255,255,.35) 50%, rgba(255,255,255,.18) 60%, transparent 80%);
+      transition:.65s;
+    }
+
+    .main-btn:hover::before, .again:hover::before{ right:120%; }
+
+    .main-btn{
+      width:100%; border:none; border-radius:var(--radius-md); padding:9px 10px;
+      background:var(--primary); color:#fff; font-weight:900; font-size:16px;
+      cursor:pointer; font-family:'Cairo',sans-serif;
+      box-shadow:0 10px 20px rgba(34,50,67,.20);
+      transition:transform var(--transition-fast), opacity var(--transition-fast);
+      display:flex; justify-content:center; align-items:center;
+      gap:8px; z-index:2; min-height:46px;
+    }
+
+    .main-btn:hover{ transform:translateY(-1px); opacity:.96; }
+    .main-btn:active{ transform:translateY(0); opacity:.9; }
+    .main-btn:disabled{ opacity:.65; cursor:not-allowed; box-shadow:none; transform:none; pointer-events:none; }
+
+    /* ===== LOADER ===== */
+    #loader{ display:none; text-align:center; margin:12px 0; color:var(--primary); font-weight:900; position:relative; z-index:2; }
+
+    /* ===== RES PANEL ===== */
+    #resPanel{
+      display:none; margin-top:10px; padding:10px;
+      background:var(--soft); border-radius:var(--radius-md);
+      border-right:5px solid var(--ok); position:relative; z-index:2;
+    }
+
+    /* ===== SUCCESS ===== */
+    .success{ display:none; text-align:center; padding:34px 18px; }
+    .success i{ font-size:74px; color:var(--ok); margin-bottom:12px; }
+    .success h2{ margin:0 0 10px; font-weight:900; color:#1f2b36; font-size:24px; }
+    .success p{ margin:0 0 18px; color:var(--muted); font-weight:800; font-size:18px; }
+
+    .again{
+      border:none; border-radius:var(--radius-md); padding:18px 20px;
+      background:linear-gradient(180deg,#2ebf68,#26a65b); color:#fff;
+      font-family:'Cairo',sans-serif; font-weight:900; font-size:20px;
+      cursor:pointer; display:flex; justify-content:center; align-items:center;
+      gap:10px; width:60%; max-width:420px; margin:25px auto 0;
+      text-align:center; box-shadow:0 10px 20px rgba(39,174,96,.20);
+    }
+
+    .again:hover{ transform:translateY(-2px); opacity:.95; }
+    .again:active{ transform:translateY(0); }
+    .again i{ font-size:18px; }
+
+    /* ===== TOAST ===== */
+    #toast{
+      position:fixed; bottom:22px; left:50%;
+      transform:translateX(-50%) translateY(0);
+      min-width:240px; max-width:90%;
+      background:#223243; color:#fff; padding:12px 20px;
+      border-radius:var(--radius-md); font-weight:900;
+      font-family:'Cairo',sans-serif; font-size:14px;
+      display:none; z-index:99999; text-align:center;
+      box-shadow:0 10px 30px rgba(0,0,0,.28);
+      animation:toastIn .25s ease;
+    }
+
+    @keyframes toastIn{
+      from{ transform:translateX(-50%) translateY(20px); opacity:0; }
+      to  { transform:translateX(-50%) translateY(0);    opacity:1; }
+    }
+
+    #toast.ok  { background:#27ae60; }
+    #toast.warn{ background:#f39c12; }
+    #toast.err { background:#e74c3c; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width:820px){
+      .company-header{ padding:28px 14px 48px; gap:12px; }
+      .logo{ width:78px; height:78px; }
+      .header-text h1{ font-size:22px; }
+      .header-text p{ font-size:14px; }
+      .main-content{ padding:0 10px 24px; margin-top:-24px; }
+      .card{ border-radius:18px; padding:10px; }
+      .again{ width:100%; }
+    }
+
+    @media (max-width:480px){
+      .company-header{ padding:22px 12px 38px; }
+      .logo{ width:68px; height:68px; }
+      .header-text h1{ font-size:18px; }
+      .header-text p{ font-size:13px; }
+      .user-pill{ font-size:12px; padding:4px 12px; }
+    }
+
+    #orderID{
+      font-size:20px; font-weight:600; color:#000;
+      text-align:center; height:44px; width:100%;
+    }
+
+    #orderID::placeholder{ font-size:16px; font-weight:600; color:#999; opacity:1; }
+    /* ===== مشترك: طلبات الزبائن ===== */
+    .card{ max-width:900px; }
+    .card:hover{ transform:none; }
+    .sec-title{
+      display:flex; align-items:center; gap:8px; margin:16px 0 8px;
+      font-weight:900; font-size:16px; color:var(--primary);
+      border-bottom:2px solid var(--accent); padding-bottom:4px;
+    }
+    .grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 12px; }
+    input, select, textarea{
+      width:100%; border:1.5px solid var(--line); border-radius:var(--radius-sm);
+      padding:7px 10px; font-weight:700; font-size:14px; background:#fff;
+      font-family:'Cairo',sans-serif; color:#1f2d3a; outline:none; min-height:42px; text-align:right;
+    }
+    textarea{ resize:vertical; line-height:1.7; }
+    input:focus, select:focus, textarea:focus{ border-color:#d8b15d; box-shadow:0 0 0 4px rgba(245,166,35,.12); }
+    .req{ color:var(--danger); }
+    .help{ font-size:12px; color:var(--muted); font-weight:700; margin-top:3px; }
+    .notice{ display:none; margin:8px 0; padding:8px 12px; border-radius:var(--radius-sm); font-weight:800; font-size:14px; }
+    .notice.info{ display:block; background:#eef6ff; color:#1d4f86; border-right:4px solid #3b82f6; }
+    .notice.warn{ display:block; background:#fff8ec; color:#8a5a00; border-right:4px solid var(--accent); }
+    .notice.ok{ display:block; background:#eafaf1; color:#1e7a46; border-right:4px solid var(--ok); }
+    .notice.err{ display:block; background:#fdecea; color:#a5281b; border-right:4px solid var(--danger); }
+    .badge{ display:inline-block; padding:2px 10px; border-radius:999px; font-size:12px; font-weight:900; white-space:nowrap; }
+    .st-new{ background:#e8f1ff; color:#1d4f86; }
+    .st-review{ background:#fff4e0; color:#8a5a00; }
+    .st-quoted{ background:#efe8ff; color:#5b3aa6; }
+    .st-accepted{ background:#e3f7ec; color:#1e7a46; }
+    .st-rejected{ background:#fdecea; color:#a5281b; }
+    .st-converted{ background:#223243; color:#fff; }
+    .st-cancelled{ background:#eceff2; color:#6b7a89; }
+    .add-btn{
+      border:1px dashed var(--primary); background:#f4f7fa; color:var(--primary);
+      border-radius:var(--radius-sm); padding:6px 14px; font-family:'Cairo',sans-serif; font-weight:900; cursor:pointer;
+    }
+    .del-btn{ border:none; background:#fdecea; color:var(--danger); border-radius:8px; width:36px; height:36px; cursor:pointer; flex-shrink:0; }
+    @media (max-width:640px){ .grid{ grid-template-columns:1fr; } }
+    .card{ max-width:1180px; }
+    .tabs{ display:flex; gap:6px; flex-wrap:wrap; border-bottom:2px solid var(--line); margin-bottom:12px; }
+    .tab{ border:none; background:transparent; font-family:'Cairo',sans-serif; font-weight:900; font-size:15px; color:var(--muted);
+      padding:8px 14px; cursor:pointer; border-bottom:3px solid transparent; margin-bottom:-2px; }
+    .tab.on{ color:var(--primary); border-bottom-color:var(--accent); }
+    .tab .cnt{ background:var(--danger); color:#fff; border-radius:999px; padding:0 7px; font-size:11px; margin-right:4px; }
+    .pane{ display:none; } .pane.on{ display:block; }
+
+    .stats{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
+    .stat{ background:#fff; border:1px solid var(--line); border-radius:var(--radius-md); padding:12px; cursor:pointer; transition:.15s; }
+    .stat:hover{ border-color:var(--accent); }
+    .stat .v{ font-size:28px; font-weight:900; color:var(--primary); line-height:1.2; }
+    .stat .l{ font-size:13px; font-weight:800; color:var(--muted); }
+    .stat.wide{ grid-column:span 2; cursor:default; }
+    .stat.hl{ border-right:4px solid var(--danger); }
+
+    .toolbar{ display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-bottom:10px; }
+    .chip{ border:1px solid var(--line); background:#fff; border-radius:999px; padding:4px 12px; font-family:'Cairo',sans-serif; font-weight:800; font-size:13px; cursor:pointer; }
+    .chip.on{ background:var(--primary); color:#fff; border-color:var(--primary); }
+    .toolbar input{ max-width:260px; margin-right:auto; min-height:36px; }
+    .icon-btn{ border:1px solid var(--line); background:#fff; border-radius:var(--radius-sm); padding:6px 10px; cursor:pointer; font-family:'Cairo',sans-serif; font-weight:800; }
+
+    .list{ border:1px solid var(--line); border-radius:var(--radius-md); overflow:hidden; background:#fff; }
+    .li{ display:grid; grid-template-columns:130px 1.3fr 1.6fr 140px 130px; gap:8px; align-items:center; padding:10px 12px; border-bottom:1px solid var(--line); cursor:pointer; }
+    .li:hover{ background:var(--soft); }
+    .li:last-child{ border-bottom:none; }
+    .li .id{ font-weight:900; color:var(--primary); direction:ltr; text-align:right; }
+    .li .d{ font-size:12px; color:var(--muted); font-weight:700; }
+    .li .n{ font-weight:900; } .li .s{ font-size:13px; color:#33465a; font-weight:700; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .li .a{ font-weight:900; text-align:left; direction:ltr; }
+    .li.is-new{ background:#f6faff; }
+    .empty{ padding:24px; text-align:center; color:var(--muted); font-weight:800; }
+
+    /* لوحة التفاصيل */
+    .drawer-bg{ position:fixed; inset:0; background:rgba(15,25,35,.45); z-index:900; display:none; }
+    .drawer{ position:fixed; top:0; bottom:0; left:0; width:min(860px,100%); background:#f4f6f8; z-index:901; overflow-y:auto;
+      transform:translateX(-105%); transition:transform .25s ease; box-shadow:0 0 40px rgba(0,0,0,.25); }
+    .drawer.on{ transform:none; } .drawer-bg.on{ display:block; }
+    .dr-head{ position:sticky; top:0; background:var(--primary); color:#fff; padding:12px 16px; display:flex; align-items:center; gap:10px; z-index:2; }
+    .dr-head h3{ margin:0; font-size:18px; direction:ltr; }
+    .dr-head .x{ margin-right:auto; background:rgba(255,255,255,.15); border:none; color:#fff; border-radius:8px; width:36px; height:36px; cursor:pointer; font-size:18px; }
+    .dr-body{ padding:12px 16px 40px; }
+    .box{ background:#fff; border:1px solid var(--line); border-radius:var(--radius-md); padding:12px; margin-bottom:12px; }
+    .box h4{ margin:0 0 8px; color:var(--primary); font-size:15px; display:flex; align-items:center; gap:6px; }
+    .kv{ display:grid; grid-template-columns:120px 1fr; gap:4px 10px; font-weight:700; font-size:14px; }
+    .kv .k{ color:var(--muted); }
+    .kv a{ color:#1d4f86; }
+    .pre{ white-space:pre-wrap; background:#f7f9fb; border-radius:8px; padding:8px; font-weight:700; line-height:1.8; }
+    .timeline{ font-size:13px; font-weight:700; }
+    .timeline div{ padding:4px 0; border-bottom:1px dashed var(--line); display:flex; gap:8px; }
+    .timeline .t{ color:var(--muted); white-space:nowrap; direction:ltr; }
+
+    table.qt{ width:100%; border-collapse:collapse; }
+    table.qt th{ background:#33465a; color:#fff; font-size:12.5px; padding:6px; font-weight:900; }
+    table.qt td{ border-bottom:1px solid var(--line); padding:4px; vertical-align:top; }
+    table.qt input, table.qt select{ min-height:36px; font-size:13px; padding:4px 8px; }
+    table.qt td.lt{ font-weight:900; text-align:center; white-space:nowrap; padding-top:10px; }
+    .q-foot{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:8px; }
+    .q-total{ font-size:20px !important; font-weight:900 !important; text-align:center !important; }
+    .btns{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+    .btns .main-btn{ width:auto; flex:1; min-width:150px; padding:9px 14px; }
+    .btn-ok{ background:linear-gradient(180deg,#2ebf68,#26a65b) !important; }
+    .btn-alt{ background:#5d6d7e !important; }
+    .btn-danger{ background:#c0392b !important; }
+    .muted{ color:var(--muted); font-size:12.5px; font-weight:700; }
+
+    table.log{ width:100%; border-collapse:collapse; font-size:13px; background:#fff; }
+    table.log th{ background:var(--primary); color:#fff; padding:7px; font-weight:900; }
+    table.log td{ border-bottom:1px solid var(--line); padding:6px; font-weight:700; }
+    .ok-t{ color:#1e7a46; font-weight:900; } .bad-t{ color:#a5281b; font-weight:900; }
+
+    .set-grid{ display:grid; grid-template-columns:1fr 1fr; gap:0 12px; }
+    .status-line{ padding:8px 12px; border-radius:8px; font-weight:800; margin-bottom:10px; }
+    .check{ display:flex; align-items:center; gap:8px; font-weight:800; cursor:pointer; margin:6px 0 10px; }
+    .check input{ width:20px; min-height:20px; height:20px; }
+
+    @media (max-width:760px){
+      .stats{ grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .li{ grid-template-columns:1fr auto; }
+      .li .s, .li .d2{ grid-column:1 / -1; }
+      .q-foot, .set-grid{ grid-template-columns:1fr; }
+      .kv{ grid-template-columns:95px 1fr; }
+      .toolbar input{ max-width:none; width:100%; margin:0; }
+      .qt-wrap{ overflow-x:auto; } table.qt{ min-width:640px; }
+    }
+  </style>
+</head>
+
+<body>
+<div id="pageWrap" class="loading">
+  <div class="page-shell">
+    <div class="container">
+      <header class="company-header">
+        <img class="logo" src="https://siei-tracking.github.io/system/logo.png" alt="logo">
+        <div class="header-text">
+          <h1>الشركة العامة للفحص والتأهيل الهندسي</h1>
+          <p><i class="fas fa-inbox"></i> منصة تتبع اوامر العمل - طلبات الزبائن وعروض الأسعار</p>
+          <div id="welcomeUser" class="user-pill"></div>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <main class="main-content">
+          <div class="card">
+            <div class="tabs">
+              <button class="tab on" data-tab="dash"><i class="fas fa-chart-simple"></i> لوحة المعلومات</button>
+              <button class="tab" data-tab="reqs"><i class="fas fa-inbox"></i> الطلبات <span class="cnt" id="newCnt" style="display:none"></span></button>
+              <button class="tab" data-tab="log"><i class="fas fa-envelope-open-text"></i> سجل البريد</button>
+              <button class="tab" data-tab="set"><i class="fas fa-gear"></i> إعدادات البريد</button>
+            </div>
+
+            <!-- لوحة المعلومات -->
+            <section class="pane on" id="pane-dash">
+              <div class="stats" id="stats"></div>
+              <div class="sec-title"><i class="fas fa-bell"></i> أحدث الطلبات</div>
+              <div class="list" id="recentList"><div class="empty">جاري التحميل...</div></div>
+            </section>
+
+            <!-- الطلبات -->
+            <section class="pane" id="pane-reqs">
+              <div class="toolbar" id="chips"></div>
+              <div class="toolbar">
+                <input type="search" id="q" placeholder="بحث: رقم الطلب، الاسم، الموبايل، البريد...">
+                <button class="icon-btn" onclick="loadList(true)"><i class="fas fa-rotate"></i> تحديث</button>
+              </div>
+              <div class="list" id="reqList"><div class="empty">جاري التحميل...</div></div>
+            </section>
+
+            <!-- سجل البريد -->
+            <section class="pane" id="pane-log">
+              <div class="toolbar"><button class="icon-btn" onclick="loadLog()"><i class="fas fa-rotate"></i> تحديث</button></div>
+              <div style="overflow-x:auto"><table class="log"><thead><tr><th>الوقت</th><th>الطلب</th><th>النوع</th><th>إلى</th><th>الموضوع</th><th>الحالة</th><th>بواسطة</th></tr></thead><tbody id="logBody"><tr><td colspan="7" class="empty">—</td></tr></tbody></table></div>
+            </section>
+
+            <!-- الإعدادات -->
+            <section class="pane" id="pane-set">
+              <div id="setStatus"></div>
+              <div class="set-grid">
+                <div class="input-group"><label>بريد الشركة الأول (يستلم نسخة كل طلب)</label><input type="email" id="s_n1" dir="ltr" style="text-align:left"></div>
+                <div class="input-group"><label>بريد الشركة الثاني</label><input type="email" id="s_n2" dir="ltr" style="text-align:left"></div>
+                <div class="input-group"><label>البريد الرسمي للإرسال (From)</label><input type="email" id="s_from" dir="ltr" style="text-align:left" placeholder="quotes@company.iq">
+                  <div class="muted">يجب إضافته أولاً في Gmail ← الإعدادات ← الحسابات ← «إرسال بريد باسم»</div></div>
+                <div class="input-group"><label>اسم المرسل الظاهر</label><input type="text" id="s_name" maxlength="120"></div>
+                <div class="input-group"><label>بريد الرد (Reply-To)</label><input type="email" id="s_reply" dir="ltr" style="text-align:left" placeholder="اختياري"></div>
+                <div class="input-group"><label>رابط الصفحات العامة</label><input type="url" id="s_base" dir="ltr" style="text-align:left"></div>
+              </div>
+              <label class="check"><input type="checkbox" id="s_ack"> إرسال رسالة تأكيد استلام للزبون عند تقديم الطلب</label>
+              <div class="btns">
+                <button class="main-btn btn-ok" id="saveSetBtn" onclick="saveSettings()"><i class="fas fa-floppy-disk"></i> حفظ الإعدادات</button>
+              </div>
+              <div class="sec-title"><i class="fas fa-vial"></i> رسالة تجريبية</div>
+              <div class="toolbar">
+                <input type="email" id="testTo" dir="ltr" style="text-align:left;max-width:320px;margin:0" placeholder="name@example.com">
+                <button class="icon-btn" id="testBtn" onclick="testMail()"><i class="fas fa-paper-plane"></i> إرسال تجربة</button>
+              </div>
+            </section>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- لوحة تفاصيل الطلب -->
+<div class="drawer-bg" id="drBg" onclick="closeDrawer()"></div>
+<aside class="drawer" id="drawer" aria-hidden="true">
+  <div class="dr-head">
+    <h3 id="drId"></h3>
+    <span id="drStatus"></span>
+    <button class="x" onclick="closeDrawer()" title="إغلاق"><i class="fas fa-xmark"></i></button>
+  </div>
+  <div class="dr-body" id="drBody"></div>
+</aside>
+
+<div id="toast"></div>
+
+<script>
+  const API_BASE = window.APP_CONFIG.API_BASE;
+  const PAGE_NAME = "requests";
+  /* ── Cookie helpers ── */
+  function setCookie(name, value, hours) {
+    const exp = new Date(Date.now() + hours * 3600000).toUTCString();
+    document.cookie = name + "=" + encodeURIComponent(value) + ";expires=" + exp + ";path=/;SameSite=Lax";
+  }
+  function getCookie(name) {
+    const match = document.cookie.match(new RegExp("(?:^|; )" + name + "=([^;]*)"));
+    return match ? decodeURIComponent(match[1]) : "";
+  }
+  function deleteCookie(name) {
+    document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/";
+  }
+
+
+
+  const STORAGE_KEY_PAGE   = "tracking_session_token_" + PAGE_NAME;
+  const STORAGE_KEY_GLOBAL = "tracking_session_token";
+  const SESSION_CACHE_KEY  = "tracking_session_cache_" + PAGE_NAME;
+
+  let currentUserName     = "";
+  let sessionFailCount    = 0;
+  let liveSessionInterval = null;
+  let isFetching          = false;
+  const MAX_SESSION_FAILS = 3;
+
+  /* ============================================================
+   * SESSION HELPERS
+   * ============================================================ */
+  function getSessionToken(){
+    return (
+      sessionStorage.getItem(STORAGE_KEY_PAGE)   ||
+      sessionStorage.getItem(STORAGE_KEY_GLOBAL) ||
+      localStorage.getItem(STORAGE_KEY_PAGE)     ||
+      localStorage.getItem(STORAGE_KEY_GLOBAL)   ||
+      ""
+    );
+  }
+
+  function setSessionToken(token){
+    if(!token) return;
+    sessionStorage.setItem(STORAGE_KEY_PAGE,   token);
+    sessionStorage.setItem(STORAGE_KEY_GLOBAL, token);
+    localStorage.setItem(STORAGE_KEY_PAGE,     token);
+    localStorage.setItem(STORAGE_KEY_GLOBAL,   token);
+    setCookie("tracking_session_token", token, 12);
+  }
+
+  function clearSessionToken(){
+    [STORAGE_KEY_PAGE, STORAGE_KEY_GLOBAL, SESSION_CACHE_KEY].forEach(function(k){
+      sessionStorage.removeItem(k); localStorage.removeItem(k);
+    });
+    deleteCookie("tracking_session_token");
+  }
+
+  function goToLogin(){
+    clearSessionToken();
+    if(liveSessionInterval){ clearInterval(liveSessionInterval); liveSessionInterval = null; }
+    window.location.href = "login.html?p=" + encodeURIComponent(PAGE_NAME);
+  }
+
+  /* ============================================================
+   * API — مع تحقق من HTTP status
+   * ============================================================ */
+  async function apiPost(payload){
+    const response = await fetch(API_BASE, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body:    JSON.stringify(payload)
+    });
+    if(!response.ok) throw new Error("HTTP " + response.status + ": " + response.statusText);
+    const text = await response.text();
+    try{ return JSON.parse(text); }
+    catch(e){ throw new Error(text || "Invalid JSON response"); }
+  }
+
+  /* ============================================================
+   * SESSION CHECK — مع cache
+   * ============================================================ */
+  function applySessionUI(userName){
+    currentUserName = userName;
+    document.getElementById("welcomeUser").innerHTML =
+      '<i class="fas fa-user-shield"></i> المستخدم: ' + escapeHtml(userName);
+    document.getElementById("pageWrap").classList.remove("loading");
+  }
+
+  async function ensurePageSession(){
+    const token = getSessionToken();
+    if(!token){ goToLogin(); return; }
+
+    let usedCache = false;
+    try{
+      const raw = sessionStorage.getItem(SESSION_CACHE_KEY) || localStorage.getItem(SESSION_CACHE_KEY);
+      if(raw){
+        const cached = JSON.parse(raw);
+        if(cached && cached.token === token && (Date.now() - (cached.ts||0)) < 600000){
+          applySessionUI(cached.userName || "مخول غير معروف");
+          usedCache = true;
+        }
+      }
+    }catch(e){}
+
+    try{
+      const result = await apiPost({ action:"checkSession", token, page:PAGE_NAME });
+      if(result && result.ok){
+        setSessionToken(token);
+        sessionFailCount = 0;
+        const userName = result.user || result.userName || "مخول غير معروف";
+        applySessionUI(userName);
+        try{
+          const cd = JSON.stringify({ token, userName, ts:Date.now() });
+          sessionStorage.setItem(SESSION_CACHE_KEY, cd);
+          localStorage.setItem(SESSION_CACHE_KEY, cd);
+        }catch(e){}
+      }else{
+        try{ sessionStorage.removeItem(SESSION_CACHE_KEY); localStorage.removeItem(SESSION_CACHE_KEY); }catch(e){}
+        if(!usedCache) goToLogin();
+        else{ showMsg("⚠️ انتهت الجلسة، سيتم تسجيل الخروج...", "warn"); setTimeout(goToLogin, 2000); }
+      }
+    }catch(error){
+      if(!usedCache){
+        showMsg("❌ تعذر التحقق من الجلسة", "err");
+        setTimeout(goToLogin, 900);
+      }else{
+        console.warn("Session check failed (using cache):", error);
+      }
+    }
+  }
+
+  async function checkLiveSession(){
+    const token = getSessionToken();
+    if(!token){ goToLogin(); return; }
+    try{
+      const res = await apiPost({ action:"checkSession", token, page:PAGE_NAME });
+      if(!res || !res.ok){ sessionFailCount++; if(sessionFailCount >= MAX_SESSION_FAILS) goToLogin(); }
+      else sessionFailCount = 0;
+    }catch(e){
+      sessionFailCount++;
+      if(sessionFailCount >= MAX_SESSION_FAILS) goToLogin();
+    }
+  }
+
+  /* ============================================================
+   * UI HELPERS
+   * ============================================================ */
+  function escapeHtml(text){
+    return String(text == null ? "" : text)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+
+  function showMsg(text, type){
+    if(!text) return;
+    const t = document.getElementById("toast");
+    t.className = "";
+    if(type === "ok")        t.classList.add("ok");
+    else if(type === "warn") t.classList.add("warn");
+    else if(type === "err")  t.classList.add("err");
+    t.textContent = text;
+    t.style.display = "block";
+    clearTimeout(window.__toastTimer);
+    window.__toastTimer = setTimeout(function(){ t.style.display = "none"; }, 3000);
+  }
+
+  function handleSessionExpiry(msg){
+    const s = String(msg || "");
+    if(s.indexOf("انتهت الجلسة") !== -1 || s.indexOf("غير صالح") !== -1 || s.indexOf("غير مصرح") !== -1){
+      showMsg("❌ انتهت الجلسة", "err");
+      setTimeout(function(){ clearSessionToken(); goToLogin(); }, 800);
+      return true;
+    }
+    return false;
+  }
+
+
+  /* ============================================================
+   * طلبات الزبائن وعروض الأسعار
+   * ============================================================ */
+  const CATALOG = Array.isArray(window.COST_CATALOG) ? window.COST_CATALOG : [];
+  const OTHER = "__other";
+  let ITEMS = [], STATS = {}, LABELS = {}, filterStatus = "", CUR = null, busy = false;
+  const STATUS_ORDER = ["new", "review", "quoted", "accepted", "rejected", "converted", "cancelled"];
+
+  function $(id){ return document.getElementById(id); }
+  const esc = escapeHtml;
+  function num(v){ const n = parseFloat(String(v == null ? "" : v).replace(/[,٬\s]/g, "")); return isNaN(n) ? 0 : n; }
+  function fmt(v){ const n = num(v); return n ? n.toLocaleString("en-US") : ""; }
+  function badge(st){ return '<span class="badge st-' + esc(st) + '">' + esc(LABELS[st] || st) + '</span>'; }
+  function secById(id){ return CATALOG.find(function(s){ return s.id === id; }) || null; }
+  function itemOf(sec, name){ return sec ? (sec.items.find(function(i){ return i.name === name; }) || null) : null; }
+  function svcSummary(list){ return (list || []).map(function(s){ return (s.test || s.section) + (Number(s.qty) > 1 ? " ×" + s.qty : ""); }).join("، "); }
+  async function call(action, extra){
+    const token = getSessionToken();
+    if(!token){ goToLogin(); throw new Error("no token"); }
+    const r = await apiPost(Object.assign({ action:action, token:token, page:PAGE_NAME }, extra || {}));
+    if(r && r.ok === false && handleSessionExpiry(r.message)) throw new Error("session");
+    return r;
+  }
+
+  /* ---------- التبويبات ---------- */
+  document.querySelectorAll(".tab").forEach(function(b){
+    b.addEventListener("click", function(){ openTab(b.getAttribute("data-tab")); });
+  });
+  function openTab(t){
+    document.querySelectorAll(".tab").forEach(function(b){ b.classList.toggle("on", b.getAttribute("data-tab") === t); });
+    document.querySelectorAll(".pane").forEach(function(p){ p.classList.toggle("on", p.id === "pane-" + t); });
+    if(t === "log") loadLog();
+    if(t === "set") loadSettings();
+  }
+
+  /* ---------- القائمة والإحصائيات ---------- */
+  async function loadList(force){
+    try{
+      const r = await call("listCustomerRequests", { filter:{ limit:500 } });
+      if(!r || r.ok === false){ showMsg((r && r.message) || "❌ تعذر التحميل", "err"); return; }
+      ITEMS = r.items || []; STATS = r.stats || {}; LABELS = r.statusLabels || LABELS;
+      renderAll();
+      if(force) showMsg("✅ تم التحديث", "ok");
+    }catch(e){ if(String(e.message) !== "session") $("reqList").innerHTML = '<div class="empty">❌ تعذر الاتصال</div>'; }
+  }
+
+  function recount(){
+    const s = { total:0, thisMonth:STATS.thisMonth || 0, acceptedValueIQD:0, acceptedValueUSD:0 };
+    STATUS_ORDER.forEach(function(k){ s[k] = 0; });
+    ITEMS.forEach(function(it){
+      s.total++; s[it.status] = (s[it.status] || 0) + 1;
+      if(it.status === "accepted" || it.status === "converted"){
+        if(it.quoteCurrency === "USD") s.acceptedValueUSD += num(it.quoteAmount); else s.acceptedValueIQD += num(it.quoteAmount);
+      }
+    });
+    STATS = s;
+  }
+
+  function renderAll(){
+    const s = STATS;
+    const tile = function(k, l, cls){ return '<div class="stat ' + (cls || "") + '" onclick="goStatus(\'' + k + '\')"><div class="v">' + ((k ? s[k] : s.total) || 0) + '</div><div class="l">' + l + '</div></div>'; };
+    $("stats").innerHTML =
+        tile("", "إجمالي الطلبات")
+      + tile("new", "طلبات جديدة", s.new ? "hl" : "")
+      + tile("review", "قيد المراجعة")
+      + tile("quoted", "بانتظار رد الزبون")
+      + tile("accepted", "مقبولة (لم تُحوَّل)")
+      + tile("converted", "تحوّلت إلى أوامر عمل")
+      + tile("rejected", "مرفوضة")
+      + '<div class="stat" style="cursor:default"><div class="v">' + (s.thisMonth || 0) + '</div><div class="l">طلبات هذا الشهر</div></div>'
+      + '<div class="stat wide"><div class="v">' + (fmt(s.acceptedValueIQD) || 0) + ' <small style="font-size:14px">د.ع</small>'
+      + (s.acceptedValueUSD ? ' + ' + fmt(s.acceptedValueUSD) + ' <small style="font-size:14px">$</small>' : '') + '</div><div class="l">قيمة العروض المقبولة</div></div>'
+      + '<div class="stat wide"><div class="v">' + (s.total ? Math.round(((s.accepted || 0) + (s.converted || 0)) * 100 / Math.max(1, (s.accepted || 0) + (s.converted || 0) + (s.rejected || 0))) : 0) + '%</div><div class="l">نسبة قبول عروض الأسعار (من العروض المردود عليها)</div></div>';
+
+    const nc = $("newCnt");
+    nc.style.display = s.new ? "" : "none"; nc.textContent = s.new || "";
+
+    let chips = '<button class="chip' + (filterStatus === "" ? " on" : "") + '" onclick="goStatus(\'\')">الكل (' + (s.total || 0) + ')</button>';
+    STATUS_ORDER.forEach(function(k){
+      chips += '<button class="chip' + (filterStatus === k ? " on" : "") + '" onclick="goStatus(\'' + k + '\')">' + esc(LABELS[k] || k) + ' (' + (s[k] || 0) + ')</button>';
+    });
+    $("chips").innerHTML = chips;
+    renderList();
+    $("recentList").innerHTML = rowsHtml(ITEMS.slice(0, 8)) || '<div class="empty">لا توجد طلبات بعد</div>';
+  }
+
+  function rowsHtml(list){
+    return list.map(function(it){
+      return '<div class="li' + (it.status === "new" ? " is-new" : "") + '" data-id="' + esc(it.requestId) + '">'
+        + '<div><div class="id">' + esc(it.requestId) + '</div><div class="d">' + esc(it.createdAt) + '</div></div>'
+        + '<div><div class="n">' + esc(it.company || it.name) + '</div><div class="d">' + esc(it.company ? it.name : "") + ' <span dir="ltr">' + esc(it.phone) + '</span></div></div>'
+        + '<div class="s">' + esc(svcSummary(it.services)) + (it.hasFile ? ' <i class="fas fa-paperclip" title="مرفق"></i>' : '') + '</div>'
+        + '<div>' + badge(it.status) + (it.orderNo ? '<div class="d">أمر عمل: ' + esc(it.orderNo) + '</div>' : '') + '</div>'
+        + '<div class="a">' + (it.quoteAmount ? fmt(it.quoteAmount) + " " + esc(it.quoteCurrency) : "—") + '</div>'
+        + '</div>';
+    }).join("");
+  }
+
+  function renderList(){
+    const q = $("q").value.trim().toLowerCase();
+    const list = ITEMS.filter(function(it){
+      if(filterStatus && it.status !== filterStatus) return false;
+      if(!q) return true;
+      return [it.requestId, it.name, it.company, it.phone, it.email, it.orderNo].join(" ").toLowerCase().indexOf(q) !== -1;
+    });
+    $("reqList").innerHTML = rowsHtml(list) || '<div class="empty">لا توجد طلبات</div>';
+  }
+
+  function goStatus(k){ filterStatus = k; openTab("reqs"); renderAll(); }
+  $("q").addEventListener("input", renderList);
+  document.addEventListener("click", function(e){
+    const li = e.target.closest && e.target.closest(".li[data-id]");
+    if(li) openRequest(li.getAttribute("data-id"));
+  });
+
+  function patchItem(req){
+    if(!req) return;
+    const i = ITEMS.findIndex(function(x){ return x.requestId === req.requestId; });
+    const lite = {
+      requestId:req.requestId, createdAt:req.createdAt, status:req.status, statusLabel:req.statusLabel, name:req.name, company:req.company,
+      phone:req.phone, email:req.email, services:req.services, hasFile:req.hasFile, fileName:req.fileName,
+      quoteAmount:req.quoteAmount, quoteCurrency:req.quoteCurrency, quoteSentAt:req.quoteSentAt, orderNo:req.orderNo, updatedAt:req.updatedAt
+    };
+    if(i === -1) ITEMS.unshift(lite); else ITEMS[i] = lite;
+    recount(); renderAll();
+  }
+
+  /* ---------- تفاصيل الطلب ---------- */
+  async function openRequest(id){
+    $("drId").textContent = id;
+    $("drStatus").innerHTML = "";
+    $("drBody").innerHTML = '<div class="empty"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</div>';
+    $("drawer").classList.add("on"); $("drBg").classList.add("on");
+    $("drawer").setAttribute("aria-hidden", "false");
+    try{
+      const r = await call("getCustomerRequest", { requestId:id });
+      if(!r || !r.ok){ $("drBody").innerHTML = '<div class="empty">' + esc((r && r.message) || "❌ تعذر التحميل") + '</div>'; return; }
+      LABELS = r.statusLabels || LABELS;
+      CUR = r.request;
+      patchItem(CUR);
+      renderDrawer();
+    }catch(e){ $("drBody").innerHTML = '<div class="empty">❌ تعذر الاتصال</div>'; }
+  }
+
+  function closeDrawer(){
+    $("drawer").classList.remove("on"); $("drBg").classList.remove("on");
+    $("drawer").setAttribute("aria-hidden", "true");
+    CUR = null;
+    if(location.search.indexOf("id=") !== -1) history.replaceState(null, "", location.pathname);
+  }
+  document.addEventListener("keydown", function(e){ if(e.key === "Escape" && CUR) closeDrawer(); });
+
+  function renderDrawer(){
+    const r = CUR;
+    $("drStatus").innerHTML = badge(r.status);
+    const locked = r.status === "accepted" || r.status === "converted";
+    const svc = (r.services || []).map(function(s, i){
+      return '<tr><td>' + (i + 1) + '</td><td>' + esc(s.section) + '</td><td>' + esc(s.test) + '</td><td style="text-align:center">' + esc(s.qty) + '</td></tr>';
+    }).join("");
+
+    let h = ''
+      + '<div class="box"><h4><i class="fas fa-user"></i> معلومات الزبون</h4><div class="kv">'
+      +   '<div class="k">الاسم</div><div>' + esc(r.name) + '</div>'
+      +   (r.company ? '<div class="k">الجهة</div><div>' + esc(r.company) + '</div>' : '')
+      +   '<div class="k">الموبايل</div><div><a href="tel:' + esc(r.phone) + '" dir="ltr">' + esc(r.phone) + '</a></div>'
+      +   '<div class="k">البريد</div><div><a href="mailto:' + esc(r.email) + '" dir="ltr">' + esc(r.email) + '</a></div>'
+      +   '<div class="k">تاريخ الطلب</div><div>' + esc(r.createdAt) + '</div>'
+      + '</div></div>'
+
+      + '<div class="box"><h4><i class="fas fa-flask"></i> الخدمات المطلوبة</h4>'
+      +   (svc ? '<table class="log"><thead><tr><th>ت</th><th>القسم</th><th>الفحص / الخدمة</th><th>العدد</th></tr></thead><tbody>' + svc + '</tbody></table>' : '<div class="muted">لم يحدد الزبون خدمة من القائمة</div>')
+      +   (r.details ? '<div class="pre" style="margin-top:8px">' + esc(r.details) + '</div>' : '')
+      + '</div>'
+
+      + '<div class="box"><h4><i class="fas fa-paperclip"></i> المرفقات</h4>'
+      +   (r.hasFile
+            ? '<div class="toolbar"><span style="font-weight:800">' + esc(r.fileName) + '</span> <span class="muted">' + (r.fileSize ? (r.fileSize / 1024 / 1024).toFixed(2) + " MB" : "") + '</span>'
+              + '<button class="icon-btn" id="dlBtn" onclick="downloadFile(false)"><i class="fas fa-download"></i> تحميل</button>'
+              + (r.fileMime === "application/pdf" ? '<button class="icon-btn" onclick="downloadFile(true)"><i class="fas fa-eye"></i> عرض</button>' : '')
+              + '</div>'
+            : '<div class="muted">لا يوجد مرفق</div>')
+      + '</div>'
+
+      + '<div class="box"><h4><i class="fas fa-file-invoice-dollar"></i> عرض السعر</h4>'
+      +   (locked ? '<div class="notice ok" style="margin-top:0">✅ عرض السعر مقبول — لا يمكن تعديله</div>' : '')
+      +   '<div class="qt-wrap"><table class="qt"><thead><tr><th style="width:24%">القسم</th><th>الفحص / الخدمة</th><th style="width:9%">العدد</th><th style="width:15%">سعر الوحدة</th><th style="width:13%">المجموع</th><th style="width:40px"></th></tr></thead><tbody id="qBody"></tbody></table></div>'
+      +   (locked ? '' : '<button class="add-btn" style="margin-top:6px" onclick="addQRow()"><i class="fas fa-plus"></i> إضافة بند</button>')
+      +   '<div class="q-foot">'
+      +     '<div class="input-group"><label>العملة</label><select id="qCur"' + (locked ? " disabled" : "") + '><option value="IQD">دينار عراقي (IQD)</option><option value="USD">دولار أمريكي (USD)</option></select></div>'
+      +     '<div class="input-group"><label>المبلغ الإجمالي</label><input id="qAmount" class="q-total" inputmode="decimal"' + (locked ? " disabled" : "") + '></div>'
+      +     '<div class="input-group"><label>صلاحية العرض (يوم)</label><input id="qValid" type="number" min="1" max="180" value="30"' + (locked ? " disabled" : "") + '></div>'
+      +   '</div>'
+      +   '<div class="input-group"><label>ملاحظات تظهر للزبون</label><textarea id="qNotes" rows="3" maxlength="1500" placeholder="مثال: الأسعار لا تشمل كلف الإيفاد. مدة الإنجاز 10 أيام عمل."' + (locked ? " disabled" : "") + '></textarea></div>'
+      +   (r.quoteSentAt ? '<div class="muted">آخر إرسال: ' + esc(r.quoteSentAt) + ' بواسطة ' + esc(r.quoteSentBy) + '</div>' : '')
+      +   (locked ? '' :
+            '<div class="btns">'
+          +   '<button class="main-btn btn-ok" id="sendBtn" onclick="sendQuote()"><i class="fas fa-paper-plane"></i> ' + (r.quoteSentAt ? "إعادة إرسال عرض السعر" : "إرسال عرض السعر") + '</button>'
+          +   '<button class="main-btn btn-alt" id="draftBtn" onclick="saveDraft()"><i class="fas fa-floppy-disk"></i> حفظ مسودة</button>'
+          + '</div>')
+      + '</div>'
+
+      + '<div class="box"><h4><i class="fas fa-diagram-next"></i> الإجراءات</h4>'
+      +   (r.status === "converted"
+            ? '<div class="notice ok" style="margin-top:0">✅ تحوّل إلى أمر العمل <b>' + esc(r.orderNo) + '</b> — تجده في المنصة واستمارة الكلفة</div>'
+            : '<div class="toolbar"><input id="orderNo" placeholder="رقم أمر العمل الجديد" inputmode="numeric" style="max-width:220px;margin:0">'
+              + '<button class="icon-btn" id="convBtn" onclick="convert()"' + ((r.status === "accepted" || r.status === "quoted") ? "" : " disabled") + '><i class="fas fa-arrow-left"></i> تحويل إلى أمر عمل + استمارة كلفة</button></div>'
+              + '<div class="muted">يُفعَّل بعد إرسال عرض السعر. التحويل ينشئ أمر العمل في المنصة وينقل بنود العرض إلى استمارة الكلفة.</div>'
+              + '<div class="btns">'
+              + (r.status === "quoted" ? '<button class="main-btn btn-ok" onclick="setStatus(\'accepted\')"><i class="fas fa-phone"></i> وافق الزبون هاتفياً</button>' : '')
+              + (r.status !== "cancelled" ? '<button class="main-btn btn-danger" onclick="setStatus(\'cancelled\')"><i class="fas fa-ban"></i> إلغاء الطلب</button>'
+                                          : '<button class="main-btn btn-alt" onclick="setStatus(\'review\')"><i class="fas fa-rotate-left"></i> إعادة فتح الطلب</button>')
+              + '</div>')
+      + '</div>'
+
+      + '<div class="box"><h4><i class="fas fa-clock-rotate-left"></i> سجل الطلب</h4><div class="timeline">'
+      +   (r.history || []).slice().reverse().map(function(x){ return '<div><span class="t">' + esc(x.t) + '</span><span>' + esc(x.m) + (x.u ? ' — <span class="muted">' + esc(x.u) + '</span>' : '') + '</span></div>'; }).join("")
+      + '</div><div id="reqMails" class="muted" style="margin-top:6px"></div></div>';
+
+    $("drBody").innerHTML = h;
+
+    /* بنود عرض السعر: المحفوظة، وإلا من خدمات الزبون بأسعار الدليل */
+    const base = (r.quoteItems && r.quoteItems.length) ? r.quoteItems : (r.services || []).map(function(s){
+      const it = itemOf(secById(s.sectionId), s.test);
+      return { sectionId:s.sectionId, section:s.section, test:s.test, qty:s.qty, price: it && it.price != null ? it.price : (it && it.min ? it.min : "") };
+    });
+    (base.length ? base : [{}]).forEach(function(it){ addQRow(it, locked); });
+    $("qCur").value = r.quoteCurrency || "IQD";
+    $("qValid").value = r.quoteValidDays || 30;
+    $("qNotes").value = r.quoteNotes || "";
+    $("qAmount").value = r.quoteAmount ? fmt(r.quoteAmount) : "";
+    if(!r.quoteAmount) qRecalc();
+    $("qAmount").addEventListener("input", function(){ this.dataset.touched = "1"; });
+    loadReqMails(r.requestId);
+  }
+
+  /* ---------- بنود عرض السعر ---------- */
+  function secOpts(sel){
+    let h = '<option value="">— القسم —</option>';
+    CATALOG.forEach(function(s){ h += '<option value="' + s.id + '"' + (s.id === sel ? " selected" : "") + '>' + esc(s.name) + '</option>'; });
+    return h + '<option value="' + OTHER + '"' + (sel === OTHER ? " selected" : "") + '>أخرى…</option>';
+  }
+  function testOpts(sec, sel){
+    if(!sec) return "";
+    let h = '<option value="">— اختر —</option>';
+    sec.items.forEach(function(it){ h += '<option value="' + esc(it.name) + '"' + (it.name === sel ? " selected" : "") + '>' + esc(it.name) + '</option>'; });
+    return h + '<option value="' + OTHER + '"' + (sel && !itemOf(sec, sel) ? " selected" : "") + '>أخرى (اكتب)…</option>';
+  }
+  function addQRow(it, locked){
+    it = it || {};
+    const secId = it.sectionId || (it.section ? OTHER : "");
+    const sec = secById(secId);
+    const custom = !sec || (it.test && !itemOf(sec, it.test));
+    const dis = locked ? " disabled" : "";
+    const tr = document.createElement("tr");
+    tr.innerHTML =
+        '<td><select class="q-sec"' + dis + '>' + secOpts(secId) + '</select>'
+      +   '<input class="q-sec-o" placeholder="اسم القسم" value="' + esc(secId === OTHER ? it.section || "" : "") + '" style="margin-top:4px;' + (secId === OTHER ? "" : "display:none") + '"' + dis + '></td>'
+      + '<td><select class="q-test"' + dis + ' style="' + (sec ? "" : "display:none") + '">' + testOpts(sec, it.test) + '</select>'
+      +   '<input class="q-test-o" placeholder="اسم الفحص / الخدمة" value="' + esc(custom ? it.test || "" : "") + '" style="margin-top:4px;' + (custom && (secId || it.test) ? "" : "display:none") + '"' + dis + '>'
+      +   '<input class="q-det" placeholder="تفاصيل (اختياري)" value="' + esc(it.details || "") + '" style="margin-top:4px"' + dis + '></td>'
+      + '<td><input class="q-qty" type="number" min="1" value="' + esc(it.qty || 1) + '"' + dis + '></td>'
+      + '<td><input class="q-price" inputmode="decimal" value="' + esc(fmt(it.price)) + '"' + dis + '></td>'
+      + '<td class="lt"></td>'
+      + '<td>' + (locked ? "" : '<button class="del-btn" title="حذف"><i class="fas fa-trash"></i></button>') + '</td>';
+    $("qBody").appendChild(tr);
+    const qs = tr.querySelector(".q-sec"), qt = tr.querySelector(".q-test");
+    qs.addEventListener("change", function(){
+      const s = secById(qs.value);
+      qt.innerHTML = testOpts(s, ""); qt.style.display = s ? "" : "none";
+      tr.querySelector(".q-sec-o").style.display = qs.value === OTHER ? "" : "none";
+      tr.querySelector(".q-test-o").style.display = qs.value === OTHER ? "" : "none";
+      tr.querySelector(".q-price").value = "";
+      qLine(tr);
+    });
+    qt.addEventListener("change", function(){
+      tr.querySelector(".q-test-o").style.display = qt.value === OTHER ? "" : "none";
+      const x = itemOf(secById(qs.value), qt.value);
+      tr.querySelector(".q-price").value = x && x.price != null ? fmt(x.price) : (x && x.min ? fmt(x.min) : "");
+      qLine(tr);
+    });
+    tr.querySelector(".q-qty").addEventListener("input", function(){ qLine(tr); });
+    tr.querySelector(".q-price").addEventListener("input", function(){ qLine(tr); });
+    const del = tr.querySelector(".del-btn");
+    if(del) del.addEventListener("click", function(){ tr.remove(); if(!$("qBody").children.length) addQRow(); qRecalc(); });
+    qLine(tr, true);
+  }
+  function qLine(tr, noTotal){
+    const v = num(tr.querySelector(".q-price").value) * (num(tr.querySelector(".q-qty").value) || 1);
+    tr.querySelector(".lt").textContent = v ? fmt(v) : "";
+    if(!noTotal) qRecalc();
+  }
+  function qRecalc(){
+    if($("qAmount").dataset.touched === "1") return;
+    const sum = readQItems().reduce(function(a, x){ return a + num(x.price) * (num(x.qty) || 1); }, 0);
+    $("qAmount").value = sum ? fmt(sum) : "";
+  }
+  function readQItems(){
+    const out = [];
+    Array.prototype.forEach.call($("qBody").children, function(tr){
+      const sid = tr.querySelector(".q-sec").value, sec = secById(sid);
+      const tv = tr.querySelector(".q-test").value;
+      const test = (!sec || tv === OTHER) ? tr.querySelector(".q-test-o").value.trim() : tv;
+      const section = sid === OTHER ? (tr.querySelector(".q-sec-o").value.trim() || "أخرى") : (sec ? sec.name : "");
+      const x = { sectionId: sec ? sid : "", section:section, test:test, details:tr.querySelector(".q-det").value.trim(),
+                  qty:String(num(tr.querySelector(".q-qty").value) || 1), price:String(num(tr.querySelector(".q-price").value) || "") };
+      if(x.section || x.test) out.push(x);
+    });
+    return out;
+  }
+  function readQuote(){
+    return { items:readQItems(), currency:$("qCur").value, amount:String(num($("qAmount").value) || ""), validDays:$("qValid").value, notes:$("qNotes").value.trim() };
+  }
+
+  async function withBtn(id, label, fn){
+    if(busy) return;
+    busy = true;
+    const b = $(id), old = b ? b.innerHTML : "";
+    if(b){ b.disabled = true; b.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + label; }
+    try{ await fn(); }
+    catch(e){ if(String(e.message) !== "session") showMsg("❌ خطأ في الاتصال", "err"); }
+    finally{ busy = false; if(b && document.body.contains(b)){ b.disabled = false; b.innerHTML = old; } }
+  }
+
+  function afterAction(r){
+    if(r && r.ok){
+      showMsg(r.message, "ok");
+      if(r.request){ CUR = r.request; patchItem(CUR); renderDrawer(); }
+    }else showMsg((r && r.message) || "❌ تعذر التنفيذ", "err");
+  }
+
+  function saveDraft(){
+    return withBtn("draftBtn", "جاري الحفظ...", async function(){ afterAction(await call("saveQuotation", { requestId:CUR.requestId, quote:readQuote() })); });
+  }
+  function sendQuote(){
+    const q = readQuote();
+    if(!num(q.amount)){ showMsg("⚠️ أدخل مبلغ عرض السعر", "warn"); $("qAmount").focus(); return; }
+    if(!q.items.length){ showMsg("⚠️ أضف بنداً واحداً على الأقل", "warn"); return; }
+    if(!window.confirm("إرسال عرض السعر بمبلغ " + fmt(q.amount) + " " + q.currency + " إلى " + CUR.email + " ؟")) return;
+    return withBtn("sendBtn", "جاري الإرسال...", async function(){ afterAction(await call("sendQuotation", { requestId:CUR.requestId, quote:q })); });
+  }
+  function setStatus(st){
+    const msgs = { cancelled:"إلغاء هذا الطلب؟", accepted:"تسجيل موافقة الزبون على عرض السعر (هاتفياً)؟", review:"إعادة فتح الطلب؟" };
+    if(!window.confirm(msgs[st] || "تأكيد؟")) return;
+    return withBtn("", "", async function(){ afterAction(await call("setCustomerRequestStatus", { requestId:CUR.requestId, status:st })); });
+  }
+  function convert(){
+    const no = $("orderNo").value.trim();
+    if(!no){ showMsg("⚠️ أدخل رقم أمر العمل", "warn"); $("orderNo").focus(); return; }
+    if(!window.confirm("إنشاء أمر العمل " + no + " للزبون " + (CUR.company || CUR.name) + " ؟")) return;
+    return withBtn("convBtn", "جاري التحويل...", async function(){ afterAction(await call("convertRequestToOrder", { requestId:CUR.requestId, orderNo:no })); });
+  }
+
+  function downloadFile(view){
+    const w = view ? window.open("", "_blank") : null;
+    return withBtn("dlBtn", "جاري التحميل...", async function(){
+      const r = await call("getCustomerRequestFile", { requestId:CUR.requestId });
+      if(!r || !r.ok){ if(w) w.close(); showMsg((r && r.message) || "❌ تعذر جلب الملف", "err"); return; }
+      const bin = atob(r.data), bytes = new Uint8Array(bin.length);
+      for(let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      const url = URL.createObjectURL(new Blob([bytes], { type:r.mime }));
+      if(w){ w.location.href = url; }
+      else{ const a = document.createElement("a"); a.href = url; a.download = r.name; document.body.appendChild(a); a.click(); a.remove(); }
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 60000);
+    });
+  }
+
+  async function loadReqMails(id){
+    try{
+      const r = await call("getEmailHistory", { limit:20, requestId:id });
+      const items = (r && r.items) || [];
+      if(!CUR || CUR.requestId !== id) return;
+      $("reqMails").innerHTML = items.length
+        ? "<b>الرسائل:</b> " + items.map(function(m){ return esc(m.type) + ' <span class="' + (m.status === "sent" ? "ok-t" : "bad-t") + '">' + (m.status === "sent" ? "✓" : "✗") + "</span> " + esc(m.ts); }).join(" | ")
+        : "";
+    }catch(e){}
+  }
+
+  /* ---------- سجل البريد ---------- */
+  async function loadLog(){
+    $("logBody").innerHTML = '<tr><td colspan="7" class="empty"><i class="fas fa-spinner fa-spin"></i></td></tr>';
+    try{
+      const r = await call("getEmailHistory", { limit:300 });
+      const items = (r && r.items) || [];
+      $("logBody").innerHTML = items.length ? items.map(function(m){
+        return '<tr><td style="white-space:nowrap">' + esc(m.ts) + '</td><td dir="ltr">' + (m.requestId ? '<a href="#" onclick="openRequest(\'' + esc(m.requestId) + '\');return false;">' + esc(m.requestId) + '</a>' : "—") + '</td>'
+          + '<td>' + esc(m.type) + '</td><td dir="ltr" style="text-align:right">' + esc(m.to) + '</td><td>' + esc(m.subject) + '</td>'
+          + '<td class="' + (m.status === "sent" || m.status === "saved" ? "ok-t" : "bad-t") + '" title="' + esc(m.error) + '">' + (m.status === "sent" ? "✓ أُرسلت" : m.status === "saved" ? "✓ حُفظت" : "✗ فشل") + '</td><td>' + esc(m.by) + '</td></tr>';
+      }).join("") : '<tr><td colspan="7" class="empty">لا توجد رسائل بعد</td></tr>';
+    }catch(e){ $("logBody").innerHTML = '<tr><td colspan="7" class="empty">❌ تعذر التحميل</td></tr>'; }
+  }
+
+  /* ---------- إعدادات البريد ---------- */
+  function renderSetStatus(r){
+    const a = r.aliasActive, s = r.settings || {};
+    let h = '<div class="status-line" style="background:#f4f7fa">حساب الإرسال: <b dir="ltr">' + esc(r.account || "—") + '</b>'
+          + (r.quota != null ? ' — المتبقي اليوم: <b>' + esc(r.quota) + '</b> رسالة' : '') + '</div>';
+    if(s.fromAlias) h += a ? '<div class="status-line" style="background:#eafaf1;color:#1e7a46">✅ البريد الرسمي <b dir="ltr">' + esc(s.fromAlias) + '</b> مفعّل — الرسائل تصل باسمه</div>'
+                           : '<div class="status-line" style="background:#fff8ec;color:#8a5a00">⚠️ البريد الرسمي <b dir="ltr">' + esc(s.fromAlias) + '</b> غير مفعّل بعد في Gmail — الرسائل تُرسل حالياً من حساب السكربت</div>';
+    if(!(s.notifyEmails || []).length) h += '<div class="status-line" style="background:#fdecea;color:#a5281b">⚠️ لم يُحدد بريد الشركة لاستلام نسخ الطلبات</div>';
+    $("setStatus").innerHTML = h;
+  }
+  async function loadSettings(){
+    try{
+      const r = await call("getEmailSettings");
+      if(!r || !r.ok) return;
+      const s = r.settings || {};
+      $("s_n1").value = (s.notifyEmails || [])[0] || ""; $("s_n2").value = (s.notifyEmails || [])[1] || "";
+      $("s_from").value = s.fromAlias || ""; $("s_name").value = s.senderName || ""; $("s_reply").value = s.replyTo || "";
+      $("s_base").value = s.publicBase || ""; $("s_ack").checked = !!s.sendAck;
+      renderSetStatus(r);
+    }catch(e){}
+  }
+  function saveSettings(){
+    return withBtn("saveSetBtn", "جاري الحفظ...", async function(){
+      const r = await call("saveEmailSettings", { settings:{
+        notifyEmails:[$("s_n1").value.trim(), $("s_n2").value.trim()].filter(Boolean),
+        fromAlias:$("s_from").value.trim(), senderName:$("s_name").value.trim(), replyTo:$("s_reply").value.trim(),
+        publicBase:$("s_base").value.trim(), sendAck:$("s_ack").checked
+      }});
+      if(r && r.ok){ showMsg(r.message, r.message.indexOf("⚠️") !== -1 ? "warn" : "ok"); renderSetStatus(r); }
+      else showMsg((r && r.message) || "❌ تعذر الحفظ", "err");
+    });
+  }
+  function testMail(){
+    return withBtn("testBtn", "جاري الإرسال...", async function(){
+      const r = await call("sendTestEmail", { to:$("testTo").value.trim() });
+      showMsg((r && r.message) || "❌ فشل", r && r.ok ? "ok" : "err");
+    });
+  }
+
+  /* ============================================================
+   * INIT
+   * ============================================================ */
+  window.addEventListener("load", function(){
+    ensurePageSession();
+    liveSessionInterval = setInterval(checkLiveSession, 10000);
+    loadList(false).then(function(){
+      const id = new URLSearchParams(location.search).get("id");
+      if(id) openRequest(id);
+    });
+    setInterval(function(){ if(!CUR && !document.hidden) loadList(false); }, 60000);
+  });
+</script>
+  <script>window.PAGE_NAME = "requests";</script>
+  <script src="/system/notifications-widget.js" defer></script>
+</body>
+</html>

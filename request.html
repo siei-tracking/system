@@ -1,0 +1,714 @@
+﻿<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <script src="/system/config.js"></script>
+  <script src="/system/cost-catalog.js"></script>
+  <script>
+  /* نسخة احتياطية من دليل الأسعار — تُستخدم فقط إذا لم يُحمَّل ملف cost-catalog.js */
+  if(!Array.isArray(window.COST_CATALOG) || !window.COST_CATALOG.length){
+window.COST_CATALOG = [
+  {
+    id: "struct", name: "المختبر الإنشائي", dept: "قسم الفحص الهندسي والمختبرات",
+    items: [
+      { name: "السمنت (كيمياوي + فيزياوي)", price: 200000 },
+      { name: "انضغاط المكعبات الخرسانية", price: 10000, per: "مكعب" },
+      { name: "فحص الخرسانة بالموجات فوق الصوتية", price: 150000 },
+      { name: "الفحص بمطرقة شميدت", price: 150000 },
+      { name: "كور (لباب خرساني)", price: 50000 },
+      { name: "رمل، حصى، سبيس (فيزياوي + كيمياوي)", price: 200000 },
+      { name: "كربستون", price: 250000 },
+      { name: "حدل", price: 50000 },
+      { name: "مرمر", price: 250000 },
+      { name: "كاشي", price: 200000 },
+      { name: "سيراميك", price: 200000 },
+      { name: "طابوق، بلوك", price: 200000 },
+      { name: "زجاج", price: 200000 },
+      { name: "لباد قيري", price: 200000 },
+      { name: "مادة القير", price: 200000 },
+      { name: "فلانكوت", price: 200000 },
+      { name: "صبغ، إيبوكسي", price: 200000 },
+      { name: "صبغ إيبوكسي (غذائي)", price: 200000 }
+    ]
+  },
+  {
+    id: "chem", name: "المختبر الكيمياوي", dept: "قسم الفحص الهندسي والمختبرات",
+    items: [
+      { name: "الفحص الكيمياوي (سمنت، رمل، حصى)", price: 100000 },
+      { name: "أنابيب شبكات ماء (PVC, PPR, PE)", price: 300000 },
+      { name: "ملحقات أنابيب شبكات ماء (PVC, PPR, PE)", price: 300000 },
+      { name: "أنابيب شبكات المجاري (PVC)", price: 300000 },
+      { name: "ملحقات أنابيب المجاري (PVC)", price: 250000 },
+      { name: "فحص سمك وكمية الغلونة", price: 750000 }
+    ]
+  },
+  {
+    id: "elec", name: "مختبر الكهرباء", dept: "قسم الفحص الهندسي والمختبرات",
+    items: [
+      { name: "أسلاك كهربائية (1.5 – 10 mm)", price: 50000 },
+      { name: "قابلوات كهربائية (ضغط واطئ، موصلات)", price: 150000 },
+      { name: "قابلو معلق / قابلوات ضغط عالي", price: 250000 },
+      { name: "قواطع دورة — أقل من 100A", price: 50000, min: 50000, max: 100000 },
+      { name: "قواطع دورة — من 100A إلى 400A", price: 150000, min: 150000, max: 250000 },
+      { name: "قواطع دورة — أكثر من 400A", price: null, min: 250000, note: "حسب السعة (أكثر من 250,000)" },
+      { name: "محولات توزيع كهربائية — حتى 1M", price: 100000 },
+      { name: "محولات توزيع كهربائية — أعلى من 1M", price: 1000000 },
+      { name: "بوردات كهربائية", price: null, note: "حسب البورد" },
+      { name: "تراكيب إنارة", price: 150000 }
+    ]
+  },
+  {
+    id: "metal", name: "مختبر المعادن والميكانيك", dept: "قسم الفحص الهندسي والمختبرات",
+    items: [
+      { name: "التحليل الكيمياوي للسبائك المعدنية", price: 100000,
+        extras: [{ name: "تحضير النموذج في الورشة", price: 50000, sec: "shop" }], note: "قد يحتاج تحضيراً في الورشة (+50,000)" },
+      { name: "فحص البنية المجهرية", price: 50000,
+        extras: [{ name: "تحضير النموذج في الورشة", price: 50000, sec: "shop" }], note: "قد يحتاج تحضيراً في الورشة (+50,000)" },
+      { name: "مقاومة الشد – الخضوع – الاستطالة", price: 100000,
+        extras: [{ name: "تحضير النموذج في الورشة", price: 100000, sec: "shop" }], note: "قد يحتاج تحضيراً في الورشة (+100,000)" },
+      { name: "الصدمة", price: 50000,
+        extras: [{ name: "تحضير النموذج في الورشة", price: 100000, sec: "shop" }], note: "قد يحتاج تحضيراً في الورشة (+100,000)" },
+      { name: "الصلادة", price: 50000,
+        extras: [{ name: "تحضير النموذج في الورشة", price: 50000, sec: "shop" }], note: "قد يحتاج تحضيراً في الورشة (+50,000)" },
+      { name: "الحني", price: 50000,
+        extras: [{ name: "تحضير النموذج في الورشة", price: 50000, sec: "shop" }], note: "قد يحتاج تحضيراً في الورشة (+50,000)" },
+      { name: "مانع نفاذية (Water Stop)", price: 200000 },
+      { name: "حديد تسليح", price: 250000,
+        extras: [{ name: "تحضير النموذج في الورشة", price: 50000, sec: "shop" }, { name: "كلفة المواصفة", price: 120000, once: true }],
+        note: "تضاف كلفة الورشة (50,000) والمواصفة (120,000)" },
+      { name: "أنابيب الدكتايل", price: 200000,
+        extras: [{ name: "تحضير النموذج في الورشة", price: 100000, sec: "shop" }, { name: "كلفة المواصفة", price: 120000, once: true }],
+        note: "تضاف كلفة الورشة (100,000) والمواصفة (120,000)" }
+    ]
+  },
+  {
+    id: "insp", name: "الفحص الهندسي (موقعي)", dept: "قسم الفحص الهندسي والمختبرات",
+    items: [
+      { name: "رافعة جسرية — داخل بغداد", price: 750000, per: "قطعة" },
+      { name: "رافعة جسرية — خارج بغداد", price: 1500000, per: "قطعة" },
+      { name: "مرجل زيتي — داخل بغداد", price: 750000, per: "قطعة" },
+      { name: "مرجل زيتي — خارج بغداد", price: 1500000, per: "قطعة" },
+      { name: "رافعة شوكية — داخل بغداد", price: 350000, per: "قطعة" },
+      { name: "رافعة شوكية — خارج بغداد", price: 500000, per: "قطعة" },
+      { name: "وعاء ضغط — داخل بغداد", price: 750000, per: "قطعة" },
+      { name: "وعاء ضغط — خارج بغداد", price: 1500000, per: "قطعة" },
+      { name: "مدن الألعاب — داخل بغداد", price: 250000, min: 250000, max: 350000, per: "لعبة", note: "+ كلف الإيفاد" },
+      { name: "مدن الألعاب — خارج بغداد", price: 500000, per: "لعبة", note: "+ كلف الإيفاد" },
+      { name: "الفحص البصري لوصلات اللحام", price: 15000, per: "متر طول" },
+      { name: "الفحص بالأصباغ النافذة", price: 25000, per: "متر طول", note: "+ كلف الإيفاد" },
+      { name: "الفحص بالموجات فوق الصوتية (لحام)", price: 100000, per: "متر طول" },
+      { name: "التصوير الشعاعي", price: 50000, per: "قطعة", note: "+ كلف الإيفاد" },
+      { name: "الفحص بالدقائق المغناطيسية", price: 25000, per: "متر طول" },
+      { name: "الفحص بالصندوق الفراغي", price: 25000, per: "متر طول" },
+      { name: "مقاومة الحرق", price: 100000 },
+      { name: "الفحص الهيدروستاتيكي", price: 1000000, per: "متر طول" },
+      { name: "فحص العازلية", price: 500000, per: "متر طول" },
+      { name: "Holiday Test", price: null, note: "السعر يُحدَّد حسب العمل" },
+      { name: "كلف الإيفاد", price: null, per: "خدمة", note: "تُحدَّد حسب الموقع" }
+    ]
+  },
+  {
+    id: "shop", name: "الورشة", dept: "قسم هندسة الإنتاج",
+    items: [
+      { name: "تحضير النموذج في الورشة", price: 50000, min: 50000, max: 100000, note: "تحضير نموذج لفحوصات المعادن" },
+      { name: "تصنيع عينة شد معدن", price: 125000 },
+      { name: "تصنيع عينة شد بلاستك", price: 75000 },
+      { name: "تصنيع عينة حني معدن", price: 100000 },
+      { name: "تصنيع عينة حني بلاستك", price: 100000 },
+      { name: "تصنيع عينة صدمة", price: 50000 },
+      { name: "قطع معدن", price: 50000 },
+      { name: "قطع بلاستك", price: 50000 },
+      { name: "تنعيم معدن", price: 100000 },
+      { name: "تحميل", price: 50000 },
+      { name: "طرق", price: 50000 },
+      { name: "شنفرة بليت", price: 5000 },
+      { name: "شنفرة بايب", price: 7500 }
+    ]
+  },
+  {
+    id: "elev", name: "المصاعد", dept: "قسم المصاعد",
+    items: [
+      { name: "فحص سلامة وأمان", price: null, min: 250000, max: 1500000, per: "مصعد",
+        note: "250,000 – 1,500,000 حسب الفئة/القطاع + تحميلات إدارية حسب الموقع" }
+    ]
+  }
+];
+  }
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="watermark.css">
+  <title>طلب خدمة / عرض سعر - الشركة العامة للفحص والتأهيل الهندسي</title>
+  <link rel="icon" href="https://siei-tracking.github.io/system/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root{
+      --primary:#223243;
+      --accent:#f5a623;
+      --accent-dark:#e59712;
+      --bg:#eef2f6;
+      --card:rgba(255,255,255,0.92);
+      --line:#e5ebf1;
+      --muted:#758292;
+      --ok:#27ae60;
+      --danger:#e74c3c;
+      --disabled:#bdc3c7;
+      --warn:#f39c12;
+      --soft:#f8fafc;
+      --transition-fast:.15s ease;
+      --transition-med:.25s ease;
+      --radius-sm:10px;
+      --radius-md:14px;
+      --radius-lg:22px;
+    }
+
+    *, *::before, *::after{ box-sizing:border-box; }
+    html, body{ width:100%; overflow-x:hidden; }
+
+    body{
+      margin:0;
+      font-family:'Cairo',sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(245,166,35,.08), transparent 24%),
+        radial-gradient(circle at top left, rgba(34,50,67,.05), transparent 30%),
+        var(--bg);
+      color:#111;
+    }
+
+    /* ===== PAGE WRAP ===== */
+    #pageWrap{ display:block; }
+    #pageWrap.loading .card,
+    #pageWrap.loading .main-content{ opacity:0; pointer-events:none; }
+    #pageWrap .card,
+    #pageWrap .main-content{ transition:opacity .3s ease; }
+
+    /* ===== HEADER ===== */
+    .company-header{
+      background-image:
+        linear-gradient(rgba(34,50,67,.3), rgba(34,50,67,.3)),
+        url('https://siei-tracking.github.io/system/company.jpg');
+      background-size:cover; background-position:center;
+      padding:28px 5% 60px;
+      display:flex; align-items:center; gap:16px;
+      color:#fff; flex-wrap:wrap; justify-content:center; text-align:center;
+      box-shadow:0 12px 28px rgba(0,0,0,.18);
+      position:relative; overflow:hidden;
+    }
+
+    .logo{
+      width:100px; height:100px; background:#fff;
+      border-radius:50%; padding:5px; object-fit:contain;
+      display:block; flex-shrink:0;
+      box-shadow:0 4px 16px rgba(0,0,0,.25);
+    }
+
+    .header-text{
+      display:flex; flex-direction:column;
+      align-items:center; gap:6px; max-width:100%;
+    }
+
+    .header-text h1{
+      color:#fff; margin:0; font-size:30px;
+      font-weight:900; line-height:1.45;
+      text-shadow:0 2px 8px rgba(0,0,0,.7);
+    }
+
+    .header-text p{
+      color:#fff; margin:0; font-size:18px;
+      font-weight:900; line-height:1.5;
+      text-shadow:0 2px 8px rgba(0,0,0,.7);
+    }
+
+    .user-pill{
+      margin-top:6px;
+      display:inline-flex; align-items:center;
+      justify-content:center; gap:8px;
+      padding:4px 16px; border-radius:999px;
+      background:rgba(128,0,32,0.4);
+      border:1px solid rgba(231,76,60,0.45);
+      color:#fff; font-weight:900; font-size:13px;
+      box-shadow:0 4px 12px rgba(231,76,60,.25);
+      max-width:100%; word-break:break-word;
+    }
+
+    /* ===== LAYOUT ===== */
+    .main-content{
+      padding:0 5% 30px; display:flex;
+      justify-content:center; margin-top:-40px;
+      flex-direction:column; align-items:center;
+    }
+
+    /* ===== CARD ===== */
+    .card{
+      width:100%; max-width:820px;
+      background:rgba(255,255,255,0.92);
+      border-radius:var(--radius-lg); padding:10px 12px;
+      box-shadow:0 20px 50px rgba(0,0,0,.12), 0 6px 18px rgba(0,0,0,.06);
+      position:relative; z-index:2;
+      backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+      transition:transform var(--transition-med), box-shadow var(--transition-med);
+      border:1px solid rgba(255,255,255,.65);
+    }
+
+    .card:hover{
+      transform:translateY(-3px);
+      box-shadow:0 26px 60px rgba(0,0,0,.16), 0 8px 22px rgba(0,0,0,.08);
+    }
+
+    .card::before{
+      content:""; position:absolute;
+      top:0; left:0; right:0; height:60px;
+      background:linear-gradient(to bottom, rgba(255,255,255,.55), transparent);
+      border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+      pointer-events:none;
+    }
+
+    /* ===== FORM ===== */
+    .input-group{ margin-bottom:10px; text-align:right; position:relative; z-index:2; }
+
+    label{ display:block; margin-bottom:4px; font-weight:900; font-size:15px; color:#253444; }
+
+    input{
+      width:100%; border:1.5px solid var(--line);
+      border-radius:var(--radius-sm); padding:7px 10px;
+      font-weight:800; font-size:14px; background:#fff;
+      text-align:center; font-family:'Cairo',sans-serif;
+      color:#1f2d3a; outline:none; min-height:44px;
+      transition:border-color var(--transition-fast), box-shadow var(--transition-fast);
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    input:focus{ border-color:#d8b15d; box-shadow:0 0 0 4px rgba(245,166,35,.12); }
+    input::placeholder{ color:#9aa6b2; font-weight:800; }
+
+    /* ===== BUTTONS ===== */
+    .main-btn, .again{
+      position:relative; overflow:hidden;
+      touch-action:manipulation; -webkit-tap-highlight-color:transparent;
+    }
+
+    .main-btn::before, .again::before{
+      content:""; position:absolute; top:0; right:-120%;
+      width:120%; height:100%;
+      background:linear-gradient(120deg, transparent 20%, rgba(255,255,255,.18) 40%, rgba(255,255,255,.35) 50%, rgba(255,255,255,.18) 60%, transparent 80%);
+      transition:.65s;
+    }
+
+    .main-btn:hover::before, .again:hover::before{ right:120%; }
+
+    .main-btn{
+      width:100%; border:none; border-radius:var(--radius-md); padding:9px 10px;
+      background:var(--primary); color:#fff; font-weight:900; font-size:16px;
+      cursor:pointer; font-family:'Cairo',sans-serif;
+      box-shadow:0 10px 20px rgba(34,50,67,.20);
+      transition:transform var(--transition-fast), opacity var(--transition-fast);
+      display:flex; justify-content:center; align-items:center;
+      gap:8px; z-index:2; min-height:46px;
+    }
+
+    .main-btn:hover{ transform:translateY(-1px); opacity:.96; }
+    .main-btn:active{ transform:translateY(0); opacity:.9; }
+    .main-btn:disabled{ opacity:.65; cursor:not-allowed; box-shadow:none; transform:none; pointer-events:none; }
+
+    /* ===== LOADER ===== */
+    #loader{ display:none; text-align:center; margin:12px 0; color:var(--primary); font-weight:900; position:relative; z-index:2; }
+
+    /* ===== RES PANEL ===== */
+    #resPanel{
+      display:none; margin-top:10px; padding:10px;
+      background:var(--soft); border-radius:var(--radius-md);
+      border-right:5px solid var(--ok); position:relative; z-index:2;
+    }
+
+    /* ===== SUCCESS ===== */
+    .success{ display:none; text-align:center; padding:34px 18px; }
+    .success i{ font-size:74px; color:var(--ok); margin-bottom:12px; }
+    .success h2{ margin:0 0 10px; font-weight:900; color:#1f2b36; font-size:24px; }
+    .success p{ margin:0 0 18px; color:var(--muted); font-weight:800; font-size:18px; }
+
+    .again{
+      border:none; border-radius:var(--radius-md); padding:18px 20px;
+      background:linear-gradient(180deg,#2ebf68,#26a65b); color:#fff;
+      font-family:'Cairo',sans-serif; font-weight:900; font-size:20px;
+      cursor:pointer; display:flex; justify-content:center; align-items:center;
+      gap:10px; width:60%; max-width:420px; margin:25px auto 0;
+      text-align:center; box-shadow:0 10px 20px rgba(39,174,96,.20);
+    }
+
+    .again:hover{ transform:translateY(-2px); opacity:.95; }
+    .again:active{ transform:translateY(0); }
+    .again i{ font-size:18px; }
+
+    /* ===== TOAST ===== */
+    #toast{
+      position:fixed; bottom:22px; left:50%;
+      transform:translateX(-50%) translateY(0);
+      min-width:240px; max-width:90%;
+      background:#223243; color:#fff; padding:12px 20px;
+      border-radius:var(--radius-md); font-weight:900;
+      font-family:'Cairo',sans-serif; font-size:14px;
+      display:none; z-index:99999; text-align:center;
+      box-shadow:0 10px 30px rgba(0,0,0,.28);
+      animation:toastIn .25s ease;
+    }
+
+    @keyframes toastIn{
+      from{ transform:translateX(-50%) translateY(20px); opacity:0; }
+      to  { transform:translateX(-50%) translateY(0);    opacity:1; }
+    }
+
+    #toast.ok  { background:#27ae60; }
+    #toast.warn{ background:#f39c12; }
+    #toast.err { background:#e74c3c; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width:820px){
+      .company-header{ padding:28px 14px 48px; gap:12px; }
+      .logo{ width:78px; height:78px; }
+      .header-text h1{ font-size:22px; }
+      .header-text p{ font-size:14px; }
+      .main-content{ padding:0 10px 24px; margin-top:-24px; }
+      .card{ border-radius:18px; padding:10px; }
+      .again{ width:100%; }
+    }
+
+    @media (max-width:480px){
+      .company-header{ padding:22px 12px 38px; }
+      .logo{ width:68px; height:68px; }
+      .header-text h1{ font-size:18px; }
+      .header-text p{ font-size:13px; }
+      .user-pill{ font-size:12px; padding:4px 12px; }
+    }
+
+    #orderID{
+      font-size:20px; font-weight:600; color:#000;
+      text-align:center; height:44px; width:100%;
+    }
+
+    #orderID::placeholder{ font-size:16px; font-weight:600; color:#999; opacity:1; }
+    /* ===== مشترك: طلبات الزبائن ===== */
+    .card{ max-width:900px; }
+    .card:hover{ transform:none; }
+    .sec-title{
+      display:flex; align-items:center; gap:8px; margin:16px 0 8px;
+      font-weight:900; font-size:16px; color:var(--primary);
+      border-bottom:2px solid var(--accent); padding-bottom:4px;
+    }
+    .grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 12px; }
+    input, select, textarea{
+      width:100%; border:1.5px solid var(--line); border-radius:var(--radius-sm);
+      padding:7px 10px; font-weight:700; font-size:14px; background:#fff;
+      font-family:'Cairo',sans-serif; color:#1f2d3a; outline:none; min-height:42px; text-align:right;
+    }
+    textarea{ resize:vertical; line-height:1.7; }
+    input:focus, select:focus, textarea:focus{ border-color:#d8b15d; box-shadow:0 0 0 4px rgba(245,166,35,.12); }
+    .req{ color:var(--danger); }
+    .help{ font-size:12px; color:var(--muted); font-weight:700; margin-top:3px; }
+    .notice{ display:none; margin:8px 0; padding:8px 12px; border-radius:var(--radius-sm); font-weight:800; font-size:14px; }
+    .notice.info{ display:block; background:#eef6ff; color:#1d4f86; border-right:4px solid #3b82f6; }
+    .notice.warn{ display:block; background:#fff8ec; color:#8a5a00; border-right:4px solid var(--accent); }
+    .notice.ok{ display:block; background:#eafaf1; color:#1e7a46; border-right:4px solid var(--ok); }
+    .notice.err{ display:block; background:#fdecea; color:#a5281b; border-right:4px solid var(--danger); }
+    .badge{ display:inline-block; padding:2px 10px; border-radius:999px; font-size:12px; font-weight:900; white-space:nowrap; }
+    .st-new{ background:#e8f1ff; color:#1d4f86; }
+    .st-review{ background:#fff4e0; color:#8a5a00; }
+    .st-quoted{ background:#efe8ff; color:#5b3aa6; }
+    .st-accepted{ background:#e3f7ec; color:#1e7a46; }
+    .st-rejected{ background:#fdecea; color:#a5281b; }
+    .st-converted{ background:#223243; color:#fff; }
+    .st-cancelled{ background:#eceff2; color:#6b7a89; }
+    .add-btn{
+      border:1px dashed var(--primary); background:#f4f7fa; color:var(--primary);
+      border-radius:var(--radius-sm); padding:6px 14px; font-family:'Cairo',sans-serif; font-weight:900; cursor:pointer;
+    }
+    .del-btn{ border:none; background:#fdecea; color:var(--danger); border-radius:8px; width:36px; height:36px; cursor:pointer; flex-shrink:0; }
+    @media (max-width:640px){ .grid{ grid-template-columns:1fr; } }
+    .intro{ background:#f4f7fa; border-radius:var(--radius-md); padding:10px 14px; font-weight:700; line-height:1.9; color:#33465a; }
+    .svc{ border:1px solid var(--line); border-radius:var(--radius-md); padding:8px; margin-bottom:8px; background:#fff; }
+    .svc-row{ display:grid; grid-template-columns:1fr 1.6fr 80px 36px; gap:6px; align-items:center; }
+    .s-hint{ display:flex; flex-wrap:wrap; gap:10px; margin-top:4px; font-size:12.5px; font-weight:800; color:#8a5a00; }
+    .s-hint .muted{ color:var(--muted); }
+    .est{ margin-top:10px; background:#fff8ec; border:1px solid #f3d9a6; border-radius:var(--radius-md); padding:10px 12px; font-weight:800; color:#5f4300; }
+    .est:empty{ display:none; }
+    .drop{ display:flex; align-items:center; justify-content:center; gap:10px; border:2px dashed var(--line); border-radius:var(--radius-md);
+      padding:18px; cursor:pointer; font-weight:800; color:var(--muted); background:#fafbfc; text-align:center; }
+    .drop i{ font-size:24px; color:var(--primary); }
+    .drop.has{ border-color:var(--ok); color:#1e7a46; background:#f2fbf6; }
+    @media (max-width:640px){
+      .svc-row{ grid-template-columns:1fr 70px 36px; }
+      .svc-row .s-sec{ grid-column:1 / -1; }
+    }
+  </style>
+</head>
+
+<body>
+<div id="pageWrap">
+  <div class="page-shell">
+    <div class="container">
+      <header class="company-header">
+        <img class="logo" src="https://siei-tracking.github.io/system/logo.png" alt="logo">
+        <div class="header-text">
+          <h1>الشركة العامة للفحص والتأهيل الهندسي</h1>
+          <p><i class="fas fa-paper-plane"></i> طلب خدمة / عرض سعر</p>
+        </div>
+      </header>
+
+      <div class="page-content">
+        <main class="main-content">
+          <div class="card" id="formCard">
+            <div class="intro">
+              قدّم طلبك أونلاين وسيصلك <b>عرض السعر على بريدك الإلكتروني</b> بعد مراجعته من قبل الأقسام الفنية.
+            </div>
+
+            <form id="reqForm" autocomplete="on" novalidate>
+              <div class="sec-title"><i class="fas fa-user"></i> معلومات مقدّم الطلب</div>
+              <div class="grid">
+                <div class="input-group">
+                  <label>الاسم الكامل <span class="req">*</span></label>
+                  <input type="text" id="name" name="name" maxlength="120" autocomplete="name" required>
+                </div>
+                <div class="input-group">
+                  <label>الجهة / الشركة</label>
+                  <input type="text" id="company" name="organization" maxlength="160" autocomplete="organization" placeholder="اختياري">
+                </div>
+                <div class="input-group">
+                  <label>رقم الموبايل <span class="req">*</span></label>
+                  <input type="tel" id="phone" name="tel" maxlength="14" autocomplete="tel" inputmode="tel" placeholder="07XXXXXXXXX" dir="ltr" style="text-align:left" required>
+                </div>
+                <div class="input-group">
+                  <label>البريد الإلكتروني <span class="req">*</span></label>
+                  <input type="email" id="email" name="email" maxlength="120" autocomplete="email" placeholder="name@example.com" dir="ltr" style="text-align:left" required>
+                  <div class="help">سيُرسل عرض السعر إلى هذا البريد</div>
+                </div>
+              </div>
+              <!-- حماية من الروبوتات: يبقى فارغاً -->
+              <div style="height:0;overflow:hidden;" aria-hidden="true"><input type="text" id="website" name="website" tabindex="-1" autocomplete="off"></div>
+
+              <div class="sec-title"><i class="fas fa-flask"></i> الخدمة المطلوبة</div>
+              <div id="svcList"></div>
+              <button type="button" class="add-btn" onclick="addSvc()"><i class="fas fa-plus"></i> إضافة خدمة أخرى</button>
+              <div class="est" id="estBox"></div>
+
+              <div class="sec-title"><i class="fas fa-align-right"></i> تفاصيل الطلب</div>
+              <div class="input-group">
+                <textarea id="details" rows="4" maxlength="3000" placeholder="اكتب تفاصيل العمل، موقع الفحص، المواصفة المطلوبة، أي ملاحظات..."></textarea>
+              </div>
+
+              <div class="sec-title"><i class="fas fa-paperclip"></i> مرفق (اختياري)</div>
+              <label class="drop" id="drop">
+                <input type="file" id="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
+                <i class="fas fa-cloud-arrow-up"></i>
+                <span id="fileLabel">اضغط لاختيار ملف PDF أو Word (حتى 10MB)</span>
+              </label>
+
+              <div id="notice" class="notice"></div>
+              <button class="main-btn" id="submitBtn" type="submit" style="margin-top:14px;">
+                <i class="fas fa-paper-plane"></i> إرسال الطلب
+              </button>
+            </form>
+          </div>
+
+          <div class="card" id="doneCard" style="display:none;text-align:center;">
+            <div style="font-size:54px;color:var(--ok);"><i class="fas fa-circle-check"></i></div>
+            <h2 style="margin:6px 0;color:var(--primary);">تم استلام طلبك</h2>
+            <div style="font-weight:800;color:var(--muted);">رقم الطلب</div>
+            <div id="doneId" style="font-size:28px;font-weight:900;color:var(--primary);letter-spacing:1px;direction:ltr;"></div>
+            <p style="font-weight:700;line-height:1.9;">احتفظ برقم الطلب للمراجعة. سيصلك تأكيد على بريدك الإلكتروني،<br>ثم عرض السعر بعد مراجعة طلبك.</p>
+            <button class="main-btn" type="button" onclick="location.reload()" style="max-width:260px;margin:auto;"><i class="fas fa-plus"></i> طلب جديد</button>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+  const API_BASE = window.APP_CONFIG.API_BASE;
+  const CATALOG = Array.isArray(window.COST_CATALOG) ? window.COST_CATALOG : [];
+  const SHOW_PRICES = true;   /* إظهار السعر التقريبي للزبون */
+  const OTHER = "__other";
+  const MAX_FILE = 10 * 1024 * 1024;
+  let fileData = null, sending = false;
+
+  function $(id){ return document.getElementById(id); }
+  function esc(t){ return String(t == null ? "" : t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+  function fmt(n){ n = Number(n) || 0; return n ? n.toLocaleString("en-US") : ""; }
+  function secById(id){ return CATALOG.find(function(s){ return s.id === id; }) || null; }
+  function itemOf(sec, name){ return sec ? (sec.items.find(function(i){ return i.name === name; }) || null) : null; }
+  function showMsg(text, type){
+    const t = $("toast"); t.className = type || ""; t.textContent = text; t.style.display = "block";
+    clearTimeout(window.__tt); window.__tt = setTimeout(function(){ t.style.display = "none"; }, 3500);
+  }
+  function setNotice(text, type){ const n = $("notice"); n.className = "notice" + (text ? " " + (type || "info") : ""); n.textContent = text || ""; }
+
+  async function apiPost(payload){
+    const r = await fetch(API_BASE, { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body:JSON.stringify(payload) });
+    if(!r.ok) throw new Error("HTTP " + r.status);
+    const t = await r.text();
+    try{ return JSON.parse(t); }catch(e){ throw new Error("Invalid response"); }
+  }
+
+  /* ---------- الخدمات ---------- */
+  function secOptions(){
+    let h = '<option value="">— اختر القسم —</option>';
+    CATALOG.forEach(function(s){ h += '<option value="' + s.id + '">' + esc(s.name) + '</option>'; });
+    return h + '<option value="' + OTHER + '">خدمة أخرى…</option>';
+  }
+  function testOptions(sec){
+    if(!sec) return '<option value="">— اختر القسم أولاً —</option>';
+    let h = '<option value="">— اختر الفحص / الخدمة —</option>';
+    sec.items.forEach(function(it){ h += '<option value="' + esc(it.name) + '">' + esc(it.name) + '</option>'; });
+    return h + '<option value="' + OTHER + '">أخرى (اكتب)…</option>';
+  }
+  function addSvc(){
+    if($("svcList").children.length >= 15){ showMsg("⚠️ الحد الأقصى 15 خدمة", "warn"); return; }
+    const div = document.createElement("div");
+    div.className = "svc";
+    div.innerHTML =
+        '<div class="svc-row">'
+      +   '<select class="s-sec">' + secOptions() + '</select>'
+      +   '<select class="s-test">' + testOptions(null) + '</select>'
+      +   '<input class="s-qty" type="number" min="1" max="9999" value="1" title="العدد">'
+      +   '<button type="button" class="del-btn" title="حذف"><i class="fas fa-trash"></i></button>'
+      + '</div>'
+      + '<input class="s-other" placeholder="اكتب اسم الخدمة المطلوبة" maxlength="200" style="display:none;margin-top:6px;">'
+      + '<div class="s-hint"></div>';
+    $("svcList").appendChild(div);
+    const sec = div.querySelector(".s-sec"), test = div.querySelector(".s-test");
+    sec.addEventListener("change", function(){
+      const isO = sec.value === OTHER;
+      test.innerHTML = testOptions(secById(sec.value));
+      test.style.display = isO ? "none" : "";
+      div.querySelector(".s-other").style.display = isO ? "" : "none";
+      updateSvc(div);
+    });
+    test.addEventListener("change", function(){
+      div.querySelector(".s-other").style.display = test.value === OTHER ? "" : "none";
+      updateSvc(div);
+    });
+    div.querySelector(".s-qty").addEventListener("input", function(){ updateSvc(div); });
+    div.querySelector(".del-btn").addEventListener("click", function(){
+      div.remove(); if(!$("svcList").children.length) addSvc(); updateEst();
+    });
+  }
+  function svcItem(div){ return itemOf(secById(div.querySelector(".s-sec").value), div.querySelector(".s-test").value); }
+  function updateSvc(div){
+    const it = svcItem(div), hint = div.querySelector(".s-hint");
+    let h = "";
+    if(it){
+      if(SHOW_PRICES){
+        if(it.price != null) h += '<span>السعر التقريبي: <b>' + fmt(it.price) + '</b> د.ع' + (it.per ? ' لكل ' + esc(it.per) : '') + '</span>';
+        else if(it.min && it.max) h += '<span>السعر التقريبي: ' + fmt(it.min) + ' – ' + fmt(it.max) + ' د.ع</span>';
+        else h += '<span>السعر يُحدَّد بعد مراجعة الطلب</span>';
+      }
+      if(it.note) h += '<span class="muted">' + esc(it.note) + '</span>';
+    }
+    hint.innerHTML = h;
+    updateEst();
+  }
+  function updateEst(){
+    if(!SHOW_PRICES){ $("estBox").innerHTML = ""; return; }
+    let sum = 0, unknown = false, any = false;
+    Array.prototype.forEach.call($("svcList").children, function(div){
+      const it = svcItem(div);
+      const sv = div.querySelector(".s-sec").value;
+      if(!sv) return;
+      any = true;
+      const q = Math.max(1, parseInt(div.querySelector(".s-qty").value, 10) || 1);
+      if(it && it.price != null) sum += it.price * q; else unknown = true;
+    });
+    $("estBox").innerHTML = any && sum
+      ? '<i class="fas fa-calculator"></i> الكلفة التقريبية: <b>' + fmt(sum) + '</b> دينار' + (unknown ? ' + بنود تُسعَّر لاحقاً' : '')
+        + '<div class="help">السعر النهائي يُحدَّد في عرض السعر الذي يصلك على البريد</div>'
+      : "";
+  }
+  function readServices(){
+    const out = [];
+    Array.prototype.forEach.call($("svcList").children, function(div){
+      const secId = div.querySelector(".s-sec").value;
+      if(!secId) return;
+      const sec = secById(secId), tv = div.querySelector(".s-test").value;
+      const other = div.querySelector(".s-other").value.trim();
+      const test = (secId === OTHER || tv === OTHER) ? other : tv;
+      out.push({
+        sectionId: secId === OTHER ? "" : secId,
+        section: sec ? sec.name : "خدمة أخرى",
+        test: test,
+        qty: String(Math.max(1, parseInt(div.querySelector(".s-qty").value, 10) || 1))
+      });
+    });
+    return out.filter(function(s){ return s.test || s.sectionId; });
+  }
+
+  /* ---------- الملف ---------- */
+  const ALLOWED = {
+    "pdf":"application/pdf", "doc":"application/msword",
+    "docx":"application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  };
+  $("file").addEventListener("change", function(){
+    const f = this.files && this.files[0];
+    fileData = null;
+    $("drop").classList.remove("has");
+    if(!f){ $("fileLabel").textContent = "اضغط لاختيار ملف PDF أو Word (حتى 10MB)"; return; }
+    const ext = (f.name.split(".").pop() || "").toLowerCase();
+    if(!ALLOWED[ext]){ showMsg("❌ الملف يجب أن يكون PDF أو Word", "err"); this.value = ""; return; }
+    if(f.size > MAX_FILE){ showMsg("❌ حجم الملف أكبر من 10MB", "err"); this.value = ""; return; }
+    $("fileLabel").textContent = "جاري تجهيز الملف...";
+    const rd = new FileReader();
+    rd.onload = function(){
+      fileData = { name:f.name, mime:ALLOWED[ext], data:String(rd.result).split(",")[1] || "" };
+      $("fileLabel").innerHTML = '<b>' + esc(f.name) + '</b> — ' + (f.size / 1024 / 1024).toFixed(2) + ' MB  <u>تغيير</u>';
+      $("drop").classList.add("has");
+    };
+    rd.onerror = function(){ showMsg("❌ تعذر قراءة الملف", "err"); };
+    rd.readAsDataURL(f);
+  });
+
+  /* ---------- الإرسال ---------- */
+  $("reqForm").addEventListener("submit", async function(e){
+    e.preventDefault();
+    if(sending) return;
+    setNotice("");
+    const name = $("name").value.trim();
+    const phone = $("phone").value.replace(/[\s-]/g, "");
+    const email = $("email").value.trim();
+    const services = readServices();
+    const details = $("details").value.trim();
+
+    if(name.length < 3){ setNotice("❌ أدخل الاسم الكامل", "err"); $("name").focus(); return; }
+    if(!/^(\+?964|0)?7\d{9}$/.test(phone)){ setNotice("❌ رقم الموبايل غير صحيح (مثال: 07701234567)", "err"); $("phone").focus(); return; }
+    if(!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(email)){ setNotice("❌ البريد الإلكتروني غير صحيح", "err"); $("email").focus(); return; }
+    if(!services.length && details.length < 5){ setNotice("❌ اختر الخدمة المطلوبة أو اكتب تفاصيل الطلب", "err"); return; }
+    if($("file").files.length && !fileData){ setNotice("⏳ انتظر حتى يكتمل تجهيز الملف", "warn"); return; }
+
+    sending = true;
+    const btn = $("submitBtn"), old = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + (fileData ? "جاري رفع الطلب والملف..." : "جاري الإرسال...");
+    try{
+      const r = await apiPost({
+        action:"submitCustomerRequest", name:name, company:$("company").value.trim(), phone:phone, email:email,
+        services:services, details:details, file:fileData, website:$("website").value
+      });
+      if(r && r.ok){
+        $("doneId").textContent = r.requestId || "";
+        $("formCard").style.display = "none";
+        $("doneCard").style.display = "block";
+        window.scrollTo({ top:0, behavior:"smooth" });
+      }else{
+        setNotice((r && r.message) || "❌ تعذر إرسال الطلب", "err");
+      }
+    }catch(err){
+      setNotice("❌ خطأ في الاتصال، تحقق من الإنترنت وحاول مجدداً", "err");
+    }finally{
+      sending = false;
+      btn.disabled = false;
+      btn.innerHTML = old;
+    }
+  });
+
+  addSvc();
+</script>
+</body>
+</html>
