@@ -306,6 +306,11 @@
     .center{ text-align:center; }
     @media (max-width:640px){ .dec{ grid-template-columns:1fr; } table.q{ font-size:12.5px; } }
     .pulse{ animation:pulse 1.2s ease-in-out 3; } @keyframes pulse{ 50%{ transform:scale(1.04); box-shadow:0 0 0 6px rgba(46,191,104,.25); } }
+    .pay{ margin-top:14px; border:2px dashed var(--primary); border-radius:var(--radius-md); padding:14px; text-align:center; background:#fff; }
+    .pay-t{ font-weight:900; font-size:17px; color:var(--primary); margin-bottom:8px; }
+    .pay-qr{ width:220px; max-width:70%; height:auto; image-rendering:pixelated; border:8px solid #fff; box-shadow:0 2px 10px rgba(0,0,0,.08); border-radius:8px; }
+    .pay-h{ margin-top:8px; font-weight:800; line-height:1.9; color:#33465a; }
+    .dec{ grid-template-columns:1.4fr 1fr; }
   </style>
 </head>
 
@@ -372,12 +377,17 @@
       + '<div class="help" style="margin-top:8px;">العرض صالح لمدة ' + esc(q.validDays) + ' يوماً من تاريخ الإرسال.</div>';
 
     if(open){
-      h += '<div class="input-group" style="margin-top:12px;"><label>ملاحظة (اختياري)</label><textarea id="note" rows="2" maxlength="500" placeholder="أي ملاحظة تودّ إرسالها مع قرارك"></textarea></div>'
-        + '<div class="dec"><button class="main-btn btn-acc" id="accBtn" onclick="decide(\'accept\')"><i class="fas fa-check"></i> قبول عرض السعر</button>'
+      h += '<div class="pay">'
+        +   '<div class="pay-t"><i class="fas fa-qrcode"></i> هذا هو باركود الدفع</div>'
+        +   '<img src="/system/payment-qr.png" alt="باركود الدفع" class="pay-qr">'
+        +   '<div class="pay-h">امسح الباركود لدفع مبلغ <b>' + fmt(q.amount) + '</b> ' + cur + '،<br>وبعد إكمال عملية الدفع اضغط على زر <b>«تم قبول عرض السعر وإتمام عملية الدفع»</b>.</div>'
+        + '</div>'
+        + '<div class="input-group" style="margin-top:12px;"><label>ملاحظة (اختياري)</label><textarea id="note" rows="2" maxlength="500" placeholder="مثال: رقم عملية الدفع أو اسم الدافع"></textarea></div>'
+        + '<div class="dec"><button class="main-btn btn-acc" id="accBtn" onclick="decide(\'accept\')"><i class="fas fa-check"></i> تم قبول عرض السعر وإتمام عملية الدفع</button>'
         + '<button class="main-btn btn-rej" id="rejBtn" onclick="decide(\'reject\')"><i class="fas fa-xmark"></i> رفض عرض السعر</button></div>';
     }else{
       let s = q.expired && q.status === "quoted" ? "⚠️ انتهت صلاحية عرض السعر، يرجى التواصل معنا لتحديثه"
-            : (q.status === "accepted" || q.status === "converted") ? "✅ تم قبول عرض السعر" + (q.decisionAt ? " بتاريخ " + q.decisionAt : "")
+            : (q.status === "accepted" || q.status === "converted") ? "✅ تم قبول عرض السعر وإتمام عملية الدفع" + (q.decisionAt ? " بتاريخ " + q.decisionAt : "")
             : q.status === "rejected" ? "تم رفض عرض السعر" + (q.decisionAt ? " بتاريخ " + q.decisionAt : "")
             : "حالة الطلب: " + q.statusLabel;
       h += '<div class="notice ' + (q.status === "rejected" || q.expired ? "warn" : "ok") + '" style="margin-top:14px;text-align:center;font-size:16px;">' + esc(s) + '</div>';
@@ -395,7 +405,7 @@
   async function decide(d){
     if(busy || !Q) return;
     const sure = d === "accept"
-      ? "تأكيد قبول عرض السعر بمبلغ " + fmt(Q.amount) + " ؟"
+      ? "هل أكملت دفع مبلغ " + fmt(Q.amount) + " ؟\nسيتم تسجيل قبول عرض السعر وإتمام عملية الدفع."
       : "تأكيد رفض عرض السعر؟";
     if(!window.confirm(sure)) return;
     busy = true;

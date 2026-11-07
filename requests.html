@@ -969,7 +969,7 @@ window.COST_CATALOG = [
       +     '<div class="input-group"><label>المبلغ الإجمالي</label><input id="qAmount" class="q-total" inputmode="decimal"' + (locked ? " disabled" : "") + '></div>'
       +     '<div class="input-group"><label>صلاحية العرض (يوم)</label><input id="qValid" type="number" min="1" max="180" value="30"' + (locked ? " disabled" : "") + '></div>'
       +   '</div>'
-      +   '<div class="input-group"><label>ملاحظات تظهر للزبون</label><textarea id="qNotes" rows="3" maxlength="1500" placeholder="مثال: الأسعار لا تشمل كلف الإيفاد. مدة الإنجاز 10 أيام عمل."' + (locked ? " disabled" : "") + '></textarea></div>'
+      +   '<div class="input-group"><label>ملاحظات تظهر للزبون</label><textarea id="qNotes" rows="3" maxlength="1500" placeholder="مثال: مدة الإنجاز 10 أيام عمل من تاريخ استلام النماذج."' + (locked ? " disabled" : "") + '></textarea></div>'
       +   (r.quoteSentAt ? '<div class="muted">آخر إرسال: ' + esc(r.quoteSentAt) + ' بواسطة ' + esc(r.quoteSentBy) + '</div>' : '')
       +   (locked ? '' :
             '<div class="btns">'
