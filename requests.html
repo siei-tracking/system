@@ -510,6 +510,7 @@ window.COST_CATALOG = [
       .toolbar input{ max-width:none; width:100%; margin:0; }
       .qt-wrap{ overflow-x:auto; } table.qt{ min-width:640px; }
     }
+    ol.parts{ margin:2px 0 0; padding-right:20px; font-weight:700; font-size:13.5px; line-height:1.9; }
   </style>
 </head>
 
@@ -953,12 +954,18 @@ window.COST_CATALOG = [
       +   (r.details ? '<div class="pre" style="margin-top:8px">' + esc(r.details) + '</div>' : '')
       + '</div>'
 
-      + '<div class="box"><h4><i class="fas fa-paperclip"></i> الكتاب والمرفقات</h4>'
-      +   '<div class="muted" style="margin-bottom:4px">الكتاب / الطلب</div>'
-      +   (r.hasFile ? fileRow(-1, r.fileName, r.fileMime, r.fileSize) : '<div class="muted">لا يوجد</div>')
-      +   '<div class="muted" style="margin:8px 0 4px">المرفقات (صور العينات وغيرها)</div>'
-      +   ((r.attachments || []).length ? r.attachments.map(function(x){ return fileRow(x.index, x.name, x.mime, x.size); }).join("") : '<div class="muted">لا يوجد</div>')
-      + '</div>'
+      + (function(){
+          const all = r.attachments || [];
+          const files = all.filter(function(x){ return x.hasFile; });
+          const parts = all.filter(function(x){ return !x.hasFile; });
+          const merged = parts.length > 0;
+          return '<div class="box"><h4><i class="fas fa-paperclip"></i> ' + (merged ? 'ملف الطلب (PDF موحّد)' : 'الكتاب والمرفقات') + '</h4>'
+            + (r.hasFile ? fileRow(-1, merged ? "ملف الطلب.pdf" : r.fileName, r.fileMime, r.fileSize) : '<div class="muted">لا يوجد ملف</div>')
+            + (merged ? '<div class="muted" style="margin:6px 0 2px">يحتوي الملف على:</div><ol class="parts">'
+                + parts.map(function(x){ return '<li>' + (x.role === "letter" ? '<b>الكتاب / الطلب:</b> ' : '') + esc(x.name) + '</li>'; }).join("") + '</ol>' : '')
+            + (files.length ? '<div class="muted" style="margin:8px 0 4px">المرفقات</div>' + files.map(function(x){ return fileRow(x.index, x.name, x.mime, x.size); }).join("") : '')
+            + '</div>';
+        })()
 
       + '<div class="box"><h4><i class="fas fa-file-invoice-dollar"></i> عرض السعر</h4>'
       +   (locked ? '<div class="notice ok" style="margin-top:0">✅ عرض السعر مقبول — لا يمكن تعديله</div>' : '')

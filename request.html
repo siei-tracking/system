@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <script src="/system/config.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
   <script src="/system/cost-catalog.js"></script>
   <script>
   /* نسخة احتياطية من دليل الأسعار — تُستخدم فقط إذا لم يُحمَّل ملف cost-catalog.js */
@@ -506,9 +507,9 @@ window.COST_CATALOG = [
               </div>
               <label class="lbl">تحميل الكتاب أو الطلب <span class="req">*</span></label>
               <label class="drop" id="drop">
-                <input type="file" id="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png" hidden>
+                <input type="file" id="file" accept=".pdf,.jpg,.jpeg,application/pdf,image/jpeg" hidden>
                 <i class="fas fa-file-arrow-up"></i>
-                <span id="fileLabel">اضغط لاختيار الكتاب أو الطلب — PDF أو Word أو صورة (حتى 10MB)</span>
+                <span id="fileLabel">اضغط لاختيار الكتاب أو الطلب — PDF أو JPG (حتى 10MB)</span>
               </label>
 
               <div class="sec-title"><i class="fas fa-flask"></i> الخدمة المطلوبة</div>
@@ -523,9 +524,9 @@ window.COST_CATALOG = [
 
               <div class="sec-title"><i class="fas fa-paperclip"></i> المرفقات <span class="req">*</span></div>
               <label class="drop" id="attDrop">
-                <input type="file" id="attFiles" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png" hidden>
+                <input type="file" id="attFiles" multiple accept=".pdf,.jpg,.jpeg,application/pdf,image/jpeg" hidden>
                 <i class="fas fa-images"></i>
-                <span>صور العينات أو أي ملف آخر متعلق بالفحص<br><small>PDF أو Word أو صور — حتى 5 ملفات، 10MB لكل ملف</small></span>
+                <span>صور العينات أو أي ملف آخر متعلق بالفحص<br><small>PDF أو JPG — حتى 5 ملفات، 10MB لكل ملف</small></span>
               </label>
               <div class="att-list" id="attList"></div>
 
@@ -557,7 +558,7 @@ window.COST_CATALOG = [
   const SHOW_PRICES = true;   /* إظهار السعر التقريبي للزبون */
   const OTHER = "__other";
   const MAX_FILE = 10 * 1024 * 1024;
-  let fileData = null, attData = [], attPending = 0, sending = false;
+  let sending = false;
   const MAX_ATT = 5, MAX_TOTAL = 25 * 1024 * 1024;
 
   function $(id){ return document.getElementById(id); }
@@ -670,72 +671,115 @@ window.COST_CATALOG = [
     return out.filter(function(s){ return s.test || s.sectionId; });
   }
 
-  /* ---------- الملف ---------- */
-  const ALLOWED = {
-    "pdf":"application/pdf", "doc":"application/msword",
-    "docx":"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    "jpg":"image/jpeg", "jpeg":"image/jpeg", "png":"image/png"
-  };
-  $("file").addEventListener("change", function(){
-    const f = this.files && this.files[0];
-    fileData = null;
-    $("drop").classList.remove("has");
-    if(!f){ $("fileLabel").textContent = "اضغط لاختيار الكتاب أو الطلب — PDF أو Word أو صورة (حتى 10MB)"; return; }
+  /* ---------- الملفات (PDF / JPG) ---------- */
+  const ALLOWED = { "pdf":"application/pdf", "jpg":"image/jpeg", "jpeg":"image/jpeg" };
+  let letterFile = null, attFiles = [];
+
+  /* التحقق من النوع الحقيقي من أول بايتات الملف */
+  async function checkFile(f){
     const ext = (f.name.split(".").pop() || "").toLowerCase();
-    if(!ALLOWED[ext]){ showMsg("❌ الملف يجب أن يكون PDF أو Word أو صورة JPG/PNG", "err"); this.value = ""; return; }
-    if(f.size > MAX_FILE){ showMsg("❌ حجم الملف أكبر من 10MB", "err"); this.value = ""; return; }
-    $("fileLabel").textContent = "جاري تجهيز الملف...";
-    const rd = new FileReader();
-    rd.onload = function(){
-      fileData = { name:f.name, mime:ALLOWED[ext], size:f.size, data:String(rd.result).split(",")[1] || "" };
-      $("fileLabel").innerHTML = '<b>' + esc(f.name) + '</b> — ' + (f.size / 1024 / 1024).toFixed(2) + ' MB  <u>تغيير</u>';
-      $("drop").classList.add("has");
-    };
-    rd.onerror = function(){ showMsg("❌ تعذر قراءة الملف", "err"); };
-    rd.readAsDataURL(f);
+    if(!ALLOWED[ext]) return "❌ " + f.name + ": يُسمح فقط بملفات PDF أو JPG";
+    if(f.size > MAX_FILE) return "❌ " + f.name + ": أكبر من 10MB";
+    const b = new Uint8Array(await f.slice(0, 4).arrayBuffer());
+    const isPdf = b[0] === 0x25 && b[1] === 0x50 && b[2] === 0x44 && b[3] === 0x46;
+    const isJpg = b[0] === 0xFF && b[1] === 0xD8 && b[2] === 0xFF;
+    if(ALLOWED[ext] === "application/pdf" ? !isPdf : !isJpg) return "❌ " + f.name + ": محتوى الملف لا يطابق نوعه";
+    return "";
+  }
+  function totalSize(){ return attFiles.reduce(function(a, x){ return a + x.file.size; }, 0) + (letterFile ? letterFile.size : 0); }
+
+  $("file").addEventListener("change", async function(){
+    const f = this.files && this.files[0];
+    this.value = "";
+    if(!f) return;
+    const err = await checkFile(f);
+    if(err){ showMsg(err, "err"); return; }
+    letterFile = f;
+    $("fileLabel").innerHTML = '<b>' + esc(f.name) + '</b> — ' + (f.size / 1024 / 1024).toFixed(2) + ' MB  <u>تغيير</u>';
+    $("drop").classList.add("has");
   });
 
-  /* ---------- المرفقات (صور العينات...) ---------- */
-  function totalSize(){
-    return attData.reduce(function(a, x){ return a + x.size; }, 0) + (fileData ? fileData.size : 0);
-  }
-  $("attFiles").addEventListener("change", function(){
+  $("attFiles").addEventListener("change", async function(){
     const files = Array.prototype.slice.call(this.files || []);
     this.value = "";
-    files.forEach(function(f){
-      if(attData.length + attPending >= MAX_ATT){ showMsg("⚠️ الحد الأقصى " + MAX_ATT + " مرفقات", "warn"); return; }
-      const ext = (f.name.split(".").pop() || "").toLowerCase();
-      if(!ALLOWED[ext]){ showMsg("❌ " + f.name + ": النوع غير مسموح", "err"); return; }
-      if(f.size > MAX_FILE){ showMsg("❌ " + f.name + ": أكبر من 10MB", "err"); return; }
-      if(totalSize() + f.size > MAX_TOTAL){ showMsg("❌ مجموع حجم الملفات أكبر من 25MB", "err"); return; }
-      attPending++;
-      const rd = new FileReader();
-      rd.onload = function(){
-        attPending--;
-        attData.push({ name:f.name, mime:ALLOWED[ext], size:f.size, url:/^image\//.test(ALLOWED[ext]) ? URL.createObjectURL(f) : "",
-                       data:String(rd.result).split(",")[1] || "" });
-        renderAtt();
-      };
-      rd.onerror = function(){ attPending--; showMsg("❌ تعذر قراءة " + f.name, "err"); };
-      rd.readAsDataURL(f);
-    });
+    for(const f of files){
+      if(attFiles.length >= MAX_ATT){ showMsg("⚠️ الحد الأقصى " + MAX_ATT + " مرفقات", "warn"); break; }
+      const err = await checkFile(f);
+      if(err){ showMsg(err, "err"); continue; }
+      if(totalSize() + f.size > 40 * 1024 * 1024){ showMsg("❌ مجموع حجم الملفات كبير جداً", "err"); break; }
+      attFiles.push({ file:f, url: ALLOWED[(f.name.split(".").pop() || "").toLowerCase()] === "image/jpeg" ? URL.createObjectURL(f) : "" });
+    }
+    renderAtt();
   });
   function renderAtt(){
-    $("attList").innerHTML = attData.map(function(a, i){
+    $("attList").innerHTML = attFiles.map(function(a, i){
       return '<div class="att">'
-        + (a.url ? '<img src="' + a.url + '" alt="">' : '<i class="fas fa-file-lines"></i>')
-        + '<div class="att-n"><b>' + esc(a.name) + '</b><small>' + (a.size / 1024 / 1024).toFixed(2) + ' MB</small></div>'
+        + (a.url ? '<img src="' + a.url + '" alt="">' : '<i class="fas fa-file-pdf"></i>')
+        + '<div class="att-n"><b>' + esc(a.file.name) + '</b><small>' + (a.file.size / 1024 / 1024).toFixed(2) + ' MB</small></div>'
         + '<button type="button" class="del-btn" data-i="' + i + '" title="حذف"><i class="fas fa-xmark"></i></button></div>';
     }).join("");
-    $("attDrop").classList.toggle("has", attData.length > 0);
+    $("attDrop").classList.toggle("has", attFiles.length > 0);
   }
   $("attList").addEventListener("click", function(e){
     const b = e.target.closest(".del-btn");
     if(!b) return;
-    const a = attData.splice(Number(b.getAttribute("data-i")), 1)[0];
+    const a = attFiles.splice(Number(b.getAttribute("data-i")), 1)[0];
     if(a && a.url) URL.revokeObjectURL(a.url);
     renderAtt();
   });
+
+  /* ---------- دمج كل الملفات في PDF واحد ---------- */
+  function loadImg(file){
+    return new Promise(function(res, rej){
+      const u = URL.createObjectURL(file), im = new Image();
+      im.onload = function(){ URL.revokeObjectURL(u); res(im); };
+      im.onerror = function(){ URL.revokeObjectURL(u); rej(new Error("img")); };
+      im.src = u;
+    });
+  }
+  /* تصغير الصورة (أقصى ضلع 2000px) وتصحيح اتجاهها عبر canvas */
+  async function jpgBytes(file){
+    const im = await loadImg(file);
+    const k = Math.min(1, 2000 / Math.max(im.naturalWidth, im.naturalHeight));
+    const c = document.createElement("canvas");
+    c.width = Math.max(1, Math.round(im.naturalWidth * k));
+    c.height = Math.max(1, Math.round(im.naturalHeight * k));
+    const g = c.getContext("2d");
+    g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height);
+    g.drawImage(im, 0, 0, c.width, c.height);
+    const blob = await new Promise(function(r){ c.toBlob(r, "image/jpeg", 0.85); });
+    return new Uint8Array(await blob.arrayBuffer());
+  }
+  async function buildPdf(files, onStep){
+    if(!window.PDFLib) throw new Error("مكتبة PDF لم تُحمَّل، تحقق من الإنترنت وأعد المحاولة");
+    const out = await PDFLib.PDFDocument.create();
+    out.setTitle("طلب خدمة"); out.setCreator("SIEI Requests");
+    for(let i = 0; i < files.length; i++){
+      const f = files[i];
+      if(onStep) onStep(i + 1, files.length);
+      if(/\.pdf$/i.test(f.name)){
+        let src;
+        try{ src = await PDFLib.PDFDocument.load(await f.arrayBuffer(), { ignoreEncryption:true }); }
+        catch(e){ throw new Error("تعذر قراءة الملف " + f.name + " — قد يكون تالفاً أو محمياً بكلمة مرور"); }
+        const pages = await out.copyPages(src, src.getPageIndices());
+        pages.forEach(function(p){ out.addPage(p); });
+      }else{
+        const img = await out.embedJpg(await jpgBytes(f));
+        const land = img.width > img.height;
+        const W = land ? 841.89 : 595.28, H = land ? 595.28 : 841.89, M = 24;
+        const sc = Math.min((W - 2 * M) / img.width, (H - 2 * M) / img.height, 1.5);
+        const w = img.width * sc, h = img.height * sc;
+        const page = out.addPage([W, H]);
+        page.drawImage(img, { x:(W - w) / 2, y:(H - h) / 2, width:w, height:h });
+      }
+    }
+    return { bytes: await out.save(), pages: out.getPageCount() };
+  }
+  function toB64(bytes){
+    let s = "";
+    for(let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    return btoa(s);
+  }
 
   /* ---------- الإرسال ---------- */
   $("reqForm").addEventListener("submit", async function(e){
@@ -755,20 +799,27 @@ window.COST_CATALOG = [
     if(!/^(\+?964|0)?7\d{9}$/.test(phone)){ setNotice("❌ رقم الموبايل غير صحيح (مثال: 07701234567)", "err"); $("phone").focus(); return; }
     if(!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(email)){ setNotice("❌ البريد الإلكتروني غير صحيح", "err"); $("email").focus(); return; }
     if(!services.length && details.length < 5){ setNotice("❌ اختر الخدمة المطلوبة أو اكتب تفاصيل الطلب", "err"); return; }
-    if(!fileData){ setNotice($("file").files.length ? "⏳ انتظر حتى يكتمل تجهيز الملف" : "❌ يرجى تحميل الكتاب أو الطلب", "err"); $("drop").scrollIntoView({ behavior:"smooth", block:"center" }); return; }
-    if(attPending){ setNotice("⏳ انتظر حتى يكتمل تجهيز المرفقات", "warn"); return; }
-    if(!attData.length){ setNotice("❌ يرجى إرفاق صور العينات أو أي ملف متعلق بالفحص", "err"); $("attDrop").scrollIntoView({ behavior:"smooth", block:"center" }); return; }
+    if(!letterFile){ setNotice("❌ يرجى تحميل الكتاب أو الطلب", "err"); $("drop").scrollIntoView({ behavior:"smooth", block:"center" }); return; }
+    if(!attFiles.length){ setNotice("❌ يرجى إرفاق صور العينات أو أي ملف متعلق بالفحص", "err"); $("attDrop").scrollIntoView({ behavior:"smooth", block:"center" }); return; }
 
     sending = true;
     const btn = $("submitBtn"), old = btn.innerHTML;
     btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + "جاري رفع الطلب والملفات...";
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري تجهيز الملفات...';
     try{
+      const all = [letterFile].concat(attFiles.map(function(a){ return a.file; }));
+      let pdf;
+      try{
+        pdf = await buildPdf(all, function(i, n){ btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري تجهيز الملفات (' + i + '/' + n + ')...'; });
+      }catch(err){ setNotice("❌ " + (err && err.message || "تعذر تجهيز الملفات"), "err"); return; }
+      if(pdf.bytes.length > MAX_TOTAL){ setNotice("❌ حجم الملف النهائي أكبر من 25MB، قلّل عدد الصور أو حجمها", "err"); return; }
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري رفع الطلب...';
       const r = await apiPost({
         action:"submitCustomerRequest", name:name, company:$("company").value.trim(), phone:phone, email:email,
         services:services, details:details, letterNo:letterNo, letterDate:letterDate,
-        file:{ name:fileData.name, mime:fileData.mime, data:fileData.data },
-        attachments:attData.map(function(a){ return { name:a.name, mime:a.mime, data:a.data }; }), website:$("website").value
+        file:{ name:"ملف الطلب.pdf", mime:"application/pdf", data:toB64(pdf.bytes) },
+        parts:{ letter:letterFile.name, attachments:attFiles.map(function(a){ return a.file.name; }), pages:pdf.pages },
+        website:$("website").value
       });
       if(r && r.ok){
         $("doneId").textContent = r.requestId || "";
