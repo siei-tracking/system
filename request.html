@@ -438,6 +438,15 @@ window.COST_CATALOG = [
       .svc-row{ grid-template-columns:1fr 70px 36px; }
       .svc-row .s-sec{ grid-column:1 / -1; }
     }
+    .lbl{ display:block; font-weight:800; margin:4px 0 6px; color:#33465a; }
+    .drop small{ display:block; font-weight:700; font-size:12px; margin-top:2px; }
+    .att-list{ display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:8px; margin-top:8px; }
+    .att{ display:flex; align-items:center; gap:8px; border:1px solid var(--line); border-radius:var(--radius-sm); padding:6px; background:#fff; }
+    .att img{ width:46px; height:46px; object-fit:cover; border-radius:8px; flex-shrink:0; }
+    .att > i{ width:46px; text-align:center; font-size:26px; color:var(--primary); flex-shrink:0; }
+    .att-n{ flex:1; min-width:0; }
+    .att-n b{ display:block; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .att-n small{ color:var(--muted); font-weight:700; }
   </style>
 </head>
 
@@ -484,6 +493,24 @@ window.COST_CATALOG = [
               <!-- حماية من الروبوتات: يبقى فارغاً -->
               <div style="height:0;overflow:hidden;" aria-hidden="true"><input type="text" id="website" name="website" tabindex="-1" autocomplete="off"></div>
 
+              <div class="sec-title"><i class="fas fa-file-lines"></i> بيانات الكتاب</div>
+              <div class="grid">
+                <div class="input-group">
+                  <label>رقم الكتاب</label>
+                  <input type="text" id="letterNo" maxlength="60" placeholder="رقم كتاب الجهة الطالبة (إن وجد)">
+                </div>
+                <div class="input-group">
+                  <label>تاريخ الكتاب</label>
+                  <input type="date" id="letterDate">
+                </div>
+              </div>
+              <label class="lbl">تحميل الكتاب أو الطلب <span class="req">*</span></label>
+              <label class="drop" id="drop">
+                <input type="file" id="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png" hidden>
+                <i class="fas fa-file-arrow-up"></i>
+                <span id="fileLabel">اضغط لاختيار الكتاب أو الطلب — PDF أو Word أو صورة (حتى 10MB)</span>
+              </label>
+
               <div class="sec-title"><i class="fas fa-flask"></i> الخدمة المطلوبة</div>
               <div id="svcList"></div>
               <button type="button" class="add-btn" onclick="addSvc()"><i class="fas fa-plus"></i> إضافة خدمة أخرى</button>
@@ -494,12 +521,13 @@ window.COST_CATALOG = [
                 <textarea id="details" rows="4" maxlength="3000" placeholder="اكتب تفاصيل العمل، موقع الفحص، المواصفة المطلوبة، أي ملاحظات..."></textarea>
               </div>
 
-              <div class="sec-title"><i class="fas fa-paperclip"></i> مرفق (اختياري)</div>
-              <label class="drop" id="drop">
-                <input type="file" id="file" accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
-                <i class="fas fa-cloud-arrow-up"></i>
-                <span id="fileLabel">اضغط لاختيار ملف PDF أو Word (حتى 10MB)</span>
+              <div class="sec-title"><i class="fas fa-paperclip"></i> المرفقات <span class="req">*</span></div>
+              <label class="drop" id="attDrop">
+                <input type="file" id="attFiles" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,image/jpeg,image/png" hidden>
+                <i class="fas fa-images"></i>
+                <span>صور العينات أو أي ملف آخر متعلق بالفحص<br><small>PDF أو Word أو صور — حتى 5 ملفات، 10MB لكل ملف</small></span>
               </label>
+              <div class="att-list" id="attList"></div>
 
               <div id="notice" class="notice"></div>
               <button class="main-btn" id="submitBtn" type="submit" style="margin-top:14px;">
@@ -529,7 +557,8 @@ window.COST_CATALOG = [
   const SHOW_PRICES = true;   /* إظهار السعر التقريبي للزبون */
   const OTHER = "__other";
   const MAX_FILE = 10 * 1024 * 1024;
-  let fileData = null, sending = false;
+  let fileData = null, attData = [], attPending = 0, sending = false;
+  const MAX_ATT = 5, MAX_TOTAL = 25 * 1024 * 1024;
 
   function $(id){ return document.getElementById(id); }
   function esc(t){ return String(t == null ? "" : t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
@@ -644,25 +673,68 @@ window.COST_CATALOG = [
   /* ---------- الملف ---------- */
   const ALLOWED = {
     "pdf":"application/pdf", "doc":"application/msword",
-    "docx":"application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    "docx":"application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "jpg":"image/jpeg", "jpeg":"image/jpeg", "png":"image/png"
   };
   $("file").addEventListener("change", function(){
     const f = this.files && this.files[0];
     fileData = null;
     $("drop").classList.remove("has");
-    if(!f){ $("fileLabel").textContent = "اضغط لاختيار ملف PDF أو Word (حتى 10MB)"; return; }
+    if(!f){ $("fileLabel").textContent = "اضغط لاختيار الكتاب أو الطلب — PDF أو Word أو صورة (حتى 10MB)"; return; }
     const ext = (f.name.split(".").pop() || "").toLowerCase();
-    if(!ALLOWED[ext]){ showMsg("❌ الملف يجب أن يكون PDF أو Word", "err"); this.value = ""; return; }
+    if(!ALLOWED[ext]){ showMsg("❌ الملف يجب أن يكون PDF أو Word أو صورة JPG/PNG", "err"); this.value = ""; return; }
     if(f.size > MAX_FILE){ showMsg("❌ حجم الملف أكبر من 10MB", "err"); this.value = ""; return; }
     $("fileLabel").textContent = "جاري تجهيز الملف...";
     const rd = new FileReader();
     rd.onload = function(){
-      fileData = { name:f.name, mime:ALLOWED[ext], data:String(rd.result).split(",")[1] || "" };
+      fileData = { name:f.name, mime:ALLOWED[ext], size:f.size, data:String(rd.result).split(",")[1] || "" };
       $("fileLabel").innerHTML = '<b>' + esc(f.name) + '</b> — ' + (f.size / 1024 / 1024).toFixed(2) + ' MB  <u>تغيير</u>';
       $("drop").classList.add("has");
     };
     rd.onerror = function(){ showMsg("❌ تعذر قراءة الملف", "err"); };
     rd.readAsDataURL(f);
+  });
+
+  /* ---------- المرفقات (صور العينات...) ---------- */
+  function totalSize(){
+    return attData.reduce(function(a, x){ return a + x.size; }, 0) + (fileData ? fileData.size : 0);
+  }
+  $("attFiles").addEventListener("change", function(){
+    const files = Array.prototype.slice.call(this.files || []);
+    this.value = "";
+    files.forEach(function(f){
+      if(attData.length + attPending >= MAX_ATT){ showMsg("⚠️ الحد الأقصى " + MAX_ATT + " مرفقات", "warn"); return; }
+      const ext = (f.name.split(".").pop() || "").toLowerCase();
+      if(!ALLOWED[ext]){ showMsg("❌ " + f.name + ": النوع غير مسموح", "err"); return; }
+      if(f.size > MAX_FILE){ showMsg("❌ " + f.name + ": أكبر من 10MB", "err"); return; }
+      if(totalSize() + f.size > MAX_TOTAL){ showMsg("❌ مجموع حجم الملفات أكبر من 25MB", "err"); return; }
+      attPending++;
+      const rd = new FileReader();
+      rd.onload = function(){
+        attPending--;
+        attData.push({ name:f.name, mime:ALLOWED[ext], size:f.size, url:/^image\//.test(ALLOWED[ext]) ? URL.createObjectURL(f) : "",
+                       data:String(rd.result).split(",")[1] || "" });
+        renderAtt();
+      };
+      rd.onerror = function(){ attPending--; showMsg("❌ تعذر قراءة " + f.name, "err"); };
+      rd.readAsDataURL(f);
+    });
+  });
+  function renderAtt(){
+    $("attList").innerHTML = attData.map(function(a, i){
+      return '<div class="att">'
+        + (a.url ? '<img src="' + a.url + '" alt="">' : '<i class="fas fa-file-lines"></i>')
+        + '<div class="att-n"><b>' + esc(a.name) + '</b><small>' + (a.size / 1024 / 1024).toFixed(2) + ' MB</small></div>'
+        + '<button type="button" class="del-btn" data-i="' + i + '" title="حذف"><i class="fas fa-xmark"></i></button></div>';
+    }).join("");
+    $("attDrop").classList.toggle("has", attData.length > 0);
+  }
+  $("attList").addEventListener("click", function(e){
+    const b = e.target.closest(".del-btn");
+    if(!b) return;
+    const a = attData.splice(Number(b.getAttribute("data-i")), 1)[0];
+    if(a && a.url) URL.revokeObjectURL(a.url);
+    renderAtt();
   });
 
   /* ---------- الإرسال ---------- */
@@ -675,21 +747,28 @@ window.COST_CATALOG = [
     const email = $("email").value.trim();
     const services = readServices();
     const details = $("details").value.trim();
+    const letterNo = $("letterNo").value.trim();
+    const letterDate = $("letterDate").value;
+    if(letterDate && letterDate > new Date().toISOString().slice(0, 10)){ setNotice("❌ تاريخ الكتاب لا يمكن أن يكون في المستقبل", "err"); $("letterDate").focus(); return; }
 
     if(name.length < 3){ setNotice("❌ أدخل الاسم الكامل", "err"); $("name").focus(); return; }
     if(!/^(\+?964|0)?7\d{9}$/.test(phone)){ setNotice("❌ رقم الموبايل غير صحيح (مثال: 07701234567)", "err"); $("phone").focus(); return; }
     if(!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(email)){ setNotice("❌ البريد الإلكتروني غير صحيح", "err"); $("email").focus(); return; }
     if(!services.length && details.length < 5){ setNotice("❌ اختر الخدمة المطلوبة أو اكتب تفاصيل الطلب", "err"); return; }
-    if($("file").files.length && !fileData){ setNotice("⏳ انتظر حتى يكتمل تجهيز الملف", "warn"); return; }
+    if(!fileData){ setNotice($("file").files.length ? "⏳ انتظر حتى يكتمل تجهيز الملف" : "❌ يرجى تحميل الكتاب أو الطلب", "err"); $("drop").scrollIntoView({ behavior:"smooth", block:"center" }); return; }
+    if(attPending){ setNotice("⏳ انتظر حتى يكتمل تجهيز المرفقات", "warn"); return; }
+    if(!attData.length){ setNotice("❌ يرجى إرفاق صور العينات أو أي ملف متعلق بالفحص", "err"); $("attDrop").scrollIntoView({ behavior:"smooth", block:"center" }); return; }
 
     sending = true;
     const btn = $("submitBtn"), old = btn.innerHTML;
     btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + (fileData ? "جاري رفع الطلب والملف..." : "جاري الإرسال...");
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ' + "جاري رفع الطلب والملفات...";
     try{
       const r = await apiPost({
         action:"submitCustomerRequest", name:name, company:$("company").value.trim(), phone:phone, email:email,
-        services:services, details:details, file:fileData, website:$("website").value
+        services:services, details:details, letterNo:letterNo, letterDate:letterDate,
+        file:{ name:fileData.name, mime:fileData.mime, data:fileData.data },
+        attachments:attData.map(function(a){ return { name:a.name, mime:a.mime, data:a.data }; }), website:$("website").value
       });
       if(r && r.ok){
         $("doneId").textContent = r.requestId || "";

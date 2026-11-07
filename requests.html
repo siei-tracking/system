@@ -869,7 +869,7 @@ window.COST_CATALOG = [
       return '<div class="li' + (it.status === "new" ? " is-new" : "") + '" data-id="' + esc(it.requestId) + '">'
         + '<div><div class="id">' + esc(it.requestId) + '</div><div class="d">' + esc(it.createdAt) + '</div></div>'
         + '<div><div class="n">' + esc(it.company || it.name) + '</div><div class="d">' + esc(it.company ? it.name : "") + ' <span dir="ltr">' + esc(it.phone) + '</span></div></div>'
-        + '<div class="s">' + esc(svcSummary(it.services)) + (it.hasFile ? ' <i class="fas fa-paperclip" title="مرفق"></i>' : '') + '</div>'
+        + '<div class="s">' + esc(svcSummary(it.services)) + ((it.hasFile || it.attachCount) ? ' <i class="fas fa-paperclip" title="مرفقات"></i>' + (it.attachCount ? ' ' + (it.attachCount + (it.hasFile ? 1 : 0)) : '') : '') + '</div>'
         + '<div>' + badge(it.status) + (it.orderNo ? '<div class="d">أمر عمل: ' + esc(it.orderNo) + '</div>' : '') + '</div>'
         + '<div class="a">' + (it.quoteAmount ? fmt(it.quoteAmount) + " " + esc(it.quoteCurrency) : "—") + '</div>'
         + '</div>';
@@ -881,7 +881,7 @@ window.COST_CATALOG = [
     const list = ITEMS.filter(function(it){
       if(filterStatus && it.status !== filterStatus) return false;
       if(!q) return true;
-      return [it.requestId, it.name, it.company, it.phone, it.email, it.orderNo].join(" ").toLowerCase().indexOf(q) !== -1;
+      return [it.requestId, it.name, it.company, it.phone, it.email, it.orderNo, it.letterNo].join(" ").toLowerCase().indexOf(q) !== -1;
     });
     $("reqList").innerHTML = rowsHtml(list) || '<div class="empty">لا توجد طلبات</div>';
   }
@@ -898,7 +898,7 @@ window.COST_CATALOG = [
     const i = ITEMS.findIndex(function(x){ return x.requestId === req.requestId; });
     const lite = {
       requestId:req.requestId, createdAt:req.createdAt, status:req.status, statusLabel:req.statusLabel, name:req.name, company:req.company,
-      phone:req.phone, email:req.email, services:req.services, hasFile:req.hasFile, fileName:req.fileName,
+      phone:req.phone, email:req.email, letterNo:req.letterNo, letterDate:req.letterDate, services:req.services, hasFile:req.hasFile, attachCount:(req.attachments || []).length, fileName:req.fileName,
       quoteAmount:req.quoteAmount, quoteCurrency:req.quoteCurrency, quoteSentAt:req.quoteSentAt, orderNo:req.orderNo, updatedAt:req.updatedAt
     };
     if(i === -1) ITEMS.unshift(lite); else ITEMS[i] = lite;
@@ -945,6 +945,7 @@ window.COST_CATALOG = [
       +   '<div class="k">الموبايل</div><div><a href="tel:' + esc(r.phone) + '" dir="ltr">' + esc(r.phone) + '</a></div>'
       +   '<div class="k">البريد</div><div><a href="mailto:' + esc(r.email) + '" dir="ltr">' + esc(r.email) + '</a></div>'
       +   '<div class="k">تاريخ الطلب</div><div>' + esc(r.createdAt) + '</div>'
+      +   (r.letterNo || r.letterDate ? '<div class="k">رقم الكتاب</div><div><b>' + esc(r.letterNo || "—") + '</b>' + (r.letterDate ? ' في ' + esc(r.letterDate) : '') + '</div>' : '')
       + '</div></div>'
 
       + '<div class="box"><h4><i class="fas fa-flask"></i> الخدمات المطلوبة</h4>'
@@ -952,13 +953,11 @@ window.COST_CATALOG = [
       +   (r.details ? '<div class="pre" style="margin-top:8px">' + esc(r.details) + '</div>' : '')
       + '</div>'
 
-      + '<div class="box"><h4><i class="fas fa-paperclip"></i> المرفقات</h4>'
-      +   (r.hasFile
-            ? '<div class="toolbar"><span style="font-weight:800">' + esc(r.fileName) + '</span> <span class="muted">' + (r.fileSize ? (r.fileSize / 1024 / 1024).toFixed(2) + " MB" : "") + '</span>'
-              + '<button class="icon-btn" id="dlBtn" onclick="downloadFile(false)"><i class="fas fa-download"></i> تحميل</button>'
-              + (r.fileMime === "application/pdf" ? '<button class="icon-btn" onclick="downloadFile(true)"><i class="fas fa-eye"></i> عرض</button>' : '')
-              + '</div>'
-            : '<div class="muted">لا يوجد مرفق</div>')
+      + '<div class="box"><h4><i class="fas fa-paperclip"></i> الكتاب والمرفقات</h4>'
+      +   '<div class="muted" style="margin-bottom:4px">الكتاب / الطلب</div>'
+      +   (r.hasFile ? fileRow(-1, r.fileName, r.fileMime, r.fileSize) : '<div class="muted">لا يوجد</div>')
+      +   '<div class="muted" style="margin:8px 0 4px">المرفقات (صور العينات وغيرها)</div>'
+      +   ((r.attachments || []).length ? r.attachments.map(function(x){ return fileRow(x.index, x.name, x.mime, x.size); }).join("") : '<div class="muted">لا يوجد</div>')
       + '</div>'
 
       + '<div class="box"><h4><i class="fas fa-file-invoice-dollar"></i> عرض السعر</h4>'
@@ -1130,10 +1129,17 @@ window.COST_CATALOG = [
     return withBtn("convBtn", "جاري التحويل...", async function(){ afterAction(await call("convertRequestToOrder", { requestId:CUR.requestId, orderNo:no })); });
   }
 
-  function downloadFile(view){
+  function fileRow(i, name, mime, size){
+    return '<div class="toolbar"><span style="font-weight:800">' + esc(name) + '</span> <span class="muted">' + (size ? (size / 1024 / 1024).toFixed(2) + " MB" : "") + '</span>'
+      + '<button class="icon-btn" id="dl_' + (i + 1) + '" onclick="downloadFile(false,' + i + ')"><i class="fas fa-download"></i> تحميل</button>'
+      + (/^(application\/pdf|image\/)/.test(mime || "") ? '<button class="icon-btn" onclick="downloadFile(true,' + i + ')"><i class="fas fa-eye"></i> عرض</button>' : '')
+      + '</div>';
+  }
+
+  function downloadFile(view, index){
     const w = view ? window.open("", "_blank") : null;
-    return withBtn("dlBtn", "جاري التحميل...", async function(){
-      const r = await call("getCustomerRequestFile", { requestId:CUR.requestId });
+    return withBtn("dl_" + ((index == null ? -1 : index) + 1), "جاري التحميل...", async function(){
+      const r = await call("getCustomerRequestFile", { requestId:CUR.requestId, index:(index == null ? -1 : index) });
       if(!r || !r.ok){ if(w) w.close(); showMsg((r && r.message) || "❌ تعذر جلب الملف", "err"); return; }
       const bin = atob(r.data), bytes = new Uint8Array(bin.length);
       for(let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
