@@ -459,8 +459,8 @@ window.COST_CATALOG = [
     .empty{ padding:24px; text-align:center; color:var(--muted); font-weight:800; }
 
     /* لوحة التفاصيل */
-    .drawer-bg{ position:fixed; inset:0; background:rgba(15,25,35,.45); z-index:900; display:none; }
-    .drawer{ position:fixed; top:0; bottom:0; left:0; width:min(860px,100%); background:#f4f6f8; z-index:901; overflow-y:auto;
+    .drawer-bg{ position:fixed; inset:0; background:rgba(15,25,35,.45); z-index:2147483600; display:none; }
+    .drawer{ position:fixed; top:0; bottom:0; left:0; width:min(860px,100%); background:#f4f6f8; z-index:2147483601; overflow-y:auto;
       transform:translateX(-105%); transition:transform .25s ease; box-shadow:0 0 40px rgba(0,0,0,.25); }
     .drawer.on{ transform:none; } .drawer-bg.on{ display:block; }
     .dr-head{ position:sticky; top:0; background:var(--primary); color:#fff; padding:12px 16px; display:flex; align-items:center; gap:10px; z-index:2; }
@@ -511,6 +511,9 @@ window.COST_CATALOG = [
       .qt-wrap{ overflow-x:auto; } table.qt{ min-width:640px; }
     }
     ol.parts{ margin:2px 0 0; padding-right:20px; font-weight:700; font-size:13.5px; line-height:1.9; }
+    .lab-p{ border:1px solid var(--line); border-radius:10px; padding:8px; margin-bottom:8px; }
+    .lab-h{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:6px; }
+    #toast{ z-index:2147483646 !important; }
   </style>
 </head>
 
@@ -871,7 +874,8 @@ window.COST_CATALOG = [
         + '<div><div class="id">' + esc(it.requestId) + '</div><div class="d">' + esc(it.createdAt) + '</div></div>'
         + '<div><div class="n">' + esc(it.company || it.name) + '</div><div class="d">' + esc(it.company ? it.name : "") + ' <span dir="ltr">' + esc(it.phone) + '</span></div></div>'
         + '<div class="s">' + esc(svcSummary(it.services)) + ((it.hasFile || it.attachCount) ? ' <i class="fas fa-paperclip" title="مرفقات"></i>' + (it.attachCount ? ' ' + (it.attachCount + (it.hasFile ? 1 : 0)) : '') : '') + '</div>'
-        + '<div>' + badge(it.status) + (it.orderNo ? '<div class="d">أمر عمل: ' + esc(it.orderNo) + '</div>' : '') + '</div>'
+        + '<div>' + badge(it.status) + (it.orderNo ? '<div class="d">أمر عمل: ' + esc(it.orderNo) + '</div>' : '')
+        + ((it.labStatus || []).length ? '<div class="d">🧪 تسعير المختبرات ' + it.labStatus.filter(function(x){ return x.done; }).length + '/' + it.labStatus.length + '</div>' : '') + '</div>'
         + '<div class="a">' + (it.quoteAmount ? fmt(it.quoteAmount) + " " + esc(it.quoteCurrency) : "—") + '</div>'
         + '</div>';
     }).join("");
@@ -900,7 +904,7 @@ window.COST_CATALOG = [
     const lite = {
       requestId:req.requestId, createdAt:req.createdAt, status:req.status, statusLabel:req.statusLabel, name:req.name, company:req.company,
       phone:req.phone, email:req.email, letterNo:req.letterNo, letterDate:req.letterDate, services:req.services, hasFile:req.hasFile, attachCount:(req.attachments || []).length, fileName:req.fileName,
-      quoteAmount:req.quoteAmount, quoteCurrency:req.quoteCurrency, quoteSentAt:req.quoteSentAt, orderNo:req.orderNo, updatedAt:req.updatedAt
+      quoteAmount:req.quoteAmount, quoteCurrency:req.quoteCurrency, quoteSentAt:req.quoteSentAt, orderNo:req.orderNo, updatedAt:req.updatedAt, labStatus:req.labStatus
     };
     if(i === -1) ITEMS.unshift(lite); else ITEMS[i] = lite;
     recount(); renderAll();
@@ -967,6 +971,7 @@ window.COST_CATALOG = [
             + '</div>';
         })()
 
+      + labBox(r)
       + '<div class="box"><h4><i class="fas fa-file-invoice-dollar"></i> عرض السعر</h4>'
       +   (locked ? '<div class="notice ok" style="margin-top:0">✅ عرض السعر مقبول — لا يمكن تعديله</div>' : '')
       +   '<div class="qt-wrap"><table class="qt"><thead><tr><th style="width:24%">القسم</th><th>الفحص / الخدمة</th><th style="width:9%">العدد</th><th style="width:15%">سعر الوحدة</th><th style="width:13%">المجموع</th><th style="width:40px"></th></tr></thead><tbody id="qBody"></tbody></table></div>'
@@ -1005,10 +1010,20 @@ window.COST_CATALOG = [
     $("drBody").innerHTML = h;
 
     /* بنود عرض السعر: المحفوظة، وإلا من خدمات الزبون بأسعار الدليل */
-    const base = (r.quoteItems && r.quoteItems.length) ? r.quoteItems : (r.services || []).map(function(s){
+    /* البنود: المحفوظة، وإلا من خدمات الزبون بأسعار المختبرات (إن وُجدت) أو الدليل */
+    const LP = r.labPricing || {};
+    let base = (r.quoteItems && r.quoteItems.length) ? r.quoteItems : (r.services || []).map(function(s, i){
       const it = itemOf(secById(s.sectionId), s.test);
+      const lp = LP[s.sectionId] && (LP[s.sectionId].items || []).find(function(x){ return Number(x.idx) === i; });
+      if(lp) return { sectionId:s.sectionId, section:s.section, test:s.test, qty:lp.qty || s.qty, price:lp.price, details:lp.sample || "" };
       return { sectionId:s.sectionId, section:s.section, test:s.test, qty:s.qty, price: it && it.price != null ? it.price : (it && it.min ? it.min : "") };
     });
+    if(!(r.quoteItems && r.quoteItems.length)){
+      Object.keys(LP).forEach(function(k){
+        const sec = secById(k);
+        (LP[k].extras || []).forEach(function(x){ base.push({ sectionId:k, section:sec ? sec.name : k, test:x.test, qty:x.qty, price:x.price, details:x.notes || "" }); });
+      });
+    }
     (base.length ? base : [{}]).forEach(function(it){ addQRow(it, locked); });
     $("qCur").value = r.quoteCurrency || "IQD";
     $("qValid").value = r.quoteValidDays || 30;
@@ -1017,6 +1032,30 @@ window.COST_CATALOG = [
     if(!r.quoteAmount) qRecalc();
     $("qAmount").addEventListener("input", function(){ this.dataset.touched = "1"; });
     loadReqMails(r.requestId);
+  }
+
+  /* ---------- تسعير المختبرات ---------- */
+  function labBox(r){
+    const st = r.labStatus || [];
+    if(!st.length) return '';
+    const LP = r.labPricing || {};
+    const done = st.filter(function(x){ return x.done; }).length;
+    let h = '<div class="box"><h4><i class="fas fa-flask-vial"></i> تسعير المختبرات <span class="badge ' + (done === st.length ? "st-accepted" : "st-review") + '">' + done + ' / ' + st.length + '</span></h4>';
+    st.forEach(function(x){
+      const p = LP[x.lab];
+      h += '<div class="lab-p"><div class="lab-h"><b>' + esc(x.name) + '</b>'
+        + (p && p.at ? '<span class="badge st-accepted">' + fmt(p.total) + ' د.ع</span><span class="muted">' + esc(p.by) + ' — ' + esc(p.at) + '</span>'
+                     : '<span class="badge st-review">بانتظار التسعير</span>') + '</div>';
+      if(p && p.at){
+        h += '<table class="log"><thead><tr><th>البند</th><th>العدد</th><th>سعر الوحدة</th><th>تفاصيل العينة</th><th>ملاحظات</th></tr></thead><tbody>'
+          + (p.items || []).concat((p.extras || []).map(function(e){ return { test:"➕ " + e.test, qty:e.qty, price:e.price, sample:"", notes:e.notes }; })).map(function(i){
+              return '<tr><td>' + esc(i.test) + '</td><td style="text-align:center">' + esc(i.qty) + '</td><td style="text-align:center">' + fmt(i.price) + '</td><td>' + esc(i.sample || "") + '</td><td>' + esc(i.notes || "") + '</td></tr>';
+            }).join("") + '</tbody></table>' + (p.note ? '<div class="pre" style="margin-top:4px">' + esc(p.note) + '</div>' : '');
+      }
+      h += '</div>';
+    });
+    if(done && !(r.quoteItems && r.quoteItems.length)) h += '<div class="muted" style="margin-top:6px">✓ أسعار المختبرات نُقلت تلقائياً إلى عرض السعر أدناه.</div>';
+    return h + '</div>';
   }
 
   /* ---------- بنود عرض السعر ---------- */

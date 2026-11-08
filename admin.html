@@ -1044,14 +1044,21 @@ function renderPages(pages){
     official: "الكتاب الرسمي",
     email: "الإيميل",
     costform: "استمارة الكلفة",
-    requests: "طلبات الزبائن"
+    requests: "طلبات الزبائن",
+    lab_struct: "تسعير: المختبر الإنشائي",
+    lab_chem: "تسعير: المختبر الكيمياوي",
+    lab_elec: "تسعير: مختبر الكهرباء",
+    lab_metal: "تسعير: المعادن والميكانيك",
+    lab_insp: "تسعير: الفحص الهندسي",
+    lab_shop: "تسعير: الورشة",
+    lab_elev: "تسعير: المصاعد"
   };
 
   ALL_PAGES_CACHE.forEach(function(p){
     const page  = String(p || "").trim();
     const lower = page.toLowerCase();
 
-    if(lower === "index" || lower === "login" || lower === "admin") return;
+    if(lower === "index" || lower === "login" || lower === "admin" || lower === "labprice") return;
 
     const displayName = PAGE_NAMES[page] || page;
 
@@ -1099,7 +1106,14 @@ function renderUsersTable(list){
     official: "الكتاب الرسمي",
     email: "الإيميل",
     costform: "استمارة الكلفة",
-    requests: "طلبات الزبائن"
+    requests: "طلبات الزبائن",
+    lab_struct: "تسعير: المختبر الإنشائي",
+    lab_chem: "تسعير: المختبر الكيمياوي",
+    lab_elec: "تسعير: مختبر الكهرباء",
+    lab_metal: "تسعير: المعادن والميكانيك",
+    lab_insp: "تسعير: الفحص الهندسي",
+    lab_shop: "تسعير: الورشة",
+    lab_elev: "تسعير: المصاعد"
   };
 
   let html = "";
