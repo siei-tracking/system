@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
   <meta charset="UTF-8">
@@ -814,13 +814,21 @@ window.COST_CATALOG = [
       }catch(err){ setNotice("❌ " + (err && err.message || "تعذر تجهيز الملفات"), "err"); return; }
       if(pdf.bytes.length > MAX_TOTAL){ setNotice("❌ حجم الملف النهائي أكبر من 25MB، قلّل عدد الصور أو حجمها", "err"); return; }
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري رفع الطلب...';
-      const r = await apiPost({
+      const payload = {
         action:"submitCustomerRequest", name:name, company:$("company").value.trim(), phone:phone, email:email,
         services:services, details:details, letterNo:letterNo, letterDate:letterDate,
         file:{ name:"ملف الطلب.pdf", mime:"application/pdf", data:toB64(pdf.bytes) },
         parts:{ letter:letterFile.name, attachments:attFiles.map(function(a){ return a.file.name; }), pages:pdf.pages },
         website:$("website").value
-      });
+      };
+      /* عند ضغط الطلبات في نفس الوقت: إعادة المحاولة تلقائياً بدون أن يعيد الزبون التعبئة */
+      let r = null;
+      for(let attempt = 1; attempt <= 5; attempt++){
+        r = await apiPost(payload);
+        if(!(r && r.ok === false && (r.busy || /^⏳/.test(String(r.message || ""))))) break;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> النظام مشغول بطلبات أخرى، إعادة المحاولة (' + attempt + '/5)...';
+        await new Promise(function(res){ setTimeout(res, 2000 + Math.random() * 3000); });
+      }
       if(r && r.ok){
         $("doneId").textContent = r.requestId || "";
         $("formCard").style.display = "none";
