@@ -718,6 +718,15 @@ window.COST_CATALOG = [
   function fmt(v){ const n = num(v); return n ? n.toLocaleString("en-US") : ""; }
   function catItem(name){ const s = CATALOG.find(function(x){ return x.id === LAB; }); return s ? (s.items.find(function(i){ return i.name === name; }) || null) : null; }
   function labDays(it){ const s = CATALOG.find(function(x){ return x.id === LAB; }); return (it && it.days) || (s && s.days) || ""; }
+  function daysOpts(sel){
+    let h = '<option value="">— اختر —</option>';
+    const list = [1,2,3,4,5,6,7,8,9,10,12,14,15,20,21,25,30,35,40,45,60,90];
+    if(sel && list.indexOf(Number(sel)) === -1) list.push(Number(sel)), list.sort(function(a, b){ return a - b; });
+    list.forEach(function(d){
+      h += '<option value="' + d + '"' + (String(d) === String(sel || "") ? " selected" : "") + '>' + d + (d <= 10 ? " أيام" : " يوماً") + '</option>';
+    });
+    return h;
+  }
   function rangeText(it){ if(!it) return ""; if(it.min && it.max) return fmt(it.min) + " – " + fmt(it.max); if(it.min) return "أكثر من " + fmt(it.min); return ""; }
   async function call(action, extra){
     const token = getSessionToken();
@@ -840,7 +849,7 @@ window.COST_CATALOG = [
         + '</div>'
         + '<div class="g3">'
         +   '<div class="input-group" style="margin:0"><label>العدد الفعلي</label><input class="i-qty" type="number" min="1" value="' + esc(p.qty || it.qty || 1) + '"' + dis + '></div>'
-        +   '<div class="input-group" style="margin:0"><label>مدة الإنجاز (يوم)</label><input class="i-days" type="number" min="1" value="' + esc(p.days || labDays(c) || "") + '"' + dis + '></div>'
+        +   '<div class="input-group" style="margin:0"><label>مدة الإنجاز <span style="color:var(--danger)">*</span></label><select class="i-days"' + dis + '>' + daysOpts(p.days) + '</select></div>'
         +   '<div class="input-group" style="margin:0"><label>سعر الوحدة (د.ع) <span style="color:var(--danger)">*</span></label><input class="i-price" inputmode="decimal" value="' + esc(fmt(def)) + '"' + dis + '></div>'
         +   '<div class="lt i-lt"></div>'
         + '</div>'
@@ -904,6 +913,8 @@ window.COST_CATALOG = [
       items.push(it);
     });
     if(missing.length){ showMsg("⚠️ أدخل سعر: " + missing.join("، "), "warn"); return; }
+    const noDays = items.filter(function(x){ return !Number(x.days); });
+    if(noDays.length){ showMsg("⚠️ اختر مدة الإنجاز لكل البنود", "warn"); document.querySelector("#drBody .i-days:invalid, #drBody .i-days")?.focus(); return; }
     const extras = [];
     document.querySelectorAll("#exList .ex-row").forEach(function(r){
       const x = { test:r.querySelector(".x-t").value.trim(), qty:r.querySelector(".x-q").value, price:String(num(r.querySelector(".x-p").value) || ""), notes:r.querySelector(".x-n").value.trim() };

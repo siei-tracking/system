@@ -10,7 +10,7 @@
   if(!Array.isArray(window.COST_CATALOG) || !window.COST_CATALOG.length){
 window.COST_CATALOG = [
   {
-    id: "struct", name: "المختبر الإنشائي", dept: "قسم الفحص الهندسي والمختبرات", days: 7,
+    id: "struct", name: "المختبر الإنشائي", dept: "قسم الفحص الهندسي والمختبرات",
     items: [
       { name: "السمنت (كيمياوي + فيزياوي)", price: 200000 },
       { name: "انضغاط المكعبات الخرسانية", price: 10000, per: "مكعب" },
@@ -33,7 +33,7 @@ window.COST_CATALOG = [
     ]
   },
   {
-    id: "chem", name: "المختبر الكيمياوي", dept: "قسم الفحص الهندسي والمختبرات", days: 7,
+    id: "chem", name: "المختبر الكيمياوي", dept: "قسم الفحص الهندسي والمختبرات",
     items: [
       { name: "الفحص الكيمياوي (سمنت، رمل، حصى)", price: 100000 },
       { name: "أنابيب شبكات ماء (PVC, PPR, PE)", price: 300000 },
@@ -44,7 +44,7 @@ window.COST_CATALOG = [
     ]
   },
   {
-    id: "elec", name: "مختبر الكهرباء", dept: "قسم الفحص الهندسي والمختبرات", days: 7,
+    id: "elec", name: "مختبر الكهرباء", dept: "قسم الفحص الهندسي والمختبرات",
     items: [
       { name: "أسلاك كهربائية (1.5 – 10 mm)", price: 50000 },
       { name: "قابلوات كهربائية (ضغط واطئ، موصلات)", price: 150000 },
@@ -59,7 +59,7 @@ window.COST_CATALOG = [
     ]
   },
   {
-    id: "metal", name: "مختبر المعادن والميكانيك", dept: "قسم الفحص الهندسي والمختبرات", days: 7,
+    id: "metal", name: "مختبر المعادن والميكانيك", dept: "قسم الفحص الهندسي والمختبرات",
     items: [
       { name: "التحليل الكيمياوي للسبائك المعدنية", price: 100000,
         extras: [{ name: "تحضير النموذج في الورشة", price: 50000, sec: "shop" }], note: "قد يحتاج تحضيراً في الورشة (+50,000)" },
@@ -83,7 +83,7 @@ window.COST_CATALOG = [
     ]
   },
   {
-    id: "insp", name: "الفحص الهندسي (موقعي)", dept: "قسم الفحص الهندسي والمختبرات", days: 7,
+    id: "insp", name: "الفحص الهندسي (موقعي)", dept: "قسم الفحص الهندسي والمختبرات",
     items: [
       { name: "رافعة جسرية — داخل بغداد", price: 750000, per: "قطعة" },
       { name: "رافعة جسرية — خارج بغداد", price: 1500000, per: "قطعة" },
@@ -109,7 +109,7 @@ window.COST_CATALOG = [
     ]
   },
   {
-    id: "shop", name: "الورشة", dept: "قسم هندسة الإنتاج", days: 7,
+    id: "shop", name: "الورشة", dept: "قسم هندسة الإنتاج",
     items: [
       { name: "تحضير النموذج في الورشة", price: 50000, min: 50000, max: 100000, note: "تحضير نموذج لفحوصات المعادن" },
       { name: "تصنيع عينة شد معدن", price: 125000 },
@@ -127,7 +127,7 @@ window.COST_CATALOG = [
     ]
   },
   {
-    id: "elev", name: "المصاعد", dept: "قسم المصاعد", days: 7,
+    id: "elev", name: "المصاعد", dept: "قسم المصاعد",
     items: [
       { name: "فحص سلامة وأمان", price: null, min: 250000, max: 1500000, per: "مصعد",
         note: "250,000 – 1,500,000 حسب الفئة/القطاع + تحميلات إدارية حسب الموقع" }
@@ -459,8 +459,8 @@ window.COST_CATALOG = [
     .empty{ padding:24px; text-align:center; color:var(--muted); font-weight:800; }
 
     /* لوحة التفاصيل */
-    .drawer-bg{ position:fixed; inset:0; background:rgba(15,25,35,.45); z-index:2147483600; display:none; }
-    .drawer{ position:fixed; top:0; bottom:0; left:0; width:min(860px,100%); background:#f4f6f8; z-index:2147483601; overflow-y:auto;
+    .drawer-bg{ position:fixed; inset:0; background:rgba(15,25,35,.45); z-index:900; display:none; }
+    .drawer{ position:fixed; top:0; bottom:0; left:0; width:min(860px,100%); background:#f4f6f8; z-index:901; overflow-y:auto;
       transform:translateX(-105%); transition:transform .25s ease; box-shadow:0 0 40px rgba(0,0,0,.25); }
     .drawer.on{ transform:none; } .drawer-bg.on{ display:block; }
     .dr-head{ position:sticky; top:0; background:var(--primary); color:#fff; padding:12px 16px; display:flex; align-items:center; gap:10px; z-index:2; }
@@ -482,7 +482,7 @@ window.COST_CATALOG = [
     table.qt td{ border-bottom:1px solid var(--line); padding:4px; vertical-align:top; }
     table.qt input, table.qt select{ min-height:36px; font-size:13px; padding:4px 8px; }
     table.qt td.lt{ font-weight:900; text-align:center; white-space:nowrap; padding-top:10px; }
-    .q-foot{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-top:8px; }
+    .q-foot{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:8px; }
     .q-total{ font-size:20px !important; font-weight:900 !important; text-align:center !important; }
     .btns{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
     .btns .main-btn{ width:auto; flex:1; min-width:150px; padding:9px 14px; }
@@ -508,18 +508,9 @@ window.COST_CATALOG = [
       .q-foot, .set-grid{ grid-template-columns:1fr; }
       .kv{ grid-template-columns:95px 1fr; }
       .toolbar input{ max-width:none; width:100%; margin:0; }
-      .qt-wrap{ overflow-x:auto; } table.qt{ min-width:720px; }
+      .qt-wrap{ overflow-x:auto; } table.qt{ min-width:640px; }
     }
     ol.parts{ margin:2px 0 0; padding-right:20px; font-weight:700; font-size:13.5px; line-height:1.9; }
-    .lab-p{ border:1px solid var(--line); border-radius:10px; padding:8px; margin-bottom:8px; }
-    .lab-h{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:6px; }
-    #toast{ z-index:2147483646 !important; }
-    .fv{ border:1px solid var(--line); border-radius:10px; margin-bottom:8px; overflow:hidden; }
-    .fv-h{ display:flex; align-items:center; gap:8px; padding:8px 10px; flex-wrap:wrap; }
-    .fv-h > i{ color:var(--accent); font-size:20px; width:24px; text-align:center; }
-    .fv-t{ flex:1; min-width:140px; }
-    .fv-p iframe{ width:100%; height:70vh; min-height:420px; border:0; border-top:1px solid var(--line); background:#f3f5f8; display:block; }
-    a.icon-btn{ text-decoration:none; color:inherit; display:inline-flex; align-items:center; gap:4px; }
   </style>
 </head>
 
@@ -880,8 +871,7 @@ window.COST_CATALOG = [
         + '<div><div class="id">' + esc(it.requestId) + '</div><div class="d">' + esc(it.createdAt) + '</div></div>'
         + '<div><div class="n">' + esc(it.company || it.name) + '</div><div class="d">' + esc(it.company ? it.name : "") + ' <span dir="ltr">' + esc(it.phone) + '</span></div></div>'
         + '<div class="s">' + esc(svcSummary(it.services)) + ((it.hasFile || it.attachCount) ? ' <i class="fas fa-paperclip" title="مرفقات"></i>' + (it.attachCount ? ' ' + (it.attachCount + (it.hasFile ? 1 : 0)) : '') : '') + '</div>'
-        + '<div>' + badge(it.status) + (it.orderNo ? '<div class="d">أمر عمل: ' + esc(it.orderNo) + '</div>' : '')
-        + ((it.labStatus || []).length ? '<div class="d">🧪 تسعير المختبرات ' + it.labStatus.filter(function(x){ return x.done; }).length + '/' + it.labStatus.length + '</div>' : '') + '</div>'
+        + '<div>' + badge(it.status) + (it.orderNo ? '<div class="d">أمر عمل: ' + esc(it.orderNo) + '</div>' : '') + '</div>'
         + '<div class="a">' + (it.quoteAmount ? fmt(it.quoteAmount) + " " + esc(it.quoteCurrency) : "—") + '</div>'
         + '</div>';
     }).join("");
@@ -910,7 +900,7 @@ window.COST_CATALOG = [
     const lite = {
       requestId:req.requestId, createdAt:req.createdAt, status:req.status, statusLabel:req.statusLabel, name:req.name, company:req.company,
       phone:req.phone, email:req.email, letterNo:req.letterNo, letterDate:req.letterDate, services:req.services, hasFile:req.hasFile, attachCount:(req.attachments || []).length, fileName:req.fileName,
-      quoteAmount:req.quoteAmount, quoteCurrency:req.quoteCurrency, quoteSentAt:req.quoteSentAt, orderNo:req.orderNo, updatedAt:req.updatedAt, labStatus:req.labStatus
+      quoteAmount:req.quoteAmount, quoteCurrency:req.quoteCurrency, quoteSentAt:req.quoteSentAt, orderNo:req.orderNo, updatedAt:req.updatedAt
     };
     if(i === -1) ITEMS.unshift(lite); else ITEMS[i] = lite;
     recount(); renderAll();
@@ -964,20 +954,29 @@ window.COST_CATALOG = [
       +   (r.details ? '<div class="pre" style="margin-top:8px">' + esc(r.details) + '</div>' : '')
       + '</div>'
 
-      + filesHtml(r)
+      + (function(){
+          const all = r.attachments || [];
+          const files = all.filter(function(x){ return x.hasFile; });
+          const parts = all.filter(function(x){ return !x.hasFile; });
+          const merged = parts.length > 0;
+          return '<div class="box"><h4><i class="fas fa-paperclip"></i> ' + (merged ? 'ملف الطلب (PDF موحّد)' : 'الكتاب والمرفقات') + '</h4>'
+            + (r.hasFile ? fileRow(-1, merged ? "ملف الطلب.pdf" : r.fileName, r.fileMime, r.fileSize) : '<div class="muted">لا يوجد ملف</div>')
+            + (merged ? '<div class="muted" style="margin:6px 0 2px">يحتوي الملف على:</div><ol class="parts">'
+                + parts.map(function(x){ return '<li>' + (x.role === "letter" ? '<b>الكتاب / الطلب:</b> ' : '') + esc(x.name) + '</li>'; }).join("") + '</ol>' : '')
+            + (files.length ? '<div class="muted" style="margin:8px 0 4px">المرفقات</div>' + files.map(function(x){ return fileRow(x.index, x.name, x.mime, x.size); }).join("") : '')
+            + '</div>';
+        })()
 
-      + labBox(r)
       + '<div class="box"><h4><i class="fas fa-file-invoice-dollar"></i> عرض السعر</h4>'
       +   (locked ? '<div class="notice ok" style="margin-top:0">✅ عرض السعر مقبول — لا يمكن تعديله</div>' : '')
-      +   '<div class="qt-wrap"><table class="qt"><thead><tr><th style="width:24%">القسم</th><th>الفحص / الخدمة</th><th style="width:8%">العدد</th><th style="width:9%">المدة (يوم)</th><th style="width:14%">سعر الوحدة</th><th style="width:13%">المجموع</th><th style="width:40px"></th></tr></thead><tbody id="qBody"></tbody></table></div>'
+      +   '<div class="qt-wrap"><table class="qt"><thead><tr><th style="width:24%">القسم</th><th>الفحص / الخدمة</th><th style="width:9%">العدد</th><th style="width:15%">سعر الوحدة</th><th style="width:13%">المجموع</th><th style="width:40px"></th></tr></thead><tbody id="qBody"></tbody></table></div>'
       +   (locked ? '' : '<button class="add-btn" style="margin-top:6px" onclick="addQRow()"><i class="fas fa-plus"></i> إضافة بند</button>')
       +   '<div class="q-foot">'
       +     '<div class="input-group"><label>العملة</label><select id="qCur"' + (locked ? " disabled" : "") + '><option value="IQD">دينار عراقي (IQD)</option><option value="USD">دولار أمريكي (USD)</option></select></div>'
       +     '<div class="input-group"><label>المبلغ الإجمالي</label><input id="qAmount" class="q-total" inputmode="decimal"' + (locked ? " disabled" : "") + '></div>'
-      +     '<div class="input-group"><label>مدة الإنجاز (يوم عمل)</label><input id="qDays" class="q-total" type="number" min="1" max="365"' + (locked ? " disabled" : "") + '></div>'
       +     '<div class="input-group"><label>صلاحية العرض (يوم)</label><input id="qValid" type="number" min="1" max="180" value="30"' + (locked ? " disabled" : "") + '></div>'
       +   '</div>'
-      +   '<div class="input-group"><label>ملاحظات تظهر للزبون</label><textarea id="qNotes" rows="3" maxlength="1500" placeholder="مثال: الأسعار تشمل تقرير النتائج الرسمي."' + (locked ? " disabled" : "") + '></textarea></div>'
+      +   '<div class="input-group"><label>ملاحظات تظهر للزبون</label><textarea id="qNotes" rows="3" maxlength="1500" placeholder="مثال: مدة الإنجاز 10 أيام عمل من تاريخ استلام النماذج."' + (locked ? " disabled" : "") + '></textarea></div>'
       +   (r.quoteSentAt ? '<div class="muted">آخر إرسال: ' + esc(r.quoteSentAt) + ' بواسطة ' + esc(r.quoteSentBy) + '</div>' : '')
       +   (locked ? '' :
             '<div class="btns">'
@@ -1006,56 +1005,18 @@ window.COST_CATALOG = [
     $("drBody").innerHTML = h;
 
     /* بنود عرض السعر: المحفوظة، وإلا من خدمات الزبون بأسعار الدليل */
-    /* البنود: المحفوظة، وإلا من خدمات الزبون بأسعار المختبرات (إن وُجدت) أو الدليل */
-    const LP = r.labPricing || {};
-    let base = (r.quoteItems && r.quoteItems.length) ? r.quoteItems : (r.services || []).map(function(s, i){
+    const base = (r.quoteItems && r.quoteItems.length) ? r.quoteItems : (r.services || []).map(function(s){
       const it = itemOf(secById(s.sectionId), s.test);
-      const lp = LP[s.sectionId] && (LP[s.sectionId].items || []).find(function(x){ return Number(x.idx) === i; });
-      if(lp) return { sectionId:s.sectionId, section:s.section, test:s.test, qty:lp.qty || s.qty, price:lp.price, details:lp.sample || "", days:lp.days || itemDays(s.sectionId, s.test) };
-      return { sectionId:s.sectionId, section:s.section, test:s.test, qty:s.qty, price: it && it.price != null ? it.price : (it && it.min ? it.min : ""), days:itemDays(s.sectionId, s.test) };
+      return { sectionId:s.sectionId, section:s.section, test:s.test, qty:s.qty, price: it && it.price != null ? it.price : (it && it.min ? it.min : "") };
     });
-    if(!(r.quoteItems && r.quoteItems.length)){
-      Object.keys(LP).forEach(function(k){
-        const sec = secById(k);
-        (LP[k].extras || []).forEach(function(x){ base.push({ sectionId:k, section:sec ? sec.name : k, test:x.test, qty:x.qty, price:x.price, details:x.notes || "" }); });
-      });
-    }
     (base.length ? base : [{}]).forEach(function(it){ addQRow(it, locked); });
     $("qCur").value = r.quoteCurrency || "IQD";
     $("qValid").value = r.quoteValidDays || 30;
-    $("qDays").value = r.quoteDays || "";
-    $("qDays").addEventListener("input", function(){ this.dataset.touched = "1"; });
-    if(!r.quoteDays) recalcDays();
     $("qNotes").value = r.quoteNotes || "";
     $("qAmount").value = r.quoteAmount ? fmt(r.quoteAmount) : "";
     if(!r.quoteAmount) qRecalc();
     $("qAmount").addEventListener("input", function(){ this.dataset.touched = "1"; });
     loadReqMails(r.requestId);
-    fvPrefetch(r);
-  }
-
-  /* ---------- تسعير المختبرات ---------- */
-  function labBox(r){
-    const st = r.labStatus || [];
-    if(!st.length) return '';
-    const LP = r.labPricing || {};
-    const done = st.filter(function(x){ return x.done; }).length;
-    let h = '<div class="box"><h4><i class="fas fa-flask-vial"></i> تسعير المختبرات <span class="badge ' + (done === st.length ? "st-accepted" : "st-review") + '">' + done + ' / ' + st.length + '</span></h4>';
-    st.forEach(function(x){
-      const p = LP[x.lab];
-      h += '<div class="lab-p"><div class="lab-h"><b>' + esc(x.name) + '</b>'
-        + (p && p.at ? '<span class="badge st-accepted">' + fmt(p.total) + ' د.ع</span><span class="muted">' + esc(p.by) + ' — ' + esc(p.at) + '</span>'
-                     : '<span class="badge st-review">بانتظار التسعير</span>') + '</div>';
-      if(p && p.at){
-        h += '<table class="log"><thead><tr><th>البند</th><th>العدد</th><th>المدة</th><th>سعر الوحدة</th><th>تفاصيل العينة</th><th>ملاحظات</th></tr></thead><tbody>'
-          + (p.items || []).concat((p.extras || []).map(function(e){ return { test:"➕ " + e.test, qty:e.qty, price:e.price, sample:"", notes:e.notes }; })).map(function(i){
-              return '<tr><td>' + esc(i.test) + '</td><td style="text-align:center">' + esc(i.qty) + '</td><td style="text-align:center">' + esc(i.days ? i.days + " يوم" : "") + '</td><td style="text-align:center">' + fmt(i.price) + '</td><td>' + esc(i.sample || "") + '</td><td>' + esc(i.notes || "") + '</td></tr>';
-            }).join("") + '</tbody></table>' + (p.note ? '<div class="pre" style="margin-top:4px">' + esc(p.note) + '</div>' : '');
-      }
-      h += '</div>';
-    });
-    if(done && !(r.quoteItems && r.quoteItems.length)) h += '<div class="muted" style="margin-top:6px">✓ أسعار المختبرات نُقلت تلقائياً إلى عرض السعر أدناه.</div>';
-    return h + '</div>';
   }
 
   /* ---------- بنود عرض السعر ---------- */
@@ -1084,7 +1045,6 @@ window.COST_CATALOG = [
       +   '<input class="q-test-o" placeholder="اسم الفحص / الخدمة" value="' + esc(custom ? it.test || "" : "") + '" style="margin-top:4px;' + (custom && (secId || it.test) ? "" : "display:none") + '"' + dis + '>'
       +   '<input class="q-det" placeholder="تفاصيل (اختياري)" value="' + esc(it.details || "") + '" style="margin-top:4px"' + dis + '></td>'
       + '<td><input class="q-qty" type="number" min="1" value="' + esc(it.qty || 1) + '"' + dis + '></td>'
-      + '<td><input class="q-days" type="number" min="1" value="' + esc(it.days || itemDays(secId, it.test) || "") + '"' + dis + '></td>'
       + '<td><input class="q-price" inputmode="decimal" value="' + esc(fmt(it.price)) + '"' + dis + '></td>'
       + '<td class="lt"></td>'
       + '<td>' + (locked ? "" : '<button class="del-btn" title="حذف"><i class="fas fa-trash"></i></button>') + '</td>';
@@ -1102,8 +1062,6 @@ window.COST_CATALOG = [
       tr.querySelector(".q-test-o").style.display = qt.value === OTHER ? "" : "none";
       const x = itemOf(secById(qs.value), qt.value);
       tr.querySelector(".q-price").value = x && x.price != null ? fmt(x.price) : (x && x.min ? fmt(x.min) : "");
-      tr.querySelector(".q-days").value = itemDays(qs.value, qt.value) || "";
-      recalcDays();
       qLine(tr);
     });
     tr.querySelector(".q-qty").addEventListener("input", function(){ qLine(tr); });
@@ -1122,18 +1080,6 @@ window.COST_CATALOG = [
     const sum = readQItems().reduce(function(a, x){ return a + num(x.price) * (num(x.qty) || 1); }, 0);
     $("qAmount").value = sum ? fmt(sum) : "";
   }
-  /* مدة البند من الدليل (البند أو القسم) */
-  function itemDays(secId, test){
-    const sec = secById(secId), it = itemOf(sec, test);
-    return (it && it.days) || (sec && sec.days) || "";
-  }
-  /* مدة الإنجاز الكلية = أكبر مدة بين البنود (الفحوصات تُنفَّذ بالتوازي) */
-  function recalcDays(){
-    const el = $("qDays"); if(!el || el.dataset.touched === "1") return;
-    const m = readQItems().reduce(function(a, x){ return Math.max(a, num(x.days)); }, 0);
-    el.value = m || "";
-  }
-  document.addEventListener("input", function(e){ if(e.target.classList && e.target.classList.contains("q-days")) recalcDays(); });
   function readQItems(){
     const out = [];
     Array.prototype.forEach.call($("qBody").children, function(tr){
@@ -1142,14 +1088,13 @@ window.COST_CATALOG = [
       const test = (!sec || tv === OTHER) ? tr.querySelector(".q-test-o").value.trim() : tv;
       const section = sid === OTHER ? (tr.querySelector(".q-sec-o").value.trim() || "أخرى") : (sec ? sec.name : "");
       const x = { sectionId: sec ? sid : "", section:section, test:test, details:tr.querySelector(".q-det").value.trim(),
-                  qty:String(num(tr.querySelector(".q-qty").value) || 1), price:String(num(tr.querySelector(".q-price").value) || ""),
-                  days:String(num(tr.querySelector(".q-days").value) || "") };
+                  qty:String(num(tr.querySelector(".q-qty").value) || 1), price:String(num(tr.querySelector(".q-price").value) || "") };
       if(x.section || x.test) out.push(x);
     });
     return out;
   }
   function readQuote(){
-    return { items:readQItems(), currency:$("qCur").value, amount:String(num($("qAmount").value) || ""), validDays:$("qValid").value, days:String(num($("qDays").value) || ""), notes:$("qNotes").value.trim() };
+    return { items:readQItems(), currency:$("qCur").value, amount:String(num($("qAmount").value) || ""), validDays:$("qValid").value, notes:$("qNotes").value.trim() };
   }
 
   async function withBtn(id, label, fn){
@@ -1211,58 +1156,6 @@ window.COST_CATALOG = [
       setTimeout(function(){ URL.revokeObjectURL(url); }, 60000);
     });
   }
-
-
-  /* ============================================================
-   * عرض الملفات السريع (معاينة Drive داخل الصفحة)
-   * ============================================================ */
-  const PV = {};   /* index → {preview, download} */
-  function filesHtml(r){
-    const all = r.attachments || [];
-    const files = all.filter(function(x){ return x.hasFile; });
-    const parts = all.filter(function(x){ return !x.hasFile; });
-    const split = files.some(function(x){ return x.role === "samples"; });
-    const letterName = (parts.find(function(p){ return p.role === "letter"; }) || {}).name || "";
-    const sampleNames = parts.filter(function(p){ return p.role === "attachment"; }).map(function(p){ return p.name; }).join("، ");
-    let h = '<div class="box"><h4><i class="fas fa-paperclip"></i> الملفات</h4>';
-    if(r.hasFile) h += fvRow(-1, split || !parts.length ? "الكتاب / الطلب" : "ملف الطلب (موحّد)", split ? letterName : (parts.length ? parts.map(function(p){ return p.name; }).join("، ") : ""), "fa-file-lines");
-    files.forEach(function(x){ h += fvRow(x.index, x.role === "samples" ? "صور العينات" : x.name, x.role === "samples" ? sampleNames : "", x.role === "samples" ? "fa-images" : "fa-file"); });
-    if(!r.hasFile && !files.length) h += '<div class="muted">لا يوجد ملف</div>';
-    return h + '</div>';
-  }
-  function fvRow(i, title, sub, ic){
-    return '<div class="fv"><div class="fv-h"><i class="fas ' + ic + '"></i><div class="fv-t"><b>' + esc(title) + '</b>' + (sub ? '<div class="muted">' + esc(sub) + '</div>' : '') + '</div>'
-      + '<button class="icon-btn" data-fv="' + i + '"><i class="fas fa-eye"></i> عرض</button>'
-      + '<a class="icon-btn" id="fvdl_' + (i + 1) + '" target="_blank" rel="noopener" style="display:none"><i class="fas fa-download"></i> تحميل</a>'
-      + '<a class="icon-btn" id="fvop_' + (i + 1) + '" target="_blank" rel="noopener" style="display:none"><i class="fas fa-up-right-from-square"></i></a></div>'
-      + '<div class="fv-p" id="fvp_' + (i + 1) + '"></div></div>';
-  }
-  async function fvGet(i){
-    if(PV[i]) return PV[i];
-    const r = await call("getCustomerRequestPreview", Object.assign({ index:i }, { requestId:CUR.requestId }));
-    if(r && r.ok){ PV[i] = r; const d = $("fvdl_" + (i + 1)), o = $("fvop_" + (i + 1));
-      if(d){ d.href = r.download; d.style.display = ""; } if(o){ o.href = r.preview; o.style.display = ""; } }
-    return r;
-  }
-  /* تجهيز روابط المعاينة مسبقاً عند فتح الطلب */
-  function fvPrefetch(r){
-    Object.keys(PV).forEach(function(k){ delete PV[k]; });
-    const idx = []; if(r.hasFile) idx.push(-1);
-    (r.attachments || []).forEach(function(x){ if(x.hasFile) idx.push(x.index); });
-    idx.forEach(function(i){ fvGet(i).catch(function(){}); });
-  }
-  document.addEventListener("click", async function(e){
-    const b = e.target.closest && e.target.closest("[data-fv]"); if(!b) return;
-    const i = Number(b.getAttribute("data-fv")), box = $("fvp_" + (i + 1));
-    if(box.innerHTML){ box.innerHTML = ""; b.innerHTML = '<i class="fas fa-eye"></i> عرض'; return; }
-    b.disabled = true; b.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-    try{
-      const r = await fvGet(i);
-      if(r && r.ok){ box.innerHTML = '<iframe src="' + esc(r.preview) + '" allow="autoplay" loading="eager"></iframe>'; b.innerHTML = '<i class="fas fa-eye-slash"></i> إخفاء'; }
-      else{ showMsg((r && r.message) || "❌ تعذر عرض الملف", "err"); b.innerHTML = '<i class="fas fa-eye"></i> عرض'; }
-    }catch(x){ showMsg("❌ خطأ في الاتصال", "err"); b.innerHTML = '<i class="fas fa-eye"></i> عرض'; }
-    finally{ b.disabled = false; }
-  });
 
   async function loadReqMails(id){
     try{
@@ -1331,18 +1224,6 @@ window.COST_CATALOG = [
   /* ============================================================
    * INIT
    * ============================================================ */
-
-  /* ===== التحديث المباشر ===== */
-  window.onLiveChange = function(scopes){
-    if(scopes.indexOf("requests") === -1 && scopes.indexOf("orders") === -1) return;
-    loadList(false);
-    /* الطلب المفتوح: يُحدَّث فقط إذا لم يكن الموظف يعدّل عرض السعر */
-    if(CUR && !busy){
-      const a = document.activeElement, editing = a && $("drawer").contains(a) && /INPUT|TEXTAREA|SELECT/.test(a.tagName);
-      if(!editing && !$("qAmount")?.dataset.touched) openRequest(CUR.requestId);
-      else showMsg("🔄 يوجد تحديث على هذا الطلب — أعد فتحه بعد الحفظ", "warn");
-    }
-  };
   window.addEventListener("load", function(){
     ensurePageSession();
     liveSessionInterval = setInterval(checkLiveSession, 10000);
@@ -1350,11 +1231,10 @@ window.COST_CATALOG = [
       const id = new URLSearchParams(location.search).get("id");
       if(id) openRequest(id);
     });
-    setInterval(function(){ if(!CUR && !document.hidden) loadList(false); }, 180000);
+    setInterval(function(){ if(!CUR && !document.hidden) loadList(false); }, 60000);
   });
 </script>
   <script>window.PAGE_NAME = "requests";</script>
   <script src="/system/notifications-widget.js" defer></script>
-  <script src="/system/live-sync.js" defer></script>
 </body>
 </html>

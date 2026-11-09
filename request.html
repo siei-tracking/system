@@ -632,8 +632,6 @@ window.COST_CATALOG = [
         else if(it.min && it.max) h += '<span>السعر التقريبي: ' + fmt(it.min) + ' – ' + fmt(it.max) + ' د.ع</span>';
         else h += '<span>السعر يُحدَّد بعد مراجعة الطلب</span>';
       }
-      const sec = secById(div.querySelector(".s-sec").value), d = it.days || (sec && sec.days);
-      if(d) h += '<span><i class="fas fa-clock"></i> مدة الإنجاز: ' + d + ' أيام عمل</span>';
       if(it.note) h += '<span class="muted">' + esc(it.note) + '</span>';
     }
     hint.innerHTML = h;
@@ -649,12 +647,9 @@ window.COST_CATALOG = [
       any = true;
       const q = Math.max(1, parseInt(div.querySelector(".s-qty").value, 10) || 1);
       if(it && it.price != null) sum += it.price * q; else unknown = true;
-      const sec = secById(sv), d = (it && it.days) || (sec && sec.days) || 0;
-      days = Math.max(days, d);
     });
     $("estBox").innerHTML = any && sum
       ? '<i class="fas fa-calculator"></i> الكلفة التقريبية: <b>' + fmt(sum) + '</b> دينار' + (unknown ? ' + بنود تُسعَّر لاحقاً' : '')
-        + (days ? '<div style="margin-top:4px"><i class="fas fa-clock"></i> مدة الإنجاز المتوقعة: <b>' + days + ' أيام عمل</b> من تاريخ استلام النماذج</div>' : '')
         + '<div class="help">السعر النهائي يُحدَّد في عرض السعر الذي يصلك على البريد</div>'
       : "";
   }
