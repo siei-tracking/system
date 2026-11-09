@@ -1,144 +1,11 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
   <meta charset="UTF-8">
   <script src="/system/config.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
-  <script src="/system/cost-catalog.js"></script>
-  <script>
-  /* نسخة احتياطية من دليل الأسعار — تُستخدم فقط إذا لم يُحمَّل ملف cost-catalog.js */
-  if(!Array.isArray(window.COST_CATALOG) || !window.COST_CATALOG.length){
-window.COST_CATALOG = [
-  {
-    id: "struct", name: "المختبر الإنشائي", dept: "قسم الفحص الهندسي والمختبرات",
-    items: [
-      { name: "السمنت (كيمياوي + فيزياوي)", price: 200000 },
-      { name: "انضغاط المكعبات الخرسانية", price: 10000, per: "مكعب" },
-      { name: "فحص الخرسانة بالموجات فوق الصوتية", price: 150000 },
-      { name: "الفحص بمطرقة شميدت", price: 150000 },
-      { name: "كور (لباب خرساني)", price: 50000 },
-      { name: "رمل، حصى، سبيس (فيزياوي + كيمياوي)", price: 200000 },
-      { name: "كربستون", price: 250000 },
-      { name: "حدل", price: 50000 },
-      { name: "مرمر", price: 250000 },
-      { name: "كاشي", price: 200000 },
-      { name: "سيراميك", price: 200000 },
-      { name: "طابوق، بلوك", price: 200000 },
-      { name: "زجاج", price: 200000 },
-      { name: "لباد قيري", price: 200000 },
-      { name: "مادة القير", price: 200000 },
-      { name: "فلانكوت", price: 200000 },
-      { name: "صبغ، إيبوكسي", price: 200000 },
-      { name: "صبغ إيبوكسي (غذائي)", price: 200000 }
-    ]
-  },
-  {
-    id: "chem", name: "المختبر الكيمياوي", dept: "قسم الفحص الهندسي والمختبرات",
-    items: [
-      { name: "الفحص الكيمياوي (سمنت، رمل، حصى)", price: 100000 },
-      { name: "أنابيب شبكات ماء (PVC, PPR, PE)", price: 300000 },
-      { name: "ملحقات أنابيب شبكات ماء (PVC, PPR, PE)", price: 300000 },
-      { name: "أنابيب شبكات المجاري (PVC)", price: 300000 },
-      { name: "ملحقات أنابيب المجاري (PVC)", price: 250000 },
-      { name: "فحص سمك وكمية الغلونة", price: 750000 }
-    ]
-  },
-  {
-    id: "elec", name: "مختبر الكهرباء", dept: "قسم الفحص الهندسي والمختبرات",
-    items: [
-      { name: "أسلاك كهربائية (1.5 – 10 mm)", price: 50000 },
-      { name: "قابلوات كهربائية (ضغط واطئ، موصلات)", price: 150000 },
-      { name: "قابلو معلق / قابلوات ضغط عالي", price: 250000 },
-      { name: "قواطع دورة — أقل من 100A", price: 50000, min: 50000, max: 100000 },
-      { name: "قواطع دورة — من 100A إلى 400A", price: 150000, min: 150000, max: 250000 },
-      { name: "قواطع دورة — أكثر من 400A", price: null, min: 250000, note: "حسب السعة (أكثر من 250,000)" },
-      { name: "محولات توزيع كهربائية — حتى 1M", price: 100000 },
-      { name: "محولات توزيع كهربائية — أعلى من 1M", price: 1000000 },
-      { name: "بوردات كهربائية", price: null, note: "حسب البورد" },
-      { name: "تراكيب إنارة", price: 150000 }
-    ]
-  },
-  {
-    id: "metal", name: "مختبر المعادن والميكانيك", dept: "قسم الفحص الهندسي والمختبرات",
-    items: [
-      { name: "التحليل الكيمياوي للسبائك المعدنية", price: 100000,
-        extras: [{ name: "تحضير النموذج في الورشة", price: 50000, sec: "shop" }], note: "قد يحتاج تحضيراً في الورشة (+50,000)" },
-      { name: "فحص البنية المجهرية", price: 50000,
-        extras: [{ name: "تحضير النموذج في الورشة", price: 50000, sec: "shop" }], note: "قد يحتاج تحضيراً في الورشة (+50,000)" },
-      { name: "مقاومة الشد – الخضوع – الاستطالة", price: 100000,
-        extras: [{ name: "تحضير النموذج في الورشة", price: 100000, sec: "shop" }], note: "قد يحتاج تحضيراً في الورشة (+100,000)" },
-      { name: "الصدمة", price: 50000,
-        extras: [{ name: "تحضير النموذج في الورشة", price: 100000, sec: "shop" }], note: "قد يحتاج تحضيراً في الورشة (+100,000)" },
-      { name: "الصلادة", price: 50000,
-        extras: [{ name: "تحضير النموذج في الورشة", price: 50000, sec: "shop" }], note: "قد يحتاج تحضيراً في الورشة (+50,000)" },
-      { name: "الحني", price: 50000,
-        extras: [{ name: "تحضير النموذج في الورشة", price: 50000, sec: "shop" }], note: "قد يحتاج تحضيراً في الورشة (+50,000)" },
-      { name: "مانع نفاذية (Water Stop)", price: 200000 },
-      { name: "حديد تسليح", price: 250000,
-        extras: [{ name: "تحضير النموذج في الورشة", price: 50000, sec: "shop" }, { name: "كلفة المواصفة", price: 120000, once: true }],
-        note: "تضاف كلفة الورشة (50,000) والمواصفة (120,000)" },
-      { name: "أنابيب الدكتايل", price: 200000,
-        extras: [{ name: "تحضير النموذج في الورشة", price: 100000, sec: "shop" }, { name: "كلفة المواصفة", price: 120000, once: true }],
-        note: "تضاف كلفة الورشة (100,000) والمواصفة (120,000)" }
-    ]
-  },
-  {
-    id: "insp", name: "الفحص الهندسي (موقعي)", dept: "قسم الفحص الهندسي والمختبرات",
-    items: [
-      { name: "رافعة جسرية — داخل بغداد", price: 750000, per: "قطعة" },
-      { name: "رافعة جسرية — خارج بغداد", price: 1500000, per: "قطعة" },
-      { name: "مرجل زيتي — داخل بغداد", price: 750000, per: "قطعة" },
-      { name: "مرجل زيتي — خارج بغداد", price: 1500000, per: "قطعة" },
-      { name: "رافعة شوكية — داخل بغداد", price: 350000, per: "قطعة" },
-      { name: "رافعة شوكية — خارج بغداد", price: 500000, per: "قطعة" },
-      { name: "وعاء ضغط — داخل بغداد", price: 750000, per: "قطعة" },
-      { name: "وعاء ضغط — خارج بغداد", price: 1500000, per: "قطعة" },
-      { name: "مدن الألعاب — داخل بغداد", price: 250000, min: 250000, max: 350000, per: "لعبة", note: "+ كلف الإيفاد" },
-      { name: "مدن الألعاب — خارج بغداد", price: 500000, per: "لعبة", note: "+ كلف الإيفاد" },
-      { name: "الفحص البصري لوصلات اللحام", price: 15000, per: "متر طول" },
-      { name: "الفحص بالأصباغ النافذة", price: 25000, per: "متر طول", note: "+ كلف الإيفاد" },
-      { name: "الفحص بالموجات فوق الصوتية (لحام)", price: 100000, per: "متر طول" },
-      { name: "التصوير الشعاعي", price: 50000, per: "قطعة", note: "+ كلف الإيفاد" },
-      { name: "الفحص بالدقائق المغناطيسية", price: 25000, per: "متر طول" },
-      { name: "الفحص بالصندوق الفراغي", price: 25000, per: "متر طول" },
-      { name: "مقاومة الحرق", price: 100000 },
-      { name: "الفحص الهيدروستاتيكي", price: 1000000, per: "متر طول" },
-      { name: "فحص العازلية", price: 500000, per: "متر طول" },
-      { name: "Holiday Test", price: null, note: "السعر يُحدَّد حسب العمل" },
-      { name: "كلف الإيفاد", price: null, per: "خدمة", note: "تُحدَّد حسب الموقع" }
-    ]
-  },
-  {
-    id: "shop", name: "الورشة", dept: "قسم هندسة الإنتاج",
-    items: [
-      { name: "تحضير النموذج في الورشة", price: 50000, min: 50000, max: 100000, note: "تحضير نموذج لفحوصات المعادن" },
-      { name: "تصنيع عينة شد معدن", price: 125000 },
-      { name: "تصنيع عينة شد بلاستك", price: 75000 },
-      { name: "تصنيع عينة حني معدن", price: 100000 },
-      { name: "تصنيع عينة حني بلاستك", price: 100000 },
-      { name: "تصنيع عينة صدمة", price: 50000 },
-      { name: "قطع معدن", price: 50000 },
-      { name: "قطع بلاستك", price: 50000 },
-      { name: "تنعيم معدن", price: 100000 },
-      { name: "تحميل", price: 50000 },
-      { name: "طرق", price: 50000 },
-      { name: "شنفرة بليت", price: 5000 },
-      { name: "شنفرة بايب", price: 7500 }
-    ]
-  },
-  {
-    id: "elev", name: "المصاعد", dept: "قسم المصاعد",
-    items: [
-      { name: "فحص سلامة وأمان", price: null, min: 250000, max: 1500000, per: "مصعد",
-        note: "250,000 – 1,500,000 حسب الفئة/القطاع + تحميلات إدارية حسب الموقع" }
-    ]
-  }
-];
-  }
-  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="watermark.css">
-  <title>طلب خدمة / عرض سعر - الشركة العامة للفحص والتأهيل الهندسي</title>
+  <title>عرض السعر - الشركة العامة للفحص والتأهيل الهندسي</title>
   <link rel="icon" href="https://siei-tracking.github.io/system/logo.png">
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -424,30 +291,26 @@ window.COST_CATALOG = [
     }
     .del-btn{ border:none; background:#fdecea; color:var(--danger); border-radius:8px; width:36px; height:36px; cursor:pointer; flex-shrink:0; }
     @media (max-width:640px){ .grid{ grid-template-columns:1fr; } }
-    .intro{ background:#f4f7fa; border-radius:var(--radius-md); padding:10px 14px; font-weight:700; line-height:1.9; color:#33465a; }
-    .svc{ border:1px solid var(--line); border-radius:var(--radius-md); padding:8px; margin-bottom:8px; background:#fff; }
-    .svc-row{ display:grid; grid-template-columns:1fr 1.6fr 80px 36px; gap:6px; align-items:center; }
-    .s-hint{ display:flex; flex-wrap:wrap; gap:10px; margin-top:4px; font-size:12.5px; font-weight:800; color:#8a5a00; }
-    .s-hint .muted{ color:var(--muted); }
-    .est{ margin-top:10px; background:#fff8ec; border:1px solid #f3d9a6; border-radius:var(--radius-md); padding:10px 12px; font-weight:800; color:#5f4300; }
-    .est:empty{ display:none; }
-    .drop{ display:flex; align-items:center; justify-content:center; gap:10px; border:2px dashed var(--line); border-radius:var(--radius-md);
-      padding:18px; cursor:pointer; font-weight:800; color:var(--muted); background:#fafbfc; text-align:center; }
-    .drop i{ font-size:24px; color:var(--primary); }
-    .drop.has{ border-color:var(--ok); color:#1e7a46; background:#f2fbf6; }
-    @media (max-width:640px){
-      .svc-row{ grid-template-columns:1fr 70px 36px; }
-      .svc-row .s-sec{ grid-column:1 / -1; }
-    }
-    .lbl{ display:block; font-weight:800; margin:4px 0 6px; color:#33465a; }
-    .drop small{ display:block; font-weight:700; font-size:12px; margin-top:2px; }
-    .att-list{ display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:8px; margin-top:8px; }
-    .att{ display:flex; align-items:center; gap:8px; border:1px solid var(--line); border-radius:var(--radius-sm); padding:6px; background:#fff; }
-    .att img{ width:46px; height:46px; object-fit:cover; border-radius:8px; flex-shrink:0; }
-    .att > i{ width:46px; text-align:center; font-size:26px; color:var(--primary); flex-shrink:0; }
-    .att-n{ flex:1; min-width:0; }
-    .att-n b{ display:block; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
-    .att-n small{ color:var(--muted); font-weight:700; }
+    table.q{ width:100%; border-collapse:collapse; margin:8px 0; font-size:14px; }
+    table.q th{ background:var(--primary); color:#fff; padding:8px 6px; font-weight:900; }
+    table.q td{ border-bottom:1px solid var(--line); padding:8px 6px; font-weight:700; }
+    table.q td.c{ text-align:center; white-space:nowrap; }
+    .total{ margin:12px 0; background:#fff8ec; border:1px solid #f3d9a6; border-radius:var(--radius-md); padding:12px; font-weight:900; font-size:18px; text-align:center; }
+    .total b{ font-size:26px; color:var(--primary); }
+    .meta-row{ display:flex; flex-wrap:wrap; gap:6px 20px; font-weight:800; color:#33465a; margin-bottom:6px; }
+    .meta-row span b{ color:var(--primary); }
+    .dec{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px; }
+    .btn-acc{ background:linear-gradient(180deg,#2ebf68,#26a65b) !important; }
+    .btn-rej{ background:linear-gradient(180deg,#d9534f,#c0392b) !important; }
+    .notes{ white-space:pre-wrap; background:#f7f9fb; border-radius:var(--radius-md); padding:10px; font-weight:700; line-height:1.8; }
+    .center{ text-align:center; }
+    @media (max-width:640px){ .dec{ grid-template-columns:1fr; } table.q{ font-size:12.5px; } }
+    .pulse{ animation:pulse 1.2s ease-in-out 3; } @keyframes pulse{ 50%{ transform:scale(1.04); box-shadow:0 0 0 6px rgba(46,191,104,.25); } }
+    .pay{ margin-top:14px; border:2px dashed var(--primary); border-radius:var(--radius-md); padding:14px; text-align:center; background:#fff; }
+    .pay-t{ font-weight:900; font-size:17px; color:var(--primary); margin-bottom:8px; }
+    .pay-qr{ width:220px; max-width:70%; height:auto; image-rendering:pixelated; border:8px solid #fff; box-shadow:0 2px 10px rgba(0,0,0,.08); border-radius:8px; }
+    .pay-h{ margin-top:8px; font-weight:800; line-height:1.9; color:#33465a; }
+    .dec{ grid-template-columns:1.4fr 1fr; }
   </style>
 </head>
 
@@ -459,91 +322,14 @@ window.COST_CATALOG = [
         <img class="logo" src="https://siei-tracking.github.io/system/logo.png" alt="logo">
         <div class="header-text">
           <h1>الشركة العامة للفحص والتأهيل الهندسي</h1>
-          <p><i class="fas fa-paper-plane"></i> طلب خدمة / عرض سعر</p>
+          <p><i class="fas fa-file-invoice-dollar"></i> عرض السعر</p>
         </div>
       </header>
-
       <div class="page-content">
         <main class="main-content">
-          <div class="card" id="formCard">
-            <div class="intro">
-              قدّم طلبك أونلاين وسيصلك <b>عرض السعر على بريدك الإلكتروني</b> بعد مراجعته من قبل الأقسام الفنية.
-            </div>
-
-            <form id="reqForm" autocomplete="on" novalidate>
-              <div class="sec-title"><i class="fas fa-user"></i> معلومات مقدّم الطلب</div>
-              <div class="grid">
-                <div class="input-group">
-                  <label>الاسم الكامل <span class="req">*</span></label>
-                  <input type="text" id="name" name="name" maxlength="120" autocomplete="name" required>
-                </div>
-                <div class="input-group">
-                  <label>الجهة / الشركة</label>
-                  <input type="text" id="company" name="organization" maxlength="160" autocomplete="organization" placeholder="اختياري">
-                </div>
-                <div class="input-group">
-                  <label>رقم الموبايل <span class="req">*</span></label>
-                  <input type="tel" id="phone" name="tel" maxlength="14" autocomplete="tel" inputmode="tel" placeholder="07XXXXXXXXX" dir="ltr" style="text-align:left" required>
-                </div>
-                <div class="input-group">
-                  <label>البريد الإلكتروني <span class="req">*</span></label>
-                  <input type="email" id="email" name="email" maxlength="120" autocomplete="email" placeholder="name@example.com" dir="ltr" style="text-align:left" required>
-                  <div class="help">سيُرسل عرض السعر إلى هذا البريد</div>
-                </div>
-              </div>
-              <!-- حماية من الروبوتات: يبقى فارغاً -->
-              <div style="height:0;overflow:hidden;" aria-hidden="true"><input type="text" id="website" name="website" tabindex="-1" autocomplete="off"></div>
-
-              <div class="sec-title"><i class="fas fa-file-lines"></i> بيانات الكتاب</div>
-              <div class="grid">
-                <div class="input-group">
-                  <label>رقم الكتاب</label>
-                  <input type="text" id="letterNo" maxlength="60" placeholder="رقم كتاب الجهة الطالبة (إن وجد)">
-                </div>
-                <div class="input-group">
-                  <label>تاريخ الكتاب</label>
-                  <input type="date" id="letterDate">
-                </div>
-              </div>
-              <label class="lbl">تحميل الكتاب أو الطلب <span class="req">*</span></label>
-              <label class="drop" id="drop">
-                <input type="file" id="file" accept=".pdf,.jpg,.jpeg,application/pdf,image/jpeg" hidden>
-                <i class="fas fa-file-arrow-up"></i>
-                <span id="fileLabel">اضغط لاختيار الكتاب أو الطلب — PDF أو JPG (حتى 10MB)</span>
-              </label>
-
-              <div class="sec-title"><i class="fas fa-flask"></i> الخدمة المطلوبة</div>
-              <div id="svcList"></div>
-              <button type="button" class="add-btn" onclick="addSvc()"><i class="fas fa-plus"></i> إضافة خدمة أخرى</button>
-              <div class="est" id="estBox"></div>
-
-              <div class="sec-title"><i class="fas fa-align-right"></i> تفاصيل الطلب</div>
-              <div class="input-group">
-                <textarea id="details" rows="4" maxlength="3000" placeholder="اكتب تفاصيل العمل، موقع الفحص، المواصفة المطلوبة، أي ملاحظات..."></textarea>
-              </div>
-
-              <div class="sec-title"><i class="fas fa-paperclip"></i> المرفقات <span class="req">*</span></div>
-              <label class="drop" id="attDrop">
-                <input type="file" id="attFiles" multiple accept=".pdf,.jpg,.jpeg,application/pdf,image/jpeg" hidden>
-                <i class="fas fa-images"></i>
-                <span>صور العينات أو أي ملف آخر متعلق بالفحص<br><small>PDF أو JPG — حتى 5 ملفات، 10MB لكل ملف</small></span>
-              </label>
-              <div class="att-list" id="attList"></div>
-
-              <div id="notice" class="notice"></div>
-              <button class="main-btn" id="submitBtn" type="submit" style="margin-top:14px;">
-                <i class="fas fa-paper-plane"></i> إرسال الطلب
-              </button>
-            </form>
-          </div>
-
-          <div class="card" id="doneCard" style="display:none;text-align:center;">
-            <div style="font-size:54px;color:var(--ok);"><i class="fas fa-circle-check"></i></div>
-            <h2 style="margin:6px 0;color:var(--primary);">تم استلام طلبك</h2>
-            <div style="font-weight:800;color:var(--muted);">رقم الطلب</div>
-            <div id="doneId" style="font-size:28px;font-weight:900;color:var(--primary);letter-spacing:1px;direction:ltr;"></div>
-            <p style="font-weight:700;line-height:1.9;">احتفظ برقم الطلب للمراجعة. سيصلك تأكيد على بريدك الإلكتروني،<br>ثم عرض السعر بعد مراجعة طلبك.</p>
-            <button class="main-btn" type="button" onclick="location.reload()" style="max-width:260px;margin:auto;"><i class="fas fa-plus"></i> طلب جديد</button>
+          <div class="card" id="card">
+            <div class="center" id="loading" style="padding:30px;font-weight:800;color:var(--muted);"><i class="fas fa-spinner fa-spin"></i> جاري تحميل عرض السعر...</div>
+            <div id="view" style="display:none;"></div>
           </div>
         </main>
       </div>
@@ -554,299 +340,100 @@ window.COST_CATALOG = [
 
 <script>
   const API_BASE = window.APP_CONFIG.API_BASE;
-  const CATALOG = Array.isArray(window.COST_CATALOG) ? window.COST_CATALOG : [];
-  const SHOW_PRICES = true;   /* إظهار السعر التقريبي للزبون */
-  const OTHER = "__other";
-  const MAX_FILE = 10 * 1024 * 1024;
-  let sending = false;
-  const MAX_ATT = 5, MAX_TOTAL = 25 * 1024 * 1024;
+  const params = new URLSearchParams(location.search);
+  const TOKEN = params.get("t") || "";
+  const WANT = params.get("d") || "";   /* accept / reject من زر البريد — يحتاج تأكيداً بالضغط */
+  let busy = false, Q = null;
 
   function $(id){ return document.getElementById(id); }
   function esc(t){ return String(t == null ? "" : t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
-  function fmt(n){ n = Number(n) || 0; return n ? n.toLocaleString("en-US") : ""; }
-  function secById(id){ return CATALOG.find(function(s){ return s.id === id; }) || null; }
-  function itemOf(sec, name){ return sec ? (sec.items.find(function(i){ return i.name === name; }) || null) : null; }
-  function showMsg(text, type){
-    const t = $("toast"); t.className = type || ""; t.textContent = text; t.style.display = "block";
-    clearTimeout(window.__tt); window.__tt = setTimeout(function(){ t.style.display = "none"; }, 3500);
-  }
-  function setNotice(text, type){ const n = $("notice"); n.className = "notice" + (text ? " " + (type || "info") : ""); n.textContent = text || ""; }
-
+  function fmt(n){ n = Number(String(n || "").replace(/,/g, "")) || 0; return n ? n.toLocaleString("en-US") : ""; }
   async function apiPost(payload){
     const r = await fetch(API_BASE, { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body:JSON.stringify(payload) });
     if(!r.ok) throw new Error("HTTP " + r.status);
-    const t = await r.text();
-    try{ return JSON.parse(t); }catch(e){ throw new Error("Invalid response"); }
+    return JSON.parse(await r.text());
+  }
+  function fail(msg){
+    $("loading").innerHTML = '<div style="font-size:42px;color:var(--danger)"><i class="fas fa-link-slash"></i></div><div style="font-weight:900;margin-top:6px;">' + esc(msg) + '</div>';
   }
 
-  /* ---------- الخدمات ---------- */
-  function secOptions(){
-    let h = '<option value="">— اختر القسم —</option>';
-    CATALOG.forEach(function(s){ h += '<option value="' + s.id + '">' + esc(s.name) + '</option>'; });
-    return h + '<option value="' + OTHER + '">خدمة أخرى…</option>';
-  }
-  function testOptions(sec){
-    if(!sec) return '<option value="">— اختر القسم أولاً —</option>';
-    let h = '<option value="">— اختر الفحص / الخدمة —</option>';
-    sec.items.forEach(function(it){ h += '<option value="' + esc(it.name) + '">' + esc(it.name) + '</option>'; });
-    return h + '<option value="' + OTHER + '">أخرى (اكتب)…</option>';
-  }
-  function addSvc(){
-    if($("svcList").children.length >= 15){ showMsg("⚠️ الحد الأقصى 15 خدمة", "warn"); return; }
-    const div = document.createElement("div");
-    div.className = "svc";
-    div.innerHTML =
-        '<div class="svc-row">'
-      +   '<select class="s-sec">' + secOptions() + '</select>'
-      +   '<select class="s-test">' + testOptions(null) + '</select>'
-      +   '<input class="s-qty" type="number" min="1" max="9999" value="1" title="العدد">'
-      +   '<button type="button" class="del-btn" title="حذف"><i class="fas fa-trash"></i></button>'
-      + '</div>'
-      + '<input class="s-other" placeholder="اكتب اسم الخدمة المطلوبة" maxlength="200" style="display:none;margin-top:6px;">'
-      + '<div class="s-hint"></div>';
-    $("svcList").appendChild(div);
-    const sec = div.querySelector(".s-sec"), test = div.querySelector(".s-test");
-    sec.addEventListener("change", function(){
-      const isO = sec.value === OTHER;
-      test.innerHTML = testOptions(secById(sec.value));
-      test.style.display = isO ? "none" : "";
-      div.querySelector(".s-other").style.display = isO ? "" : "none";
-      updateSvc(div);
+  function render(q, msg, msgType){
+    Q = q;
+    const cur = q.currency === "USD" ? "دولار أمريكي" : "دينار عراقي";
+    let rows = "";
+    (q.items || []).forEach(function(it, i){
+      rows += '<tr><td class="c">' + (i + 1) + '</td><td>' + esc(it.test || "") + '<div class="help">' + esc(it.section || "") + (it.details ? " — " + esc(it.details) : "") + '</div></td>'
+            + '<td class="c">' + esc(it.qty || 1) + '</td><td class="c">' + fmt(it.price) + '</td><td class="c"><b>' + fmt(it.lineTotal) + '</b></td></tr>';
     });
-    test.addEventListener("change", function(){
-      div.querySelector(".s-other").style.display = test.value === OTHER ? "" : "none";
-      updateSvc(div);
-    });
-    div.querySelector(".s-qty").addEventListener("input", function(){ updateSvc(div); });
-    div.querySelector(".del-btn").addEventListener("click", function(){
-      div.remove(); if(!$("svcList").children.length) addSvc(); updateEst();
-    });
-  }
-  function svcItem(div){ return itemOf(secById(div.querySelector(".s-sec").value), div.querySelector(".s-test").value); }
-  function updateSvc(div){
-    const it = svcItem(div), hint = div.querySelector(".s-hint");
-    let h = "";
-    if(it){
-      if(SHOW_PRICES){
-        if(it.price != null) h += '<span>السعر التقريبي: <b>' + fmt(it.price) + '</b> د.ع' + (it.per ? ' لكل ' + esc(it.per) : '') + '</span>';
-        else if(it.min && it.max) h += '<span>السعر التقريبي: ' + fmt(it.min) + ' – ' + fmt(it.max) + ' د.ع</span>';
-        else h += '<span>السعر يُحدَّد بعد مراجعة الطلب</span>';
-      }
-      if(it.note) h += '<span class="muted">' + esc(it.note) + '</span>';
+    const open = q.status === "quoted" && !q.expired;
+    let h = ''
+      + (msg ? '<div class="notice ' + (msgType || "ok") + '">' + esc(msg) + '</div>' : '')
+      + '<div class="meta-row"><span>رقم الطلب: <b dir="ltr">' + esc(q.requestId) + '</b></span>'
+      + '<span>إلى: <b>' + esc(q.company || q.name) + '</b></span>'
+      + '<span>تاريخ العرض: <b>' + esc(q.sentAt) + '</b></span></div>'
+      + (rows ? '<div style="overflow-x:auto"><table class="q"><thead><tr><th>ت</th><th style="text-align:right">الفحص / الخدمة</th><th>العدد</th><th>سعر الوحدة</th><th>المجموع</th></tr></thead><tbody>' + rows + '</tbody></table></div>' : '')
+      + '<div class="total">المبلغ الإجمالي: <b>' + fmt(q.amount) + '</b> ' + cur + '</div>'
+      + (q.notes ? '<div class="notes">' + esc(q.notes) + '</div>' : '')
+      + '<div class="help" style="margin-top:8px;">العرض صالح لمدة ' + esc(q.validDays) + ' يوماً من تاريخ الإرسال.</div>';
+
+    if(open){
+      h += '<div class="pay">'
+        +   '<div class="pay-t"><i class="fas fa-qrcode"></i> هذا هو باركود الدفع</div>'
+        +   '<img src="/system/payment-qr.png" alt="باركود الدفع" class="pay-qr">'
+        +   '<div class="pay-h">امسح الباركود لدفع مبلغ <b>' + fmt(q.amount) + '</b> ' + cur + '،<br>وبعد إكمال عملية الدفع اضغط على زر <b>«تم قبول عرض السعر وإتمام عملية الدفع»</b>.</div>'
+        + '</div>'
+        + '<div class="input-group" style="margin-top:12px;"><label>ملاحظة (اختياري)</label><textarea id="note" rows="2" maxlength="500" placeholder="مثال: رقم عملية الدفع أو اسم الدافع"></textarea></div>'
+        + '<div class="dec"><button class="main-btn btn-acc" id="accBtn" onclick="decide(\'accept\')"><i class="fas fa-check"></i> تم قبول عرض السعر وإتمام عملية الدفع</button>'
+        + '<button class="main-btn btn-rej" id="rejBtn" onclick="decide(\'reject\')"><i class="fas fa-xmark"></i> رفض عرض السعر</button></div>';
+    }else{
+      let s = q.expired && q.status === "quoted" ? "⚠️ انتهت صلاحية عرض السعر، يرجى التواصل معنا لتحديثه"
+            : (q.status === "accepted" || q.status === "converted") ? "✅ تم قبول عرض السعر وإتمام عملية الدفع" + (q.decisionAt ? " بتاريخ " + q.decisionAt : "")
+            : q.status === "rejected" ? "تم رفض عرض السعر" + (q.decisionAt ? " بتاريخ " + q.decisionAt : "")
+            : "حالة الطلب: " + q.statusLabel;
+      h += '<div class="notice ' + (q.status === "rejected" || q.expired ? "warn" : "ok") + '" style="margin-top:14px;text-align:center;font-size:16px;">' + esc(s) + '</div>';
     }
-    hint.innerHTML = h;
-    updateEst();
-  }
-  function updateEst(){
-    if(!SHOW_PRICES){ $("estBox").innerHTML = ""; return; }
-    let sum = 0, unknown = false, any = false;
-    Array.prototype.forEach.call($("svcList").children, function(div){
-      const it = svcItem(div);
-      const sv = div.querySelector(".s-sec").value;
-      if(!sv) return;
-      any = true;
-      const q = Math.max(1, parseInt(div.querySelector(".s-qty").value, 10) || 1);
-      if(it && it.price != null) sum += it.price * q; else unknown = true;
-    });
-    $("estBox").innerHTML = any && sum
-      ? '<i class="fas fa-calculator"></i> الكلفة التقريبية: <b>' + fmt(sum) + '</b> دينار' + (unknown ? ' + بنود تُسعَّر لاحقاً' : '')
-        + '<div class="help">السعر النهائي يُحدَّد في عرض السعر الذي يصلك على البريد</div>'
-      : "";
-  }
-  function readServices(){
-    const out = [];
-    Array.prototype.forEach.call($("svcList").children, function(div){
-      const secId = div.querySelector(".s-sec").value;
-      if(!secId) return;
-      const sec = secById(secId), tv = div.querySelector(".s-test").value;
-      const other = div.querySelector(".s-other").value.trim();
-      const test = (secId === OTHER || tv === OTHER) ? other : tv;
-      out.push({
-        sectionId: secId === OTHER ? "" : secId,
-        section: sec ? sec.name : "خدمة أخرى",
-        test: test,
-        qty: String(Math.max(1, parseInt(div.querySelector(".s-qty").value, 10) || 1))
-      });
-    });
-    return out.filter(function(s){ return s.test || s.sectionId; });
-  }
-
-  /* ---------- الملفات (PDF / JPG) ---------- */
-  const ALLOWED = { "pdf":"application/pdf", "jpg":"image/jpeg", "jpeg":"image/jpeg" };
-  let letterFile = null, attFiles = [];
-
-  /* التحقق من النوع الحقيقي من أول بايتات الملف */
-  async function checkFile(f){
-    const ext = (f.name.split(".").pop() || "").toLowerCase();
-    if(!ALLOWED[ext]) return "❌ " + f.name + ": يُسمح فقط بملفات PDF أو JPG";
-    if(f.size > MAX_FILE) return "❌ " + f.name + ": أكبر من 10MB";
-    const b = new Uint8Array(await f.slice(0, 4).arrayBuffer());
-    const isPdf = b[0] === 0x25 && b[1] === 0x50 && b[2] === 0x44 && b[3] === 0x46;
-    const isJpg = b[0] === 0xFF && b[1] === 0xD8 && b[2] === 0xFF;
-    if(ALLOWED[ext] === "application/pdf" ? !isPdf : !isJpg) return "❌ " + f.name + ": محتوى الملف لا يطابق نوعه";
-    return "";
-  }
-  function totalSize(){ return attFiles.reduce(function(a, x){ return a + x.file.size; }, 0) + (letterFile ? letterFile.size : 0); }
-
-  $("file").addEventListener("change", async function(){
-    const f = this.files && this.files[0];
-    this.value = "";
-    if(!f) return;
-    const err = await checkFile(f);
-    if(err){ showMsg(err, "err"); return; }
-    letterFile = f;
-    $("fileLabel").innerHTML = '<b>' + esc(f.name) + '</b> — ' + (f.size / 1024 / 1024).toFixed(2) + ' MB  <u>تغيير</u>';
-    $("drop").classList.add("has");
-  });
-
-  $("attFiles").addEventListener("change", async function(){
-    const files = Array.prototype.slice.call(this.files || []);
-    this.value = "";
-    for(const f of files){
-      if(attFiles.length >= MAX_ATT){ showMsg("⚠️ الحد الأقصى " + MAX_ATT + " مرفقات", "warn"); break; }
-      const err = await checkFile(f);
-      if(err){ showMsg(err, "err"); continue; }
-      if(totalSize() + f.size > 40 * 1024 * 1024){ showMsg("❌ مجموع حجم الملفات كبير جداً", "err"); break; }
-      attFiles.push({ file:f, url: ALLOWED[(f.name.split(".").pop() || "").toLowerCase()] === "image/jpeg" ? URL.createObjectURL(f) : "" });
+    $("view").innerHTML = h;
+    $("loading").style.display = "none";
+    $("view").style.display = "block";
+    if(open && (WANT === "accept" || WANT === "reject")){
+      const b = $(WANT === "accept" ? "accBtn" : "rejBtn");
+      b.classList.add("pulse");
+      b.scrollIntoView({ behavior:"smooth", block:"center" });
     }
-    renderAtt();
-  });
-  function renderAtt(){
-    $("attList").innerHTML = attFiles.map(function(a, i){
-      return '<div class="att">'
-        + (a.url ? '<img src="' + a.url + '" alt="">' : '<i class="fas fa-file-pdf"></i>')
-        + '<div class="att-n"><b>' + esc(a.file.name) + '</b><small>' + (a.file.size / 1024 / 1024).toFixed(2) + ' MB</small></div>'
-        + '<button type="button" class="del-btn" data-i="' + i + '" title="حذف"><i class="fas fa-xmark"></i></button></div>';
-    }).join("");
-    $("attDrop").classList.toggle("has", attFiles.length > 0);
-  }
-  $("attList").addEventListener("click", function(e){
-    const b = e.target.closest(".del-btn");
-    if(!b) return;
-    const a = attFiles.splice(Number(b.getAttribute("data-i")), 1)[0];
-    if(a && a.url) URL.revokeObjectURL(a.url);
-    renderAtt();
-  });
-
-  /* ---------- دمج كل الملفات في PDF واحد ---------- */
-  function loadImg(file){
-    return new Promise(function(res, rej){
-      const u = URL.createObjectURL(file), im = new Image();
-      im.onload = function(){ URL.revokeObjectURL(u); res(im); };
-      im.onerror = function(){ URL.revokeObjectURL(u); rej(new Error("img")); };
-      im.src = u;
-    });
-  }
-  /* تصغير الصورة (أقصى ضلع 2000px) وتصحيح اتجاهها عبر canvas */
-  async function jpgBytes(file){
-    const im = await loadImg(file);
-    const k = Math.min(1, 2000 / Math.max(im.naturalWidth, im.naturalHeight));
-    const c = document.createElement("canvas");
-    c.width = Math.max(1, Math.round(im.naturalWidth * k));
-    c.height = Math.max(1, Math.round(im.naturalHeight * k));
-    const g = c.getContext("2d");
-    g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height);
-    g.drawImage(im, 0, 0, c.width, c.height);
-    const blob = await new Promise(function(r){ c.toBlob(r, "image/jpeg", 0.85); });
-    return new Uint8Array(await blob.arrayBuffer());
-  }
-  async function buildPdf(files, onStep){
-    if(!window.PDFLib) throw new Error("مكتبة PDF لم تُحمَّل، تحقق من الإنترنت وأعد المحاولة");
-    const out = await PDFLib.PDFDocument.create();
-    out.setTitle("طلب خدمة"); out.setCreator("SIEI Requests");
-    for(let i = 0; i < files.length; i++){
-      const f = files[i];
-      if(onStep) onStep(i + 1, files.length);
-      if(/\.pdf$/i.test(f.name)){
-        let src;
-        try{ src = await PDFLib.PDFDocument.load(await f.arrayBuffer(), { ignoreEncryption:true }); }
-        catch(e){ throw new Error("تعذر قراءة الملف " + f.name + " — قد يكون تالفاً أو محمياً بكلمة مرور"); }
-        const pages = await out.copyPages(src, src.getPageIndices());
-        pages.forEach(function(p){ out.addPage(p); });
-      }else{
-        const img = await out.embedJpg(await jpgBytes(f));
-        const land = img.width > img.height;
-        const W = land ? 841.89 : 595.28, H = land ? 595.28 : 841.89, M = 24;
-        const sc = Math.min((W - 2 * M) / img.width, (H - 2 * M) / img.height, 1.5);
-        const w = img.width * sc, h = img.height * sc;
-        const page = out.addPage([W, H]);
-        page.drawImage(img, { x:(W - w) / 2, y:(H - h) / 2, width:w, height:h });
-      }
-    }
-    return { bytes: await out.save(), pages: out.getPageCount() };
-  }
-  function toB64(bytes){
-    let s = "";
-    for(let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
-    return btoa(s);
   }
 
-  /* ---------- الإرسال ---------- */
-  $("reqForm").addEventListener("submit", async function(e){
-    e.preventDefault();
-    if(sending) return;
-    setNotice("");
-    const name = $("name").value.trim();
-    const phone = $("phone").value.replace(/[\s-]/g, "");
-    const email = $("email").value.trim();
-    const services = readServices();
-    const details = $("details").value.trim();
-    const letterNo = $("letterNo").value.trim();
-    const letterDate = $("letterDate").value;
-    if(letterDate && letterDate > new Date().toISOString().slice(0, 10)){ setNotice("❌ تاريخ الكتاب لا يمكن أن يكون في المستقبل", "err"); $("letterDate").focus(); return; }
-
-    if(name.length < 3){ setNotice("❌ أدخل الاسم الكامل", "err"); $("name").focus(); return; }
-    if(!/^(\+?964|0)?7\d{9}$/.test(phone)){ setNotice("❌ رقم الموبايل غير صحيح (مثال: 07701234567)", "err"); $("phone").focus(); return; }
-    if(!/^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i.test(email)){ setNotice("❌ البريد الإلكتروني غير صحيح", "err"); $("email").focus(); return; }
-    if(!services.length && details.length < 5){ setNotice("❌ اختر الخدمة المطلوبة أو اكتب تفاصيل الطلب", "err"); return; }
-    if(!letterFile){ setNotice("❌ يرجى تحميل الكتاب أو الطلب", "err"); $("drop").scrollIntoView({ behavior:"smooth", block:"center" }); return; }
-    if(!attFiles.length){ setNotice("❌ يرجى إرفاق صور العينات أو أي ملف متعلق بالفحص", "err"); $("attDrop").scrollIntoView({ behavior:"smooth", block:"center" }); return; }
-
-    sending = true;
-    const btn = $("submitBtn"), old = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري تجهيز الملفات...';
+  async function decide(d){
+    if(busy || !Q) return;
+    const sure = d === "accept"
+      ? "هل أكملت دفع مبلغ " + fmt(Q.amount) + " ؟\nسيتم تسجيل قبول عرض السعر وإتمام عملية الدفع."
+      : "تأكيد رفض عرض السعر؟";
+    if(!window.confirm(sure)) return;
+    busy = true;
+    const btns = [$("accBtn"), $("rejBtn")];
+    btns.forEach(function(b){ if(b) b.disabled = true; });
     try{
-      const all = [letterFile].concat(attFiles.map(function(a){ return a.file; }));
-      let pdf;
-      try{
-        pdf = await buildPdf(all, function(i, n){ btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري تجهيز الملفات (' + i + '/' + n + ')...'; });
-      }catch(err){ setNotice("❌ " + (err && err.message || "تعذر تجهيز الملفات"), "err"); return; }
-      if(pdf.bytes.length > MAX_TOTAL){ setNotice("❌ حجم الملف النهائي أكبر من 25MB، قلّل عدد الصور أو حجمها", "err"); return; }
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري رفع الطلب...';
-      const payload = {
-        action:"submitCustomerRequest", name:name, company:$("company").value.trim(), phone:phone, email:email,
-        services:services, details:details, letterNo:letterNo, letterDate:letterDate,
-        file:{ name:"ملف الطلب.pdf", mime:"application/pdf", data:toB64(pdf.bytes) },
-        parts:{ letter:letterFile.name, attachments:attFiles.map(function(a){ return a.file.name; }), pages:pdf.pages },
-        website:$("website").value
-      };
-      /* عند ضغط الطلبات في نفس الوقت: إعادة المحاولة تلقائياً بدون أن يعيد الزبون التعبئة */
       let r = null;
       for(let attempt = 1; attempt <= 5; attempt++){
-        r = await apiPost(payload);
+        r = await apiPost({ action:"quoteDecision", token:TOKEN, decision:d, note:($("note") || {}).value || "" });
         if(!(r && r.ok === false && (r.busy || /^⏳/.test(String(r.message || ""))))) break;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> النظام مشغول بطلبات أخرى، إعادة المحاولة (' + attempt + '/5)...';
         await new Promise(function(res){ setTimeout(res, 2000 + Math.random() * 3000); });
       }
-      if(r && r.ok){
-        $("doneId").textContent = r.requestId || "";
-        $("formCard").style.display = "none";
-        $("doneCard").style.display = "block";
-        window.scrollTo({ top:0, behavior:"smooth" });
-      }else{
-        setNotice((r && r.message) || "❌ تعذر إرسال الطلب", "err");
-      }
-    }catch(err){
-      setNotice("❌ خطأ في الاتصال، تحقق من الإنترنت وحاول مجدداً", "err");
-    }finally{
-      sending = false;
-      btn.disabled = false;
-      btn.innerHTML = old;
-    }
-  });
+      if(r && r.quote) render(r.quote, r.message, r.ok ? "ok" : "warn");
+      else { alert((r && r.message) || "❌ تعذر تسجيل القرار"); btns.forEach(function(b){ if(b) b.disabled = false; }); }
+    }catch(e){
+      alert("❌ خطأ في الاتصال، حاول مجدداً");
+      btns.forEach(function(b){ if(b) b.disabled = false; });
+    }finally{ busy = false; }
+  }
 
-  addSvc();
+  (async function(){
+    if(!/^[a-f0-9]{30,}$/i.test(TOKEN)){ fail("الرابط غير صالح"); return; }
+    try{
+      const r = await apiPost({ action:"getQuoteByToken", token:TOKEN });
+      if(r && r.ok) render(r.quote);
+      else fail((r && r.message) || "الرابط غير صالح أو منتهي");
+    }catch(e){ fail("تعذر الاتصال بالخادم، حاول لاحقاً"); }
+  })();
 </script>
 </body>
 </html>
