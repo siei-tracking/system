@@ -10,7 +10,7 @@
   if(!Array.isArray(window.COST_CATALOG) || !window.COST_CATALOG.length){
 window.COST_CATALOG = [
   {
-    id: "struct", name: "المختبر الإنشائي", dept: "قسم الفحص الهندسي والمختبرات",
+    id: "struct", name: "المختبر الإنشائي", dept: "قسم الفحص الهندسي والمختبرات", days: 7,
     items: [
       { name: "السمنت (كيمياوي + فيزياوي)", price: 200000 },
       { name: "انضغاط المكعبات الخرسانية", price: 10000, per: "مكعب" },
@@ -33,7 +33,7 @@ window.COST_CATALOG = [
     ]
   },
   {
-    id: "chem", name: "المختبر الكيمياوي", dept: "قسم الفحص الهندسي والمختبرات",
+    id: "chem", name: "المختبر الكيمياوي", dept: "قسم الفحص الهندسي والمختبرات", days: 7,
     items: [
       { name: "الفحص الكيمياوي (سمنت، رمل، حصى)", price: 100000 },
       { name: "أنابيب شبكات ماء (PVC, PPR, PE)", price: 300000 },
@@ -44,7 +44,7 @@ window.COST_CATALOG = [
     ]
   },
   {
-    id: "elec", name: "مختبر الكهرباء", dept: "قسم الفحص الهندسي والمختبرات",
+    id: "elec", name: "مختبر الكهرباء", dept: "قسم الفحص الهندسي والمختبرات", days: 7,
     items: [
       { name: "أسلاك كهربائية (1.5 – 10 mm)", price: 50000 },
       { name: "قابلوات كهربائية (ضغط واطئ، موصلات)", price: 150000 },
@@ -59,7 +59,7 @@ window.COST_CATALOG = [
     ]
   },
   {
-    id: "metal", name: "مختبر المعادن والميكانيك", dept: "قسم الفحص الهندسي والمختبرات",
+    id: "metal", name: "مختبر المعادن والميكانيك", dept: "قسم الفحص الهندسي والمختبرات", days: 7,
     items: [
       { name: "التحليل الكيمياوي للسبائك المعدنية", price: 100000,
         extras: [{ name: "تحضير النموذج في الورشة", price: 50000, sec: "shop" }], note: "قد يحتاج تحضيراً في الورشة (+50,000)" },
@@ -83,7 +83,7 @@ window.COST_CATALOG = [
     ]
   },
   {
-    id: "insp", name: "الفحص الهندسي (موقعي)", dept: "قسم الفحص الهندسي والمختبرات",
+    id: "insp", name: "الفحص الهندسي (موقعي)", dept: "قسم الفحص الهندسي والمختبرات", days: 7,
     items: [
       { name: "رافعة جسرية — داخل بغداد", price: 750000, per: "قطعة" },
       { name: "رافعة جسرية — خارج بغداد", price: 1500000, per: "قطعة" },
@@ -109,7 +109,7 @@ window.COST_CATALOG = [
     ]
   },
   {
-    id: "shop", name: "الورشة", dept: "قسم هندسة الإنتاج",
+    id: "shop", name: "الورشة", dept: "قسم هندسة الإنتاج", days: 7,
     items: [
       { name: "تحضير النموذج في الورشة", price: 50000, min: 50000, max: 100000, note: "تحضير نموذج لفحوصات المعادن" },
       { name: "تصنيع عينة شد معدن", price: 125000 },
@@ -127,7 +127,7 @@ window.COST_CATALOG = [
     ]
   },
   {
-    id: "elev", name: "المصاعد", dept: "قسم المصاعد",
+    id: "elev", name: "المصاعد", dept: "قسم المصاعد", days: 7,
     items: [
       { name: "فحص سلامة وأمان", price: null, min: 250000, max: 1500000, per: "مصعد",
         note: "250,000 – 1,500,000 حسب الفئة/القطاع + تحميلات إدارية حسب الموقع" }
@@ -482,7 +482,7 @@ window.COST_CATALOG = [
     table.qt td{ border-bottom:1px solid var(--line); padding:4px; vertical-align:top; }
     table.qt input, table.qt select{ min-height:36px; font-size:13px; padding:4px 8px; }
     table.qt td.lt{ font-weight:900; text-align:center; white-space:nowrap; padding-top:10px; }
-    .q-foot{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:8px; }
+    .q-foot{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-top:8px; }
     .q-total{ font-size:20px !important; font-weight:900 !important; text-align:center !important; }
     .btns{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
     .btns .main-btn{ width:auto; flex:1; min-width:150px; padding:9px 14px; }
@@ -508,7 +508,7 @@ window.COST_CATALOG = [
       .q-foot, .set-grid{ grid-template-columns:1fr; }
       .kv{ grid-template-columns:95px 1fr; }
       .toolbar input{ max-width:none; width:100%; margin:0; }
-      .qt-wrap{ overflow-x:auto; } table.qt{ min-width:640px; }
+      .qt-wrap{ overflow-x:auto; } table.qt{ min-width:720px; }
     }
     ol.parts{ margin:2px 0 0; padding-right:20px; font-weight:700; font-size:13.5px; line-height:1.9; }
     .lab-p{ border:1px solid var(--line); border-radius:10px; padding:8px; margin-bottom:8px; }
@@ -969,14 +969,15 @@ window.COST_CATALOG = [
       + labBox(r)
       + '<div class="box"><h4><i class="fas fa-file-invoice-dollar"></i> عرض السعر</h4>'
       +   (locked ? '<div class="notice ok" style="margin-top:0">✅ عرض السعر مقبول — لا يمكن تعديله</div>' : '')
-      +   '<div class="qt-wrap"><table class="qt"><thead><tr><th style="width:24%">القسم</th><th>الفحص / الخدمة</th><th style="width:9%">العدد</th><th style="width:15%">سعر الوحدة</th><th style="width:13%">المجموع</th><th style="width:40px"></th></tr></thead><tbody id="qBody"></tbody></table></div>'
+      +   '<div class="qt-wrap"><table class="qt"><thead><tr><th style="width:24%">القسم</th><th>الفحص / الخدمة</th><th style="width:8%">العدد</th><th style="width:9%">المدة (يوم)</th><th style="width:14%">سعر الوحدة</th><th style="width:13%">المجموع</th><th style="width:40px"></th></tr></thead><tbody id="qBody"></tbody></table></div>'
       +   (locked ? '' : '<button class="add-btn" style="margin-top:6px" onclick="addQRow()"><i class="fas fa-plus"></i> إضافة بند</button>')
       +   '<div class="q-foot">'
       +     '<div class="input-group"><label>العملة</label><select id="qCur"' + (locked ? " disabled" : "") + '><option value="IQD">دينار عراقي (IQD)</option><option value="USD">دولار أمريكي (USD)</option></select></div>'
       +     '<div class="input-group"><label>المبلغ الإجمالي</label><input id="qAmount" class="q-total" inputmode="decimal"' + (locked ? " disabled" : "") + '></div>'
+      +     '<div class="input-group"><label>مدة الإنجاز (يوم عمل)</label><input id="qDays" class="q-total" type="number" min="1" max="365"' + (locked ? " disabled" : "") + '></div>'
       +     '<div class="input-group"><label>صلاحية العرض (يوم)</label><input id="qValid" type="number" min="1" max="180" value="30"' + (locked ? " disabled" : "") + '></div>'
       +   '</div>'
-      +   '<div class="input-group"><label>ملاحظات تظهر للزبون</label><textarea id="qNotes" rows="3" maxlength="1500" placeholder="مثال: مدة الإنجاز 10 أيام عمل من تاريخ استلام النماذج."' + (locked ? " disabled" : "") + '></textarea></div>'
+      +   '<div class="input-group"><label>ملاحظات تظهر للزبون</label><textarea id="qNotes" rows="3" maxlength="1500" placeholder="مثال: الأسعار تشمل تقرير النتائج الرسمي."' + (locked ? " disabled" : "") + '></textarea></div>'
       +   (r.quoteSentAt ? '<div class="muted">آخر إرسال: ' + esc(r.quoteSentAt) + ' بواسطة ' + esc(r.quoteSentBy) + '</div>' : '')
       +   (locked ? '' :
             '<div class="btns">'
@@ -1010,8 +1011,8 @@ window.COST_CATALOG = [
     let base = (r.quoteItems && r.quoteItems.length) ? r.quoteItems : (r.services || []).map(function(s, i){
       const it = itemOf(secById(s.sectionId), s.test);
       const lp = LP[s.sectionId] && (LP[s.sectionId].items || []).find(function(x){ return Number(x.idx) === i; });
-      if(lp) return { sectionId:s.sectionId, section:s.section, test:s.test, qty:lp.qty || s.qty, price:lp.price, details:lp.sample || "" };
-      return { sectionId:s.sectionId, section:s.section, test:s.test, qty:s.qty, price: it && it.price != null ? it.price : (it && it.min ? it.min : "") };
+      if(lp) return { sectionId:s.sectionId, section:s.section, test:s.test, qty:lp.qty || s.qty, price:lp.price, details:lp.sample || "", days:lp.days || itemDays(s.sectionId, s.test) };
+      return { sectionId:s.sectionId, section:s.section, test:s.test, qty:s.qty, price: it && it.price != null ? it.price : (it && it.min ? it.min : ""), days:itemDays(s.sectionId, s.test) };
     });
     if(!(r.quoteItems && r.quoteItems.length)){
       Object.keys(LP).forEach(function(k){
@@ -1022,6 +1023,9 @@ window.COST_CATALOG = [
     (base.length ? base : [{}]).forEach(function(it){ addQRow(it, locked); });
     $("qCur").value = r.quoteCurrency || "IQD";
     $("qValid").value = r.quoteValidDays || 30;
+    $("qDays").value = r.quoteDays || "";
+    $("qDays").addEventListener("input", function(){ this.dataset.touched = "1"; });
+    if(!r.quoteDays) recalcDays();
     $("qNotes").value = r.quoteNotes || "";
     $("qAmount").value = r.quoteAmount ? fmt(r.quoteAmount) : "";
     if(!r.quoteAmount) qRecalc();
@@ -1043,9 +1047,9 @@ window.COST_CATALOG = [
         + (p && p.at ? '<span class="badge st-accepted">' + fmt(p.total) + ' د.ع</span><span class="muted">' + esc(p.by) + ' — ' + esc(p.at) + '</span>'
                      : '<span class="badge st-review">بانتظار التسعير</span>') + '</div>';
       if(p && p.at){
-        h += '<table class="log"><thead><tr><th>البند</th><th>العدد</th><th>سعر الوحدة</th><th>تفاصيل العينة</th><th>ملاحظات</th></tr></thead><tbody>'
+        h += '<table class="log"><thead><tr><th>البند</th><th>العدد</th><th>المدة</th><th>سعر الوحدة</th><th>تفاصيل العينة</th><th>ملاحظات</th></tr></thead><tbody>'
           + (p.items || []).concat((p.extras || []).map(function(e){ return { test:"➕ " + e.test, qty:e.qty, price:e.price, sample:"", notes:e.notes }; })).map(function(i){
-              return '<tr><td>' + esc(i.test) + '</td><td style="text-align:center">' + esc(i.qty) + '</td><td style="text-align:center">' + fmt(i.price) + '</td><td>' + esc(i.sample || "") + '</td><td>' + esc(i.notes || "") + '</td></tr>';
+              return '<tr><td>' + esc(i.test) + '</td><td style="text-align:center">' + esc(i.qty) + '</td><td style="text-align:center">' + esc(i.days ? i.days + " يوم" : "") + '</td><td style="text-align:center">' + fmt(i.price) + '</td><td>' + esc(i.sample || "") + '</td><td>' + esc(i.notes || "") + '</td></tr>';
             }).join("") + '</tbody></table>' + (p.note ? '<div class="pre" style="margin-top:4px">' + esc(p.note) + '</div>' : '');
       }
       h += '</div>';
@@ -1080,6 +1084,7 @@ window.COST_CATALOG = [
       +   '<input class="q-test-o" placeholder="اسم الفحص / الخدمة" value="' + esc(custom ? it.test || "" : "") + '" style="margin-top:4px;' + (custom && (secId || it.test) ? "" : "display:none") + '"' + dis + '>'
       +   '<input class="q-det" placeholder="تفاصيل (اختياري)" value="' + esc(it.details || "") + '" style="margin-top:4px"' + dis + '></td>'
       + '<td><input class="q-qty" type="number" min="1" value="' + esc(it.qty || 1) + '"' + dis + '></td>'
+      + '<td><input class="q-days" type="number" min="1" value="' + esc(it.days || itemDays(secId, it.test) || "") + '"' + dis + '></td>'
       + '<td><input class="q-price" inputmode="decimal" value="' + esc(fmt(it.price)) + '"' + dis + '></td>'
       + '<td class="lt"></td>'
       + '<td>' + (locked ? "" : '<button class="del-btn" title="حذف"><i class="fas fa-trash"></i></button>') + '</td>';
@@ -1097,6 +1102,8 @@ window.COST_CATALOG = [
       tr.querySelector(".q-test-o").style.display = qt.value === OTHER ? "" : "none";
       const x = itemOf(secById(qs.value), qt.value);
       tr.querySelector(".q-price").value = x && x.price != null ? fmt(x.price) : (x && x.min ? fmt(x.min) : "");
+      tr.querySelector(".q-days").value = itemDays(qs.value, qt.value) || "";
+      recalcDays();
       qLine(tr);
     });
     tr.querySelector(".q-qty").addEventListener("input", function(){ qLine(tr); });
@@ -1115,6 +1122,18 @@ window.COST_CATALOG = [
     const sum = readQItems().reduce(function(a, x){ return a + num(x.price) * (num(x.qty) || 1); }, 0);
     $("qAmount").value = sum ? fmt(sum) : "";
   }
+  /* مدة البند من الدليل (البند أو القسم) */
+  function itemDays(secId, test){
+    const sec = secById(secId), it = itemOf(sec, test);
+    return (it && it.days) || (sec && sec.days) || "";
+  }
+  /* مدة الإنجاز الكلية = أكبر مدة بين البنود (الفحوصات تُنفَّذ بالتوازي) */
+  function recalcDays(){
+    const el = $("qDays"); if(!el || el.dataset.touched === "1") return;
+    const m = readQItems().reduce(function(a, x){ return Math.max(a, num(x.days)); }, 0);
+    el.value = m || "";
+  }
+  document.addEventListener("input", function(e){ if(e.target.classList && e.target.classList.contains("q-days")) recalcDays(); });
   function readQItems(){
     const out = [];
     Array.prototype.forEach.call($("qBody").children, function(tr){
@@ -1123,13 +1142,14 @@ window.COST_CATALOG = [
       const test = (!sec || tv === OTHER) ? tr.querySelector(".q-test-o").value.trim() : tv;
       const section = sid === OTHER ? (tr.querySelector(".q-sec-o").value.trim() || "أخرى") : (sec ? sec.name : "");
       const x = { sectionId: sec ? sid : "", section:section, test:test, details:tr.querySelector(".q-det").value.trim(),
-                  qty:String(num(tr.querySelector(".q-qty").value) || 1), price:String(num(tr.querySelector(".q-price").value) || "") };
+                  qty:String(num(tr.querySelector(".q-qty").value) || 1), price:String(num(tr.querySelector(".q-price").value) || ""),
+                  days:String(num(tr.querySelector(".q-days").value) || "") };
       if(x.section || x.test) out.push(x);
     });
     return out;
   }
   function readQuote(){
-    return { items:readQItems(), currency:$("qCur").value, amount:String(num($("qAmount").value) || ""), validDays:$("qValid").value, notes:$("qNotes").value.trim() };
+    return { items:readQItems(), currency:$("qCur").value, amount:String(num($("qAmount").value) || ""), validDays:$("qValid").value, days:String(num($("qDays").value) || ""), notes:$("qNotes").value.trim() };
   }
 
   async function withBtn(id, label, fn){

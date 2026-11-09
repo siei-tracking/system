@@ -10,7 +10,7 @@
   if(!Array.isArray(window.COST_CATALOG) || !window.COST_CATALOG.length){
 window.COST_CATALOG = [
   {
-    id: "struct", name: "المختبر الإنشائي", dept: "قسم الفحص الهندسي والمختبرات",
+    id: "struct", name: "المختبر الإنشائي", dept: "قسم الفحص الهندسي والمختبرات", days: 7,
     items: [
       { name: "السمنت (كيمياوي + فيزياوي)", price: 200000 },
       { name: "انضغاط المكعبات الخرسانية", price: 10000, per: "مكعب" },
@@ -33,7 +33,7 @@ window.COST_CATALOG = [
     ]
   },
   {
-    id: "chem", name: "المختبر الكيمياوي", dept: "قسم الفحص الهندسي والمختبرات",
+    id: "chem", name: "المختبر الكيمياوي", dept: "قسم الفحص الهندسي والمختبرات", days: 7,
     items: [
       { name: "الفحص الكيمياوي (سمنت، رمل، حصى)", price: 100000 },
       { name: "أنابيب شبكات ماء (PVC, PPR, PE)", price: 300000 },
@@ -44,7 +44,7 @@ window.COST_CATALOG = [
     ]
   },
   {
-    id: "elec", name: "مختبر الكهرباء", dept: "قسم الفحص الهندسي والمختبرات",
+    id: "elec", name: "مختبر الكهرباء", dept: "قسم الفحص الهندسي والمختبرات", days: 7,
     items: [
       { name: "أسلاك كهربائية (1.5 – 10 mm)", price: 50000 },
       { name: "قابلوات كهربائية (ضغط واطئ، موصلات)", price: 150000 },
@@ -59,7 +59,7 @@ window.COST_CATALOG = [
     ]
   },
   {
-    id: "metal", name: "مختبر المعادن والميكانيك", dept: "قسم الفحص الهندسي والمختبرات",
+    id: "metal", name: "مختبر المعادن والميكانيك", dept: "قسم الفحص الهندسي والمختبرات", days: 7,
     items: [
       { name: "التحليل الكيمياوي للسبائك المعدنية", price: 100000,
         extras: [{ name: "تحضير النموذج في الورشة", price: 50000, sec: "shop" }], note: "قد يحتاج تحضيراً في الورشة (+50,000)" },
@@ -83,7 +83,7 @@ window.COST_CATALOG = [
     ]
   },
   {
-    id: "insp", name: "الفحص الهندسي (موقعي)", dept: "قسم الفحص الهندسي والمختبرات",
+    id: "insp", name: "الفحص الهندسي (موقعي)", dept: "قسم الفحص الهندسي والمختبرات", days: 7,
     items: [
       { name: "رافعة جسرية — داخل بغداد", price: 750000, per: "قطعة" },
       { name: "رافعة جسرية — خارج بغداد", price: 1500000, per: "قطعة" },
@@ -109,7 +109,7 @@ window.COST_CATALOG = [
     ]
   },
   {
-    id: "shop", name: "الورشة", dept: "قسم هندسة الإنتاج",
+    id: "shop", name: "الورشة", dept: "قسم هندسة الإنتاج", days: 7,
     items: [
       { name: "تحضير النموذج في الورشة", price: 50000, min: 50000, max: 100000, note: "تحضير نموذج لفحوصات المعادن" },
       { name: "تصنيع عينة شد معدن", price: 125000 },
@@ -127,7 +127,7 @@ window.COST_CATALOG = [
     ]
   },
   {
-    id: "elev", name: "المصاعد", dept: "قسم المصاعد",
+    id: "elev", name: "المصاعد", dept: "قسم المصاعد", days: 7,
     items: [
       { name: "فحص سلامة وأمان", price: null, min: 250000, max: 1500000, per: "مصعد",
         note: "250,000 – 1,500,000 حسب الفئة/القطاع + تحميلات إدارية حسب الموقع" }
@@ -920,6 +920,9 @@ window.COST_CATALOG = [
     const it = rowItem(tr);
     /* السعر الافتراضي من الدليل (يبقى قابلاً للتعديل) */
     tr.querySelector(".r-cost").value = it && it.price != null ? fmtNum(it.price) : (it && it.min ? fmtNum(it.min) : "");
+    /* مدة الإنجاز من الدليل */
+    const sec = rowSec(tr), d = (it && it.days) || (sec && sec.days);
+    if(d) tr.querySelector(".r-duration").value = d + " يوم";
     onRowCalc(sel);
     updateHint(tr);
   }

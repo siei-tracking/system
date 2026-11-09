@@ -374,6 +374,7 @@
       + (rows ? '<div style="overflow-x:auto"><table class="q"><thead><tr><th>ت</th><th style="text-align:right">الفحص / الخدمة</th><th>العدد</th><th>سعر الوحدة</th><th>المجموع</th></tr></thead><tbody>' + rows + '</tbody></table></div>' : '')
       + '<div class="total">المبلغ الإجمالي: <b>' + fmt(q.amount) + '</b> ' + cur + '</div>'
       + (q.notes ? '<div class="notes">' + esc(q.notes) + '</div>' : '')
+      + (q.days ? '<div class="total" style="font-size:15px;background:#eef6ff;border-color:#c9dcf3"><i class="fas fa-clock"></i> مدة الإنجاز المتوقعة: <b style="font-size:20px">' + esc(q.days) + '</b> أيام عمل من تاريخ استلام النماذج وإتمام الدفع</div>' : '')
       + '<div class="help" style="margin-top:8px;">العرض صالح لمدة ' + esc(q.validDays) + ' يوماً من تاريخ الإرسال.</div>';
 
     if(open){

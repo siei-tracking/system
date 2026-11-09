@@ -10,7 +10,7 @@
   if(!Array.isArray(window.COST_CATALOG) || !window.COST_CATALOG.length){
 window.COST_CATALOG = [
   {
-    id: "struct", name: "المختبر الإنشائي", dept: "قسم الفحص الهندسي والمختبرات",
+    id: "struct", name: "المختبر الإنشائي", dept: "قسم الفحص الهندسي والمختبرات", days: 7,
     items: [
       { name: "السمنت (كيمياوي + فيزياوي)", price: 200000 },
       { name: "انضغاط المكعبات الخرسانية", price: 10000, per: "مكعب" },
@@ -33,7 +33,7 @@ window.COST_CATALOG = [
     ]
   },
   {
-    id: "chem", name: "المختبر الكيمياوي", dept: "قسم الفحص الهندسي والمختبرات",
+    id: "chem", name: "المختبر الكيمياوي", dept: "قسم الفحص الهندسي والمختبرات", days: 7,
     items: [
       { name: "الفحص الكيمياوي (سمنت، رمل، حصى)", price: 100000 },
       { name: "أنابيب شبكات ماء (PVC, PPR, PE)", price: 300000 },
@@ -44,7 +44,7 @@ window.COST_CATALOG = [
     ]
   },
   {
-    id: "elec", name: "مختبر الكهرباء", dept: "قسم الفحص الهندسي والمختبرات",
+    id: "elec", name: "مختبر الكهرباء", dept: "قسم الفحص الهندسي والمختبرات", days: 7,
     items: [
       { name: "أسلاك كهربائية (1.5 – 10 mm)", price: 50000 },
       { name: "قابلوات كهربائية (ضغط واطئ، موصلات)", price: 150000 },
@@ -59,7 +59,7 @@ window.COST_CATALOG = [
     ]
   },
   {
-    id: "metal", name: "مختبر المعادن والميكانيك", dept: "قسم الفحص الهندسي والمختبرات",
+    id: "metal", name: "مختبر المعادن والميكانيك", dept: "قسم الفحص الهندسي والمختبرات", days: 7,
     items: [
       { name: "التحليل الكيمياوي للسبائك المعدنية", price: 100000,
         extras: [{ name: "تحضير النموذج في الورشة", price: 50000, sec: "shop" }], note: "قد يحتاج تحضيراً في الورشة (+50,000)" },
@@ -83,7 +83,7 @@ window.COST_CATALOG = [
     ]
   },
   {
-    id: "insp", name: "الفحص الهندسي (موقعي)", dept: "قسم الفحص الهندسي والمختبرات",
+    id: "insp", name: "الفحص الهندسي (موقعي)", dept: "قسم الفحص الهندسي والمختبرات", days: 7,
     items: [
       { name: "رافعة جسرية — داخل بغداد", price: 750000, per: "قطعة" },
       { name: "رافعة جسرية — خارج بغداد", price: 1500000, per: "قطعة" },
@@ -109,7 +109,7 @@ window.COST_CATALOG = [
     ]
   },
   {
-    id: "shop", name: "الورشة", dept: "قسم هندسة الإنتاج",
+    id: "shop", name: "الورشة", dept: "قسم هندسة الإنتاج", days: 7,
     items: [
       { name: "تحضير النموذج في الورشة", price: 50000, min: 50000, max: 100000, note: "تحضير نموذج لفحوصات المعادن" },
       { name: "تصنيع عينة شد معدن", price: 125000 },
@@ -127,7 +127,7 @@ window.COST_CATALOG = [
     ]
   },
   {
-    id: "elev", name: "المصاعد", dept: "قسم المصاعد",
+    id: "elev", name: "المصاعد", dept: "قسم المصاعد", days: 7,
     items: [
       { name: "فحص سلامة وأمان", price: null, min: 250000, max: 1500000, per: "مصعد",
         note: "250,000 – 1,500,000 حسب الفئة/القطاع + تحميلات إدارية حسب الموقع" }
@@ -467,7 +467,7 @@ window.COST_CATALOG = [
     .item-h .q{ background:#eef2f6; border-radius:999px; padding:1px 10px; font-weight:900; font-size:13px; }
     .hint{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
     .hint span{ background:#fff8ec; color:#8a5a00; border:1px solid #f3d9a6; border-radius:8px; padding:1px 8px; font-size:12px; font-weight:800; }
-    .g3{ display:grid; grid-template-columns:110px 150px 1fr; gap:8px; align-items:end; }
+    .g3{ display:grid; grid-template-columns:100px 110px 150px 1fr; gap:8px; align-items:end; }
     .g2{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px; }
     .lt{ font-weight:900; font-size:16px; color:var(--primary); text-align:center; padding:8px; background:#f7f9fb; border-radius:var(--radius-sm); }
     input.warn-range{ border-color:var(--warn) !important; background:#fff8ec; }
@@ -717,6 +717,7 @@ window.COST_CATALOG = [
   function num(v){ const n = parseFloat(String(v == null ? "" : v).replace(/[,٬\s]/g, "")); return isNaN(n) ? 0 : n; }
   function fmt(v){ const n = num(v); return n ? n.toLocaleString("en-US") : ""; }
   function catItem(name){ const s = CATALOG.find(function(x){ return x.id === LAB; }); return s ? (s.items.find(function(i){ return i.name === name; }) || null) : null; }
+  function labDays(it){ const s = CATALOG.find(function(x){ return x.id === LAB; }); return (it && it.days) || (s && s.days) || ""; }
   function rangeText(it){ if(!it) return ""; if(it.min && it.max) return fmt(it.min) + " – " + fmt(it.max); if(it.min) return "أكثر من " + fmt(it.min); return ""; }
   async function call(action, extra){
     const token = getSessionToken();
@@ -833,11 +834,13 @@ window.COST_CATALOG = [
         + '<div class="hint">'
         +   (c && c.price != null ? '<span>سعر الدليل: ' + fmt(c.price) + ' د.ع' + (c.per ? " / " + esc(c.per) : "") + '</span>' : '')
         +   (rangeText(c) ? '<span>النطاق: ' + rangeText(c) + '</span>' : '')
+        +   (labDays(c) ? '<span><i class="fas fa-clock"></i> مدة الدليل: ' + labDays(c) + ' أيام</span>' : '')
         +   (c && c.note ? '<span>' + esc(c.note) + '</span>' : '')
         +   (c && c.price == null && !c.min ? '<span>يُحدَّد حسب العمل</span>' : '')
         + '</div>'
         + '<div class="g3">'
         +   '<div class="input-group" style="margin:0"><label>العدد الفعلي</label><input class="i-qty" type="number" min="1" value="' + esc(p.qty || it.qty || 1) + '"' + dis + '></div>'
+        +   '<div class="input-group" style="margin:0"><label>مدة الإنجاز (يوم)</label><input class="i-days" type="number" min="1" value="' + esc(p.days || labDays(c) || "") + '"' + dis + '></div>'
         +   '<div class="input-group" style="margin:0"><label>سعر الوحدة (د.ع) <span style="color:var(--danger)">*</span></label><input class="i-price" inputmode="decimal" value="' + esc(fmt(def)) + '"' + dis + '></div>'
         +   '<div class="lt i-lt"></div>'
         + '</div>'
@@ -895,7 +898,7 @@ window.COST_CATALOG = [
     if(busy || !CUR) return;
     const items = [], missing = [];
     document.querySelectorAll("#drBody .item").forEach(function(el){
-      const it = { idx:Number(el.getAttribute("data-idx")), qty:el.querySelector(".i-qty").value, price:String(num(el.querySelector(".i-price").value) || ""),
+      const it = { idx:Number(el.getAttribute("data-idx")), qty:el.querySelector(".i-qty").value, days:el.querySelector(".i-days").value, price:String(num(el.querySelector(".i-price").value) || ""),
                    sample:el.querySelector(".i-sample").value.trim(), notes:el.querySelector(".i-notes").value.trim() };
       if(!it.price) missing.push(el.querySelector(".t").textContent);
       items.push(it);

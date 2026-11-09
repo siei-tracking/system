@@ -1,129 +1,138 @@
-/**
- * pwa-install.js  v3.1
- * يُشير لملف manifest خاص بكل صفحة
- * بحيث start_url = الصفحة التي ثبّت منها المستخدم
- *
- * الاستخدام: <script src="/system/pwa-install.js"></script>
- * يشترط رفع ملفات manifest في /system/ بالأسماء:
- *   manifest-main.webmanifest , manifest-elev.webmanifest ... إلخ
- */
-(function () {
-  "use strict";
+/* =========================================================
+   cost-catalog.js — دليل الفحوصات والتكاليف (IQD)
+   ارفعه في: /system/cost-catalog.js
+   لتحديث الأسعار عدّل هذا الملف فقط.
 
-  var PAGE_NAMES = {
-    "index":       "تتبع اوامر العمل",
-    "plan":        "اصدار امر العمل وتثبت السعر",
-    "finance":     "التسديد",
-    "lab1":        "المختبرات",
-    "workshop":    "الورشة",
-    "elev":        "المصاعد",
-    "testresults": "نتائج الفحص",
-    "official":    "الكتاب الرسمي",
-    "barcode":     "الباركود",
-    "email":       "الإيميل",
-    "results":     "تسليم النتائج",
-    "main":        "المعاملات"
-  };
-
-  var PAGES_WITH_MANIFEST = [
-    "main","results","plan","finance","lab1",
-    "workshop","elev","testresults","official","barcode","email"
-  ];
-
-  var THEME_COLOR      = "#223243";
-  var MANIFEST_BASE    = "/system/manifest-";
-  var MANIFEST_EXT     = ".webmanifest";
-  var MANIFEST_DEFAULT = "/system/manifest-main.webmanifest";
-
-  /* ── معرف الجهاز — ينشأ مرة واحدة ويبقى ثابتاً ── */
-  function ensureDeviceId() {
-    var key = "pwa_device_id";
-    try {
-      var id = localStorage.getItem(key);
-      if (!id) {
-        id = "dev_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2, 9);
-        localStorage.setItem(key, id);
-      }
-      /* اجعله متاحاً لكل الملفات الأخرى */
-      window.PWA_DEVICE_ID = id;
-    } catch(e) {
-      window.PWA_DEVICE_ID = "unknown";
-    }
+   days   : عدد أيام الإنجاز (على مستوى القسم، ويمكن وضعه لبند معيّن ليتجاوز القسم)
+   price  : السعر الافتراضي للوحدة (null = يُحدَّد يدوياً)
+   min/max: نطاق السعر عندما يكون السعر متغيراً
+   per    : وحدة الاحتساب (نموذج / متر طول / قطعة / لعبة / خدمة)
+   note   : ملاحظة تظهر للموظف وفي الطباعة
+   extras : كلف إضافية مقترحة (تُضاف كسطر مستقل بزر) — sec = القسم الذي يُسجَّل عليه السطر، once = مرة واحدة لا تتضاعف بالعدد
+========================================================= */
+window.COST_CATALOG = [
+  {
+    id: "struct", name: "المختبر الإنشائي", dept: "قسم الفحص الهندسي والمختبرات", days: 7,
+    items: [
+      { name: "السمنت (كيمياوي + فيزياوي)", price: 200000 },
+      { name: "انضغاط المكعبات الخرسانية", price: 10000, per: "مكعب" },
+      { name: "فحص الخرسانة بالموجات فوق الصوتية", price: 150000 },
+      { name: "الفحص بمطرقة شميدت", price: 150000 },
+      { name: "كور (لباب خرساني)", price: 50000 },
+      { name: "رمل، حصى، سبيس (فيزياوي + كيمياوي)", price: 200000 },
+      { name: "كربستون", price: 250000 },
+      { name: "حدل", price: 50000 },
+      { name: "مرمر", price: 250000 },
+      { name: "كاشي", price: 200000 },
+      { name: "سيراميك", price: 200000 },
+      { name: "طابوق، بلوك", price: 200000 },
+      { name: "زجاج", price: 200000 },
+      { name: "لباد قيري", price: 200000 },
+      { name: "مادة القير", price: 200000 },
+      { name: "فلانكوت", price: 200000 },
+      { name: "صبغ، إيبوكسي", price: 200000 },
+      { name: "صبغ إيبوكسي (غذائي)", price: 200000 }
+    ]
+  },
+  {
+    id: "chem", name: "المختبر الكيمياوي", dept: "قسم الفحص الهندسي والمختبرات", days: 7,
+    items: [
+      { name: "الفحص الكيمياوي (سمنت، رمل، حصى)", price: 100000 },
+      { name: "أنابيب شبكات ماء (PVC, PPR, PE)", price: 300000 },
+      { name: "ملحقات أنابيب شبكات ماء (PVC, PPR, PE)", price: 300000 },
+      { name: "أنابيب شبكات المجاري (PVC)", price: 300000 },
+      { name: "ملحقات أنابيب المجاري (PVC)", price: 250000 },
+      { name: "فحص سمك وكمية الغلونة", price: 750000 }
+    ]
+  },
+  {
+    id: "elec", name: "مختبر الكهرباء", dept: "قسم الفحص الهندسي والمختبرات", days: 7,
+    items: [
+      { name: "أسلاك كهربائية (1.5 – 10 mm)", price: 50000 },
+      { name: "قابلوات كهربائية (ضغط واطئ، موصلات)", price: 150000 },
+      { name: "قابلو معلق / قابلوات ضغط عالي", price: 250000 },
+      { name: "قواطع دورة — أقل من 100A", price: 50000, min: 50000, max: 100000 },
+      { name: "قواطع دورة — من 100A إلى 400A", price: 150000, min: 150000, max: 250000 },
+      { name: "قواطع دورة — أكثر من 400A", price: null, min: 250000, note: "حسب السعة (أكثر من 250,000)" },
+      { name: "محولات توزيع كهربائية — حتى 1M", price: 100000 },
+      { name: "محولات توزيع كهربائية — أعلى من 1M", price: 1000000 },
+      { name: "بوردات كهربائية", price: null, note: "حسب البورد" },
+      { name: "تراكيب إنارة", price: 150000 }
+    ]
+  },
+  {
+    id: "metal", name: "مختبر المعادن والميكانيك", dept: "قسم الفحص الهندسي والمختبرات", days: 7,
+    items: [
+      { name: "التحليل الكيمياوي للسبائك المعدنية", price: 100000,
+        extras: [{ name: "تحضير النموذج في الورشة", price: 50000, sec: "shop" }], note: "قد يحتاج تحضيراً في الورشة (+50,000)" },
+      { name: "فحص البنية المجهرية", price: 50000,
+        extras: [{ name: "تحضير النموذج في الورشة", price: 50000, sec: "shop" }], note: "قد يحتاج تحضيراً في الورشة (+50,000)" },
+      { name: "مقاومة الشد – الخضوع – الاستطالة", price: 100000,
+        extras: [{ name: "تحضير النموذج في الورشة", price: 100000, sec: "shop" }], note: "قد يحتاج تحضيراً في الورشة (+100,000)" },
+      { name: "الصدمة", price: 50000,
+        extras: [{ name: "تحضير النموذج في الورشة", price: 100000, sec: "shop" }], note: "قد يحتاج تحضيراً في الورشة (+100,000)" },
+      { name: "الصلادة", price: 50000,
+        extras: [{ name: "تحضير النموذج في الورشة", price: 50000, sec: "shop" }], note: "قد يحتاج تحضيراً في الورشة (+50,000)" },
+      { name: "الحني", price: 50000,
+        extras: [{ name: "تحضير النموذج في الورشة", price: 50000, sec: "shop" }], note: "قد يحتاج تحضيراً في الورشة (+50,000)" },
+      { name: "مانع نفاذية (Water Stop)", price: 200000 },
+      { name: "حديد تسليح", price: 250000,
+        extras: [{ name: "تحضير النموذج في الورشة", price: 50000, sec: "shop" }, { name: "كلفة المواصفة", price: 120000, once: true }],
+        note: "تضاف كلفة الورشة (50,000) والمواصفة (120,000)" },
+      { name: "أنابيب الدكتايل", price: 200000,
+        extras: [{ name: "تحضير النموذج في الورشة", price: 100000, sec: "shop" }, { name: "كلفة المواصفة", price: 120000, once: true }],
+        note: "تضاف كلفة الورشة (100,000) والمواصفة (120,000)" }
+    ]
+  },
+  {
+    id: "insp", name: "الفحص الهندسي (موقعي)", dept: "قسم الفحص الهندسي والمختبرات", days: 7,
+    items: [
+      { name: "رافعة جسرية — داخل بغداد", price: 750000, per: "قطعة" },
+      { name: "رافعة جسرية — خارج بغداد", price: 1500000, per: "قطعة" },
+      { name: "مرجل زيتي — داخل بغداد", price: 750000, per: "قطعة" },
+      { name: "مرجل زيتي — خارج بغداد", price: 1500000, per: "قطعة" },
+      { name: "رافعة شوكية — داخل بغداد", price: 350000, per: "قطعة" },
+      { name: "رافعة شوكية — خارج بغداد", price: 500000, per: "قطعة" },
+      { name: "وعاء ضغط — داخل بغداد", price: 750000, per: "قطعة" },
+      { name: "وعاء ضغط — خارج بغداد", price: 1500000, per: "قطعة" },
+      { name: "مدن الألعاب — داخل بغداد", price: 250000, min: 250000, max: 350000, per: "لعبة", note: "+ كلف الإيفاد" },
+      { name: "مدن الألعاب — خارج بغداد", price: 500000, per: "لعبة", note: "+ كلف الإيفاد" },
+      { name: "الفحص البصري لوصلات اللحام", price: 15000, per: "متر طول" },
+      { name: "الفحص بالأصباغ النافذة", price: 25000, per: "متر طول", note: "+ كلف الإيفاد" },
+      { name: "الفحص بالموجات فوق الصوتية (لحام)", price: 100000, per: "متر طول" },
+      { name: "التصوير الشعاعي", price: 50000, per: "قطعة", note: "+ كلف الإيفاد" },
+      { name: "الفحص بالدقائق المغناطيسية", price: 25000, per: "متر طول" },
+      { name: "الفحص بالصندوق الفراغي", price: 25000, per: "متر طول" },
+      { name: "مقاومة الحرق", price: 100000 },
+      { name: "الفحص الهيدروستاتيكي", price: 1000000, per: "متر طول" },
+      { name: "فحص العازلية", price: 500000, per: "متر طول" },
+      { name: "Holiday Test", price: null, note: "السعر يُحدَّد حسب العمل" },
+      { name: "كلف الإيفاد", price: null, per: "خدمة", note: "تُحدَّد حسب الموقع" }
+    ]
+  },
+  {
+    id: "shop", name: "الورشة", dept: "قسم هندسة الإنتاج", days: 7,
+    items: [
+      { name: "تحضير النموذج في الورشة", price: 50000, min: 50000, max: 100000, note: "تحضير نموذج لفحوصات المعادن" },
+      { name: "تصنيع عينة شد معدن", price: 125000 },
+      { name: "تصنيع عينة شد بلاستك", price: 75000 },
+      { name: "تصنيع عينة حني معدن", price: 100000 },
+      { name: "تصنيع عينة حني بلاستك", price: 100000 },
+      { name: "تصنيع عينة صدمة", price: 50000 },
+      { name: "قطع معدن", price: 50000 },
+      { name: "قطع بلاستك", price: 50000 },
+      { name: "تنعيم معدن", price: 100000 },
+      { name: "تحميل", price: 50000 },
+      { name: "طرق", price: 50000 },
+      { name: "شنفرة بليت", price: 5000 },
+      { name: "شنفرة بايب", price: 7500 }
+    ]
+  },
+  {
+    id: "elev", name: "المصاعد", dept: "قسم المصاعد", days: 7,
+    items: [
+      { name: "فحص سلامة وأمان", price: null, min: 250000, max: 1500000, per: "مصعد",
+        note: "250,000 – 1,500,000 حسب الفئة/القطاع + تحميلات إدارية حسب الموقع" }
+    ]
   }
-
-  function getCurrentPageKey() {
-    var path = window.location.pathname;
-    var file = path.split("/").pop()
-                   .replace(/\.html?$/i, "")
-                   .toLowerCase();
-    return file || "main";
-  }
-
-  function getManifestPath(pageKey) {
-    if (PAGES_WITH_MANIFEST.indexOf(pageKey) !== -1) {
-      return MANIFEST_BASE + pageKey + MANIFEST_EXT;
-    }
-    return MANIFEST_DEFAULT;
-  }
-
-  function injectManifestLink(manifestPath) {
-    var existing = document.querySelector('link[rel="manifest"]');
-    if (existing) {
-      if (existing.getAttribute("href") !== manifestPath) {
-        existing.setAttribute("href", manifestPath);
-      }
-      return;
-    }
-    var link = document.createElement("link");
-    link.rel  = "manifest";
-    link.setAttribute("href", manifestPath);
-    document.head.appendChild(link);
-  }
-
-  function injectThemeColor() {
-    var meta = document.querySelector('meta[name="theme-color"]');
-    if (!meta) {
-      meta = document.createElement("meta");
-      meta.name = "theme-color";
-      document.head.appendChild(meta);
-    }
-    meta.content = THEME_COLOR;
-  }
-
-  function injectAppleMeta(pageName) {
-    var pairs = [
-      ["apple-mobile-web-app-title",            pageName],
-      ["apple-mobile-web-app-capable",          "yes"],
-      ["apple-mobile-web-app-status-bar-style", "black-translucent"],
-      ["mobile-web-app-capable",                "yes"]
-    ];
-    pairs.forEach(function (pair) {
-      var meta = document.querySelector('meta[name="' + pair[0] + '"]');
-      if (!meta) {
-        meta = document.createElement("meta");
-        meta.name = pair[0];
-        document.head.appendChild(meta);
-      }
-      meta.content = pair[1];
-    });
-  }
-
-  function init() {
-    ensureDeviceId();   /* ✅ أنشئ Device ID فوراً عند أول فتح */
-
-    var pageKey      = getCurrentPageKey();
-    var pageName     = PAGE_NAMES[pageKey] || pageKey;
-    var manifestPath = getManifestPath(pageKey);
-
-    injectManifestLink(manifestPath);
-    injectThemeColor();
-    injectAppleMeta(pageName);
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
-  } else {
-    init();
-  }
-
-})();
+];
