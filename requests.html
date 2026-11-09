@@ -514,6 +514,12 @@ window.COST_CATALOG = [
     .lab-p{ border:1px solid var(--line); border-radius:10px; padding:8px; margin-bottom:8px; }
     .lab-h{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:6px; }
     #toast{ z-index:2147483646 !important; }
+    .fv{ border:1px solid var(--line); border-radius:10px; margin-bottom:8px; overflow:hidden; }
+    .fv-h{ display:flex; align-items:center; gap:8px; padding:8px 10px; flex-wrap:wrap; }
+    .fv-h > i{ color:var(--accent); font-size:20px; width:24px; text-align:center; }
+    .fv-t{ flex:1; min-width:140px; }
+    .fv-p iframe{ width:100%; height:70vh; min-height:420px; border:0; border-top:1px solid var(--line); background:#f3f5f8; display:block; }
+    a.icon-btn{ text-decoration:none; color:inherit; display:inline-flex; align-items:center; gap:4px; }
   </style>
 </head>
 
@@ -958,18 +964,7 @@ window.COST_CATALOG = [
       +   (r.details ? '<div class="pre" style="margin-top:8px">' + esc(r.details) + '</div>' : '')
       + '</div>'
 
-      + (function(){
-          const all = r.attachments || [];
-          const files = all.filter(function(x){ return x.hasFile; });
-          const parts = all.filter(function(x){ return !x.hasFile; });
-          const merged = parts.length > 0;
-          return '<div class="box"><h4><i class="fas fa-paperclip"></i> ' + (merged ? 'ملف الطلب (PDF موحّد)' : 'الكتاب والمرفقات') + '</h4>'
-            + (r.hasFile ? fileRow(-1, merged ? "ملف الطلب.pdf" : r.fileName, r.fileMime, r.fileSize) : '<div class="muted">لا يوجد ملف</div>')
-            + (merged ? '<div class="muted" style="margin:6px 0 2px">يحتوي الملف على:</div><ol class="parts">'
-                + parts.map(function(x){ return '<li>' + (x.role === "letter" ? '<b>الكتاب / الطلب:</b> ' : '') + esc(x.name) + '</li>'; }).join("") + '</ol>' : '')
-            + (files.length ? '<div class="muted" style="margin:8px 0 4px">المرفقات</div>' + files.map(function(x){ return fileRow(x.index, x.name, x.mime, x.size); }).join("") : '')
-            + '</div>';
-        })()
+      + filesHtml(r)
 
       + labBox(r)
       + '<div class="box"><h4><i class="fas fa-file-invoice-dollar"></i> عرض السعر</h4>'
@@ -1032,6 +1027,7 @@ window.COST_CATALOG = [
     if(!r.quoteAmount) qRecalc();
     $("qAmount").addEventListener("input", function(){ this.dataset.touched = "1"; });
     loadReqMails(r.requestId);
+    fvPrefetch(r);
   }
 
   /* ---------- تسعير المختبرات ---------- */
@@ -1196,6 +1192,58 @@ window.COST_CATALOG = [
     });
   }
 
+
+  /* ============================================================
+   * عرض الملفات السريع (معاينة Drive داخل الصفحة)
+   * ============================================================ */
+  const PV = {};   /* index → {preview, download} */
+  function filesHtml(r){
+    const all = r.attachments || [];
+    const files = all.filter(function(x){ return x.hasFile; });
+    const parts = all.filter(function(x){ return !x.hasFile; });
+    const split = files.some(function(x){ return x.role === "samples"; });
+    const letterName = (parts.find(function(p){ return p.role === "letter"; }) || {}).name || "";
+    const sampleNames = parts.filter(function(p){ return p.role === "attachment"; }).map(function(p){ return p.name; }).join("، ");
+    let h = '<div class="box"><h4><i class="fas fa-paperclip"></i> الملفات</h4>';
+    if(r.hasFile) h += fvRow(-1, split || !parts.length ? "الكتاب / الطلب" : "ملف الطلب (موحّد)", split ? letterName : (parts.length ? parts.map(function(p){ return p.name; }).join("، ") : ""), "fa-file-lines");
+    files.forEach(function(x){ h += fvRow(x.index, x.role === "samples" ? "صور العينات" : x.name, x.role === "samples" ? sampleNames : "", x.role === "samples" ? "fa-images" : "fa-file"); });
+    if(!r.hasFile && !files.length) h += '<div class="muted">لا يوجد ملف</div>';
+    return h + '</div>';
+  }
+  function fvRow(i, title, sub, ic){
+    return '<div class="fv"><div class="fv-h"><i class="fas ' + ic + '"></i><div class="fv-t"><b>' + esc(title) + '</b>' + (sub ? '<div class="muted">' + esc(sub) + '</div>' : '') + '</div>'
+      + '<button class="icon-btn" data-fv="' + i + '"><i class="fas fa-eye"></i> عرض</button>'
+      + '<a class="icon-btn" id="fvdl_' + (i + 1) + '" target="_blank" rel="noopener" style="display:none"><i class="fas fa-download"></i> تحميل</a>'
+      + '<a class="icon-btn" id="fvop_' + (i + 1) + '" target="_blank" rel="noopener" style="display:none"><i class="fas fa-up-right-from-square"></i></a></div>'
+      + '<div class="fv-p" id="fvp_' + (i + 1) + '"></div></div>';
+  }
+  async function fvGet(i){
+    if(PV[i]) return PV[i];
+    const r = await call("getCustomerRequestPreview", Object.assign({ index:i }, { requestId:CUR.requestId }));
+    if(r && r.ok){ PV[i] = r; const d = $("fvdl_" + (i + 1)), o = $("fvop_" + (i + 1));
+      if(d){ d.href = r.download; d.style.display = ""; } if(o){ o.href = r.preview; o.style.display = ""; } }
+    return r;
+  }
+  /* تجهيز روابط المعاينة مسبقاً عند فتح الطلب */
+  function fvPrefetch(r){
+    Object.keys(PV).forEach(function(k){ delete PV[k]; });
+    const idx = []; if(r.hasFile) idx.push(-1);
+    (r.attachments || []).forEach(function(x){ if(x.hasFile) idx.push(x.index); });
+    idx.forEach(function(i){ fvGet(i).catch(function(){}); });
+  }
+  document.addEventListener("click", async function(e){
+    const b = e.target.closest && e.target.closest("[data-fv]"); if(!b) return;
+    const i = Number(b.getAttribute("data-fv")), box = $("fvp_" + (i + 1));
+    if(box.innerHTML){ box.innerHTML = ""; b.innerHTML = '<i class="fas fa-eye"></i> عرض'; return; }
+    b.disabled = true; b.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    try{
+      const r = await fvGet(i);
+      if(r && r.ok){ box.innerHTML = '<iframe src="' + esc(r.preview) + '" allow="autoplay" loading="eager"></iframe>'; b.innerHTML = '<i class="fas fa-eye-slash"></i> إخفاء'; }
+      else{ showMsg((r && r.message) || "❌ تعذر عرض الملف", "err"); b.innerHTML = '<i class="fas fa-eye"></i> عرض'; }
+    }catch(x){ showMsg("❌ خطأ في الاتصال", "err"); b.innerHTML = '<i class="fas fa-eye"></i> عرض'; }
+    finally{ b.disabled = false; }
+  });
+
   async function loadReqMails(id){
     try{
       const r = await call("getEmailHistory", { limit:20, requestId:id });
@@ -1263,6 +1311,18 @@ window.COST_CATALOG = [
   /* ============================================================
    * INIT
    * ============================================================ */
+
+  /* ===== التحديث المباشر ===== */
+  window.onLiveChange = function(scopes){
+    if(scopes.indexOf("requests") === -1 && scopes.indexOf("orders") === -1) return;
+    loadList(false);
+    /* الطلب المفتوح: يُحدَّث فقط إذا لم يكن الموظف يعدّل عرض السعر */
+    if(CUR && !busy){
+      const a = document.activeElement, editing = a && $("drawer").contains(a) && /INPUT|TEXTAREA|SELECT/.test(a.tagName);
+      if(!editing && !$("qAmount")?.dataset.touched) openRequest(CUR.requestId);
+      else showMsg("🔄 يوجد تحديث على هذا الطلب — أعد فتحه بعد الحفظ", "warn");
+    }
+  };
   window.addEventListener("load", function(){
     ensurePageSession();
     liveSessionInterval = setInterval(checkLiveSession, 10000);
@@ -1270,10 +1330,11 @@ window.COST_CATALOG = [
       const id = new URLSearchParams(location.search).get("id");
       if(id) openRequest(id);
     });
-    setInterval(function(){ if(!CUR && !document.hidden) loadList(false); }, 60000);
+    setInterval(function(){ if(!CUR && !document.hidden) loadList(false); }, 180000);
   });
 </script>
   <script>window.PAGE_NAME = "requests";</script>
   <script src="/system/notifications-widget.js" defer></script>
+  <script src="/system/live-sync.js" defer></script>
 </body>
 </html>

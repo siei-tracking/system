@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
   <meta charset="UTF-8">
@@ -740,14 +740,14 @@ window.COST_CATALOG = [
   /* تصغير الصورة (أقصى ضلع 2000px) وتصحيح اتجاهها عبر canvas */
   async function jpgBytes(file){
     const im = await loadImg(file);
-    const k = Math.min(1, 2000 / Math.max(im.naturalWidth, im.naturalHeight));
+    const k = Math.min(1, 1600 / Math.max(im.naturalWidth, im.naturalHeight));   /* 1600px تكفي للقراءة وتقلل الحجم كثيراً */
     const c = document.createElement("canvas");
     c.width = Math.max(1, Math.round(im.naturalWidth * k));
     c.height = Math.max(1, Math.round(im.naturalHeight * k));
     const g = c.getContext("2d");
     g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height);
     g.drawImage(im, 0, 0, c.width, c.height);
-    const blob = await new Promise(function(r){ c.toBlob(r, "image/jpeg", 0.85); });
+    const blob = await new Promise(function(r){ c.toBlob(r, "image/jpeg", 0.72); });
     return new Uint8Array(await blob.arrayBuffer());
   }
   async function buildPdf(files, onStep){
@@ -807,18 +807,26 @@ window.COST_CATALOG = [
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري تجهيز الملفات...';
     try{
-      const all = [letterFile].concat(attFiles.map(function(a){ return a.file; }));
-      let pdf;
+      /* ملفان منفصلان: الكتاب/الطلب PDF، وصور العينات PDF */
+      let letterPdf, samplesPdf;
       try{
-        pdf = await buildPdf(all, function(i, n){ btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري تجهيز الملفات (' + i + '/' + n + ')...'; });
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> تجهيز الكتاب...';
+        letterPdf = /\.pdf$/i.test(letterFile.name)
+          ? { bytes:new Uint8Array(await letterFile.arrayBuffer()), pages:0 }      /* PDF جاهز: يُرفع كما هو بدون إعادة معالجة */
+          : await buildPdf([letterFile]);
+        samplesPdf = await buildPdf(attFiles.map(function(a){ return a.file; }), function(i, n){
+          btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> تجهيز صور العينات (' + i + '/' + n + ')...';
+        });
       }catch(err){ setNotice("❌ " + (err && err.message || "تعذر تجهيز الملفات"), "err"); return; }
-      if(pdf.bytes.length > MAX_TOTAL){ setNotice("❌ حجم الملف النهائي أكبر من 25MB، قلّل عدد الصور أو حجمها", "err"); return; }
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري رفع الطلب...';
+      if(letterPdf.bytes.length > MAX_FILE){ setNotice("❌ ملف الكتاب أكبر من 10MB", "err"); return; }
+      if(letterPdf.bytes.length + samplesPdf.bytes.length > MAX_TOTAL){ setNotice("❌ حجم الملفات أكبر من 25MB، قلّل عدد الصور", "err"); return; }
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري رفع الطلب (' + ((letterPdf.bytes.length + samplesPdf.bytes.length) / 1048576).toFixed(1) + ' MB)...';
       const payload = {
         action:"submitCustomerRequest", name:name, company:$("company").value.trim(), phone:phone, email:email,
         services:services, details:details, letterNo:letterNo, letterDate:letterDate,
-        file:{ name:"ملف الطلب.pdf", mime:"application/pdf", data:toB64(pdf.bytes) },
-        parts:{ letter:letterFile.name, attachments:attFiles.map(function(a){ return a.file.name; }), pages:pdf.pages },
+        file:{ name:"الكتاب.pdf", mime:"application/pdf", data:toB64(letterPdf.bytes) },
+        attachments:[{ name:"صور العينات.pdf", mime:"application/pdf", data:toB64(samplesPdf.bytes) }],
+        parts:{ letter:letterFile.name, attachments:attFiles.map(function(a){ return a.file.name; }), pages:samplesPdf.pages, split:true },
         website:$("website").value
       };
       /* عند ضغط الطلبات في نفس الوقت: إعادة المحاولة تلقائياً بدون أن يعيد الزبون التعبئة */
