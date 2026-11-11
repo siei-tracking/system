@@ -10,7 +10,7 @@
   if(!Array.isArray(window.COST_CATALOG) || !window.COST_CATALOG.length){
 window.COST_CATALOG = [
   {
-    id: "struct", name: "المختبر الإنشائي", dept: "قسم الفحص الهندسي والمختبرات",
+    id: "struct", name: "المختبر الإنشائي", dept: "قسم الفحص الهندسي والمختبرات", days: 7,
     items: [
       { name: "السمنت (كيمياوي + فيزياوي)", price: 200000 },
       { name: "انضغاط المكعبات الخرسانية", price: 10000, per: "مكعب" },
@@ -33,7 +33,7 @@ window.COST_CATALOG = [
     ]
   },
   {
-    id: "chem", name: "المختبر الكيمياوي", dept: "قسم الفحص الهندسي والمختبرات",
+    id: "chem", name: "المختبر الكيمياوي", dept: "قسم الفحص الهندسي والمختبرات", days: 7,
     items: [
       { name: "الفحص الكيمياوي (سمنت، رمل، حصى)", price: 100000 },
       { name: "أنابيب شبكات ماء (PVC, PPR, PE)", price: 300000 },
@@ -44,7 +44,7 @@ window.COST_CATALOG = [
     ]
   },
   {
-    id: "elec", name: "مختبر الكهرباء", dept: "قسم الفحص الهندسي والمختبرات",
+    id: "elec", name: "مختبر الكهرباء", dept: "قسم الفحص الهندسي والمختبرات", days: 7,
     items: [
       { name: "أسلاك كهربائية (1.5 – 10 mm)", price: 50000 },
       { name: "قابلوات كهربائية (ضغط واطئ، موصلات)", price: 150000 },
@@ -59,7 +59,7 @@ window.COST_CATALOG = [
     ]
   },
   {
-    id: "metal", name: "مختبر المعادن والميكانيك", dept: "قسم الفحص الهندسي والمختبرات",
+    id: "metal", name: "مختبر المعادن والميكانيك", dept: "قسم الفحص الهندسي والمختبرات", days: 7,
     items: [
       { name: "التحليل الكيمياوي للسبائك المعدنية", price: 100000,
         extras: [{ name: "تحضير النموذج في الورشة", price: 50000, sec: "shop" }], note: "قد يحتاج تحضيراً في الورشة (+50,000)" },
@@ -83,7 +83,7 @@ window.COST_CATALOG = [
     ]
   },
   {
-    id: "insp", name: "الفحص الهندسي (موقعي)", dept: "قسم الفحص الهندسي والمختبرات",
+    id: "insp", name: "الفحص الهندسي (موقعي)", dept: "قسم الفحص الهندسي والمختبرات", days: 7,
     items: [
       { name: "رافعة جسرية — داخل بغداد", price: 750000, per: "قطعة" },
       { name: "رافعة جسرية — خارج بغداد", price: 1500000, per: "قطعة" },
@@ -109,7 +109,7 @@ window.COST_CATALOG = [
     ]
   },
   {
-    id: "shop", name: "الورشة", dept: "قسم هندسة الإنتاج",
+    id: "shop", name: "الورشة", dept: "قسم هندسة الإنتاج", days: 7,
     items: [
       { name: "تحضير النموذج في الورشة", price: 50000, min: 50000, max: 100000, note: "تحضير نموذج لفحوصات المعادن" },
       { name: "تصنيع عينة شد معدن", price: 125000 },
@@ -127,7 +127,7 @@ window.COST_CATALOG = [
     ]
   },
   {
-    id: "elev", name: "المصاعد", dept: "قسم المصاعد",
+    id: "elev", name: "المصاعد", dept: "قسم المصاعد", days: 7,
     items: [
       { name: "فحص سلامة وأمان", price: null, min: 250000, max: 1500000, per: "مصعد",
         note: "250,000 – 1,500,000 حسب الفئة/القطاع + تحميلات إدارية حسب الموقع" }
@@ -459,8 +459,8 @@ window.COST_CATALOG = [
     .empty{ padding:24px; text-align:center; color:var(--muted); font-weight:800; }
 
     /* لوحة التفاصيل */
-    .drawer-bg{ position:fixed; inset:0; background:rgba(15,25,35,.45); z-index:900; display:none; }
-    .drawer{ position:fixed; top:0; bottom:0; left:0; width:min(860px,100%); background:#f4f6f8; z-index:901; overflow-y:auto;
+    .drawer-bg{ position:fixed; inset:0; background:rgba(15,25,35,.45); z-index:2147483600; display:none; }
+    .drawer{ position:fixed; top:0; bottom:0; left:0; width:min(860px,100%); background:#f4f6f8; z-index:2147483601; overflow-y:auto;
       transform:translateX(-105%); transition:transform .25s ease; box-shadow:0 0 40px rgba(0,0,0,.25); }
     .drawer.on{ transform:none; } .drawer-bg.on{ display:block; }
     .dr-head{ position:sticky; top:0; background:var(--primary); color:#fff; padding:12px 16px; display:flex; align-items:center; gap:10px; z-index:2; }
@@ -482,7 +482,7 @@ window.COST_CATALOG = [
     table.qt td{ border-bottom:1px solid var(--line); padding:4px; vertical-align:top; }
     table.qt input, table.qt select{ min-height:36px; font-size:13px; padding:4px 8px; }
     table.qt td.lt{ font-weight:900; text-align:center; white-space:nowrap; padding-top:10px; }
-    .q-foot{ display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:8px; }
+    .q-foot{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:8px; margin-top:8px; }
     .q-total{ font-size:20px !important; font-weight:900 !important; text-align:center !important; }
     .btns{ display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
     .btns .main-btn{ width:auto; flex:1; min-width:150px; padding:9px 14px; }
@@ -502,15 +502,43 @@ window.COST_CATALOG = [
     .check input{ width:20px; min-height:20px; height:20px; }
 
     @media (max-width:760px){
+      #payStats{ grid-template-columns:repeat(2,minmax(0,1fr)); }
       .stats{ grid-template-columns:repeat(2,minmax(0,1fr)); }
       .li{ grid-template-columns:1fr auto; }
       .li .s, .li .d2{ grid-column:1 / -1; }
       .q-foot, .set-grid{ grid-template-columns:1fr; }
       .kv{ grid-template-columns:95px 1fr; }
       .toolbar input{ max-width:none; width:100%; margin:0; }
-      .qt-wrap{ overflow-x:auto; } table.qt{ min-width:640px; }
+      .qt-wrap{ overflow-x:auto; } table.qt{ min-width:720px; }
     }
     ol.parts{ margin:2px 0 0; padding-right:20px; font-weight:700; font-size:13.5px; line-height:1.9; }
+    .lab-p{ border:1px solid var(--line); border-radius:10px; padding:8px; margin-bottom:8px; }
+    .lab-h{ display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:6px; }
+    #toast{ z-index:2147483646 !important; }
+    .pset{ border:none; padding:0; margin:0; min-width:0; }
+    .pset:disabled{ opacity:.7; }
+    .prov-row{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:6px; }
+    .prov{ display:flex; align-items:center; gap:6px; border:1.5px solid var(--line); border-radius:999px; padding:5px 12px; font-weight:800; cursor:pointer; background:#fff; }
+    .prov input{ width:18px; height:18px; min-height:18px; }
+    .prov.on{ border-color:var(--accent); background:#fffaf1; }
+    .gw{ border:1px solid var(--line); border-radius:var(--radius-md); padding:10px 12px; margin:10px 0; background:#fff; }
+    .gw.off{ display:none; }
+    .gw h5{ margin:0 0 6px; font-size:15px; color:var(--primary); display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+    .gw-st{ font-size:12px; font-weight:900; border-radius:999px; padding:1px 10px; }
+    .gw-st.ok{ background:#e3f7ec; color:#1e7a46; } .gw-st.no{ background:#fff4e0; color:#8a5a00; }
+    .gw input[dir=ltr]{ text-align:left; }
+    .ps-paid{ background:#e3f7ec; color:#1e7a46; } .ps-pending{ background:#fff4e0; color:#8a5a00; }
+    .ps-failed, .ps-expired, .ps-cancelled{ background:#fdecea; color:#a5281b; } .ps-refunded{ background:#eceff2; color:#6b7a89; }
+    .paid-tag{ display:inline-block; background:#e3f7ec; color:#1e7a46; border-radius:999px; padding:0 8px; font-size:11.5px; font-weight:900; margin-top:2px; }
+    .mini{ padding:3px 8px !important; font-size:12px !important; }
+    .rc-box{ border:2px solid #bfe6cf; background:#f4fcf7; border-radius:10px; padding:10px 12px; font-weight:800; }
+    .rc-box .big{ font-size:22px; color:#1e7a46; font-weight:900; }
+    .fv{ border:1px solid var(--line); border-radius:10px; margin-bottom:8px; overflow:hidden; }
+    .fv-h{ display:flex; align-items:center; gap:8px; padding:8px 10px; flex-wrap:wrap; }
+    .fv-h > i{ color:var(--accent); font-size:20px; width:24px; text-align:center; }
+    .fv-t{ flex:1; min-width:140px; }
+    .fv-p iframe{ width:100%; height:70vh; min-height:420px; border:0; border-top:1px solid var(--line); background:#f3f5f8; display:block; }
+    a.icon-btn{ text-decoration:none; color:inherit; display:inline-flex; align-items:center; gap:4px; }
   </style>
 </head>
 
@@ -533,6 +561,7 @@ window.COST_CATALOG = [
             <div class="tabs">
               <button class="tab on" data-tab="dash"><i class="fas fa-chart-simple"></i> لوحة المعلومات</button>
               <button class="tab" data-tab="reqs"><i class="fas fa-inbox"></i> الطلبات <span class="cnt" id="newCnt" style="display:none"></span></button>
+              <button class="tab" data-tab="pay"><i class="fas fa-credit-card"></i> الدفع الإلكتروني</button>
               <button class="tab" data-tab="log"><i class="fas fa-envelope-open-text"></i> سجل البريد</button>
               <button class="tab" data-tab="set"><i class="fas fa-gear"></i> إعدادات البريد</button>
             </div>
@@ -552,6 +581,53 @@ window.COST_CATALOG = [
                 <button class="icon-btn" onclick="loadList(true)"><i class="fas fa-rotate"></i> تحديث</button>
               </div>
               <div class="list" id="reqList"><div class="empty">جاري التحميل...</div></div>
+            </section>
+
+            <!-- الدفع الإلكتروني -->
+            <section class="pane" id="pane-pay">
+              <div class="stats" id="payStats"></div>
+              <div class="toolbar" style="margin-top:10px">
+                <span class="sec-title" style="margin:0;border:none"><i class="fas fa-list"></i> عمليات الدفع</span>
+                <input type="search" id="payQ" placeholder="بحث: الطلب، الوصل، المرجع...">
+                <button class="icon-btn" onclick="loadPayments()"><i class="fas fa-rotate"></i> تحديث</button>
+              </div>
+              <div style="overflow-x:auto"><table class="log"><thead><tr><th>الوقت</th><th>الطلب</th><th>المبلغ</th><th>الوسيلة</th><th>الحالة</th><th>الوصل</th><th>المرجع / الدافع</th><th></th></tr></thead><tbody id="payBody"><tr><td colspan="8" class="empty">—</td></tr></tbody></table></div>
+
+              <div class="sec-title" style="margin-top:22px"><i class="fas fa-sliders"></i> إعدادات بوابة الدفع</div>
+              <div id="paySetStatus"></div>
+              <fieldset id="paySet" class="pset">
+                <label class="check"><input type="checkbox" id="p_en"> <b>تفعيل الدفع الإلكتروني للزبائن</b> — يظهر زر «الدفع الإلكتروني» في صفحة عرض السعر بدل باركود الدفع</label>
+                <div class="muted" style="margin:-4px 0 6px">وسائل الدفع الظاهرة للزبون:</div>
+                <div class="prov-row" id="provRow"></div>
+                <label class="check"><input type="checkbox" id="p_rc"> إرسال وصل الدفع (PDF) إلى بريد الزبون تلقائياً</label>
+
+                <div class="gw" data-gw="zaincash"><h5><i class="fas fa-wallet"></i> زين كاش <span class="gw-st" id="st_zaincash"></span></h5>
+                  <div class="set-grid">
+                    <div class="input-group"><label>رابط البوابة (Base URL)</label><input id="PAY_ZC_BASE" dir="ltr"></div>
+                    <div class="input-group"><label>Service Type</label><input id="PAY_ZC_SERVICE_TYPE" dir="ltr"></div>
+                    <div class="input-group"><label>Client ID</label><input id="PAY_ZC_CLIENT_ID" dir="ltr" autocomplete="off"></div>
+                    <div class="input-group"><label>Client Secret</label><input id="PAY_ZC_CLIENT_SECRET" type="password" dir="ltr" autocomplete="new-password"></div>
+                    <div class="input-group"><label>API Key (اختياري)</label><input id="PAY_ZC_API_KEY" type="password" dir="ltr" autocomplete="new-password"></div>
+                  </div><button class="icon-btn" onclick="testGw('zaincash')" id="tg_zaincash"><i class="fas fa-plug"></i> فحص الاتصال</button></div>
+
+                <div class="gw" data-gw="fib"><h5><i class="fas fa-building-columns"></i> المصرف العراقي الأول FIB <span class="gw-st" id="st_fib"></span></h5>
+                  <div class="set-grid">
+                    <div class="input-group"><label>رابط البوابة (Base URL)</label><input id="PAY_FIB_BASE" dir="ltr"></div>
+                    <div class="input-group"><label>Client ID</label><input id="PAY_FIB_CLIENT_ID" dir="ltr" autocomplete="off"></div>
+                    <div class="input-group"><label>Client Secret</label><input id="PAY_FIB_CLIENT_SECRET" type="password" dir="ltr" autocomplete="new-password"></div>
+                  </div><button class="icon-btn" onclick="testGw('fib')" id="tg_fib"><i class="fas fa-plug"></i> فحص الاتصال</button></div>
+
+                <div class="gw" data-gw="qi"><h5><i class="fas fa-credit-card"></i> كي كارد Qi <span class="gw-st" id="st_qi"></span></h5>
+                  <div class="set-grid">
+                    <div class="input-group"><label>رابط البوابة (Base URL)</label><input id="PAY_QI_BASE" dir="ltr"></div>
+                    <div class="input-group"><label>Terminal ID</label><input id="PAY_QI_TERMINAL" dir="ltr" autocomplete="off"></div>
+                    <div class="input-group"><label>Username</label><input id="PAY_QI_USER" dir="ltr" autocomplete="off"></div>
+                    <div class="input-group"><label>Password</label><input id="PAY_QI_PASS" type="password" dir="ltr" autocomplete="new-password"></div>
+                  </div><button class="icon-btn" onclick="testGw('qi')" id="tg_qi"><i class="fas fa-plug"></i> فحص الاتصال</button></div>
+
+                <div class="muted">الحقول السرية لا تُعرض بعد حفظها؛ اتركها فارغة للإبقاء على القيمة المحفوظة، أو اكتب <b>-</b> لحذفها.</div>
+                <div class="btns"><button class="main-btn btn-ok" id="savePayBtn" onclick="savePaySettings()"><i class="fas fa-floppy-disk"></i> حفظ إعدادات الدفع</button></div>
+              </fieldset>
             </section>
 
             <!-- سجل البريد -->
@@ -812,6 +888,7 @@ window.COST_CATALOG = [
     document.querySelectorAll(".pane").forEach(function(p){ p.classList.toggle("on", p.id === "pane-" + t); });
     if(t === "log") loadLog();
     if(t === "set") loadSettings();
+    if(t === "pay"){ loadPayments(); loadPaySettings(); }
   }
 
   /* ---------- القائمة والإحصائيات ---------- */
@@ -871,7 +948,9 @@ window.COST_CATALOG = [
         + '<div><div class="id">' + esc(it.requestId) + '</div><div class="d">' + esc(it.createdAt) + '</div></div>'
         + '<div><div class="n">' + esc(it.company || it.name) + '</div><div class="d">' + esc(it.company ? it.name : "") + ' <span dir="ltr">' + esc(it.phone) + '</span></div></div>'
         + '<div class="s">' + esc(svcSummary(it.services)) + ((it.hasFile || it.attachCount) ? ' <i class="fas fa-paperclip" title="مرفقات"></i>' + (it.attachCount ? ' ' + (it.attachCount + (it.hasFile ? 1 : 0)) : '') : '') + '</div>'
-        + '<div>' + badge(it.status) + (it.orderNo ? '<div class="d">أمر عمل: ' + esc(it.orderNo) + '</div>' : '') + '</div>'
+        + '<div>' + badge(it.status) + (it.orderNo ? '<div class="d">أمر عمل: ' + esc(it.orderNo) + '</div>' : '')
+        + (it.payStatus === "paid" ? '<div><span class="paid-tag"><i class="fas fa-credit-card"></i> مدفوع إلكترونياً</span></div>' : '')
+        + ((it.labStatus || []).length ? '<div class="d">🧪 تسعير المختبرات ' + it.labStatus.filter(function(x){ return x.done; }).length + '/' + it.labStatus.length + '</div>' : '') + '</div>'
         + '<div class="a">' + (it.quoteAmount ? fmt(it.quoteAmount) + " " + esc(it.quoteCurrency) : "—") + '</div>'
         + '</div>';
     }).join("");
@@ -900,7 +979,8 @@ window.COST_CATALOG = [
     const lite = {
       requestId:req.requestId, createdAt:req.createdAt, status:req.status, statusLabel:req.statusLabel, name:req.name, company:req.company,
       phone:req.phone, email:req.email, letterNo:req.letterNo, letterDate:req.letterDate, services:req.services, hasFile:req.hasFile, attachCount:(req.attachments || []).length, fileName:req.fileName,
-      quoteAmount:req.quoteAmount, quoteCurrency:req.quoteCurrency, quoteSentAt:req.quoteSentAt, orderNo:req.orderNo, updatedAt:req.updatedAt
+      quoteAmount:req.quoteAmount, quoteCurrency:req.quoteCurrency, quoteSentAt:req.quoteSentAt, orderNo:req.orderNo, updatedAt:req.updatedAt, labStatus:req.labStatus,
+      payStatus:req.payStatus, paidAmount:req.paidAmount, paidAt:req.paidAt, receiptNo:req.receiptNo
     };
     if(i === -1) ITEMS.unshift(lite); else ITEMS[i] = lite;
     recount(); renderAll();
@@ -954,29 +1034,20 @@ window.COST_CATALOG = [
       +   (r.details ? '<div class="pre" style="margin-top:8px">' + esc(r.details) + '</div>' : '')
       + '</div>'
 
-      + (function(){
-          const all = r.attachments || [];
-          const files = all.filter(function(x){ return x.hasFile; });
-          const parts = all.filter(function(x){ return !x.hasFile; });
-          const merged = parts.length > 0;
-          return '<div class="box"><h4><i class="fas fa-paperclip"></i> ' + (merged ? 'ملف الطلب (PDF موحّد)' : 'الكتاب والمرفقات') + '</h4>'
-            + (r.hasFile ? fileRow(-1, merged ? "ملف الطلب.pdf" : r.fileName, r.fileMime, r.fileSize) : '<div class="muted">لا يوجد ملف</div>')
-            + (merged ? '<div class="muted" style="margin:6px 0 2px">يحتوي الملف على:</div><ol class="parts">'
-                + parts.map(function(x){ return '<li>' + (x.role === "letter" ? '<b>الكتاب / الطلب:</b> ' : '') + esc(x.name) + '</li>'; }).join("") + '</ol>' : '')
-            + (files.length ? '<div class="muted" style="margin:8px 0 4px">المرفقات</div>' + files.map(function(x){ return fileRow(x.index, x.name, x.mime, x.size); }).join("") : '')
-            + '</div>';
-        })()
+      + filesHtml(r)
 
+      + labBox(r)
       + '<div class="box"><h4><i class="fas fa-file-invoice-dollar"></i> عرض السعر</h4>'
       +   (locked ? '<div class="notice ok" style="margin-top:0">✅ عرض السعر مقبول — لا يمكن تعديله</div>' : '')
-      +   '<div class="qt-wrap"><table class="qt"><thead><tr><th style="width:24%">القسم</th><th>الفحص / الخدمة</th><th style="width:9%">العدد</th><th style="width:15%">سعر الوحدة</th><th style="width:13%">المجموع</th><th style="width:40px"></th></tr></thead><tbody id="qBody"></tbody></table></div>'
+      +   '<div class="qt-wrap"><table class="qt"><thead><tr><th style="width:24%">القسم</th><th>الفحص / الخدمة</th><th style="width:8%">العدد</th><th style="width:9%">المدة (يوم)</th><th style="width:14%">سعر الوحدة</th><th style="width:13%">المجموع</th><th style="width:40px"></th></tr></thead><tbody id="qBody"></tbody></table></div>'
       +   (locked ? '' : '<button class="add-btn" style="margin-top:6px" onclick="addQRow()"><i class="fas fa-plus"></i> إضافة بند</button>')
       +   '<div class="q-foot">'
       +     '<div class="input-group"><label>العملة</label><select id="qCur"' + (locked ? " disabled" : "") + '><option value="IQD">دينار عراقي (IQD)</option><option value="USD">دولار أمريكي (USD)</option></select></div>'
       +     '<div class="input-group"><label>المبلغ الإجمالي</label><input id="qAmount" class="q-total" inputmode="decimal"' + (locked ? " disabled" : "") + '></div>'
+      +     '<div class="input-group"><label>مدة الإنجاز (يوم عمل)</label><input id="qDays" class="q-total" type="number" min="1" max="365"' + (locked ? " disabled" : "") + '></div>'
       +     '<div class="input-group"><label>صلاحية العرض (يوم)</label><input id="qValid" type="number" min="1" max="180" value="30"' + (locked ? " disabled" : "") + '></div>'
       +   '</div>'
-      +   '<div class="input-group"><label>ملاحظات تظهر للزبون</label><textarea id="qNotes" rows="3" maxlength="1500" placeholder="مثال: مدة الإنجاز 10 أيام عمل من تاريخ استلام النماذج."' + (locked ? " disabled" : "") + '></textarea></div>'
+      +   '<div class="input-group"><label>ملاحظات تظهر للزبون</label><textarea id="qNotes" rows="3" maxlength="1500" placeholder="مثال: الأسعار تشمل تقرير النتائج الرسمي."' + (locked ? " disabled" : "") + '></textarea></div>'
       +   (r.quoteSentAt ? '<div class="muted">آخر إرسال: ' + esc(r.quoteSentAt) + ' بواسطة ' + esc(r.quoteSentBy) + '</div>' : '')
       +   (locked ? '' :
             '<div class="btns">'
@@ -984,6 +1055,8 @@ window.COST_CATALOG = [
           +   '<button class="main-btn btn-alt" id="draftBtn" onclick="saveDraft()"><i class="fas fa-floppy-disk"></i> حفظ مسودة</button>'
           + '</div>')
       + '</div>'
+
+      + payBox(r)
 
       + '<div class="box"><h4><i class="fas fa-diagram-next"></i> الإجراءات</h4>'
       +   (r.status === "converted"
@@ -1005,18 +1078,57 @@ window.COST_CATALOG = [
     $("drBody").innerHTML = h;
 
     /* بنود عرض السعر: المحفوظة، وإلا من خدمات الزبون بأسعار الدليل */
-    const base = (r.quoteItems && r.quoteItems.length) ? r.quoteItems : (r.services || []).map(function(s){
+    /* البنود: المحفوظة، وإلا من خدمات الزبون بأسعار المختبرات (إن وُجدت) أو الدليل */
+    const LP = r.labPricing || {};
+    let base = (r.quoteItems && r.quoteItems.length) ? r.quoteItems : (r.services || []).map(function(s, i){
       const it = itemOf(secById(s.sectionId), s.test);
-      return { sectionId:s.sectionId, section:s.section, test:s.test, qty:s.qty, price: it && it.price != null ? it.price : (it && it.min ? it.min : "") };
+      const lp = LP[s.sectionId] && (LP[s.sectionId].items || []).find(function(x){ return Number(x.idx) === i; });
+      if(lp) return { sectionId:s.sectionId, section:s.section, test:s.test, qty:lp.qty || s.qty, price:lp.price, details:lp.sample || "", days:lp.days || itemDays(s.sectionId, s.test) };
+      return { sectionId:s.sectionId, section:s.section, test:s.test, qty:s.qty, price: it && it.price != null ? it.price : (it && it.min ? it.min : ""), days:itemDays(s.sectionId, s.test) };
     });
+    if(!(r.quoteItems && r.quoteItems.length)){
+      Object.keys(LP).forEach(function(k){
+        const sec = secById(k);
+        (LP[k].extras || []).forEach(function(x){ base.push({ sectionId:k, section:sec ? sec.name : k, test:x.test, qty:x.qty, price:x.price, details:x.notes || "" }); });
+      });
+    }
     (base.length ? base : [{}]).forEach(function(it){ addQRow(it, locked); });
     $("qCur").value = r.quoteCurrency || "IQD";
     $("qValid").value = r.quoteValidDays || 30;
+    $("qDays").value = r.quoteDays || "";
+    $("qDays").addEventListener("input", function(){ this.dataset.touched = "1"; });
+    if(!r.quoteDays) recalcDays();
     $("qNotes").value = r.quoteNotes || "";
     $("qAmount").value = r.quoteAmount ? fmt(r.quoteAmount) : "";
     if(!r.quoteAmount) qRecalc();
     $("qAmount").addEventListener("input", function(){ this.dataset.touched = "1"; });
     loadReqMails(r.requestId);
+    loadReqPays(r.requestId);
+    fvPrefetch(r);
+  }
+
+  /* ---------- تسعير المختبرات ---------- */
+  function labBox(r){
+    const st = r.labStatus || [];
+    if(!st.length) return '';
+    const LP = r.labPricing || {};
+    const done = st.filter(function(x){ return x.done; }).length;
+    let h = '<div class="box"><h4><i class="fas fa-flask-vial"></i> تسعير المختبرات <span class="badge ' + (done === st.length ? "st-accepted" : "st-review") + '">' + done + ' / ' + st.length + '</span></h4>';
+    st.forEach(function(x){
+      const p = LP[x.lab];
+      h += '<div class="lab-p"><div class="lab-h"><b>' + esc(x.name) + '</b>'
+        + (p && p.at ? '<span class="badge st-accepted">' + fmt(p.total) + ' د.ع</span><span class="muted">' + esc(p.by) + ' — ' + esc(p.at) + '</span>'
+                     : '<span class="badge st-review">بانتظار التسعير</span>') + '</div>';
+      if(p && p.at){
+        h += '<table class="log"><thead><tr><th>البند</th><th>العدد</th><th>المدة</th><th>سعر الوحدة</th><th>تفاصيل العينة</th><th>ملاحظات</th></tr></thead><tbody>'
+          + (p.items || []).concat((p.extras || []).map(function(e){ return { test:"➕ " + e.test, qty:e.qty, price:e.price, sample:"", notes:e.notes }; })).map(function(i){
+              return '<tr><td>' + esc(i.test) + '</td><td style="text-align:center">' + esc(i.qty) + '</td><td style="text-align:center">' + esc(i.days ? i.days + " يوم" : "") + '</td><td style="text-align:center">' + fmt(i.price) + '</td><td>' + esc(i.sample || "") + '</td><td>' + esc(i.notes || "") + '</td></tr>';
+            }).join("") + '</tbody></table>' + (p.note ? '<div class="pre" style="margin-top:4px">' + esc(p.note) + '</div>' : '');
+      }
+      h += '</div>';
+    });
+    if(done && !(r.quoteItems && r.quoteItems.length)) h += '<div class="muted" style="margin-top:6px">✓ أسعار المختبرات نُقلت تلقائياً إلى عرض السعر أدناه.</div>';
+    return h + '</div>';
   }
 
   /* ---------- بنود عرض السعر ---------- */
@@ -1045,6 +1157,7 @@ window.COST_CATALOG = [
       +   '<input class="q-test-o" placeholder="اسم الفحص / الخدمة" value="' + esc(custom ? it.test || "" : "") + '" style="margin-top:4px;' + (custom && (secId || it.test) ? "" : "display:none") + '"' + dis + '>'
       +   '<input class="q-det" placeholder="تفاصيل (اختياري)" value="' + esc(it.details || "") + '" style="margin-top:4px"' + dis + '></td>'
       + '<td><input class="q-qty" type="number" min="1" value="' + esc(it.qty || 1) + '"' + dis + '></td>'
+      + '<td><input class="q-days" type="number" min="1" value="' + esc(it.days || itemDays(secId, it.test) || "") + '"' + dis + '></td>'
       + '<td><input class="q-price" inputmode="decimal" value="' + esc(fmt(it.price)) + '"' + dis + '></td>'
       + '<td class="lt"></td>'
       + '<td>' + (locked ? "" : '<button class="del-btn" title="حذف"><i class="fas fa-trash"></i></button>') + '</td>';
@@ -1062,6 +1175,8 @@ window.COST_CATALOG = [
       tr.querySelector(".q-test-o").style.display = qt.value === OTHER ? "" : "none";
       const x = itemOf(secById(qs.value), qt.value);
       tr.querySelector(".q-price").value = x && x.price != null ? fmt(x.price) : (x && x.min ? fmt(x.min) : "");
+      tr.querySelector(".q-days").value = itemDays(qs.value, qt.value) || "";
+      recalcDays();
       qLine(tr);
     });
     tr.querySelector(".q-qty").addEventListener("input", function(){ qLine(tr); });
@@ -1080,6 +1195,18 @@ window.COST_CATALOG = [
     const sum = readQItems().reduce(function(a, x){ return a + num(x.price) * (num(x.qty) || 1); }, 0);
     $("qAmount").value = sum ? fmt(sum) : "";
   }
+  /* مدة البند من الدليل (البند أو القسم) */
+  function itemDays(secId, test){
+    const sec = secById(secId), it = itemOf(sec, test);
+    return (it && it.days) || (sec && sec.days) || "";
+  }
+  /* مدة الإنجاز الكلية = أكبر مدة بين البنود (الفحوصات تُنفَّذ بالتوازي) */
+  function recalcDays(){
+    const el = $("qDays"); if(!el || el.dataset.touched === "1") return;
+    const m = readQItems().reduce(function(a, x){ return Math.max(a, num(x.days)); }, 0);
+    el.value = m || "";
+  }
+  document.addEventListener("input", function(e){ if(e.target.classList && e.target.classList.contains("q-days")) recalcDays(); });
   function readQItems(){
     const out = [];
     Array.prototype.forEach.call($("qBody").children, function(tr){
@@ -1088,13 +1215,14 @@ window.COST_CATALOG = [
       const test = (!sec || tv === OTHER) ? tr.querySelector(".q-test-o").value.trim() : tv;
       const section = sid === OTHER ? (tr.querySelector(".q-sec-o").value.trim() || "أخرى") : (sec ? sec.name : "");
       const x = { sectionId: sec ? sid : "", section:section, test:test, details:tr.querySelector(".q-det").value.trim(),
-                  qty:String(num(tr.querySelector(".q-qty").value) || 1), price:String(num(tr.querySelector(".q-price").value) || "") };
+                  qty:String(num(tr.querySelector(".q-qty").value) || 1), price:String(num(tr.querySelector(".q-price").value) || ""),
+                  days:String(num(tr.querySelector(".q-days").value) || "") };
       if(x.section || x.test) out.push(x);
     });
     return out;
   }
   function readQuote(){
-    return { items:readQItems(), currency:$("qCur").value, amount:String(num($("qAmount").value) || ""), validDays:$("qValid").value, notes:$("qNotes").value.trim() };
+    return { items:readQItems(), currency:$("qCur").value, amount:String(num($("qAmount").value) || ""), validDays:$("qValid").value, days:String(num($("qDays").value) || ""), notes:$("qNotes").value.trim() };
   }
 
   async function withBtn(id, label, fn){
@@ -1157,6 +1285,58 @@ window.COST_CATALOG = [
     });
   }
 
+
+  /* ============================================================
+   * عرض الملفات السريع (معاينة Drive داخل الصفحة)
+   * ============================================================ */
+  const PV = {};   /* index → {preview, download} */
+  function filesHtml(r){
+    const all = r.attachments || [];
+    const files = all.filter(function(x){ return x.hasFile; });
+    const parts = all.filter(function(x){ return !x.hasFile; });
+    const split = files.some(function(x){ return x.role === "samples"; });
+    const letterName = (parts.find(function(p){ return p.role === "letter"; }) || {}).name || "";
+    const sampleNames = parts.filter(function(p){ return p.role === "attachment"; }).map(function(p){ return p.name; }).join("، ");
+    let h = '<div class="box"><h4><i class="fas fa-paperclip"></i> الملفات</h4>';
+    if(r.hasFile) h += fvRow(-1, split || !parts.length ? "الكتاب / الطلب" : "ملف الطلب (موحّد)", split ? letterName : (parts.length ? parts.map(function(p){ return p.name; }).join("، ") : ""), "fa-file-lines");
+    files.forEach(function(x){ h += fvRow(x.index, x.role === "samples" ? "صور العينات" : x.name, x.role === "samples" ? sampleNames : "", x.role === "samples" ? "fa-images" : "fa-file"); });
+    if(!r.hasFile && !files.length) h += '<div class="muted">لا يوجد ملف</div>';
+    return h + '</div>';
+  }
+  function fvRow(i, title, sub, ic){
+    return '<div class="fv"><div class="fv-h"><i class="fas ' + ic + '"></i><div class="fv-t"><b>' + esc(title) + '</b>' + (sub ? '<div class="muted">' + esc(sub) + '</div>' : '') + '</div>'
+      + '<button class="icon-btn" data-fv="' + i + '"><i class="fas fa-eye"></i> عرض</button>'
+      + '<a class="icon-btn" id="fvdl_' + (i + 1) + '" target="_blank" rel="noopener" style="display:none"><i class="fas fa-download"></i> تحميل</a>'
+      + '<a class="icon-btn" id="fvop_' + (i + 1) + '" target="_blank" rel="noopener" style="display:none"><i class="fas fa-up-right-from-square"></i></a></div>'
+      + '<div class="fv-p" id="fvp_' + (i + 1) + '"></div></div>';
+  }
+  async function fvGet(i){
+    if(PV[i]) return PV[i];
+    const r = await call("getCustomerRequestPreview", Object.assign({ index:i }, { requestId:CUR.requestId }));
+    if(r && r.ok){ PV[i] = r; const d = $("fvdl_" + (i + 1)), o = $("fvop_" + (i + 1));
+      if(d){ d.href = r.download; d.style.display = ""; } if(o){ o.href = r.preview; o.style.display = ""; } }
+    return r;
+  }
+  /* تجهيز روابط المعاينة مسبقاً عند فتح الطلب */
+  function fvPrefetch(r){
+    Object.keys(PV).forEach(function(k){ delete PV[k]; });
+    const idx = []; if(r.hasFile) idx.push(-1);
+    (r.attachments || []).forEach(function(x){ if(x.hasFile) idx.push(x.index); });
+    idx.forEach(function(i){ fvGet(i).catch(function(){}); });
+  }
+  document.addEventListener("click", async function(e){
+    const b = e.target.closest && e.target.closest("[data-fv]"); if(!b) return;
+    const i = Number(b.getAttribute("data-fv")), box = $("fvp_" + (i + 1));
+    if(box.innerHTML){ box.innerHTML = ""; b.innerHTML = '<i class="fas fa-eye"></i> عرض'; return; }
+    b.disabled = true; b.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    try{
+      const r = await fvGet(i);
+      if(r && r.ok){ box.innerHTML = '<iframe src="' + esc(r.preview) + '" allow="autoplay" loading="eager"></iframe>'; b.innerHTML = '<i class="fas fa-eye-slash"></i> إخفاء'; }
+      else{ showMsg((r && r.message) || "❌ تعذر عرض الملف", "err"); b.innerHTML = '<i class="fas fa-eye"></i> عرض'; }
+    }catch(x){ showMsg("❌ خطأ في الاتصال", "err"); b.innerHTML = '<i class="fas fa-eye"></i> عرض'; }
+    finally{ b.disabled = false; }
+  });
+
   async function loadReqMails(id){
     try{
       const r = await call("getEmailHistory", { limit:20, requestId:id });
@@ -1166,6 +1346,148 @@ window.COST_CATALOG = [
         ? "<b>الرسائل:</b> " + items.map(function(m){ return esc(m.type) + ' <span class="' + (m.status === "sent" ? "ok-t" : "bad-t") + '">' + (m.status === "sent" ? "✓" : "✗") + "</span> " + esc(m.ts); }).join(" | ")
         : "";
     }catch(e){}
+  }
+
+  /* ============================================================
+   * الدفع الإلكتروني
+   * ============================================================ */
+  let PAYS = [], PAYSET = null;
+  const PAY_PROV_LABEL = { sandbox:"البوابة التجريبية", zaincash:"زين كاش", fib:"FIB", qi:"كي كارد Qi" };
+  function psBadge(p){ return '<span class="badge ps-' + esc(p.status) + '">' + esc(p.statusLabel || p.status) + '</span>'; }
+
+  function payBox(r){
+    let h = '<div class="box"><h4><i class="fas fa-credit-card"></i> الدفع الإلكتروني</h4>';
+    if(r.payStatus === "paid"){
+      h += '<div class="rc-box">✅ مدفوع إلكترونياً — <span class="big">' + fmt(r.paidAmount) + '</span> د.ع'
+        + '<div class="muted" style="margin-top:2px">وصل رقم <b dir="ltr">' + esc(r.receiptNo) + '</b> — ' + esc(r.paidAt) + '</div></div>';
+    }else{
+      h += '<div class="muted">' + (r.quoteSentAt ? "لم يتم الدفع إلكترونياً بعد." : "يظهر هنا بعد إرسال عرض السعر ودفع الزبون.") + '</div>';
+    }
+    return h + '<div id="reqPays" style="margin-top:8px"></div></div>';
+  }
+  function payActions(p){
+    let a = '<button class="icon-btn mini" title="التحقق من البوابة" onclick="payRecheck(\'' + esc(p.paymentId) + '\')"><i class="fas fa-rotate"></i></button>';
+    if(p.status === "paid"){
+      a += ' <button class="icon-btn mini" title="عرض الوصل" onclick="payReceipt(\'' + esc(p.paymentId) + '\')"><i class="fas fa-receipt"></i></button>'
+         + ' <button class="icon-btn mini" title="إعادة إرسال الوصل للزبون" onclick="payResend(\'' + esc(p.paymentId) + '\')"><i class="fas fa-paper-plane"></i></button>';
+    }
+    return a;
+  }
+  function payRowHtml(p, withReq){
+    return '<tr><td style="white-space:nowrap">' + esc(p.paidAt || p.createdAt) + '</td>'
+      + (withReq ? '<td dir="ltr"><a href="#" onclick="openRequest(\'' + esc(p.requestId) + '\');return false;">' + esc(p.requestId) + '</a>' + (p.orderNo ? '<div class="muted">أمر ' + esc(p.orderNo) + '</div>' : '') + '</td>' : '')
+      + '<td style="white-space:nowrap"><b>' + fmt(p.amount) + '</b></td><td>' + esc(PAY_PROV_LABEL[p.provider] || p.providerName) + '</td>'
+      + '<td>' + psBadge(p) + (p.note ? '<div class="muted">' + esc(p.note) + '</div>' : '') + '</td>'
+      + '<td dir="ltr">' + esc(p.receiptNo || "—") + '</td>'
+      + '<td><span dir="ltr" style="font-size:12px">' + esc(p.providerRef) + '</span>' + (p.payer ? '<div class="muted">' + esc(p.payer) + '</div>' : '') + '</td>'
+      + '<td style="white-space:nowrap">' + payActions(p) + '</td></tr>';
+  }
+  async function loadReqPays(id){
+    try{
+      const r = await call("listPayments", { filter:{ requestId:id, limit:20 } });
+      if(!CUR || CUR.requestId !== id || !$("reqPays")) return;
+      const items = (r && r.items) || [];
+      $("reqPays").innerHTML = items.length
+        ? '<div style="overflow-x:auto"><table class="log"><thead><tr><th>الوقت</th><th>المبلغ</th><th>الوسيلة</th><th>الحالة</th><th>الوصل</th><th>المرجع</th><th></th></tr></thead><tbody>' + items.map(function(p){ return payRowHtml(p, false); }).join("") + '</tbody></table></div>'
+        : '';
+    }catch(e){}
+  }
+  async function loadPayments(){
+    $("payBody").innerHTML = '<tr><td colspan="8" class="empty"><i class="fas fa-spinner fa-spin"></i></td></tr>';
+    try{
+      const r = await call("listPayments", { filter:{ limit:500 } });
+      if(!r || !r.ok){ $("payBody").innerHTML = '<tr><td colspan="8" class="empty">' + esc((r && r.message) || "❌ تعذر التحميل") + '</td></tr>'; return; }
+      PAYS = r.items || [];
+      const s = r.stats || {};
+      const tile = function(v, l, cls){ return '<div class="stat ' + (cls || "") + '" style="cursor:default"><div class="v">' + v + '</div><div class="l">' + l + '</div></div>'; };
+      $("payStats").innerHTML = tile(fmt(s.monthSum) || 0, "المحصّل هذا الشهر (د.ع)") + tile(s.monthCount || 0, "دفعات هذا الشهر")
+        + tile(fmt(s.paidSum) || 0, "إجمالي المحصّل إلكترونياً (د.ع)") + tile((s.pending || 0) + (s.duplicates ? ' <small style="font-size:13px;color:#a5281b">+ ' + s.duplicates + ' مكررة</small>' : ''), "عمليات معلّقة", s.duplicates ? "hl" : "");
+      renderPays();
+    }catch(e){ if(String(e.message) !== "session") $("payBody").innerHTML = '<tr><td colspan="8" class="empty">❌ تعذر الاتصال</td></tr>'; }
+  }
+  function renderPays(){
+    const q = ($("payQ").value || "").trim().toLowerCase();
+    const list = PAYS.filter(function(p){ return !q || [p.requestId, p.receiptNo, p.providerRef, p.payer, p.orderNo, p.amount].join(" ").toLowerCase().indexOf(q) !== -1; });
+    $("payBody").innerHTML = list.length ? list.map(function(p){ return payRowHtml(p, true); }).join("") : '<tr><td colspan="8" class="empty">لا توجد عمليات دفع بعد</td></tr>';
+  }
+  $("payQ").addEventListener("input", renderPays);
+
+  async function payRecheck(pid){
+    try{
+      const r = await call("payStaffRecheck", { pid:pid });
+      showMsg((r && r.message) || "❌ تعذر التحقق", r && r.ok ? "ok" : "err");
+      if(r && r.ok){ if($("pane-pay").classList.contains("on")) loadPayments(); if(CUR) openRequest(CUR.requestId); }
+    }catch(e){}
+  }
+  async function payReceipt(pid){
+    const w = window.open("", "_blank");
+    try{
+      const r = await call("payReceiptPreview", { pid:pid });
+      if(r && r.ok){ if(w) w.location.href = r.preview; else location.href = r.preview; }
+      else{ if(w) w.close(); showMsg((r && r.message) || "❌ تعذر عرض الوصل", "err"); }
+    }catch(e){ if(w) w.close(); }
+  }
+  async function payResend(pid){
+    if(!window.confirm("إعادة إرسال وصل الدفع إلى بريد الزبون؟")) return;
+    try{ const r = await call("payResendReceipt", { pid:pid }); showMsg((r && r.message) || "❌ فشل", r && r.ok ? "ok" : "err"); }catch(e){}
+  }
+
+  const PAY_KEYS = ["PAY_ZC_BASE","PAY_ZC_SERVICE_TYPE","PAY_ZC_CLIENT_ID","PAY_FIB_BASE","PAY_FIB_CLIENT_ID","PAY_QI_BASE","PAY_QI_TERMINAL","PAY_QI_USER"];
+  const PAY_SECRETS = ["PAY_ZC_CLIENT_SECRET","PAY_ZC_API_KEY","PAY_FIB_CLIENT_SECRET","PAY_QI_PASS"];
+  function provChecked(){ return Array.prototype.slice.call(document.querySelectorAll("#provRow input:checked")).map(function(x){ return x.value; }); }
+  function syncGw(){
+    const on = provChecked();
+    document.querySelectorAll("#provRow .prov").forEach(function(l){ l.classList.toggle("on", l.querySelector("input").checked); });
+    document.querySelectorAll(".gw").forEach(function(g){ g.classList.toggle("off", on.indexOf(g.getAttribute("data-gw")) === -1); });
+  }
+  function renderPaySet(r){
+    PAYSET = r;
+    const s = r.settings || {}, prov = String(s.PAY_PROVIDERS || "").split(",");
+    $("p_en").checked = s.PAY_ENABLED === "1";
+    $("p_rc").checked = s.PAY_SEND_RECEIPT !== "0";
+    $("provRow").innerHTML = ["sandbox","zaincash","fib","qi"].map(function(k){
+      const P = (r.providers || {})[k] || {};
+      return '<label class="prov"><input type="checkbox" value="' + k + '"' + (prov.indexOf(k) !== -1 ? " checked" : "") + '><i class="fas ' + esc(P.icon || "") + '"></i> ' + esc(P.name || k) + '</label>';
+    }).join("");
+    document.querySelectorAll("#provRow input").forEach(function(i){ i.addEventListener("change", syncGw); });
+    PAY_KEYS.forEach(function(k){ $(k).value = s[k] || ""; });
+    PAY_SECRETS.forEach(function(k){ $(k).value = ""; $(k).placeholder = (r.secrets || {})[k] ? "محفوظ ✓ — اتركه فارغاً للإبقاء" : "غير محفوظ"; });
+    ["zaincash","fib","qi"].forEach(function(k){
+      const el = $("st_" + k), ok = (r.ready || {})[k];
+      const test = (r.defaults || {})[k] && s[{ zaincash:"PAY_ZC_BASE", fib:"PAY_FIB_BASE", qi:"PAY_QI_BASE" }[k]] === r.defaults[k];
+      el.className = "gw-st " + (ok ? "ok" : "no");
+      el.textContent = ok ? (test ? "جاهزة — بيئة الاختبار" : "جاهزة — بيئة الإنتاج") : "البيانات غير مكتملة";
+    });
+    syncGw();
+    let h = '';
+    const on = s.PAY_ENABLED === "1";
+    h += on ? '<div class="status-line" style="background:#eafaf1;color:#1e7a46">✅ الدفع الإلكتروني مفعّل للزبائن</div>'
+            : '<div class="status-line" style="background:#fff8ec;color:#8a5a00">⚠️ الدفع الإلكتروني غير مفعّل — الزبون يرى باركود الدفع اليدوي في عرض السعر</div>';
+    if(on && prov.indexOf("sandbox") !== -1) h += '<div class="status-line" style="background:#efe8ff;color:#5b3aa6">🧪 البوابة التجريبية ظاهرة للزبائن — أوقفها قبل التشغيل الفعلي</div>';
+    if(!r.reconcileInstalled) h += '<div class="status-line" style="background:#f4f7fa">ℹ️ للمراجعة التلقائية للدفعات المعلّقة شغّل الدالة <b dir="ltr">RUN_installPaymentReconcile</b> مرة واحدة من محرر السكربت</div>';
+    h += '<div class="status-line" style="background:#f4f7fa;font-size:12.5px">رابط إشعارات البوابة (Webhook) يُرسل لكل بوابة مع استبدال PROVIDER باسمها (zaincash / fib / qi):<br><span dir="ltr" style="user-select:all;word-break:break-all">' + esc(r.callbackUrl || "") + '</span></div>';
+    if(!r.isAdmin) h += '<div class="status-line" style="background:#fdecea;color:#a5281b">🔒 تعديل إعدادات الدفع لمن لديه صلاحية إدارة المستخدمين فقط</div>';
+    $("paySetStatus").innerHTML = h;
+    $("paySet").disabled = !r.isAdmin;
+  }
+  async function loadPaySettings(){
+    try{ const r = await call("getPaymentSettings"); if(r && r.ok) renderPaySet(r); }catch(e){}
+  }
+  function savePaySettings(){
+    const d = { PAY_ENABLED:$("p_en").checked, PAY_PROVIDERS:provChecked(), PAY_SEND_RECEIPT:$("p_rc").checked };
+    PAY_KEYS.concat(PAY_SECRETS).forEach(function(k){ d[k] = $(k).value.trim(); });
+    if(d.PAY_ENABLED && !d.PAY_PROVIDERS.length){ showMsg("⚠️ اختر وسيلة دفع واحدة على الأقل", "warn"); return; }
+    return withBtn("savePayBtn", "جاري الحفظ...", async function(){
+      const r = await call("savePaymentSettings", { settings:d });
+      if(r && r.ok){ r.isAdmin = true; renderPaySet(r); showMsg(r.message, /⚠️/.test(r.message) ? "warn" : "ok"); }
+      else showMsg((r && r.message) || "❌ تعذر الحفظ", "err");
+    });
+  }
+  function testGw(k){
+    return withBtn("tg_" + k, "جاري الفحص...", async function(){
+      const r = await call("testPaymentGateway", { provider:k });
+      showMsg((r && r.message) || "❌ فشل", r && r.ok ? "ok" : "err");
+    });
   }
 
   /* ---------- سجل البريد ---------- */
@@ -1224,6 +1546,19 @@ window.COST_CATALOG = [
   /* ============================================================
    * INIT
    * ============================================================ */
+
+  /* ===== التحديث المباشر ===== */
+  window.onLiveChange = function(scopes){
+    if(scopes.indexOf("requests") === -1 && scopes.indexOf("orders") === -1) return;
+    loadList(false);
+    if($("pane-pay").classList.contains("on")) loadPayments();
+    /* الطلب المفتوح: يُحدَّث فقط إذا لم يكن الموظف يعدّل عرض السعر */
+    if(CUR && !busy){
+      const a = document.activeElement, editing = a && $("drawer").contains(a) && /INPUT|TEXTAREA|SELECT/.test(a.tagName);
+      if(!editing && !$("qAmount")?.dataset.touched) openRequest(CUR.requestId);
+      else showMsg("🔄 يوجد تحديث على هذا الطلب — أعد فتحه بعد الحفظ", "warn");
+    }
+  };
   window.addEventListener("load", function(){
     ensurePageSession();
     liveSessionInterval = setInterval(checkLiveSession, 10000);
@@ -1231,10 +1566,11 @@ window.COST_CATALOG = [
       const id = new URLSearchParams(location.search).get("id");
       if(id) openRequest(id);
     });
-    setInterval(function(){ if(!CUR && !document.hidden) loadList(false); }, 60000);
+    setInterval(function(){ if(!CUR && !document.hidden) loadList(false); }, 180000);
   });
 </script>
   <script>window.PAGE_NAME = "requests";</script>
   <script src="/system/notifications-widget.js" defer></script>
+  <script src="/system/live-sync.js" defer></script>
 </body>
 </html>

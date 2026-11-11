@@ -311,6 +311,10 @@
     .pay-qr{ width:220px; max-width:70%; height:auto; image-rendering:pixelated; border:8px solid #fff; box-shadow:0 2px 10px rgba(0,0,0,.08); border-radius:8px; }
     .pay-h{ margin-top:8px; font-weight:800; line-height:1.9; color:#33465a; }
     .dec{ grid-template-columns:1.4fr 1fr; }
+    .epay{ margin-top:14px; border:2px solid #bfe6cf; border-radius:var(--radius-md); padding:16px; text-align:center; background:linear-gradient(180deg,#f4fcf7,#fff); }
+    .epay .pay-t{ color:#1e7a46; }
+    .epay-btn{ display:inline-block; width:auto !important; min-width:260px; padding:12px 28px !important; margin-top:10px; font-size:17px !important; text-decoration:none; background:linear-gradient(180deg,#2ebf68,#26a65b) !important; }
+    .rej-link{ border:none; background:none; color:#a5281b; font-family:'Cairo',sans-serif; font-weight:800; font-size:14px; cursor:pointer; text-decoration:underline; }
   </style>
 </head>
 
@@ -366,6 +370,9 @@
             + '<td class="c">' + esc(it.qty || 1) + '</td><td class="c">' + fmt(it.price) + '</td><td class="c"><b>' + fmt(it.lineTotal) + '</b></td></tr>';
     });
     const open = q.status === "quoted" && !q.expired;
+    const paid = q.payStatus === "paid";
+    const ePay = !!q.payEnabled && q.currency !== "USD";
+    const payUrl = "pay.html?t=" + encodeURIComponent(TOKEN);
     let h = ''
       + (msg ? '<div class="notice ' + (msgType || "ok") + '">' + esc(msg) + '</div>' : '')
       + '<div class="meta-row"><span>رقم الطلب: <b dir="ltr">' + esc(q.requestId) + '</b></span>'
@@ -377,7 +384,17 @@
       + (q.days ? '<div class="total" style="font-size:15px;background:#eef6ff;border-color:#c9dcf3"><i class="fas fa-clock"></i> مدة الإنجاز المتوقعة: <b style="font-size:20px">' + esc(q.days) + '</b> أيام عمل من تاريخ استلام النماذج وإتمام الدفع</div>' : '')
       + '<div class="help" style="margin-top:8px;">العرض صالح لمدة ' + esc(q.validDays) + ' يوماً من تاريخ الإرسال.</div>';
 
-    if(open){
+    if(paid){
+      h += '<div class="notice ok" style="margin-top:14px;text-align:center;font-size:16px;">✅ تم قبول عرض السعر ودفع المبلغ إلكترونياً' + (q.paidAt ? ' بتاريخ ' + esc(q.paidAt) : '') + (q.receiptNo ? ' — وصل رقم <b dir="ltr">' + esc(q.receiptNo) + '</b>' : '') + '</div>'
+        + '<div class="center"><a class="main-btn epay-btn" href="' + payUrl + '"><i class="fas fa-receipt"></i> عرض الوصل وطباعته</a></div>';
+    }else if(ePay && (open || q.status === "accepted" || q.status === "converted")){
+      h += '<div class="epay">'
+        +   '<div class="pay-t"><i class="fas fa-shield-halved"></i> الدفع الإلكتروني</div>'
+        +   '<div class="pay-h">' + (open ? 'لقبول عرض السعر ادفع المبلغ إلكترونياً، وسيتم تسجيل القبول وإصدار وصل الدفع فوراً.' : 'تم قبول عرض السعر — يمكنك إكمال الدفع إلكترونياً الآن.') + '</div>'
+        +   '<a class="main-btn epay-btn" id="accBtn" href="' + payUrl + '"><i class="fas fa-lock"></i> الدفع الإلكتروني ' + fmt(q.amount) + ' د.ع</a>'
+        + '</div>'
+        + (open ? '<div class="center" style="margin-top:10px"><button class="rej-link" id="rejBtn" onclick="decide(\'reject\')"><i class="fas fa-xmark"></i> رفض عرض السعر</button></div>' : '');
+    }else if(open){
       h += '<div class="pay">'
         +   '<div class="pay-t"><i class="fas fa-qrcode"></i> هذا هو باركود الدفع</div>'
         +   '<img src="/system/payment-qr.png" alt="باركود الدفع" class="pay-qr">'

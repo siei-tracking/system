@@ -1,0 +1,705 @@
+﻿<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <script src="/system/config.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="watermark.css">
+  <title>الدفع الإلكتروني - الشركة العامة للفحص والتأهيل الهندسي</title>
+  <link rel="icon" href="https://siei-tracking.github.io/system/logo.png">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root{
+      --primary:#223243;
+      --accent:#f5a623;
+      --accent-dark:#e59712;
+      --bg:#eef2f6;
+      --card:rgba(255,255,255,0.92);
+      --line:#e5ebf1;
+      --muted:#758292;
+      --ok:#27ae60;
+      --danger:#e74c3c;
+      --disabled:#bdc3c7;
+      --warn:#f39c12;
+      --soft:#f8fafc;
+      --transition-fast:.15s ease;
+      --transition-med:.25s ease;
+      --radius-sm:10px;
+      --radius-md:14px;
+      --radius-lg:22px;
+    }
+
+    *, *::before, *::after{ box-sizing:border-box; }
+    html, body{ width:100%; overflow-x:hidden; }
+
+    body{
+      margin:0;
+      font-family:'Cairo',sans-serif;
+      background:
+        radial-gradient(circle at top right, rgba(245,166,35,.08), transparent 24%),
+        radial-gradient(circle at top left, rgba(34,50,67,.05), transparent 30%),
+        var(--bg);
+      color:#111;
+    }
+
+    /* ===== PAGE WRAP ===== */
+    #pageWrap{ display:block; }
+    #pageWrap.loading .card,
+    #pageWrap.loading .main-content{ opacity:0; pointer-events:none; }
+    #pageWrap .card,
+    #pageWrap .main-content{ transition:opacity .3s ease; }
+
+    /* ===== HEADER ===== */
+    .company-header{
+      background-image:
+        linear-gradient(rgba(34,50,67,.3), rgba(34,50,67,.3)),
+        url('https://siei-tracking.github.io/system/company.jpg');
+      background-size:cover; background-position:center;
+      padding:28px 5% 60px;
+      display:flex; align-items:center; gap:16px;
+      color:#fff; flex-wrap:wrap; justify-content:center; text-align:center;
+      box-shadow:0 12px 28px rgba(0,0,0,.18);
+      position:relative; overflow:hidden;
+    }
+
+    .logo{
+      width:100px; height:100px; background:#fff;
+      border-radius:50%; padding:5px; object-fit:contain;
+      display:block; flex-shrink:0;
+      box-shadow:0 4px 16px rgba(0,0,0,.25);
+    }
+
+    .header-text{
+      display:flex; flex-direction:column;
+      align-items:center; gap:6px; max-width:100%;
+    }
+
+    .header-text h1{
+      color:#fff; margin:0; font-size:30px;
+      font-weight:900; line-height:1.45;
+      text-shadow:0 2px 8px rgba(0,0,0,.7);
+    }
+
+    .header-text p{
+      color:#fff; margin:0; font-size:18px;
+      font-weight:900; line-height:1.5;
+      text-shadow:0 2px 8px rgba(0,0,0,.7);
+    }
+
+    .user-pill{
+      margin-top:6px;
+      display:inline-flex; align-items:center;
+      justify-content:center; gap:8px;
+      padding:4px 16px; border-radius:999px;
+      background:rgba(128,0,32,0.4);
+      border:1px solid rgba(231,76,60,0.45);
+      color:#fff; font-weight:900; font-size:13px;
+      box-shadow:0 4px 12px rgba(231,76,60,.25);
+      max-width:100%; word-break:break-word;
+    }
+
+    /* ===== LAYOUT ===== */
+    .main-content{
+      padding:0 5% 30px; display:flex;
+      justify-content:center; margin-top:-40px;
+      flex-direction:column; align-items:center;
+    }
+
+    /* ===== CARD ===== */
+    .card{
+      width:100%; max-width:820px;
+      background:rgba(255,255,255,0.92);
+      border-radius:var(--radius-lg); padding:10px 12px;
+      box-shadow:0 20px 50px rgba(0,0,0,.12), 0 6px 18px rgba(0,0,0,.06);
+      position:relative; z-index:2;
+      backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px);
+      transition:transform var(--transition-med), box-shadow var(--transition-med);
+      border:1px solid rgba(255,255,255,.65);
+    }
+
+    .card:hover{
+      transform:translateY(-3px);
+      box-shadow:0 26px 60px rgba(0,0,0,.16), 0 8px 22px rgba(0,0,0,.08);
+    }
+
+    .card::before{
+      content:""; position:absolute;
+      top:0; left:0; right:0; height:60px;
+      background:linear-gradient(to bottom, rgba(255,255,255,.55), transparent);
+      border-radius:var(--radius-lg) var(--radius-lg) 0 0;
+      pointer-events:none;
+    }
+
+    /* ===== FORM ===== */
+    .input-group{ margin-bottom:10px; text-align:right; position:relative; z-index:2; }
+
+    label{ display:block; margin-bottom:4px; font-weight:900; font-size:15px; color:#253444; }
+
+    input{
+      width:100%; border:1.5px solid var(--line);
+      border-radius:var(--radius-sm); padding:7px 10px;
+      font-weight:800; font-size:14px; background:#fff;
+      text-align:center; font-family:'Cairo',sans-serif;
+      color:#1f2d3a; outline:none; min-height:44px;
+      transition:border-color var(--transition-fast), box-shadow var(--transition-fast);
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    input:focus{ border-color:#d8b15d; box-shadow:0 0 0 4px rgba(245,166,35,.12); }
+    input::placeholder{ color:#9aa6b2; font-weight:800; }
+
+    /* ===== BUTTONS ===== */
+    .main-btn, .again{
+      position:relative; overflow:hidden;
+      touch-action:manipulation; -webkit-tap-highlight-color:transparent;
+    }
+
+    .main-btn::before, .again::before{
+      content:""; position:absolute; top:0; right:-120%;
+      width:120%; height:100%;
+      background:linear-gradient(120deg, transparent 20%, rgba(255,255,255,.18) 40%, rgba(255,255,255,.35) 50%, rgba(255,255,255,.18) 60%, transparent 80%);
+      transition:.65s;
+    }
+
+    .main-btn:hover::before, .again:hover::before{ right:120%; }
+
+    .main-btn{
+      width:100%; border:none; border-radius:var(--radius-md); padding:9px 10px;
+      background:var(--primary); color:#fff; font-weight:900; font-size:16px;
+      cursor:pointer; font-family:'Cairo',sans-serif;
+      box-shadow:0 10px 20px rgba(34,50,67,.20);
+      transition:transform var(--transition-fast), opacity var(--transition-fast);
+      display:flex; justify-content:center; align-items:center;
+      gap:8px; z-index:2; min-height:46px;
+    }
+
+    .main-btn:hover{ transform:translateY(-1px); opacity:.96; }
+    .main-btn:active{ transform:translateY(0); opacity:.9; }
+    .main-btn:disabled{ opacity:.65; cursor:not-allowed; box-shadow:none; transform:none; pointer-events:none; }
+
+    /* ===== LOADER ===== */
+    #loader{ display:none; text-align:center; margin:12px 0; color:var(--primary); font-weight:900; position:relative; z-index:2; }
+
+    /* ===== RES PANEL ===== */
+    #resPanel{
+      display:none; margin-top:10px; padding:10px;
+      background:var(--soft); border-radius:var(--radius-md);
+      border-right:5px solid var(--ok); position:relative; z-index:2;
+    }
+
+    /* ===== SUCCESS ===== */
+    .success{ display:none; text-align:center; padding:34px 18px; }
+    .success i{ font-size:74px; color:var(--ok); margin-bottom:12px; }
+    .success h2{ margin:0 0 10px; font-weight:900; color:#1f2b36; font-size:24px; }
+    .success p{ margin:0 0 18px; color:var(--muted); font-weight:800; font-size:18px; }
+
+    .again{
+      border:none; border-radius:var(--radius-md); padding:18px 20px;
+      background:linear-gradient(180deg,#2ebf68,#26a65b); color:#fff;
+      font-family:'Cairo',sans-serif; font-weight:900; font-size:20px;
+      cursor:pointer; display:flex; justify-content:center; align-items:center;
+      gap:10px; width:60%; max-width:420px; margin:25px auto 0;
+      text-align:center; box-shadow:0 10px 20px rgba(39,174,96,.20);
+    }
+
+    .again:hover{ transform:translateY(-2px); opacity:.95; }
+    .again:active{ transform:translateY(0); }
+    .again i{ font-size:18px; }
+
+    /* ===== TOAST ===== */
+    #toast{
+      position:fixed; bottom:22px; left:50%;
+      transform:translateX(-50%) translateY(0);
+      min-width:240px; max-width:90%;
+      background:#223243; color:#fff; padding:12px 20px;
+      border-radius:var(--radius-md); font-weight:900;
+      font-family:'Cairo',sans-serif; font-size:14px;
+      display:none; z-index:99999; text-align:center;
+      box-shadow:0 10px 30px rgba(0,0,0,.28);
+      animation:toastIn .25s ease;
+    }
+
+    @keyframes toastIn{
+      from{ transform:translateX(-50%) translateY(20px); opacity:0; }
+      to  { transform:translateX(-50%) translateY(0);    opacity:1; }
+    }
+
+    #toast.ok  { background:#27ae60; }
+    #toast.warn{ background:#f39c12; }
+    #toast.err { background:#e74c3c; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width:820px){
+      .company-header{ padding:28px 14px 48px; gap:12px; }
+      .logo{ width:78px; height:78px; }
+      .header-text h1{ font-size:22px; }
+      .header-text p{ font-size:14px; }
+      .main-content{ padding:0 10px 24px; margin-top:-24px; }
+      .card{ border-radius:18px; padding:10px; }
+      .again{ width:100%; }
+    }
+
+    @media (max-width:480px){
+      .company-header{ padding:22px 12px 38px; }
+      .logo{ width:68px; height:68px; }
+      .header-text h1{ font-size:18px; }
+      .header-text p{ font-size:13px; }
+      .user-pill{ font-size:12px; padding:4px 12px; }
+    }
+
+    #orderID{
+      font-size:20px; font-weight:600; color:#000;
+      text-align:center; height:44px; width:100%;
+    }
+
+    #orderID::placeholder{ font-size:16px; font-weight:600; color:#999; opacity:1; }
+    /* ===== مشترك: طلبات الزبائن ===== */
+    .card{ max-width:900px; }
+    .card:hover{ transform:none; }
+    .sec-title{
+      display:flex; align-items:center; gap:8px; margin:16px 0 8px;
+      font-weight:900; font-size:16px; color:var(--primary);
+      border-bottom:2px solid var(--accent); padding-bottom:4px;
+    }
+    .grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 12px; }
+    input, select, textarea{
+      width:100%; border:1.5px solid var(--line); border-radius:var(--radius-sm);
+      padding:7px 10px; font-weight:700; font-size:14px; background:#fff;
+      font-family:'Cairo',sans-serif; color:#1f2d3a; outline:none; min-height:42px; text-align:right;
+    }
+    textarea{ resize:vertical; line-height:1.7; }
+    input:focus, select:focus, textarea:focus{ border-color:#d8b15d; box-shadow:0 0 0 4px rgba(245,166,35,.12); }
+    .req{ color:var(--danger); }
+    .help{ font-size:12px; color:var(--muted); font-weight:700; margin-top:3px; }
+    .notice{ display:none; margin:8px 0; padding:8px 12px; border-radius:var(--radius-sm); font-weight:800; font-size:14px; }
+    .notice.info{ display:block; background:#eef6ff; color:#1d4f86; border-right:4px solid #3b82f6; }
+    .notice.warn{ display:block; background:#fff8ec; color:#8a5a00; border-right:4px solid var(--accent); }
+    .notice.ok{ display:block; background:#eafaf1; color:#1e7a46; border-right:4px solid var(--ok); }
+    .notice.err{ display:block; background:#fdecea; color:#a5281b; border-right:4px solid var(--danger); }
+    .badge{ display:inline-block; padding:2px 10px; border-radius:999px; font-size:12px; font-weight:900; white-space:nowrap; }
+    .st-new{ background:#e8f1ff; color:#1d4f86; }
+    .st-review{ background:#fff4e0; color:#8a5a00; }
+    .st-quoted{ background:#efe8ff; color:#5b3aa6; }
+    .st-accepted{ background:#e3f7ec; color:#1e7a46; }
+    .st-rejected{ background:#fdecea; color:#a5281b; }
+    .st-converted{ background:#223243; color:#fff; }
+    .st-cancelled{ background:#eceff2; color:#6b7a89; }
+    .add-btn{
+      border:1px dashed var(--primary); background:#f4f7fa; color:var(--primary);
+      border-radius:var(--radius-sm); padding:6px 14px; font-family:'Cairo',sans-serif; font-weight:900; cursor:pointer;
+    }
+    .del-btn{ border:none; background:#fdecea; color:var(--danger); border-radius:8px; width:36px; height:36px; cursor:pointer; flex-shrink:0; }
+    @media (max-width:640px){ .grid{ grid-template-columns:1fr; } }
+    .card{ max-width:860px; }
+    .center{ text-align:center; }
+    .steps{ display:flex; justify-content:center; gap:26px; margin:2px 0 16px; font-weight:900; font-size:13px; color:var(--muted); }
+    .steps span{ display:flex; align-items:center; gap:6px; position:relative; }
+    .steps span + span::before{ content:""; width:16px; height:2px; background:#d5dde6; position:absolute; right:-21px; top:50%; }
+    .steps i{ width:26px; height:26px; border-radius:50%; display:inline-flex; align-items:center; justify-content:center; background:#eceff2; color:#8795a3; font-style:normal; font-size:12px; }
+    .steps .on{ color:var(--primary); } .steps .on i{ background:var(--accent); color:#fff; }
+    .steps .done{ color:#1e7a46; } .steps .done i{ background:var(--ok); color:#fff; }
+
+    .inv{ border:1px solid var(--line); border-radius:var(--radius-md); overflow:hidden; background:#fff; }
+    .inv-h{ display:flex; flex-wrap:wrap; justify-content:space-between; gap:6px 18px; padding:12px 14px; background:#f7f9fb; border-bottom:1px solid var(--line); font-weight:800; color:#33465a; font-size:14px; }
+    .inv-h b{ color:var(--primary); }
+    table.q{ width:100%; border-collapse:collapse; font-size:14px; }
+    table.q th{ background:var(--primary); color:#fff; padding:8px 6px; font-weight:900; }
+    table.q td{ border-bottom:1px solid var(--line); padding:8px 6px; font-weight:700; }
+    table.q td.c{ text-align:center; white-space:nowrap; }
+    .inv-total{ display:flex; justify-content:space-between; align-items:center; padding:14px; background:#fff8ec; font-weight:900; font-size:16px; }
+    .inv-total b{ font-size:28px; color:var(--primary); letter-spacing:.5px; }
+
+    .methods{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+    .m{ position:relative; display:flex; gap:12px; align-items:center; border:2px solid var(--line); border-radius:var(--radius-md); padding:12px 14px; background:#fff; cursor:pointer; transition:.15s; }
+    .m:hover{ border-color:#d8b15d; }
+    .m input{ position:absolute; opacity:0; pointer-events:none; }
+    .m .ic{ width:46px; height:46px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:21px; background:#f0f3f7; color:var(--primary); flex-shrink:0; }
+    .m .t{ font-weight:900; color:#1f2d3a; line-height:1.4; }
+    .m .s{ font-size:12.5px; font-weight:700; color:var(--muted); }
+    .m .ck{ margin-right:auto; width:22px; height:22px; border-radius:50%; border:2px solid #c9d2dc; flex-shrink:0; }
+    .m.on{ border-color:var(--accent); background:#fffaf1; box-shadow:0 0 0 4px rgba(245,166,35,.12); }
+    .m.on .ic{ background:var(--accent); color:#fff; }
+    .m.on .ck{ border-color:var(--accent); background:radial-gradient(circle, var(--accent) 45%, transparent 50%); }
+    .m.sbx .ic{ background:#efe8ff; color:#5b3aa6; }
+
+    .agree{ display:flex; gap:8px; align-items:flex-start; font-weight:800; margin:14px 0 4px; cursor:pointer; line-height:1.7; }
+    .agree input{ width:20px; height:20px; min-height:20px; margin-top:4px; flex-shrink:0; }
+    .pay-btn{ margin-top:12px; font-size:18px !important; padding:13px !important; background:linear-gradient(180deg,#2ebf68,#26a65b) !important; }
+    .alt-btn{ background:#5d6d7e !important; }
+    .safe{ display:flex; flex-wrap:wrap; justify-content:center; gap:6px 18px; margin-top:14px; color:var(--muted); font-weight:800; font-size:12.5px; }
+    .safe i{ color:var(--ok); }
+
+    /* باركود FIB */
+    .qr-box{ text-align:center; border:2px dashed var(--primary); border-radius:var(--radius-md); padding:16px; background:#fff; }
+    .qr-box img{ width:230px; max-width:72%; image-rendering:pixelated; border:8px solid #fff; box-shadow:0 2px 12px rgba(0,0,0,.1); border-radius:10px; }
+    .code{ display:inline-block; direction:ltr; font-size:24px; font-weight:900; letter-spacing:3px; background:#f4f7fa; border-radius:10px; padding:4px 16px; margin:8px 0; }
+    .app-links{ display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-top:8px; }
+    .app-links a{ text-decoration:none; border:1px solid var(--line); border-radius:10px; padding:8px 14px; font-weight:900; color:var(--primary); background:#fff; }
+    .wait{ display:flex; align-items:center; justify-content:center; gap:8px; margin-top:12px; font-weight:900; color:#8a5a00; }
+
+    /* البوابة التجريبية */
+    .sbx-gw{ border:1px solid #d9cff5; border-radius:var(--radius-md); overflow:hidden; background:#fff; }
+    .sbx-top{ background:linear-gradient(90deg,#5b3aa6,#7b5cc4); color:#fff; padding:10px 14px; font-weight:900; display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; }
+    .sbx-top small{ background:rgba(255,255,255,.18); border-radius:999px; padding:2px 10px; font-size:12px; }
+    .sbx-body{ padding:14px; }
+    .sbx-card{ max-width:360px; margin:6px auto 12px; border-radius:16px; padding:16px; color:#fff; background:linear-gradient(135deg,#33465a,#1b2836); box-shadow:0 8px 20px rgba(0,0,0,.15); direction:ltr; font-family:monospace; }
+    .sbx-card .n{ font-size:19px; letter-spacing:2px; margin:20px 0 10px; }
+    .sbx-card .r{ display:flex; justify-content:space-between; font-size:12px; opacity:.85; }
+    .sbx-btns{ display:grid; grid-template-columns:1.4fr 1fr; gap:8px; }
+    .btn-fail{ background:linear-gradient(180deg,#d9534f,#c0392b) !important; }
+
+    /* الوصل */
+    .rc{ border:2px solid #bfe6cf; border-radius:var(--radius-md); background:#fff; overflow:hidden; }
+    .rc-h{ background:linear-gradient(90deg,#1e7a46,#27ae60); color:#fff; padding:16px; text-align:center; }
+    .rc-h .ok{ width:58px; height:58px; border-radius:50%; background:#fff; color:#27ae60; display:inline-flex; align-items:center; justify-content:center; font-size:30px; margin-bottom:6px; }
+    .rc-h h2{ margin:2px 0 0; font-size:21px; }
+    .rc-h div{ font-weight:800; opacity:.92; }
+    .rc-body{ padding:6px 16px 14px; }
+    .kv{ display:grid; grid-template-columns:150px 1fr; border-bottom:1px dashed var(--line); padding:8px 0; font-weight:800; font-size:14.5px; }
+    .kv .k{ color:var(--muted); }
+    .kv .big{ font-size:22px; color:#1e7a46; font-weight:900; }
+    .rc-foot{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px; }
+    .print-only{ display:none; }
+
+    .fail-ic{ font-size:46px; color:var(--danger); }
+    @media (max-width:640px){
+      .methods, .rc-foot, .sbx-btns{ grid-template-columns:1fr; }
+      .kv{ grid-template-columns:110px 1fr; }
+      table.q{ font-size:12.5px; }
+      .inv-total b{ font-size:23px; }
+      .steps{ font-size:11.5px; gap:20px; } .steps span + span::before{ width:12px; right:-16px; }
+    }
+    @media print{
+      body{ background:#fff !important; }
+      .company-header, .steps, .rc-foot, .no-print, #toast, .floating-install, .pwa-install-btn{ display:none !important; }
+      .print-only{ display:block; }
+      .page-shell, .container, .page-content, .main-content, .card{ box-shadow:none !important; border:none !important; margin:0 !important; padding:0 !important; max-width:none !important; background:#fff !important; }
+      .rc{ border:1px solid #999; }
+      .rc-h{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    }
+    #toast.show{ display:block; }
+    .pulse{ animation:pulse 1.2s ease-in-out 3; } @keyframes pulse{ 50%{ transform:scale(1.02); box-shadow:0 0 0 6px rgba(245,166,35,.25); border-radius:10px; } }
+  </style>
+</head>
+
+<body>
+<div id="pageWrap">
+  <div class="page-shell">
+    <div class="container">
+      <header class="company-header">
+        <img class="logo" src="https://siei-tracking.github.io/system/logo.png" alt="logo">
+        <div class="header-text">
+          <h1>الشركة العامة للفحص والتأهيل الهندسي</h1>
+          <p><i class="fas fa-shield-halved"></i> بوابة الدفع الإلكتروني</p>
+        </div>
+      </header>
+      <div class="page-content">
+        <main class="main-content">
+          <div class="card" id="card">
+            <div class="steps" id="steps"></div>
+            <div class="center" id="loading" style="padding:30px;font-weight:800;color:var(--muted);"><i class="fas fa-spinner fa-spin"></i> جاري التحميل...</div>
+            <div id="view" style="display:none;"></div>
+          </div>
+        </main>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="toast"></div>
+
+<script>
+  const API_BASE = window.APP_CONFIG.API_BASE;
+  const params = new URLSearchParams(location.search);
+  const TOKEN = params.get("t") || "";
+  let PID = params.get("pid") || "";
+  const RET = (params.get("r") || "").replace(/[^a-z].*$/, "");   /* ok / fail / back / sim (البوابة قد تضيف معاملات بعدها) */
+  let INFO = null, SEL = "", busy = false, pollTimer = null, pollUntil = 0;
+
+  function $(id){ return document.getElementById(id); }
+  function esc(t){ return String(t == null ? "" : t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+  function fmt(n){ n = Number(String(n || "").replace(/,/g, "")) || 0; return n.toLocaleString("en-US"); }
+  function toast(msg, type){
+    const t = $("toast"); if(!t) return;
+    t.textContent = msg; t.className = "show " + (type || "");
+    clearTimeout(toast._t); toast._t = setTimeout(function(){ t.className = ""; }, 4000);
+  }
+  async function apiPost(payload){
+    for(let attempt = 1; attempt <= 4; attempt++){
+      const r = await fetch(API_BASE, { method:"POST", headers:{ "Content-Type":"text/plain;charset=utf-8" }, body:JSON.stringify(payload) });
+      if(!r.ok) throw new Error("HTTP " + r.status);
+      const j = JSON.parse(await r.text());
+      if(!(j && j.ok === false && j.busy)) return j;
+      await new Promise(function(res){ setTimeout(res, 1500 + Math.random() * 2500); });
+    }
+    return { ok:false, message:"⏳ النظام مشغول، حاول بعد قليل" };
+  }
+  function steps(n){
+    const s = ["مراجعة المبلغ", "الدفع", "الوصل"];
+    $("steps").innerHTML = s.map(function(x, i){
+      const cls = i + 1 < n ? "done" : (i + 1 === n ? "on" : "");
+      return '<span class="' + cls + '"><i>' + (i + 1 < n ? '✓' : (i + 1)) + '</i>' + x + '</span>';
+    }).join("");
+  }
+  function show(html, step){
+    if(step) steps(step);
+    $("view").innerHTML = html;
+    $("loading").style.display = "none";
+    $("view").style.display = "block";
+    window.scrollTo({ top:0, behavior:"smooth" });
+  }
+  function fail(msg){
+    $("steps").innerHTML = "";
+    $("loading").innerHTML = '<div class="fail-ic"><i class="fas fa-link-slash"></i></div><div style="font-weight:900;margin-top:6px;">' + esc(msg) + '</div>';
+  }
+  function quoteLink(){ return "quote.html?t=" + encodeURIComponent(TOKEN); }
+  function stopPoll(){ if(pollTimer){ clearTimeout(pollTimer); pollTimer = null; } }
+
+  /* ---------- الفاتورة ---------- */
+  function invoiceHtml(q){
+    let rows = "";
+    (q.items || []).forEach(function(it, i){
+      rows += '<tr><td class="c">' + (i + 1) + '</td><td>' + esc(it.test || "") + '<div class="help">' + esc(it.section || "") + '</div></td>'
+            + '<td class="c">' + esc(it.qty || 1) + '</td><td class="c"><b>' + fmt(it.lineTotal || it.price) + '</b></td></tr>';
+    });
+    return '<div class="inv">'
+      + '<div class="inv-h"><span>رقم الطلب: <b dir="ltr">' + esc(q.requestId) + '</b></span><span>الجهة: <b>' + esc(q.company || q.name) + '</b></span>'
+      + (q.sentAt ? '<span>تاريخ العرض: <b>' + esc(q.sentAt) + '</b></span>' : '') + '</div>'
+      + (rows ? '<div style="overflow-x:auto"><table class="q"><thead><tr><th>ت</th><th style="text-align:right">الفحص / الخدمة</th><th>العدد</th><th>المبلغ</th></tr></thead><tbody>' + rows + '</tbody></table></div>' : '')
+      + '<div class="inv-total"><span>المبلغ المطلوب دفعه</span><span><b>' + fmt(q.amount) + '</b> دينار عراقي</span></div>'
+      + '</div>';
+  }
+
+  /* ---------- 1) اختيار وسيلة الدفع ---------- */
+  function renderCheckout(msg, type){
+    stopPoll();
+    const q = INFO.quote, provs = INFO.config.providers || [];
+    if(!SEL || !provs.some(function(p){ return p.id === SEL; })) SEL = provs.length === 1 ? provs[0].id : "";
+    let h = (msg ? '<div class="notice ' + (type || "warn") + '">' + esc(msg) + '</div>' : '')
+      + invoiceHtml(q)
+      + '<div class="sec-title"><i class="fas fa-wallet"></i> اختر وسيلة الدفع</div>'
+      + '<div class="methods">' + provs.map(function(p){
+          return '<label class="m' + (SEL === p.id ? ' on' : '') + (p.id === "sandbox" ? ' sbx' : '') + '" data-p="' + esc(p.id) + '">'
+            + '<input type="radio" name="pm" value="' + esc(p.id) + '"' + (SEL === p.id ? ' checked' : '') + '>'
+            + '<span class="ic"><i class="fas ' + esc(p.icon) + '"></i></span>'
+            + '<span><span class="t">' + esc(p.name) + '</span><br><span class="s">' + esc(p.sub) + '</span></span><span class="ck"></span></label>';
+        }).join("") + '</div>'
+      + (q.status === "quoted" ? '<label class="agree"><input type="checkbox" id="agree"><span>أوافق على عرض السعر للطلب <bdi>' + esc(q.requestId) + '</bdi> بمبلغ ' + fmt(q.amount) + ' دينار، وأعلم أن إتمام الدفع يُعدّ قبولاً لعرض السعر.</span></label>' : '')
+      + '<button class="main-btn pay-btn" id="payBtn" onclick="startPay()"><i class="fas fa-lock"></i> ادفع الآن ' + fmt(q.amount) + ' د.ع</button>'
+      + '<div class="safe"><span><i class="fas fa-shield-halved"></i> الدفع يتم عبر بوابة الدفع المعتمدة مباشرة</span><span><i class="fas fa-credit-card"></i> لا نحتفظ ببيانات بطاقتك أو محفظتك</span><span><i class="fas fa-receipt"></i> وصل إلكتروني فوري</span></div>'
+      + '<div class="center no-print" style="margin-top:10px"><a href="' + quoteLink() + '" style="font-weight:800;color:#1d4f86">← العودة إلى عرض السعر</a></div>';
+    show(h, 1);
+    document.querySelectorAll(".m").forEach(function(el){
+      el.addEventListener("click", function(){
+        SEL = el.getAttribute("data-p");
+        document.querySelectorAll(".m").forEach(function(x){ x.classList.toggle("on", x === el); });
+      });
+    });
+  }
+
+  async function startPay(){
+    if(busy) return;
+    if(!SEL){ toast("⚠️ اختر وسيلة الدفع", "warn"); return; }
+    const ag = $("agree");
+    if(ag && !ag.checked){ toast("⚠️ يرجى الموافقة على عرض السعر أولاً", "warn"); ag.closest(".agree").classList.add("pulse"); return; }
+    busy = true;
+    const b = $("payBtn"), old = b.innerHTML;
+    b.disabled = true; b.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري تجهيز عملية الدفع...';
+    try{
+      const r = await apiPost({ action:"payStart", token:TOKEN, provider:SEL });
+      if(!r || !r.ok){ toast((r && r.message) || "❌ تعذر بدء الدفع", "err"); b.disabled = false; b.innerHTML = old; return; }
+      PID = r.payment.paymentId;
+      if(r.mode === "redirect" && r.redirect){
+        b.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التحويل إلى بوابة الدفع...';
+        history.replaceState(null, "", "pay.html?t=" + encodeURIComponent(TOKEN) + "&pid=" + encodeURIComponent(PID) + "&r=back");
+        location.href = r.redirect;
+        return;
+      }
+      history.replaceState(null, "", "pay.html?t=" + encodeURIComponent(TOKEN) + "&pid=" + encodeURIComponent(PID) + "&r=" + (r.mode === "sandbox" ? "sim" : "qr"));
+      if(r.mode === "qr") renderQr(r);
+      else if(r.mode === "sandbox") renderSandbox(r.payment);
+    }catch(e){
+      toast("❌ خطأ في الاتصال، حاول مجدداً", "err"); b.disabled = false; b.innerHTML = old;
+    }finally{ busy = false; }
+  }
+
+  /* ---------- 2أ) باركود FIB ---------- */
+  function renderQr(r){
+    const q = INFO.quote, L = r.links || {};
+    const isMobile = /Android|iPhone|iPad|Mobile/i.test(navigator.userAgent);
+    let h = '<div class="qr-box">'
+      + '<div style="font-weight:900;font-size:17px;color:var(--primary)"><i class="fas fa-building-columns"></i> ادفع ' + fmt(q.amount) + ' د.ع عبر تطبيق المصرف العراقي الأول</div>'
+      + (r.qr ? '<div style="margin-top:10px"><img src="' + esc(r.qr) + '" alt="باركود الدفع"></div>' : '')
+      + '<div class="help" style="font-size:13px">امسح الباركود من تطبيق FIB، أو أدخل الرمز:</div>'
+      + (r.code ? '<div class="code">' + esc(r.code) + '</div>' : '')
+      + ((L.personal || L.business || L.corporate) ? '<div class="app-links">'
+          + (L.personal ? '<a href="' + esc(L.personal) + '"><i class="fas fa-mobile-screen"></i> فتح تطبيق FIB (شخصي)</a>' : '')
+          + (L.business ? '<a href="' + esc(L.business) + '"><i class="fas fa-briefcase"></i> FIB أعمال</a>' : '')
+          + (L.corporate ? '<a href="' + esc(L.corporate) + '"><i class="fas fa-building"></i> FIB شركات</a>' : '') + '</div>' : '')
+      + (isMobile ? '<div class="help" style="margin-top:6px">على الموبايل اضغط زر فتح التطبيق مباشرة.</div>' : '')
+      + '<div class="wait" id="waitMsg"><i class="fas fa-spinner fa-spin"></i> بانتظار إتمام الدفع... ستظهر النتيجة هنا تلقائياً</div>'
+      + (r.validUntil ? '<div class="help">صالح حتى: <span dir="ltr">' + esc(new Date(r.validUntil).toLocaleString("en-GB")) + '</span></div>' : '')
+      + '</div>'
+      + '<div class="rc-foot no-print"><button class="main-btn" onclick="checkNow(true)"><i class="fas fa-rotate"></i> تحقق من الدفع الآن</button>'
+      + '<button class="main-btn alt-btn" onclick="cancelPay()"><i class="fas fa-xmark"></i> إلغاء واختيار وسيلة أخرى</button></div>';
+    show(h, 2);
+    poll(15 * 60000, 5000);
+  }
+
+  /* ---------- 2ب) البوابة التجريبية ---------- */
+  function renderSandbox(p){
+    const q = INFO.quote;
+    const h = '<div class="sbx-gw">'
+      + '<div class="sbx-top"><span><i class="fas fa-flask"></i> بوابة الدفع التجريبية</span><small>وضع اختبار — لا يتم تحويل أي مبلغ</small></div>'
+      + '<div class="sbx-body">'
+      + '<div class="center" style="font-weight:900;font-size:16px">المبلغ: <span style="font-size:24px;color:var(--primary)">' + fmt(q.amount) + '</span> د.ع — طلب <span dir="ltr">' + esc(q.requestId) + '</span></div>'
+      + '<div class="sbx-card"><div class="r"><span>TEST CARD</span><span>SANDBOX</span></div><div class="n">4111 1111 1111 1111</div><div class="r"><span>' + esc((q.company || q.name || "").substring(0, 26)) + '</span><span>12/30</span></div></div>'
+      + '<div class="help center" style="margin-bottom:10px">هذه شاشة محاكاة لاختبار ربط المنصة قبل التعاقد مع بوابة الدفع. اختر نتيجة العملية:</div>'
+      + '<div class="sbx-btns"><button class="main-btn pay-btn" style="margin:0" id="sbxOk" onclick="sandbox(\'paid\')"><i class="fas fa-check"></i> إتمام الدفع (نجاح)</button>'
+      + '<button class="main-btn btn-fail" id="sbxNo" onclick="sandbox(\'failed\')"><i class="fas fa-xmark"></i> محاكاة فشل الدفع</button></div>'
+      + '</div></div>';
+    show(h, 2);
+  }
+  async function sandbox(outcome){
+    if(busy) return; busy = true;
+    ["sbxOk", "sbxNo"].forEach(function(id){ const b = $(id); if(b) b.disabled = true; });
+    const b = $(outcome === "paid" ? "sbxOk" : "sbxNo"); if(b) b.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري المعالجة...';
+    try{
+      const r = await apiPost({ action:"paySandboxResult", token:TOKEN, pid:PID, outcome:outcome });
+      busy = false;
+      if(r && r.ok) handleResult(r); else { toast((r && r.message) || "❌ تعذر التنفيذ", "err"); renderCheckout(); }
+    }catch(e){ busy = false; toast("❌ خطأ في الاتصال", "err"); ["sbxOk", "sbxNo"].forEach(function(id){ const x = $(id); if(x) x.disabled = false; }); }
+  }
+
+  /* ---------- 2ج) العودة من البوابة: التحقق ---------- */
+  function renderChecking(){
+    show('<div class="center" style="padding:26px 10px"><div style="font-size:44px;color:var(--accent)"><i class="fas fa-circle-notch fa-spin"></i></div>'
+      + '<div style="font-weight:900;font-size:18px;margin-top:8px">جاري التحقق من عملية الدفع...</div>'
+      + '<div class="help" style="font-size:13px">يتم التأكد من نجاح العملية من بوابة الدفع مباشرة، يرجى عدم إغلاق الصفحة.</div></div>', 2);
+  }
+  function poll(maxMs, every){
+    stopPoll();
+    pollUntil = Date.now() + maxMs;
+    const tick = async function(){
+      pollTimer = null;
+      const done = await checkNow(false);
+      if(!done && Date.now() < pollUntil && !document.hidden) pollTimer = setTimeout(tick, every);
+      else if(!done && document.hidden) document.addEventListener("visibilitychange", function v(){ if(!document.hidden){ document.removeEventListener("visibilitychange", v); poll(Math.max(60000, pollUntil - Date.now()), every); } });
+      else if(!done && $("waitMsg")) $("waitMsg").innerHTML = '<i class="fas fa-hourglass-end"></i> لم يكتمل الدفع بعد — اضغط «تحقق من الدفع الآن» بعد إتمامه';
+    };
+    pollTimer = setTimeout(tick, every);
+  }
+  /* يُعيد true إذا انتهت العملية (نجاح/فشل) */
+  async function checkNow(manual){
+    if(!PID) return true;
+    try{
+      const r = await apiPost({ action:"payCheck", token:TOKEN, pid:PID });
+      if(!r || !r.ok){ if(manual) toast((r && r.message) || "❌ تعذر التحقق", "err"); return false; }
+      if(r.payment.status === "pending"){ if(manual) toast("⏳ لم يكتمل الدفع بعد", "warn"); return false; }
+      handleResult(r);
+      return true;
+    }catch(e){ if(manual) toast("❌ خطأ في الاتصال", "err"); return false; }
+  }
+  async function cancelPay(){
+    if(!window.confirm("إلغاء عملية الدفع الحالية؟")) return;
+    stopPoll();
+    try{
+      const r = await apiPost({ action:"payCancel", token:TOKEN, pid:PID });
+      if(r && r.payment && r.payment.status === "paid"){ handleResult({ payment:r.payment, quote:INFO.quote }); await reload(); return; }
+    }catch(e){}
+    PID = ""; history.replaceState(null, "", "pay.html?t=" + encodeURIComponent(TOKEN));
+    await reload();
+  }
+
+  function handleResult(r){
+    stopPoll();
+    if(r.quote) INFO.quote = r.quote;
+    const p = r.payment;
+    if(p.status === "paid"){ INFO.payment = p; renderReceipt(p, true); return; }
+    history.replaceState(null, "", "pay.html?t=" + encodeURIComponent(TOKEN));
+    PID = "";
+    const why = p.status === "cancelled" ? "تم إلغاء عملية الدفع." : (p.status === "expired" ? "انتهت مهلة عملية الدفع." : "لم تتم عملية الدفع.");
+    renderCheckout("⚠️ " + why + " لم يتم خصم أي مبلغ — يمكنك المحاولة مجدداً أو اختيار وسيلة دفع أخرى.", "warn");
+  }
+
+  /* ---------- 3) الوصل ---------- */
+  function renderReceipt(p, fresh){
+    const q = INFO.quote;
+    const kv = function(k, v, cls){ return v ? '<div class="kv"><div class="k">' + k + '</div><div class="' + (cls || "") + '">' + v + '</div></div>' : ''; };
+    let rows = "";
+    (q.items || []).forEach(function(it, i){
+      rows += '<tr><td class="c">' + (i + 1) + '</td><td>' + esc(it.test || "") + '</td><td class="c">' + esc(it.qty || 1) + '</td><td class="c">' + fmt(it.lineTotal || it.price) + '</td></tr>';
+    });
+    const h = '<div class="print-only" style="text-align:center;font-weight:900;font-size:18px;margin-bottom:10px">الشركة العامة للفحص والتأهيل الهندسي</div>'
+      + '<div class="rc">'
+      + '<div class="rc-h"><div class="ok"><i class="fas fa-check"></i></div><h2>' + (fresh ? "تمت عملية الدفع بنجاح" : "تم الدفع") + '</h2><div>وصل استلام دفعة إلكترونية</div></div>'
+      + '<div class="rc-body">'
+      + kv("رقم الوصل", '<b dir="ltr">' + esc(p.receiptNo || "—") + '</b>')
+      + kv("تاريخ الدفع", esc(p.paidAt))
+      + kv("المبلغ المدفوع", fmt(p.amount) + ' دينار عراقي', "big")
+      + kv("وسيلة الدفع", esc(p.providerName))
+      + kv("مرجع العملية", '<span dir="ltr">' + esc(p.providerRef) + '</span>')
+      + kv("رقم الطلب", '<span dir="ltr">' + esc(q.requestId) + '</span>')
+      + kv("الجهة / الزبون", esc(q.company || q.name))
+      + (q.letterNo ? kv("رقم الكتاب", esc(q.letterNo)) : '')
+      + (q.orderNo ? kv("رقم أمر العمل", esc(q.orderNo)) : '')
+      + (rows ? '<div style="overflow-x:auto;margin-top:10px"><table class="q"><thead><tr><th>ت</th><th style="text-align:right">الفحص / الخدمة</th><th>العدد</th><th>المبلغ</th></tr></thead><tbody>' + rows + '</tbody></table></div>' : '')
+      + '<div class="help" style="margin-top:10px">تم قبول عرض السعر تلقائياً وإرسال نسخة من الوصل إلى بريدكم الإلكتروني. سيتم التواصل معكم لاستلام النماذج والبدء بالعمل'
+      + (q.days ? ' — مدة الإنجاز المتوقعة <b>' + esc(q.days) + '</b> أيام عمل من تاريخ استلام النماذج' : '') + '.</div>'
+      + '<div class="help print-only">صدر هذا الوصل إلكترونياً من منصة تتبع أوامر العمل ولا يحتاج إلى توقيع.</div>'
+      + '</div></div>'
+      + '<div class="rc-foot"><button class="main-btn" onclick="window.print()"><i class="fas fa-print"></i> طباعة / حفظ الوصل PDF</button>'
+      + '<a class="main-btn alt-btn" style="text-decoration:none;text-align:center" href="' + quoteLink() + '"><i class="fas fa-file-invoice-dollar"></i> عرض السعر</a></div>';
+    history.replaceState(null, "", "pay.html?t=" + encodeURIComponent(TOKEN));
+    show(h, 4);
+  }
+
+  /* ---------- لا يمكن الدفع ---------- */
+  function renderBlocked(msg){
+    const q = INFO.quote;
+    show('<div class="notice warn" style="text-align:center;font-size:16px">' + esc(msg) + '</div>'
+      + (q && q.amount ? invoiceHtml(q) : '')
+      + '<div class="center" style="margin-top:14px"><a class="main-btn alt-btn" style="display:inline-block;width:auto;padding:10px 26px;text-decoration:none" href="' + quoteLink() + '"><i class="fas fa-file-invoice-dollar"></i> العودة إلى عرض السعر</a></div>', 1);
+  }
+
+  async function reload(){
+    const r = await apiPost({ action:"payGetInfo", token:TOKEN });
+    if(!r || !r.ok){ fail((r && r.message) || "الرابط غير صالح أو منتهي"); return false; }
+    INFO = r;
+    if(r.payment && r.payment.status === "paid"){ renderReceipt(r.payment, false); return true; }
+    if(r.blocked){ renderBlocked(r.blocked); return true; }
+    renderCheckout();
+    return true;
+  }
+
+  (async function(){
+    steps(1);
+    if(!/^[a-f0-9]{30,}$/i.test(TOKEN)){ fail("الرابط غير صالح"); return; }
+    try{
+      const r = await apiPost({ action:"payGetInfo", token:TOKEN });
+      if(!r || !r.ok){ fail((r && r.message) || "الرابط غير صالح أو منتهي"); return; }
+      INFO = r;
+      if(r.payment && r.payment.status === "paid"){ renderReceipt(r.payment, false); return; }
+      if(PID && RET === "sim"){ renderSandbox({ paymentId:PID }); return; }
+      if(PID){
+        /* عائد من البوابة أو من صفحة الباركود: نتحقق من البوابة نفسها */
+        renderChecking();
+        const done = await checkNow(false);
+        if(!done){
+          if(RET === "fail"){ handleResult({ payment:{ status:"failed" } }); return; }
+          show('<div class="center" style="padding:20px 10px"><div style="font-size:40px;color:var(--accent)"><i class="fas fa-hourglass-half"></i></div>'
+            + '<div style="font-weight:900;font-size:17px;margin-top:6px">عملية الدفع قيد المعالجة</div>'
+            + '<div class="wait" id="waitMsg"><i class="fas fa-spinner fa-spin"></i> نتحقق من البوابة تلقائياً...</div></div>'
+            + '<div class="rc-foot no-print"><button class="main-btn" onclick="checkNow(true)"><i class="fas fa-rotate"></i> تحقق الآن</button>'
+            + '<button class="main-btn alt-btn" onclick="cancelPay()"><i class="fas fa-xmark"></i> إلغاء واختيار وسيلة أخرى</button></div>', 2);
+          poll(5 * 60000, 4000);
+        }
+        return;
+      }
+      if(r.blocked){ renderBlocked(r.blocked); return; }
+      renderCheckout();
+    }catch(e){ fail("تعذر الاتصال بالخادم، حاول لاحقاً"); }
+  })();
+</script>
+</body>
+</html>
