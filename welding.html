@@ -902,7 +902,6 @@
     if(!id){ showMsg("⚠️ أدخل رقم أمر العمل", "warn"); return; }
     if(alreadyReceived) return;
     if(!pricingIsDone(pricingText)){ showMsg("⚠️ يجب تثبيت التسعيرة أولاً", "warn"); return; }
-    if(stage === "CERTS" && !window.confirm("تأكيد استلام الشهادات؟\nسيُعدّ أمر العمل " + id + " منجزاً.")) return;
 
     const token = getSessionToken();
     if(!token){ goToLogin(); return; }
