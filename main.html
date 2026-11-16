@@ -1510,12 +1510,28 @@
     "inspection": "mainEditOrderInfo",
     "pricing":     "mainStampPricing",
     "testResults": "mainUpdateTestResults",
-    "official":    "mainUpdateOfficial",
+    "official":    "mainToggleOfficialSkip",
     "final":       "mainUpdateFinalDelivery",
     "barcode":     "mainToggleBarcodeSkip"
   };
 
+  /* المراحل التي تُتجاوز بالضغط (تجاوز / إلغاء التجاوز) */
+  var SKIP_KEYS = {
+    barcode:  { label:"الباركود",      api:"mainSetBarcodeSkip",  flag:"barcodeSkipped"  },
+    official: { label:"اصدار الكتاب",  api:"mainSetOfficialSkip", flag:"officialSkipped" }
+  };
+  var SKIP_ACTIONS = { mainToggleBarcodeSkip:"barcode", mainToggleOfficialSkip:"official" };
+
   function formatSub(val, done, cls, stepKey, it){
+    /* مرحلة متجاوَزة (الباركود / اصدار الكتاب): الاسم + التاريخ + إمكانية الإلغاء */
+    if(cls.indexOf("barcode-skipped") !== -1){
+      const bVal = String(val||"").replace("✅","").replace("تجاوز","").replace(/^\s*-\s*/,"").trim();
+      const um = bVal.match(/\((.*?)\)/);
+      const dt = bVal.match(/(\d{4}-\d{2}-\d{2}\s*\|\s*\d{2}:\d{2})/);
+      return '<div class="sub-name">' + escapeHtml(um ? um[1].trim() : (CURRENT_USER_NAME||"")) + '</div>'
+           + '<div class="sub-date">' + escapeHtml(dt ? dt[1].trim() : "") + '</div>'
+           + (cls.indexOf("clickable") !== -1 ? '<div class="sub-date" style="color:var(--accent);font-size:10px;">⏭ متجاوز — اضغط للإلغاء ↩</div>' : '<div class="sub-date" style="color:var(--accent);font-size:10px;">⏭ متجاوز</div>');
+    }
     if(!done){
       if(cls.indexOf("skipped") !== -1){
         return '<div class="sub-name" style="min-height:0"></div><div class="sub-date">بانتظار</div>';
@@ -1532,7 +1548,7 @@
              + '<div class="sub-date" style="color:var(--accent);font-size:10px;">اضغط للإلغاء ↩</div>';
       }
       if(cls.indexOf("next") !== -1 && CLICKABLE_STAGES[stepKey]){
-        return '<div class="sub-date click-hint">' + (stepKey === "barcode" ? "اضغط للتجاوز ⏭" : "اضغط للتوثيق ▲") + '</div>';
+        return '<div class="sub-date click-hint">' + (SKIP_KEYS[stepKey] ? "اضغط للتجاوز ⏭" : "اضغط للتوثيق ▲") + '</div>';
       }
       return cls.indexOf("next") !== -1
         ? '<div class="sub-date">الخطوة الحالية</div>'
@@ -1728,7 +1744,7 @@
       const s   = steps[i];
       const val = String(it[s.key] || "");
       const done = isDoneAny(val);
-      const barcodeIsSkipped = s.key === "barcode" && isBarcodeSkipped(val);
+      const barcodeIsSkipped = !!SKIP_KEYS[s.key] && isBarcodeSkipped(val);
 
       const isAfterPayment = paymentIdx !== -1 && i > paymentIdx;
 
@@ -1740,7 +1756,7 @@
         cls += " done";
       } else if(s.key === "payment" && !done){
         cls += " skipped";
-      } else if(s.key === "barcode" && !done && it.barcodeSkipped){
+      } else if(SKIP_KEYS[s.key] && !done && it[SKIP_KEYS[s.key].flag]){
         cls += " barcode-skipped";
       } else if(s.key === "email" && !done && (isDoneAny(String(it.barcode || "")) || it.barcodeSkipped || isDoneAny(String(it.final || "")))){
         cls += " skipped";
@@ -1762,8 +1778,8 @@
       const isClickable = !!stageAction && (
         s.key === "inspection" && !finalDone ||
         s.key === "pricing" && !finalDone ||
-        s.key === "barcode" && !finalDone && (cls.indexOf("next") !== -1 || cls.indexOf("barcode-skipped") !== -1) ||
-        (!done && !barcodeIsSkipped && cls.indexOf("next") !== -1 && s.key !== "barcode" && s.key !== "pricing" && s.key !== "inspection")
+        !!SKIP_KEYS[s.key] && !finalDone && (cls.indexOf("next") !== -1 || cls.indexOf("barcode-skipped") !== -1) ||
+        (!done && !barcodeIsSkipped && cls.indexOf("next") !== -1 && !SKIP_KEYS[s.key] && s.key !== "pricing" && s.key !== "inspection")
       );
       if(isClickable) cls += " clickable";
 
@@ -1776,7 +1792,7 @@
 
       /* الدائرة — قابلة للضغط أو عادية */
       const circleHtml = isClickable
-        ? '<div class="circle" onclick="handleStageClick(this,\'' + safeOrder + '\',\'' + safeAct + '\')" title="' + (s.key === "inspection" ? "تعديل بيانات أمر العمل" : s.key === "pricing" && done ? "تعديل التسعيرة" : s.key === "barcode" ? (isBarcodeSkipped(val) || it.barcodeSkipped ? "إلغاء تجاوز الباركود" : "تجاوز الباركود") : "اضغط لتسجيل التوثيق") + '"><i class="fas ' + safeIcon + '"></i></div>'
+        ? '<div class="circle" onclick="handleStageClick(this,\'' + safeOrder + '\',\'' + safeAct + '\')" title="' + (s.key === "inspection" ? "تعديل بيانات أمر العمل" : s.key === "pricing" && done ? "تعديل التسعيرة" : SKIP_KEYS[s.key] ? ((barcodeIsSkipped || it[SKIP_KEYS[s.key].flag]) ? "إلغاء تجاوز " + SKIP_KEYS[s.key].label : "تجاوز " + SKIP_KEYS[s.key].label) : "اضغط لتسجيل التوثيق") + '"><i class="fas ' + safeIcon + '"></i></div>'
         : '<div class="circle"><i class="fas ' + safeIcon + '"></i></div>';
 
       html += '<div class="' + cls + '">'
@@ -2717,18 +2733,19 @@
     /* تعريف nodeEl مبكراً لاستخدامه في كل الحالات */
     const nodeEl = circleEl.closest(".node");
 
-    if(action === "mainToggleBarcodeSkip"){
+    if(SKIP_ACTIONS[action]){
+      const key = SKIP_ACTIONS[action], SK = SKIP_KEYS[key];
       const idx = CURRENT_ITEMS.findIndex(function(it){
         return String(it.orderNo||"").trim() === String(orderNo||"").trim();
       });
       if(idx !== -1){
         /* حالة التجاوز الحالية من قيمة الشيت */
-        const currentlySkipped = isBarcodeSkipped(String(CURRENT_ITEMS[idx].barcode || ""))
-                               || !!CURRENT_ITEMS[idx].barcodeSkipped;
+        const prevItem = CURRENT_ITEMS[idx];
+        const currentlySkipped = isBarcodeSkipped(String(prevItem[key] || "")) || !!prevItem[SK.flag];
         const newSkipped = !currentlySkipped;
 
-        CURRENT_ITEMS[idx] = Object.assign({}, CURRENT_ITEMS[idx]);
-        CURRENT_ITEMS[idx].barcodeSkipped = newSkipped;
+        CURRENT_ITEMS[idx] = Object.assign({}, prevItem);
+        CURRENT_ITEMS[idx][SK.flag] = newSkipped;
 
         if(newSkipped){
           const now = new Date();
@@ -2737,30 +2754,40 @@
             + "-" + String(now.getDate()).padStart(2,"0")
             + " | " + String(now.getHours()).padStart(2,"0")
             + ":" + String(now.getMinutes()).padStart(2,"0");
-          CURRENT_ITEMS[idx].barcode = "✅ تجاوز - (" + (CURRENT_USER_NAME||"") + ") " + ts;
+          CURRENT_ITEMS[idx][key] = "✅ تجاوز - (" + (CURRENT_USER_NAME||"") + ") " + ts;
         } else {
-          CURRENT_ITEMS[idx].barcode = "";
-          CURRENT_ITEMS[idx].barcodeSkipped = false;
+          CURRENT_ITEMS[idx][key] = "";
+          CURRENT_ITEMS[idx][SK.flag] = false;
         }
 
-        const freshItem = normalizeItemsForRender([CURRENT_ITEMS[idx]])[0];
-        CURRENT_ITEMS[idx] = freshItem;
-
-        const itemCard = circleEl.closest(".item");
-        if(itemCard){
+        const rerender = function(item){
+          const itemCard = circleEl.closest(".item");
+          if(!itemCard) return;
           const tmpDiv = document.createElement("div");
-          tmpDiv.innerHTML = renderStepper(freshItem);
+          tmpDiv.innerHTML = renderStepper(item);
           const scrollEl    = itemCard.querySelector(".stepper-scroll");
           const newScrollEl = tmpDiv.querySelector(".stepper-scroll");
           if(scrollEl && newScrollEl) scrollEl.replaceWith(newScrollEl);
-        }
+        };
 
-        showMsg(newSkipped ? "⏭ تم تجاوز الباركود" : "↩ تم إلغاء تجاوز الباركود", "ok");
+        const freshItem = normalizeItemsForRender([CURRENT_ITEMS[idx]])[0];
+        CURRENT_ITEMS[idx] = freshItem;
+        rerender(freshItem);
+
+        showMsg(newSkipped ? "⏭ تم تجاوز " + SK.label : "↩ تم إلغاء تجاوز " + SK.label, "ok");
 
         const tkn = getSessionToken();
         if(tkn){
-          apiPost({ action:"mainSetBarcodeSkip", token:tkn, page:PAGE_NAME, orderNo:orderNo, skipped:newSkipped, userName:CURRENT_USER_NAME })
-            .catch(function(e){ console.warn("mainSetBarcodeSkip failed:", e); });
+          apiPost({ action:SK.api, token:tkn, page:PAGE_NAME, orderNo:orderNo, skipped:newSkipped, userName:CURRENT_USER_NAME })
+            .then(function(r){
+              if(r && r.ok === false){
+                /* رفض الخادم → إرجاع الحالة السابقة */
+                const j = CURRENT_ITEMS.findIndex(function(it){ return String(it.orderNo||"").trim() === String(orderNo||"").trim(); });
+                if(j !== -1){ CURRENT_ITEMS[j] = normalizeItemsForRender([prevItem])[0]; rerender(CURRENT_ITEMS[j]); }
+                showMsg(r.message || "❌ تعذر الحفظ", "err");
+              }
+            })
+            .catch(function(e){ console.warn(SK.api + " failed:", e); });
         }
       }
       return;
