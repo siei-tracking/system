@@ -1620,7 +1620,8 @@
   function inferType(it){
     if(!isDoneAny(it.pricing)) return "";
     const t = String(it.testType || "").trim();
-    if(t === "مصاعد" || t === "مختبرات") return t;
+    if(t === "مصاعد" || t === "مختبرات" || t === "لحام") return t;
+    if(String(it.welding || "").trim() || String(it.certificates || "").trim()) return "لحام";
     const elev     = String(it.elev     || "").trim();
     const lab1     = String(it.lab1     || "").trim();
     const workshop = String(it.workshop || "").trim();
@@ -1652,6 +1653,13 @@
     if(!workflowReady) return steps;
 
     steps.push({key:"payment", label:"تسديد", icon:"fa-sack-dollar"});
+
+    /* قسم اللحام: أصدار أمر العمل ← تسعيرة ← تسديد ← اللحام ← استلام الشهادات */
+    if(type === "لحام"){
+      steps.push({key:"welding",      label:"اللحام",          icon:"fa-fire"});
+      steps.push({key:"certificates", label:"استلام الشهادات", icon:"fa-certificate"});
+      return steps;
+    }
 
     if(type === "مصاعد"){
       steps.push({key:"elev", label:"مصاعد", icon:"fa-elevator"});
@@ -1686,6 +1694,7 @@
     let typePill = '<span class="pill bad"><i class="fas fa-triangle-exclamation"></i> غير محدد</span>';
     if(type === "مصاعد")   typePill = '<span class="pill ok"><i class="fas fa-elevator"></i> مصاعد</span>';
     if(type === "مختبرات") typePill = '<span class="pill ok"><i class="fas fa-microscope"></i> مختبرات</span>';
+    if(type === "لحام")    typePill = '<span class="pill ok"><i class="fas fa-fire"></i> لحام</span>';
 
     const showPath = type === "مختبرات" && labPath && labPath !== "مختبرات فقط";
     const pathPill = showPath ? '<span class="pill"><i class="fas fa-route"></i> ' + escapeHtml(labPath) + '</span>' : "";
@@ -1995,6 +2004,8 @@
    * ============================================================ */
   function computeLastStage(item){
     const steps = [
+      {key:"certificates", label:"استلام الشهادات"},
+      {key:"welding",     label:"اللحام"},
       {key:"final",       label:"استلام النتائج"},
       {key:"email",       label:"ارسال الايميل"},
       {key:"barcode",     label:"الباركود"},
@@ -2038,6 +2049,7 @@
   }
 
   function renderList(res, mode){
+    window.__mainMode = mode;
     if(res && res.error){
       CURRENT_MODE  = mode || "open";
       CURRENT_ITEMS = [];
@@ -2975,6 +2987,25 @@
        ============================================================ -->
  <script>window.PAGE_NAME = "main";</script>
   <script src="/system/notifications-widget.js" defer></script>
+  <script>
+  /* ===== التحديث المباشر: إعادة تحميل القائمة الحالية بهدوء عند أي تغيير ===== */
+  window.onLiveChange = async function(scopes){
+    if(scopes.indexOf("orders") === -1) return;
+    var mode = window.__mainMode;
+    if(mode !== "open" && mode !== "delayed") return;
+    if(document.querySelector("[id$='ModalOverlay'].open")) return;   /* نافذة تعديل مفتوحة */
+    if(typeof isLoadingData !== "undefined" && isLoadingData) return;
+    try{
+      var token = getSessionToken(); if(!token) return;
+      var y = window.scrollY;
+      var res = await apiPost({ action: mode === "open" ? "getOpenOrders" : "getDelayedOrders", token: token, page: PAGE_NAME });
+      if(!res || res.ok === false) return;
+      renderList(res, mode);
+      window.scrollTo(0, y);
+    }catch(e){}
+  };
+  </script>
+  <script src="/system/live-sync.js" defer></script>
 
 <!-- ===== Modal التسعيرة ===== -->
 <div class="pricing-modal-overlay" id="pricingModalOverlay" onclick="closePricingModal(event)">
@@ -3000,6 +3031,7 @@
         <option value="">اختر النوع</option>
         <option value="مختبرات">الفحص المختبري</option>
         <option value="مصاعد">فحص المصاعد</option>
+        <option value="لحام">اللحام</option>
       </select>
     </div>
 

@@ -669,7 +669,10 @@
 
     if(workflowReady){
       steps.push({key:"payment", label:"التسديد", icon:"fa-sack-dollar", doneFn:isOkDone});
-      if(testType === "مصاعد"){
+      if(testType === "لحام"){
+        steps.push({key:"welding",      label:"اللحام",          icon:"fa-fire",        doneFn:isReceiveDone});
+        steps.push({key:"certificates", label:"استلام الشهادات", icon:"fa-certificate", doneFn:isReceiveDone});
+      }else if(testType === "مصاعد"){
         steps.push({key:"elev", label:"المصاعد", icon:"fa-elevator", doneFn:isReceiveDone});
       }else{
         steps.push({key:"lab1", label:"المختبرات", icon:"fa-microscope", doneFn:isReceiveDone});
@@ -678,11 +681,13 @@
           steps.push({key:"lab2",     label:"المختبرات", icon:"fa-flask-vial",         doneFn:isReceiveDone});
         }
       }
+      if(testType !== "لحام"){
       steps.push({key:"testResults", label:"نتائج الفحص",   icon:"fa-clipboard-check", doneFn:isReceiveDone});
       steps.push({key:"official",    label:"الكتاب",         icon:"fa-file-signature",  doneFn:isReceiveDone});
       steps.push({key:"barcode",     label:"الباركود",       icon:"fa-qrcode",          doneFn:isReceiveDone});
       steps.push({key:"email",       label:"الإيميل",        icon:"fa-paper-plane",     doneFn:isReceiveDone});
       steps.push({key:"final",       label:"استلام النتائج", icon:"fa-flag-checkered",  doneFn:isReceiveDone});
+      }
     }
 
     var firstPending = false;
@@ -764,16 +769,19 @@
   /* ============================================================
    * LOAD TRACKING — مع debounce + skeleton
    * ============================================================ */
-  async function loadTracking(){
+  async function loadTracking(silent){
     if(isLoading) return;
+    silent = silent === true;
 
     const id = normalizeOrderNo(document.getElementById("orderID").value || "");
     if(!id){ showToast("⚠️ يرجى إدخال رقم أمر العمل"); return; }
 
     isLoading = true;
-    setBtnLoading(true);
-    showSkeletonStepper();
-    document.getElementById("infoBar").style.display = "none";
+    if(!silent){
+      setBtnLoading(true);
+      showSkeletonStepper();
+      document.getElementById("infoBar").style.display = "none";
+    }
 
     try{
       const data = await fetchTrackingData(id);
@@ -800,6 +808,8 @@
         badge.innerHTML = '<i class="fas fa-elevator"></i> <span>مصاعد</span>';
       }else if(type === "مختبرات"){
         badge.innerHTML = '<i class="fas fa-microscope"></i> <span>مختبرات</span>';
+      }else if(type === "لحام"){
+        badge.innerHTML = '<i class="fas fa-fire"></i> <span>لحام</span>';
       }else{
         badge.innerHTML = '<i class="fas fa-triangle-exclamation"></i> <span>نوع الفحص غير محدد</span>';
       }
@@ -829,7 +839,15 @@
 
   window.loadTracking = loadTracking;
   window.clearOrder   = clearOrder;
+
+  /* ===== التحديث المباشر: تحديث مراحل الأمر المعروض تلقائياً ===== */
+  window.onLiveChange = function(scopes){
+    if(scopes.indexOf("orders") === -1) return;
+    var shown = document.getElementById("infoBar").style.display === "flex";
+    if(shown && String(document.getElementById("orderID").value || "").trim()) loadTracking(true);
+  };
 </script>
+<script src="/system/live-sync.js" defer></script>
 
 </body>
 </html>
