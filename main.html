@@ -1510,7 +1510,7 @@
     "inspection": "mainEditOrderInfo",
     "pricing":     "mainStampPricing",
     "testResults": "mainUpdateTestResults",
-    "official":    "mainToggleOfficialSkip",
+    "official":    "mainUpdateOfficial",
     "final":       "mainUpdateFinalDelivery",
     "barcode":     "mainToggleBarcodeSkip"
   };
@@ -1546,6 +1546,12 @@
         return '<div class="sub-name">' + escapeHtml(bName) + '</div>'
              + '<div class="sub-date">' + escapeHtml(bDate) + '</div>'
              + '<div class="sub-date" style="color:var(--accent);font-size:10px;">اضغط للإلغاء ↩</div>';
+      }
+      if(cls.indexOf("next") !== -1 && stepKey === "official"){
+        /* اصدار الكتاب: توثيق (الضغط على الدائرة) أو تجاوز */
+        const o = escapeHtml(String((it && it.orderNo) || "")).replace(/'/g, "&#39;");
+        return '<div class="sub-date click-hint">اضغط للتوثيق ▲</div>'
+             + '<div class="sub-date click-hint skip-link" style="cursor:pointer;text-decoration:underline" title="تجاوز اصدار الكتاب" onclick="handleStageClick(this,\'' + o + '\',\'mainToggleOfficialSkip\')">أو تجاوز ⏭</div>';
       }
       if(cls.indexOf("next") !== -1 && CLICKABLE_STAGES[stepKey]){
         return '<div class="sub-date click-hint">' + (SKIP_KEYS[stepKey] ? "اضغط للتجاوز ⏭" : "اضغط للتوثيق ▲") + '</div>';
@@ -1772,7 +1778,7 @@
       if(i === steps.length - 1) cls += " last-real";
 
       /* هل هذه المرحلة قابلة للضغط؟ */
-      const stageAction = CLICKABLE_STAGES[s.key];
+      const stageAction = (s.key === "official" && barcodeIsSkipped) ? "mainToggleOfficialSkip" : CLICKABLE_STAGES[s.key];
       /* التسعيرة تبقى clickable دائماً (للتعديل) ما لم يكتمل التسليم النهائي — الباقيات فقط عند next أو barcode-skipped */
       const finalDone = isDoneAny(String(it.final || ""));
       const isClickable = !!stageAction && (
@@ -1792,7 +1798,7 @@
 
       /* الدائرة — قابلة للضغط أو عادية */
       const circleHtml = isClickable
-        ? '<div class="circle" onclick="handleStageClick(this,\'' + safeOrder + '\',\'' + safeAct + '\')" title="' + (s.key === "inspection" ? "تعديل بيانات أمر العمل" : s.key === "pricing" && done ? "تعديل التسعيرة" : SKIP_KEYS[s.key] ? ((barcodeIsSkipped || it[SKIP_KEYS[s.key].flag]) ? "إلغاء تجاوز " + SKIP_KEYS[s.key].label : "تجاوز " + SKIP_KEYS[s.key].label) : "اضغط لتسجيل التوثيق") + '"><i class="fas ' + safeIcon + '"></i></div>'
+        ? '<div class="circle" onclick="handleStageClick(this,\'' + safeOrder + '\',\'' + safeAct + '\')" title="' + (s.key === "inspection" ? "تعديل بيانات أمر العمل" : s.key === "pricing" && done ? "تعديل التسعيرة" : SKIP_KEYS[s.key] ? ((barcodeIsSkipped || it[SKIP_KEYS[s.key].flag]) ? "إلغاء تجاوز " + SKIP_KEYS[s.key].label : (s.key === "official" ? "اضغط لتسجيل التوثيق" : "تجاوز " + SKIP_KEYS[s.key].label)) : "اضغط لتسجيل التوثيق") + '"><i class="fas ' + safeIcon + '"></i></div>'
         : '<div class="circle"><i class="fas ' + safeIcon + '"></i></div>';
 
       html += '<div class="' + cls + '">'
